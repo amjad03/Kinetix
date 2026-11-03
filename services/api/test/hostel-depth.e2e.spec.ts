@@ -173,7 +173,11 @@ describe('hostel depth', () => {
     expect((await action('warden', 'hostel-incidents', fine.id, 'chargeFine').expect(200)).body.rows[0].ok).toBe(false);
     const sick = (await post('warden', '/v1/records/hostel-sickbay', { student: 'R3', symptoms: 'Fever 101F', treatment: 'Paracetamol' }).expect(201)).body;
     expect(sick).toMatchObject({ parentAlerted: true, healthVisitId: expect.any(String) });
-    expect((await owner.query(`select complaint from health_visits where student_id = $1`, [t.students[2].id])).rows).toEqual([{ complaint: 'Fever 101F' }]);
+    // Stored encrypted (common/sensitive.ts), read in clear by the health staff.
+    const stored = (await owner.query(`select complaint from health_visits where student_id = $1`, [t.students[2].id])).rows;
+    expect(stored).toHaveLength(1);
+    expect(stored[0].complaint).toMatch(/^v\d+\./);
+    expect((await get('principal', `/v1/student-health/students/${t.students[2].id}`).expect(200)).body.visits[0].complaint).toBe('Fever 101F');
     expect(JSON.stringify((await get('parent2', '/v1/notifications').expect(200)).body)).toContain('sick bay');
     // The notice names the stay, and the family's hostel page shows it until discharge.
     const sickNote = (await get('parent2', '/v1/notifications').expect(200)).body.items.find((n: { kind: string; data: Record<string, string> }) => n.kind === 'welfare' && n.data.sickbayId);

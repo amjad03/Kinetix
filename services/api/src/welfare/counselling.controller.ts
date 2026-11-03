@@ -1,3 +1,4 @@
+import { seal, sensitiveAad, unseal } from '../common/sensitive.js';
 import { Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
 import { and, desc, eq, inArray, isNull, or } from 'drizzle-orm';
 import { z } from 'zod';
@@ -15,11 +16,16 @@ type Session = typeof counsellingSessions.$inferSelect;
 
 /** What each reader may see. The notes leave this file only for the counsellor who holds the session. */
 function present(s: Session, p: UserPrincipal, isCounsellor: boolean, withNotes = false) {
-  const { confidentialNotes, reason, ...rest } = s;
-  const mine = s.counsellorUserId === p.userId && isCounsellor;
-  const seesReason = mine || s.requestedBy === p.userId || (isCounsellor && s.counsellorUserId === null);
-  return { ...rest, ...(seesReason ? { reason } : {}), ...(mine && withNotes ? { confidentialNotes } : {}), hasNotes: mine ? confidentialNotes !== null : undefined };
+  const { confidentialNotes: sealed, reason, ...rest } = s;
+  // Encrypted at rest (common/sensitive.ts); opened only for the counsellor who holds the session.
+  const confidentialNotes = mine(s, p, isCounsellor) && withNotes ? unseal(notesAad(s), sealed) : sealed;
+  const own = mine(s, p, isCounsellor);
+  const seesReason = own || s.requestedBy === p.userId || (isCounsellor && s.counsellorUserId === null);
+  return { ...rest, ...(seesReason ? { reason } : {}), ...(own && withNotes ? { confidentialNotes } : {}), hasNotes: own ? sealed !== null : undefined };
 }
+
+const mine = (s: Session, p: UserPrincipal, isCounsellor: boolean) => s.counsellorUserId === p.userId && isCounsellor;
+const notesAad = (s: Pick<Session, 'tenantId' | 'studentId'>) => sensitiveAad(s.tenantId, 'counselling', s.studentId, 'notes');
 
 /** Counselling sessions. Confidential notes are readable only by the counsellor who holds the session (docs/architecture/placements-research-welfare.md). */
 @Controller('v1/counselling')
@@ -115,7 +121,7 @@ export class CounsellingController {
       const { s } = await this.load(tx, p, id, true);
       if (s.counsellorUserId !== p.userId) throw new NotFoundException('Session not found');
       if (['cancelled', 'requested'].includes(s.status)) throw new ConflictException('Schedule the session before writing notes');
-      const [row] = await tx.update(counsellingSessions).set({ confidentialNotes: b.notes }).where(eq(counsellingSessions.id, id)).returning();
+      const [row] = await tx.update(counsellingSessions).set({ confidentialNotes: seal(notesAad(s), b.notes) }).where(eq(counsellingSessions.id, id)).returning();
       await auditUser(tx, p, 'counselling.notes_saved', 'counselling', id);
       return present(row, p, true, true);
     });
