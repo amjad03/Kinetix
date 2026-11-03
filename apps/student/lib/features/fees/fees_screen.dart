@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/api.dart';
+import '../../core/files.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import 'fee_pay.dart';
 import 'instalments_screen.dart';
 
-/// "Fees are paid by your parent…": students see their fees but do not pay in this app.
-String feesNote(AppLocalizations l) => l.feesNote;
+/// "Fees are paid by your parent…" at the counter-only institution; where fees are taken online, the student may
+/// pay here too.
+String feesNote(AppLocalizations l, {bool online = false}) => online ? l.feesNoteOnline : l.feesNote;
 
 /// How an invoice reads: (label, background, foreground).
 (String, Color, Color) invoiceStatus(BuildContext context, FeeInvoice inv, DateTime today) {
@@ -60,6 +63,12 @@ class _FeesScreenState extends State<FeesScreen> {
     }
   }
 
+  Future<void> _pay(FeeAccount a, FeeInvoice inv) async {
+    final done = await FeePayFlow(widget.api).pay(context, a, inv);
+    await _load();
+    if (done != null && mounted) await ReceiptScreen.open(context, widget.api, done.$2);
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -84,7 +93,7 @@ class _FeesScreenState extends State<FeesScreen> {
                   children: [
                     FeesTotalCard(account: a, today: widget.today),
                     const SizedBox(height: Kx.s12),
-                    _Note(),
+                    _Note(online: a.invoices.any((i) => FeePayFlow.canPay(a, i))),
                     SectionTitle(context.l10n.fees),
                     if (a.invoices.isNotEmpty)
                       Align(
@@ -98,7 +107,13 @@ class _FeesScreenState extends State<FeesScreen> {
                       ),
                     if (a.invoices.isEmpty)
                       Text(context.l10n.noFeesIssued, style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant)),
-                    for (final inv in a.invoices) _InvoiceTile(invoice: inv, today: widget.today, onInstalments: () => InstalmentsScreen.open(context, widget.api, inv.id, inv.title)),
+                    for (final inv in a.invoices)
+                      _InvoiceTile(
+                        invoice: inv,
+                        today: widget.today,
+                        onInstalments: () => InstalmentsScreen.open(context, widget.api, inv.id, inv.title),
+                        onPay: FeePayFlow.canPay(a, inv) ? () => _pay(a, inv) : null,
+                      ),
                     SectionTitle(context.l10n.payments),
                     if (a.payments.isEmpty)
                       Text(
@@ -138,6 +153,10 @@ class _FeesScreenState extends State<FeesScreen> {
 }
 
 class _Note extends StatelessWidget {
+  const _Note({this.online = false});
+
+  final bool online;
+
   @override
   Widget build(BuildContext context) => Row(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,7 +165,7 @@ class _Note extends StatelessWidget {
       const SizedBox(width: Kx.s8),
       Expanded(
         child: Text(
-          feesNote(context.l10n),
+          feesNote(context.l10n, online: online),
           key: const Key('feesNote'),
           style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
         ),
@@ -208,11 +227,12 @@ class FeesTotalCard extends StatelessWidget {
 }
 
 class _InvoiceTile extends StatelessWidget {
-  const _InvoiceTile({required this.invoice, required this.today, this.onInstalments});
+  const _InvoiceTile({required this.invoice, required this.today, this.onInstalments, this.onPay});
 
   final FeeInvoice invoice;
   final DateTime today;
   final VoidCallback? onInstalments;
+  final VoidCallback? onPay;
 
   @override
   Widget build(BuildContext context) {
@@ -242,10 +262,14 @@ class _InvoiceTile extends StatelessWidget {
               ].join(' · '),
               style: context.text.bodyMedium?.copyWith(color: c.onSurfaceVariant),
             ),
-            if (onInstalments != null)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(key: Key('instalments-${invoice.id}'), onPressed: onInstalments, child: Text(context.l10n.instalmentsButton)),
+            if (onInstalments != null || onPay != null)
+              Wrap(
+                spacing: Kx.s8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  if (onInstalments != null) TextButton(key: Key('instalments-${invoice.id}'), onPressed: onInstalments, child: Text(context.l10n.instalmentsButton)),
+                  if (onPay != null) FilledButton.tonal(key: Key('pay-${invoice.id}'), onPressed: onPay, child: Text(context.l10n.feePayNow)),
+                ],
               ),
           ],
         ),
@@ -256,10 +280,11 @@ class _InvoiceTile extends StatelessWidget {
 
 /// A fee receipt, laid out like the printed one.
 class ReceiptScreen extends StatefulWidget {
-  const ReceiptScreen({super.key, required this.api, required this.paymentId});
+  const ReceiptScreen({super.key, required this.api, required this.paymentId, this.openFile = openWithSystem});
 
   final StudentApi api;
   final String paymentId;
+  final OpenFile openFile;
 
   static Future<void> open(BuildContext context, StudentApi api, String paymentId) => Navigator.of(context).push(
     MaterialPageRoute(
@@ -274,6 +299,22 @@ class ReceiptScreen extends StatefulWidget {
 class _ReceiptScreenState extends State<ReceiptScreen> {
   FeeReceipt? _r;
   ApiException? _error;
+  bool _downloading = false;
+
+  Future<void> _pdf() async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _downloading = true);
+    try {
+      final bytes = await widget.api.feeReceiptPdf(widget.paymentId);
+      final name = 'receipt-${(_r?.receiptNo ?? widget.paymentId).replaceAll(RegExp(r'[^A-Za-z0-9-]'), '-')}.pdf';
+      await widget.openFile(bytes, name, 'application/pdf');
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(describeError(l, e))));
+    } finally {
+      if (mounted) setState(() => _downloading = false);
+    }
+  }
 
   @override
   void initState() {
@@ -371,6 +412,13 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                         ],
                       ),
                     ),
+                  ),
+                  const SizedBox(height: Kx.s12),
+                  OutlinedButton.icon(
+                    key: const Key('receiptPdf'),
+                    onPressed: _downloading ? null : _pdf,
+                    icon: const Icon(Icons.download_outlined),
+                    label: Text(l.downloadReceipt),
                   ),
                   const SizedBox(height: Kx.s12),
                   Text(

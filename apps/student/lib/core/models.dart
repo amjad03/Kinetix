@@ -700,6 +700,8 @@ class FeeInvoice {
     required this.paidPaise,
     required this.dueOn,
     required this.status,
+    this.dueNowPaise,
+    this.onlinePayments,
   });
 
   factory FeeInvoice.fromJson(Map<String, dynamic> j) => FeeInvoice(
@@ -709,7 +711,15 @@ class FeeInvoice {
     paidPaise: j['paidPaise'] as int? ?? 0,
     dueOn: parseIsoDate(j['dueOn'] as String),
     status: InvoiceStatus.values.asNameMap()[j['status']] ?? InvoiceStatus.due,
+    dueNowPaise: (j['dueNowPaise'] as num?)?.toInt(),
+    onlinePayments: j['onlinePayments'] as String?,
   );
+
+  /// On instalments: what is due now (the instalments due by today, else the next one).
+  final int? dueNowPaise;
+
+  /// The gateway of this fee's own fee account, when it has one (else the institution's).
+  final String? onlinePayments;
 
   final String id;
   final String title;
@@ -745,11 +755,13 @@ class FeePayment {
 
 /// `GET /v1/fees/students/:id`.
 class FeeAccount {
-  FeeAccount({required this.duePaise, required this.invoices, required this.payments, this.onlinePayments});
+  FeeAccount({required this.duePaise, required this.invoices, required this.payments, this.onlinePayments, this.allowPartial = true, this.minPartPaise = 0});
 
   factory FeeAccount.fromJson(Map<String, dynamic> j) => FeeAccount(
     duePaise: j['duePaise'] as int? ?? 0,
     onlinePayments: j['onlinePayments'] as String?,
+    allowPartial: (j['online'] as Map?)?['allowPartial'] as bool? ?? true,
+    minPartPaise: ((j['online'] as Map?)?['minPartPaise'] as num?)?.toInt() ?? 0,
     invoices: [for (final i in (j['invoices'] as List? ?? const [])) FeeInvoice.fromJson(i as Map<String, dynamic>)],
     payments: [for (final p in (j['payments'] as List? ?? const [])) FeePayment.fromJson(p as Map<String, dynamic>)],
   );
@@ -761,7 +773,58 @@ class FeeAccount {
   final List<FeeInvoice> invoices;
   final List<FeePayment> payments;
 
+  /// Whether a part of a fee may be paid online, and the smallest part.
+  final bool allowPartial;
+  final int minPartPaise;
+
   FeeInvoice? invoiceOf(FeePayment p) => invoices.where((i) => i.id == p.invoiceId).firstOrNull;
+
+  /// The gateway a fee is paid through: its fee account's, else the institution's; null at the counter only.
+  String? gatewayOf(FeeInvoice i) => i.onlinePayments ?? onlinePayments;
+}
+
+/// `POST /v1/fees/invoices/:id/checkout`: the gateway order, and the launch page that opens it in a browser.
+class FeeCheckout {
+  const FeeCheckout({required this.paymentId, required this.provider, required this.keyId, required this.orderId, required this.amountPaise, required this.name, required this.description, this.launchUrl});
+
+  /// [baseUrl] completes the launch page's address when the server gave only its path.
+  factory FeeCheckout.fromJson(Map<String, dynamic> j, {String? baseUrl}) {
+    final path = j['launchPath'] as String?;
+    return FeeCheckout(
+      paymentId: j['paymentId'] as String,
+      provider: j['provider'] as String,
+      keyId: j['keyId'] as String? ?? '',
+      orderId: j['orderId'] as String,
+      amountPaise: (j['amountPaise'] as num).toInt(),
+      name: j['name'] as String? ?? 'ZYNETIX',
+      description: j['description'] as String? ?? '',
+      launchUrl: j['launchUrl'] as String? ?? (path != null && baseUrl != null ? '$baseUrl$path' : null),
+    );
+  }
+
+  final String paymentId;
+  final String provider;
+  final String keyId;
+  final String orderId;
+  final int amountPaise;
+  final String name;
+  final String description;
+  final String? launchUrl;
+}
+
+/// `POST /v1/fees/payments/:id/refresh`: what the gateway says now.
+class FeeRefresh {
+  const FeeRefresh({required this.status, this.receipt});
+
+  factory FeeRefresh.fromJson(Map<String, dynamic> j) => FeeRefresh(
+    status: j['status'] as String? ?? 'pending',
+    receipt: j['receipt'] is Map ? FeeReceipt.fromJson((j['receipt'] as Map).cast<String, dynamic>()) : null,
+  );
+
+  /// paid, pending, failed or cancelled.
+  final String status;
+  final FeeReceipt? receipt;
+  bool get paid => status == 'paid';
 }
 
 /// `GET /v1/fees/payments/:id/receipt`.

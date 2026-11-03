@@ -1107,10 +1107,98 @@ class FakeStudentApi implements StudentApi {
     return feeAccount;
   }
 
+  /// Online fee payments started here: payment id → (invoice, order, amount).
+  final Map<String, ({String invoiceId, String orderId, int amountPaise})> _feeOrders = {};
+
+  /// Payments made in the browser that the gateway now reports paid.
+  final Set<String> browserPaid = {};
+
+  @override
+  Future<FeeCheckout> feeCheckout(String invoiceId, {int? amountPaise}) async {
+    calls.add('feeCheckout $invoiceId ${amountPaise ?? ''}'.trimRight());
+    final inv = feeAccount.invoices.firstWhere((i) => i.id == invoiceId);
+    final provider = feeAccount.gatewayOf(inv);
+    if (provider == null) throw ApiException(503, 'Online payment is not available yet. Please pay at the fees counter.');
+    final id = 'fpay${_feeOrders.length + 1}';
+    final orderId = '${provider}_order_${_feeOrders.length + 1}';
+    final amount = amountPaise ?? inv.balancePaise;
+    _feeOrders[id] = (invoiceId: invoiceId, orderId: orderId, amountPaise: amount);
+    return FeeCheckout(
+      paymentId: id,
+      provider: provider,
+      keyId: provider == 'demo' ? 'demo' : 'test_key',
+      orderId: orderId,
+      amountPaise: amount,
+      name: 'Demo College',
+      description: inv.title,
+      launchUrl: provider == 'demo' ? null : '$baseUrl/v1/public/checkout/demo-college/$id?t=x',
+    );
+  }
+
+  FeeReceipt _feeReceiptOf(String paymentId) {
+    final o = _feeOrders[paymentId]!;
+    final inv = feeAccount.invoices.firstWhere((i) => i.id == o.invoiceId);
+    final i = feeAccount.invoices.indexOf(inv);
+    final paidPaise = inv.paidPaise + o.amountPaise;
+    final paid = FeeInvoice(id: inv.id, title: inv.title, amountPaise: inv.amountPaise, paidPaise: paidPaise, dueOn: inv.dueOn, status: paidPaise >= inv.amountPaise ? InvoiceStatus.paid : InvoiceStatus.due);
+    final invoices = [...feeAccount.invoices]..[i] = paid;
+    final pay = FeePayment(id: paymentId, invoiceId: inv.id, amountPaise: o.amountPaise, method: 'online', receiptNo: 'RCPT/2026-27/0000${feeAccount.payments.length + 2}', paidAt: DateTime(2026, 10, 20, 11));
+    feeAccount = FeeAccount(
+      duePaise: (feeAccount.duePaise - o.amountPaise).clamp(0, feeAccount.duePaise),
+      invoices: invoices,
+      payments: [pay, ...feeAccount.payments],
+      onlinePayments: feeAccount.onlinePayments,
+      allowPartial: feeAccount.allowPartial,
+      minPartPaise: feeAccount.minPartPaise,
+    );
+    return FeeReceipt(
+      receiptNo: pay.receiptNo!,
+      institution: 'Demo College',
+      studentName: 'Aarav Patel',
+      rollNo: 'U03BC001',
+      className: 'BCom Sem 3 A',
+      invoiceTitle: inv.title,
+      invoiceAmountPaise: inv.amountPaise,
+      balancePaise: paid.balancePaise,
+      amountPaise: o.amountPaise,
+      method: 'online',
+      reference: o.orderId,
+      paidAt: pay.paidAt,
+    );
+  }
+
+  @override
+  Future<FeeReceipt> confirmFeePayment(String paymentId, {required String providerPaymentId, required String signature}) async {
+    calls.add('confirmFee $paymentId');
+    final o = _feeOrders[paymentId];
+    if (o == null) throw ApiException(404, 'Payment not found');
+    final expected = Hmac(sha256, utf8.encode('zynetix-demo-payments')).convert(utf8.encode('${o.orderId}|$providerPaymentId')).toString();
+    if (signature != expected) throw ApiException(403, 'The payment could not be verified');
+    return _feeReceiptOf(paymentId);
+  }
+
+  @override
+  Future<FeeRefresh> refreshFeePayment(String paymentId) async {
+    calls.add('refreshFee $paymentId');
+    if (!browserPaid.contains(paymentId)) return const FeeRefresh(status: 'pending');
+    return FeeRefresh(status: 'paid', receipt: _feeReceiptOf(paymentId));
+  }
+
+  @override
+  Future<Uint8List> feeReceiptPdf(String paymentId) async {
+    calls.add('feeReceiptPdf $paymentId');
+    return Uint8List.fromList(utf8.encode('%PDF-1.4 receipt $paymentId'));
+  }
+
   @override
   Future<FeeReceipt> receipt(String paymentId) async {
     calls.add('receipt $paymentId');
-    if (paymentId != 'p1') throw ApiException(404, 'Receipt not found');
+    if (!const {'p1'}.contains(paymentId) && !_feeOrders.containsKey(paymentId)) throw ApiException(404, 'Receipt not found');
+    if (_feeOrders.containsKey(paymentId)) {
+      final o = _feeOrders[paymentId]!;
+      final inv = feeAccount.invoices.firstWhere((i) => i.id == o.invoiceId);
+      return FeeReceipt(receiptNo: 'RCPT/2026-27/00002', institution: 'Demo College', studentName: 'Aarav Patel', rollNo: 'U03BC001', className: 'BCom Sem 3 A', invoiceTitle: inv.title, invoiceAmountPaise: inv.amountPaise, balancePaise: inv.balancePaise, amountPaise: o.amountPaise, method: 'online', reference: o.orderId, paidAt: DateTime(2026, 10, 20, 11));
+    }
     return FeeReceipt(
       receiptNo: 'RCPT/2026-27/00001',
       institution: 'Demo College',

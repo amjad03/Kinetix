@@ -29,7 +29,8 @@ void main() {
   });
 
   testWidgets('fees: amount due, overdue, read-only note, invoices and a receipt', (tester) async {
-    final (api, _) = await pumpApp(tester);
+    // A college that takes fees only at the counter.
+    final (api, _) = await pumpApp(tester, setup: (api) => api.feeAccount = FeeAccount(duePaise: api.feeAccount.duePaise, invoices: api.feeAccount.invoices, payments: api.feeAccount.payments));
     await openProfile(tester);
     await scrollTo(tester, find.byKey(const Key('openFees')));
     expect(find.descendant(of: find.byKey(const Key('feesTotal')), matching: find.text('₹1,850')), findsOneWidget);

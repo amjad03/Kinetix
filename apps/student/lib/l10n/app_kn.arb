@@ -1599,5 +1599,18 @@
   "revalKind": "ನಿಮಗೆ ಏನು ಬೇಕು?",
   "revalKindRevaluation": "ಮರುಮೌಲ್ಯಮಾಪನ",
   "revalKindRetotalling": "ಮರುಎಣಿಕೆ",
-  "revalKindPhotocopy": "ಉತ್ತರ ಪತ್ರಿಕೆಯ ಪ್ರತಿ"
+  "revalKindPhotocopy": "ಉತ್ತರ ಪತ್ರಿಕೆಯ ಪ್ರತಿ",
+  "feesNoteOnline": "ನೀವು ಇಲ್ಲಿ ಪಾವತಿಸಬಹುದು, ಅಥವಾ ನಿಮ್ಮ ಪೋಷಕರು ZYNETIX Parent ಆ್ಯಪ್‌ನಲ್ಲಿ ಅಥವಾ ಕಾಲೇಜಿನ ಶುಲ್ಕ ಕೌಂಟರ್‌ನಲ್ಲಿ ಪಾವತಿಸಬಹುದು.",
+  "feePayNow": "ಈಗ ಪಾವತಿಸಿ",
+  "feeBalanceDue": "ಬಾಕಿ: {amount}",
+  "feePayFull": "ಪೂರ್ಣ",
+  "feePayInstalment": "ಕಂತು {amount}",
+  "feePayPart": "ಭಾಗ",
+  "feeMoreThanDue": "ಇದು ಬಾಕಿ {amount} ಗಿಂತ ಹೆಚ್ಚು",
+  "feeAtLeastPart": "ಒಮ್ಮೆಗೆ ಕನಿಷ್ಠ {amount} ಪಾವತಿಸಿ",
+  "payInBrowserTitle": "ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಪಾವತಿ ಪೂರ್ಣಗೊಳಿಸಿ",
+  "payInBrowserBody": "ಪಾವತಿ ಪುಟ ತೆರೆದಿದೆ. ಪಾವತಿಸಿದ ನಂತರ ಇಲ್ಲಿಗೆ ಮರಳಿ ಪರಿಶೀಲಿಸಿ.",
+  "checkPayment": "ನಾನು ಪಾವತಿಸಿದ್ದೇನೆ: ಪರಿಶೀಲಿಸಿ",
+  "paymentPending": "ಇನ್ನೂ ದೃಢಪಟ್ಟಿಲ್ಲ. ನೀವು ಪಾವತಿಸಿದ್ದರೆ ಕೆಲವು ನಿಮಿಷಗಳಲ್ಲಿ ಇಲ್ಲಿ ಕಾಣುತ್ತದೆ.",
+  "downloadReceipt": "ರಸೀದಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ (PDF)"
 }

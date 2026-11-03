@@ -152,6 +152,18 @@ abstract class StudentApi implements AnnouncementSource {
   Future<FeeAccount> fees(String studentId);
   Future<FeeReceipt> receipt(String paymentId);
 
+  /// Starts paying a fee online (`POST /v1/fees/invoices/:id/checkout`); [amountPaise] for an instalment or a part.
+  Future<FeeCheckout> feeCheckout(String invoiceId, {int? amountPaise});
+
+  /// Reports an in-app checkout's result (`POST /v1/fees/payments/:id/confirm`); the signature proves it.
+  Future<FeeReceipt> confirmFeePayment(String paymentId, {required String providerPaymentId, required String signature});
+
+  /// Asks the gateway about a payment made in the browser (`POST /v1/fees/payments/:id/refresh`).
+  Future<FeeRefresh> refreshFeePayment(String paymentId);
+
+  /// The office's receipt as a PDF (`GET /v1/fee-collect/family/payments/:id/receipt.pdf`).
+  Future<Uint8List> feeReceiptPdf(String paymentId);
+
   /// What the student sits and when, with hall tickets and revaluation requests (`GET /v1/results/students/:id/exams`).
   Future<List<ExamSession>> exams(String studentId);
 
@@ -782,6 +794,20 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<FeeReceipt> receipt(String paymentId) async => FeeReceipt.fromJson(await _send('GET', '/v1/fees/payments/$paymentId/receipt'));
+
+  @override
+  Future<FeeCheckout> feeCheckout(String invoiceId, {int? amountPaise}) async =>
+      FeeCheckout.fromJson(await _send('POST', '/v1/fees/invoices/$invoiceId/checkout', body: {'amountPaise': ?amountPaise}) as Map<String, dynamic>, baseUrl: baseUrl);
+
+  @override
+  Future<FeeReceipt> confirmFeePayment(String paymentId, {required String providerPaymentId, required String signature}) async =>
+      FeeReceipt.fromJson(await _send('POST', '/v1/fees/payments/$paymentId/confirm', body: {'providerPaymentId': providerPaymentId, 'signature': signature}) as Map<String, dynamic>);
+
+  @override
+  Future<FeeRefresh> refreshFeePayment(String paymentId) async => FeeRefresh.fromJson(await _send('POST', '/v1/fees/payments/$paymentId/refresh') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> feeReceiptPdf(String paymentId) => _download('/v1/fee-collect/family/payments/$paymentId/receipt.pdf');
 
   @override
   Future<List<ExamSession>> exams(String studentId) async {

@@ -1599,5 +1599,18 @@
   "revalKind": "आप क्या चाहते हैं?",
   "revalKindRevaluation": "पुनर्मूल्यांकन",
   "revalKindRetotalling": "पुनर्योग",
-  "revalKindPhotocopy": "उत्तर पुस्तिका की प्रति"
+  "revalKindPhotocopy": "उत्तर पुस्तिका की प्रति",
+  "feesNoteOnline": "आप यहाँ भुगतान कर सकते हैं, या आपके माता-पिता/अभिभावक ZYNETIX Parent ऐप में या कॉलेज के फीस काउंटर पर भुगतान कर सकते हैं।",
+  "feePayNow": "अभी भुगतान करें",
+  "feeBalanceDue": "बकाया: {amount}",
+  "feePayFull": "पूरा",
+  "feePayInstalment": "किस्त {amount}",
+  "feePayPart": "आंशिक",
+  "feeMoreThanDue": "यह बकाया {amount} से अधिक है",
+  "feeAtLeastPart": "एक बार में कम से कम {amount} चुकाएँ",
+  "payInBrowserTitle": "ब्राउज़र में भुगतान पूरा करें",
+  "payInBrowserBody": "भुगतान पेज खुल गया है। भुगतान के बाद यहाँ लौटकर जाँचें।",
+  "checkPayment": "मैंने भुगतान किया: जाँचें",
+  "paymentPending": "अभी पुष्टि नहीं हुई। यदि आपने भुगतान किया है, तो कुछ मिनटों में यहाँ दिखेगा।",
+  "downloadReceipt": "रसीद डाउनलोड करें (PDF)"
 }

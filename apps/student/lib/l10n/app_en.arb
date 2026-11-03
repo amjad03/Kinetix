@@ -3884,5 +3884,38 @@
   "revalKindPhotocopy": "Photocopy of the answer script",
   "@revalKindPhotocopy": {
     "description": "Revaluation kinds."
-  }
+  },
+  "feesNoteOnline": "You can pay here, or your parent or guardian can pay in the ZYNETIX Parent app or at the college fees counter.",
+  "feePayNow": "Pay now",
+  "feeBalanceDue": "Due: {amount}",
+  "@feeBalanceDue": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "feePayFull": "Full",
+  "feePayInstalment": "Instalment {amount}",
+  "@feePayInstalment": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "feePayPart": "Part",
+  "feeMoreThanDue": "That is more than the {amount} due",
+  "@feeMoreThanDue": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "feeAtLeastPart": "Pay at least {amount} at a time",
+  "@feeAtLeastPart": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "payInBrowserTitle": "Finish paying in the browser",
+  "payInBrowserBody": "The payment page has opened. When you have paid, come back here and check it.",
+  "checkPayment": "I have paid: check",
+  "paymentPending": "Not confirmed yet. If you paid, it will show here in a few minutes.",
+  "downloadReceipt": "Download the receipt (PDF)"
 }
