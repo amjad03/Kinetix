@@ -464,6 +464,60 @@ export const REPORTS: Record<string, ReportDef> = {
           from transport_trip_events e join transport_trips t on t.id = e.trip_id join transport_routes r on r.id = t.route_id where e.kind in ('overspeed', 'deviation') and (e.at at time zone 'Asia/Kolkata')::date between ${D} and ${T} and $3::text is null order by e.at desc limit 5000`,
     filters: ['from', 'to'],
   },
+  // ---- transport production pass (0206-0207) ----
+  'transport.occupancy': {
+    module: 'transport',
+    columns: [['route', 'Route'], ['vehicle', 'Vehicle'], ['seats', 'Seats'], ['students', 'Students'], ['staff', 'Staff'], ['riders', 'Riders'], ['occupancy', 'Occupancy (%)'], ['seatsLeft', 'Seats left']],
+    sql: `select r.name as route, coalesce(v.reg_no, '') as vehicle, coalesce(v.capacity, 0) as seats,
+            count(a.id) filter (where a.student_id is not null)::int as students, count(a.id) filter (where a.staff_user_id is not null)::int as staff, count(a.id)::int as riders,
+            case when v.capacity > 0 then round(count(a.id) * 100.0 / v.capacity)::int else 0 end as occupancy, coalesce(v.capacity, 0) - count(a.id)::int as "seatsLeft"
+          from transport_routes r left join transport_vehicles v on v.id = r.vehicle_id left join transport_assignments a on a.route_id = r.id and a.ended_on is null
+          where r.active and $1::date is null and $2::date is null and $3::text is null group by r.id, r.name, v.reg_no, v.capacity order by occupancy desc, r.name`,
+    filters: [],
+  },
+  'transport.collection': {
+    module: 'transport',
+    columns: [['route', 'Route'], ['students', 'Students billed'], ['billed', 'Billed (₹)'], ['collected', 'Collected (₹)'], ['outstanding', 'Outstanding (₹)'], ['collectedPct', 'Collected (%)']],
+    sql: `select coalesce(x.route, 'No seat now') as route, count(distinct x.student_id)::int as students, round(sum(x.amount_paise) / 100.0, 2) as billed, round(sum(x.paid_paise) / 100.0, 2) as collected,
+            round(sum(x.amount_paise - x.paid_paise) / 100.0, 2) as outstanding, case when sum(x.amount_paise) > 0 then round(sum(x.paid_paise) * 100.0 / sum(x.amount_paise))::int else 0 end as "collectedPct"
+          from (select i.student_id, i.amount_paise, i.paid_paise, (select r.name from transport_assignments a join transport_routes r on r.id = a.route_id where a.student_id = i.student_id order by a.ended_on nulls first, a.starts_on desc limit 1) as route
+                from fee_invoices i where i.title ilike 'transport%' and i.status <> 'cancelled' and i.due_on between ${D} and ${T}) x
+          where $3::text is null group by x.route order by outstanding desc`,
+    filters: ['from', 'to'],
+  },
+  'transport.defaulters': {
+    module: 'transport',
+    columns: [['route', 'Route'], ['stop', 'Stop'], ['student', 'Student'], ['rollNo', 'Roll no.'], ['className', 'Class'], ['invoices', 'Unpaid fees'], ['balance', 'Balance (₹)'], ['oldestDue', 'Oldest due'], ['daysOverdue', 'Days overdue'], ['ageing', 'Ageing']],
+    sql: `select coalesce(r.name, '') as route, coalesce(st.name, '') as stop, s.full_name as student, s.roll_no as "rollNo", coalesce(sec.display_name, '') as "className", d.n as invoices, round(d.bal / 100.0, 2) as balance, d.oldest::text as "oldestDue",
+            greatest(0, (now() at time zone 'Asia/Kolkata')::date - d.oldest)::int as "daysOverdue",
+            case when (now() at time zone 'Asia/Kolkata')::date - d.oldest <= 30 then '0-30' when (now() at time zone 'Asia/Kolkata')::date - d.oldest <= 60 then '31-60' when (now() at time zone 'Asia/Kolkata')::date - d.oldest <= 90 then '61-90' else '90+' end as ageing
+          from (select student_id, count(*)::int as n, sum(amount_paise - paid_paise) as bal, min(due_on) as oldest from fee_invoices
+                where title ilike 'transport%' and status <> 'cancelled' and amount_paise > paid_paise and due_on < (now() at time zone 'Asia/Kolkata')::date and due_on between ${D} and ${T} group by student_id) d
+          join students s on s.id = d.student_id left join sections sec on sec.id = s.section_id
+          left join transport_assignments a on a.student_id = s.id and a.ended_on is null left join transport_routes r on r.id = a.route_id left join transport_stops st on st.id = a.stop_id
+          where ($3::text is null or r.name = $3) order by d.bal desc, s.full_name limit 5000`,
+    filters: ['from', 'to', 'status'],
+  },
+  'transport.trip-sheet': {
+    module: 'transport',
+    columns: [['day', 'Day'], ['route', 'Route'], ['direction', 'Run'], ['vehicle', 'Vehicle'], ['driver', 'Driver'], ['started', 'Out'], ['ended', 'In'], ['odometerOut', 'Odometer out'], ['odometerIn', 'Odometer in'], ['km', 'Km'], ['stops', 'Stops reached'], ['boarded', 'Boarded'], ['alerts', 'Alerts']],
+    sql: `select to_char(t.started_at at time zone 'Asia/Kolkata', 'YYYY-MM-DD') as day, r.name as route, t.direction, coalesce(v.reg_no, '') as vehicle, u.full_name as driver,
+            to_char(t.started_at at time zone 'Asia/Kolkata', 'HH24:MI') as started, coalesce(to_char(t.ended_at at time zone 'Asia/Kolkata', 'HH24:MI'), '') as ended,
+            t.start_odometer_km as "odometerOut", t.end_odometer_km as "odometerIn", (t.end_odometer_km - t.start_odometer_km) as km, t.last_stop_seq as stops,
+            (select count(*)::int from transport_boardings b where b.trip_id = t.id and b.kind = 'board') as boarded,
+            (select count(*)::int from transport_trip_events e where e.trip_id = t.id and e.kind in ('overspeed', 'deviation', 'sos')) as alerts
+          from transport_trips t join transport_routes r on r.id = t.route_id join users u on u.id = t.driver_user_id left join transport_vehicles v on v.id = t.vehicle_id
+          where (t.started_at at time zone 'Asia/Kolkata')::date between ${D} and ${T} and ($3::text is null or t.status = $3) order by t.started_at desc limit 5000`,
+    filters: ['from', 'to', 'status'],
+  },
+  'transport.boardings': {
+    module: 'transport',
+    columns: [['day', 'Day'], ['time', 'Time'], ['route', 'Route'], ['stop', 'Stop'], ['student', 'Student'], ['rollNo', 'Roll no.'], ['kind', 'On or off'], ['method', 'Marked by']],
+    sql: `select b.on_date::text as day, to_char(b.boarded_at at time zone 'Asia/Kolkata', 'HH24:MI') as time, coalesce(r.name, '') as route, coalesce(st.name, '') as stop, s.full_name as student, s.roll_no as "rollNo", b.kind, b.method
+          from transport_boardings b join students s on s.id = b.student_id left join transport_routes r on r.id = b.route_id left join transport_stops st on st.id = b.stop_id
+          where b.on_date between ${D} and ${T} and ($3::text is null or b.kind = $3) order by b.boarded_at desc limit 5000`,
+    filters: ['from', 'to', 'status'],
+  },
   'canteen.sales': {
     module: 'canteen',
     columns: [['day', 'Day'], ['kind', 'Kind'], ['entries', 'Entries'], ['amount', 'Amount (₹)']],

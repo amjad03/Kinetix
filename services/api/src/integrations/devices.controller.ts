@@ -10,7 +10,8 @@ import { auditUser } from '../common/audit.js';
 import { Clock, localParts, zonedToInstant } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { attendanceRecords, guardians, libraryBooks, students, tenants, users, staffAttendance } from '../db/schema.js';
+import { attendanceRecords, guardians, libraryBooks, students, tenants, transportTrips, users, staffAttendance } from '../db/schema.js';
+import { TransportPassService } from '../transport/transport-pass.service.js';
 import { accessDevices, credentialTags, deviceEvents, transportBoardings } from '../db/schema-integrations.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { INTEGRATION_ADMIN, safeEqual, sha256 } from './common.js';
@@ -56,7 +57,7 @@ export function deviceTime(text: string | undefined, tzOffsetMinutes: number, no
 @Controller('v1')
 export class DevicesController {
   private readonly desk: LibraryDesk;
-  constructor(private readonly db: DbService, private readonly clock: Clock, private readonly notifications: NotificationsService) {
+  constructor(private readonly db: DbService, private readonly clock: Clock, private readonly notifications: NotificationsService, private readonly transport: TransportPassService) {
     this.desk = new LibraryDesk(clock, notifications);
   }
 
@@ -284,6 +285,15 @@ export class DevicesController {
       case 'transport': {
         if (tag.subjectType !== 'student') return finish('rejected', { reason: 'not_a_student' });
         const routeId = (device.config.routeId as string | undefined) ?? null;
+        // A reader on a bus whose route has a trip under way: the first tap is getting on, the next getting off,
+        // tied to the trip (so the manifest, the not-boarded alert and the left-on-board check see it).
+        const [trip] = routeId ? await tx.select().from(transportTrips).where(and(eq(transportTrips.routeId, routeId), eq(transportTrips.status, 'running'))).limit(1) : [];
+        if (trip) {
+          const [on] = await tx.select({ id: transportBoardings.id }).from(transportBoardings).where(and(eq(transportBoardings.tripId, trip.id), eq(transportBoardings.studentId, tag.subjectId), eq(transportBoardings.kind, 'board')));
+          const r = await this.transport.mark(tx, tenantId, null, trip, { studentId: tag.subjectId, kind: on ? 'alight' : 'board', method: 'rfid', deviceId: device.id, at: e.at! }).catch((err: Error) => ({ error: err.message }));
+          if ('error' in r) return finish('rejected', { reason: r.error });
+          return finish(r.duplicate ? 'already_marked' : r.kind === 'alight' ? 'alighted' : 'boarded', { tripId: trip.id });
+        }
         const [dup] = await tx.select({ id: transportBoardings.id }).from(transportBoardings).where(and(eq(transportBoardings.studentId, tag.subjectId), eq(transportBoardings.onDate, local.date), routeId ? eq(transportBoardings.routeId, routeId) : undefined, gte(transportBoardings.boardedAt, new Date(e.at!.getTime() - 30 * 60_000))));
         if (dup) return finish('already_boarded');
         await tx.insert(transportBoardings).values({ tenantId, studentId: tag.subjectId, routeId, deviceId: device.id, boardedAt: e.at!, onDate: local.date });
