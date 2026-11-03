@@ -233,6 +233,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/inventory', label: 'nav.inventory', section: 'inventory', icon: 'inventory' },
       { href: '/assets', label: 'nav.assets', section: 'assets', icon: 'assets' },
       { href: '/procurement', label: 'nav.procurement', section: 'procurement', icon: 'inventory' },
+      { href: '/inventory/reports', label: 'ipass.reports', section: 'procurement', icon: 'reports' },
       { href: '/indents', label: 'nav.indents', section: 'indents', icon: 'inventory' },
       { href: '/facilities', label: 'nav.facilities', section: 'facilities', icon: 'assets' },
       { href: '/scan', label: 'nav.scan', section: 'assets', icon: 'assets' },

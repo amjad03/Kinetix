@@ -136,7 +136,10 @@ export class StoresPassController {
     const days = expiring === undefined ? null : Math.min(3650, Math.max(0, Number(expiring) || 0));
     return this.db.withTenant(p.tenantId, async (tx) => {
       const today = await this.proc.today(tx);
-      const until = days === null ? null : new Date(Date.parse(`${today}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+      const plus = (n: number) => new Date(Date.parse(`${today}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
+      // Filtered to `expiring` days when asked; marked expiring within the settings' alert window either way.
+      const until = days === null ? null : plus(days);
+      const soon = plus(days ?? Number((await readSettings(tx, p.tenantId, 'inventory')).rules.expiryAlertDays ?? 30));
       const rows = await tx
         .select({ id: invStockLayers.id, storeId: invStockLayers.storeId, store: invStores.name, itemId: invItems.id, sku: invItems.sku, item: invItems.name, unit: invItems.unit, itemType: invItems.itemType, batchNo: invStockLayers.batchNo, mfgOn: invStockLayers.mfgOn, expiryOn: invStockLayers.expiryOn, receivedOn: invStockLayers.receivedOn, qtyLeft: invStockLayers.qtyLeft, unitCostPaise: invStockLayers.unitCostPaise })
         .from(invStockLayers)
@@ -145,7 +148,7 @@ export class StoresPassController {
         .where(and(gt(invStockLayers.qtyLeft, 0), storeId && z.uuid().safeParse(storeId).success ? eq(invStockLayers.storeId, storeId) : undefined, itemId && z.uuid().safeParse(itemId).success ? eq(invStockLayers.itemId, itemId) : undefined, until ? and(isNotNull(invStockLayers.expiryOn), lte(invStockLayers.expiryOn, until)) : undefined))
         .orderBy(asc(sql`coalesce(${invStockLayers.expiryOn}, '9999-12-31')`), asc(invItems.name))
         .limit(1000);
-      return rows.map((r) => ({ ...r, valuePaise: r.qtyLeft * r.unitCostPaise, state: !r.expiryOn ? 'no_expiry' : r.expiryOn < today ? 'expired' : until && r.expiryOn <= until ? 'expiring' : 'good' }));
+      return rows.map((r) => ({ ...r, valuePaise: r.qtyLeft * r.unitCostPaise, state: !r.expiryOn ? 'no_expiry' : r.expiryOn < today ? 'expired' : r.expiryOn <= soon ? 'expiring' : 'good' }));
     });
   }
 

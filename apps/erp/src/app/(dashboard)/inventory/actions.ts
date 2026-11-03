@@ -3,6 +3,7 @@
 import { refuse } from '@/lib/procurement-fail';
 import { revalidatePath } from 'next/cache';
 import { qtyRows } from '@/lib/ops';
+import { slipLines } from '@/lib/inventory-pass';
 import { read, send, num, optStr } from '@/lib/ops-server';
 import type { IPoDetail, IRfqDetail } from '@/lib/ops';
 import type { RoomDay, Verification } from '@/lib/procurement';
@@ -197,4 +198,34 @@ export async function moveTicket(ticketId: string, status: string, v: V = {}) {
 
 export async function rateTicket(ticketId: string, v: V) {
   return send(`/v1/facilities/tickets/${id(ticketId)}/feedback`, { rating: num(v.rating), reopen: v.reopen === 'yes', ...(optStr(v.note) ? { note: v.note } : {}) }, '/facilities');
+}
+
+// ---- stores pass: issue slips, write-offs, the month in the books -------------------------------------------------
+
+/** A numbered issue slip of up to three items to a department (lines `item1`/`qty1` …). */
+export async function issueSlip(v: V) {
+  const got = slipLines(v);
+  if ('error' in got) return refuse(got.error === 'none' ? 'ivd.err.nothing' : 'ivd.err.lines');
+  return send(`${I}/issue-slips`, { storeId: v.storeId, ...(optStr(v.departmentId) ? { departmentId: v.departmentId } : {}), issuedTo: v.issuedTo, receivedBy: v.receivedBy ?? '', purpose: v.purpose ?? '', lines: got.lines }, PAGE);
+}
+
+/** Proposes writing stock off; an approver decides before it leaves. */
+export async function proposeWriteOff(v: V) {
+  return send(`${I}/write-offs`, { storeId: v.storeId, itemId: v.itemId, qty: num(v.qty), kind: v.kind, reason: v.reason, ...(optStr(v.batchNo) ? { batchNo: v.batchNo } : {}), ...(optStr(v.disposalMode) ? { disposalMode: v.disposalMode } : {}), ...(optStr(v.realisedPaise) ? { realisedPaise: num(v.realisedPaise) } : {}) }, PAGE);
+}
+
+async function decideWriteOff(writeOffId: string, approve: boolean, v: V = {}) {
+  if (!UUID.test(writeOffId)) return refuse('ivd.err.notFound');
+  return send(`${I}/write-offs/${id(writeOffId)}/decision`, { approve, ...(optStr(v.note) ? { note: v.note } : {}) }, PAGE);
+}
+export async function approveWriteOff(writeOffId: string) {
+  return decideWriteOff(writeOffId, true);
+}
+export async function rejectWriteOff(writeOffId: string, v: V) {
+  return decideWriteOff(writeOffId, false, v);
+}
+
+/** Posts a month that has ended (stores consumed, stock losses) to the books. */
+export async function postStoresMonth(v: V) {
+  return send(`${I}/books/month`, { month: (v.month ?? '').trim() }, PAGE);
 }
