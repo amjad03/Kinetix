@@ -5,10 +5,10 @@ Regenerate: `cd services/api && UPDATE_AUTHZ=1 ./node_modules/.bin/vitest run te
 
 ## Summary
 
-- Routes: 2721
-- Public (no @Auth, no guard): 89 (all on the allow list below unless flagged)
-- Any signed-in user (no role list): 302; open to students and families, so each must scope to the caller
-- Flagged for review: 40
+- Routes: 2805
+- Public (no @Auth, no guard): 98 (all on the allow list below unless flagged)
+- Any signed-in user (no role list): 306; open to students and families, so each must scope to the caller
+- Flagged for review: 42
 
 Flags: `PUBLIC?` no @Auth and not on the public allow list; `BROAD` a write on a staff-sounding path open to students, families or any user; `OWNERSHIP?` an id in the path, open to non-staff, and no sign that the handler or its service reads the caller (each was reviewed: see *Reviewed* below and docs/security/SECURITY_AUDIT.md).
 
@@ -283,6 +283,10 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/admin/overview` | hod, principal, tenant_admin |  |
 | GET | `/v1/admin/payments/gateway` | principal, tenant_admin |  |
 | PUT | `/v1/admin/payments/gateway` | principal, tenant_admin |  |
+| DELETE | `/v1/admin/payments/gateways` | principal, tenant_admin |  |
+| GET | `/v1/admin/payments/gateways` | principal, tenant_admin |  |
+| PUT | `/v1/admin/payments/gateways` | principal, tenant_admin |  |
+| POST | `/v1/admin/payments/gateways/:scope/test` | principal, tenant_admin |  |
 | DELETE | `/v1/admin/payments/razorpay` | principal, tenant_admin |  |
 | GET | `/v1/admin/payments/razorpay` | principal, tenant_admin |  |
 | PUT | `/v1/admin/payments/razorpay` | principal, tenant_admin |  |
@@ -320,8 +324,13 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/admissions/applications` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/applications/:id` | admissions_officer, principal, tenant_admin |  |
 | PATCH | `/v1/admissions/applications/:id/admission-kind` | admissions_officer, principal, tenant_admin |  |
+| GET | `/v1/admissions/applications/:id/admission-letter` | admissions_officer, principal, tenant_admin |  |
+| POST | `/v1/admissions/applications/:id/admit` | admissions_officer, principal, tenant_admin |  |
 | PUT | `/v1/admissions/applications/:id/agent` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/applications/:id/category` | admissions_officer, principal, tenant_admin |  |
+| GET | `/v1/admissions/applications/:id/checklist` | admissions_officer, principal, tenant_admin |  |
+| POST | `/v1/admissions/applications/:id/checklist` | admissions_officer, principal, tenant_admin |  |
+| PUT | `/v1/admissions/applications/:id/claims` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/applications/:id/custody` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/applications/:id/desk` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/applications/:id/documents/:docId/file` | admissions_officer, principal, tenant_admin |  |
@@ -334,14 +343,21 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | PUT | `/v1/admissions/applications/:id/preferences` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/applications/:id/prior-education` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/applications/:id/prior-education` | admissions_officer, principal, tenant_admin |  |
+| POST | `/v1/admissions/applications/:id/provisional` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/applications/:id/refund-quote` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/applications/:id/request-correction` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/applications/:id/requests` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/applications/:id/scholarships` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/applications/:id/status` | admissions_officer, principal, tenant_admin |  |
+| GET | `/v1/admissions/awaiting-register-no` | admissions_officer, principal, tenant_admin |  |
+| GET | `/v1/admissions/broadcasts` | admissions_officer, principal, tenant_admin |  |
+| POST | `/v1/admissions/broadcasts` | admissions_officer, principal, tenant_admin |  |
+| GET | `/v1/admissions/broadcasts/:id/sends` | admissions_officer, principal, tenant_admin |  |
+| POST | `/v1/admissions/broadcasts/preview` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/campaigns` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/campaigns` | admissions_officer, principal, tenant_admin |  |
 | PATCH | `/v1/admissions/campaigns/:id` | admissions_officer, principal, tenant_admin |  |
+| PATCH | `/v1/admissions/checklist-items/:id` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/commission-rules` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/commission-rules` | admissions_officer, principal, tenant_admin |  |
 | DELETE | `/v1/admissions/commission-rules/:id` | admissions_officer, principal, tenant_admin |  |
@@ -353,18 +369,25 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/admissions/cycles` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/cycles/:id` | admissions_officer, principal, tenant_admin |  |
 | PATCH | `/v1/admissions/cycles/:id` | admissions_officer, principal, tenant_admin |  |
+| POST | `/v1/admissions/cycles/:id/entrance-results` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/cycles/:id/evaluate` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/cycles/:id/expire-offers` | admissions_officer, principal, tenant_admin |  |
+| POST | `/v1/admissions/cycles/:id/external-allotments` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/cycles/:id/index-formula` | admissions_officer, principal, tenant_admin |  |
 | PUT | `/v1/admissions/cycles/:id/index-formula` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/cycles/:id/landing` | admissions_officer, principal, tenant_admin |  |
 | PUT | `/v1/admissions/cycles/:id/landing` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/cycles/:id/merit-lists` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/cycles/:id/merit-lists` | admissions_officer, principal, tenant_admin |  |
+| GET | `/v1/admissions/cycles/:id/profile-eligibility` | admissions_officer, principal, tenant_admin |  |
+| PUT | `/v1/admissions/cycles/:id/profile-eligibility` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/cycles/:id/quotas` | admissions_officer, principal, tenant_admin |  |
 | PUT | `/v1/admissions/cycles/:id/quotas` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/cycles/:id/rank-list` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/cycles/:id/rank-list` | admissions_officer, principal, tenant_admin |  |
+| GET | `/v1/admissions/cycles/:id/reservation` | admissions_officer, principal, tenant_admin |  |
+| PUT | `/v1/admissions/cycles/:id/reservation` | admissions_officer, principal, tenant_admin |  |
+| POST | `/v1/admissions/cycles/:id/reservation/dereserve` | principal, tenant_admin |  |
 | GET | `/v1/admissions/cycles/:id/rounds` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/cycles/:id/rounds` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/cycles/:id/seat-matrix` | admissions_officer, principal, tenant_admin |  |
@@ -383,6 +406,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/admissions/enquiries/:id/duplicates` | admissions_officer, counsellor, principal, tenant_admin |  |
 | POST | `/v1/admissions/enquiries/:id/merge` | admissions_officer, counsellor, principal, tenant_admin |  |
 | POST | `/v1/admissions/enquiries/:id/message` | admissions_officer, counsellor, principal, tenant_admin |  |
+| POST | `/v1/admissions/enquiries/:id/opt-out` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/enquiries/:id/stage` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/entrance-questions` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/entrance-questions` | admissions_officer, principal, tenant_admin |  |
@@ -414,16 +438,25 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/admissions/merit-lists/:id` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/merit-lists/:id/publish` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/online-configs` | admissions_officer, principal, tenant_admin |  |
+| GET | `/v1/admissions/pass/catalog` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/payouts` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/pipeline` | admissions_officer, principal, tenant_admin |  |
 | DELETE | `/v1/admissions/prior-education/:id` | admissions_officer, principal, tenant_admin |  |
+| GET | `/v1/admissions/programme-settings` | admissions_officer, principal, tenant_admin |  |
+| PUT | `/v1/admissions/programme-settings/:programId` | principal, tenant_admin |  |
+| GET | `/v1/admissions/provisional-follow-ups` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/refund-slabs/ugc` | principal, tenant_admin |  |
 | GET | `/v1/admissions/reports/campaigns` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/requests/:id/decide` | principal, tenant_admin |  |
+| GET | `/v1/admissions/returns/aishe` | admissions_officer, exam_controller, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/admissions/returns/approval-list` | admissions_officer, exam_controller, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/admissions/returns/intake` | admissions_officer, exam_controller, principal, quality_officer, tenant_admin |  |
 | GET | `/v1/admissions/rounds/:id/allotments` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/rounds/:id/close` | admissions_officer, principal, tenant_admin |  |
 | POST | `/v1/admissions/rounds/:id/publish` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/source-roi` | admissions_officer, principal, tenant_admin |  |
+| GET | `/v1/admissions/students/:id/credentials` | admissions_officer, principal, tenant_admin |  |
+| POST | `/v1/admissions/students/:id/credentials` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/admissions/students/:id/prior-education` | admissions_officer, hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/admissions/students/:id/prior-education` | admissions_officer, principal, tenant_admin |  |
 | GET | `/v1/affiliation` | exam_controller, hod, principal, teacher, tenant_admin |  |
@@ -721,6 +754,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/books/vouchers/:id/void` | accountant, principal, tenant_admin |  |
 | GET | `/v1/books/years` | accountant, principal, tenant_admin |  |
 | POST | `/v1/books/years/:fy/close` | accountant, principal, tenant_admin |  |
+| GET | `/v1/books/zoho.csv` | accountant, principal, tenant_admin |  |
 | GET | `/v1/broadcasts` | hod, principal, tenant_admin |  |
 | POST | `/v1/broadcasts` | hod, principal, tenant_admin |  |
 | POST | `/v1/broadcasts/:id/ack` | device token; board token |  |
@@ -889,6 +923,8 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/classroom/end` | board token |  |
 | GET | `/v1/classroom/now` | board token |  |
 | POST | `/v1/classroom/now/open` | board token |  |
+| POST | `/v1/classroom/teaching-log` | board token |  |
+| GET | `/v1/classroom/today` | board token |  |
 | GET | `/v1/classroom/trainings` | principal, tenant_admin |  |
 | POST | `/v1/classroom/trainings` | hod, principal, teacher; board token |  |
 | PATCH | `/v1/classroom/trainings/:id` | principal, tenant_admin |  |
@@ -1340,9 +1376,12 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/fee-collect/counter` | accountant, principal, tenant_admin |  |
 | GET | `/v1/fee-collect/counter-settings` | accountant, principal, tenant_admin |  |
 | GET | `/v1/fee-collect/dues-check/:studentId` | accountant, exam_controller, hod, principal, tenant_admin |  |
+| GET | `/v1/fee-collect/family/payments/:paymentId/receipt.pdf` | any signed-in user |  |
 | POST | `/v1/fee-collect/govt-scholarships/:id/receive` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fee-collect/govt-scholarships/:id/reject` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fee-collect/govt-scholarships/:id/sanction` | accountant, principal, tenant_admin |  |
+| POST | `/v1/fee-collect/govt-scholarships/:id/verify` | accountant, principal, tenant_admin |  |
+| POST | `/v1/fee-collect/govt-scholarships/import-status` | accountant, principal, tenant_admin |  |
 | GET | `/v1/fee-collect/invoices/:id/lines` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fee-collect/preview` | accountant, principal, tenant_admin |  |
 | GET | `/v1/fee-collect/receipts/:id` | accountant, principal, tenant_admin |  |
@@ -1351,6 +1390,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/fee-collect/receipts/:id/pdf` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fee-collect/receipts/:id/print` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fee-collect/receipts/:id/reissue` | accountant, principal, tenant_admin |  |
+| GET | `/v1/fee-collect/receipts/:id/upi` | any signed-in user |  |
 | POST | `/v1/fee-collect/reminders/run` | accountant, principal, tenant_admin |  |
 | GET | `/v1/fee-collect/reminders/runs` | accountant, principal, tenant_admin |  |
 | GET | `/v1/fee-collect/students` | accountant, principal, tenant_admin |  |
@@ -1373,8 +1413,12 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/fee-setup/structures/:id/preview` | accountant, principal, tenant_admin |  |
 | GET | `/v1/fee-setup/structures/:id/print` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fee-setup/structures/:id/reassign` | accountant, principal, tenant_admin |  |
+| GET | `/v1/fee-setup/students/:id/structures` | accountant, principal, tenant_admin |  |
+| POST | `/v1/fee-setup/students/:id/transfer` | accountant, principal, tenant_admin |  |
+| GET | `/v1/fee-setup/students/:id/transfers` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fee-setup/waivers` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fee-setup/waivers/:id/decide` | accountant, hod, principal, tenant_admin |  |
+| POST | `/v1/fees/accruals/sync` | principal, tenant_admin |  |
 | GET | `/v1/fees/bank-transfers` | accountant, principal, tenant_admin |  |
 | GET | `/v1/fees/bank-transfers/:id/proof` | any signed-in user |  |
 | POST | `/v1/fees/bank-transfers/:id/reject` | accountant, principal, tenant_admin |  |
@@ -1383,6 +1427,11 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/fees/credits` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fees/credits/refund` | principal, tenant_admin |  |
 | GET | `/v1/fees/credits/students/:studentId` | any signed-in user |  |
+| POST | `/v1/fees/fee-refs/generate` | accountant, principal, tenant_admin |  |
+| GET | `/v1/fees/flags` | accountant, principal, tenant_admin |  |
+| POST | `/v1/fees/flags/:id/resolve` | accountant, principal, tenant_admin |  |
+| POST | `/v1/fees/gateway-return/:provider/:tenantSlug` | PUBLIC | PUBLIC? |
+| GET | `/v1/fees/gateway-return/cashfree/:tenantSlug` | PUBLIC | PUBLIC? |
 | GET | `/v1/fees/instalment-plans` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fees/instalment-plans` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fees/instalment-plans/:id/active` | accountant, principal, tenant_admin |  |
@@ -1394,14 +1443,20 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/fees/invoices/:id/instalments` | any signed-in user |  |
 | POST | `/v1/fees/invoices/:id/instalments` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fees/invoices/:id/payments` | accountant, principal, tenant_admin |  |
+| GET | `/v1/fees/invoices/:id/upi` | any signed-in user |  |
 | GET | `/v1/fees/late-fee-rule` | accountant, principal, tenant_admin |  |
 | PUT | `/v1/fees/late-fee-rule` | principal, tenant_admin |  |
 | GET | `/v1/fees/late-fees` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fees/late-fees/:id/waive` | principal, tenant_admin |  |
 | POST | `/v1/fees/late-fees/run` | accountant, principal, tenant_admin |  |
+| GET | `/v1/fees/payment-links` | accountant, principal, tenant_admin |  |
+| POST | `/v1/fees/payment-links` | accountant, principal, tenant_admin |  |
+| POST | `/v1/fees/payment-links/:id/cancel` | accountant, principal, tenant_admin |  |
+| POST | `/v1/fees/payment-links/:id/resend` | accountant, principal, tenant_admin |  |
 | GET | `/v1/fees/payments` | accountant, principal, tenant_admin |  |
 | POST | `/v1/fees/payments/:id/confirm` | any signed-in user |  |
 | GET | `/v1/fees/payments/:id/receipt` | any signed-in user |  |
+| POST | `/v1/fees/payments/:id/refresh` | any signed-in user |  |
 | POST | `/v1/fees/reminders` | accountant, principal, tenant_admin |  |
 | GET | `/v1/fees/settlements` | accountant, principal, tenant_admin |  |
 | GET | `/v1/fees/settlements/:id` | accountant, principal, tenant_admin |  |
@@ -1422,6 +1477,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/fees/students/:id` | any signed-in user |  |
 | GET | `/v1/fees/students/:studentId/instalments` | any signed-in user |  |
 | GET | `/v1/fees/summary` | accountant, principal, tenant_admin |  |
+| POST | `/v1/fees/webhooks/:provider/:tenantSlug` | PUBLIC |  |
 | POST | `/v1/fees/webhooks/payu/:tenantSlug` | PUBLIC |  |
 | POST | `/v1/fees/webhooks/razorpay` | PUBLIC |  |
 | POST | `/v1/fees/webhooks/razorpay/:tenantSlug` | PUBLIC |  |
@@ -2060,6 +2116,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/parent/children/:id/attendance` | guardian, student |  |
 | GET | `/v1/parent/children/:id/subjects` | guardian |  |
 | GET | `/v1/parent/children/:id/summary` | guardian, student |  |
+| GET | `/v1/parent/children/:id/timetable` | guardian, student |  |
 | GET | `/v1/parent/children/:studentId/activities` | guardian |  |
 | GET | `/v1/parent/children/:studentId/bank-transfers` | guardian |  |
 | POST | `/v1/parent/children/:studentId/bank-transfers` | guardian | BROAD reviewed |
@@ -2248,6 +2305,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/public/admissions/:slug/applications/:id/documents/:key` | PUBLIC |  |
 | POST | `/v1/public/admissions/:slug/applications/:id/fee/checkout` | PUBLIC |  |
 | POST | `/v1/public/admissions/:slug/applications/:id/fee/confirm` | PUBLIC |  |
+| POST | `/v1/public/admissions/:slug/applications/:id/fee/refresh` | PUBLIC |  |
 | GET | `/v1/public/admissions/:slug/applications/:id/hall-ticket` | PUBLIC |  |
 | POST | `/v1/public/admissions/:slug/applications/:id/offer/accept` | PUBLIC |  |
 | POST | `/v1/public/admissions/:slug/applications/:id/offer/decline` | PUBLIC |  |
@@ -2264,10 +2322,12 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | PUT | `/v1/public/admissions/:slug/drafts/:id` | PUBLIC |  |
 | POST | `/v1/public/admissions/:slug/enquiries` | PUBLIC |  |
 | GET | `/v1/public/admissions/:slug/landing/:cycleId` | PUBLIC |  |
+| POST | `/v1/public/admissions/:slug/status` | PUBLIC |  |
 | GET | `/v1/public/bi-export/:id/:dataset` | PUBLIC |  |
 | GET | `/v1/public/boards/:slug/:file` | PUBLIC |  |
 | GET | `/v1/public/branding/:slug` | PUBLIC |  |
 | GET | `/v1/public/branding/:slug/:kind` | PUBLIC |  |
+| GET | `/v1/public/checkout/:slug/:paymentId` | PUBLIC |  |
 | GET | `/v1/public/events/:slug` | PUBLIC |  |
 | GET | `/v1/public/events/:slug/:id` | PUBLIC |  |
 | GET | `/v1/public/examiner-invite/:slug/:token` | PUBLIC |  |
@@ -2275,6 +2335,9 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/public/examiner-invite/:slug/:token/verify` | PUBLIC |  |
 | GET | `/v1/public/leads/:slug/:connectorId` | PUBLIC |  |
 | POST | `/v1/public/leads/:slug/:connectorId` | PUBLIC |  |
+| GET | `/v1/public/pay/:slug/:token` | PUBLIC |  |
+| POST | `/v1/public/pay/:slug/:token/checkout` | PUBLIC |  |
+| POST | `/v1/public/pay/:slug/:token/payments/:paymentId/refresh` | PUBLIC |  |
 | GET | `/v1/public/recruiters/:slug` | PUBLIC |  |
 | POST | `/v1/public/recruiters/:slug/drives` | PUBLIC |  |
 | GET | `/v1/public/recruiters/:slug/drives/:id/rounds` | PUBLIC |  |
@@ -2658,7 +2721,28 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/teacher/homework` | hod, principal, teacher |  |
 | GET | `/v1/teacher/session` | hod, principal, teacher |  |
 | GET | `/v1/teacher/timetable` | hod, principal, teacher |  |
+| POST | `/v1/teaching-log` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/teaching-log/:id/review` | hod, principal, tenant_admin |  |
+| GET | `/v1/teaching-log/completion` | exam_controller, hod, principal, teacher, tenant_admin |  |
+| GET | `/v1/teaching-log/pending` | hod, principal, teacher, tenant_admin |  |
+| GET | `/v1/teaching-log/register` | exam_controller, hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/teaching-log/review` | hod, principal, tenant_admin |  |
 | GET | `/v1/terms` | any signed-in user |  |
+| GET | `/v1/timetable-studio/options` | hod, principal, tenant_admin |  |
+| GET | `/v1/timetable-studio/versions` | hod, principal, tenant_admin |  |
+| POST | `/v1/timetable-studio/versions` | principal, tenant_admin |  |
+| GET | `/v1/timetable-studio/versions/:id` | hod, principal, tenant_admin |  |
+| POST | `/v1/timetable-studio/versions/:id/check` | principal, tenant_admin |  |
+| POST | `/v1/timetable-studio/versions/:id/discard` | principal, tenant_admin |  |
+| POST | `/v1/timetable-studio/versions/:id/duplicate` | principal, tenant_admin |  |
+| POST | `/v1/timetable-studio/versions/:id/generate` | principal, tenant_admin |  |
+| GET | `/v1/timetable-studio/versions/:id/pdf` | hod, principal, tenant_admin |  |
+| POST | `/v1/timetable-studio/versions/:id/publish` | principal, tenant_admin |  |
+| POST | `/v1/timetable-studio/versions/:id/slots` | principal, tenant_admin |  |
+| DELETE | `/v1/timetable-studio/versions/:id/slots/:slotId` | principal, tenant_admin |  |
+| PATCH | `/v1/timetable-studio/versions/:id/slots/:slotId` | principal, tenant_admin |  |
+| POST | `/v1/timetable-studio/versions/:id/slots/:slotId/lock` | principal, tenant_admin |  |
+| GET | `/v1/timetable-studio/versions/:id/workload` | hod, principal, tenant_admin |  |
 | GET | `/v1/timetable/me/substitutions` | hod, principal, teacher |  |
 | GET | `/v1/timetable/substitutes` | hod, principal, tenant_admin |  |
 | GET | `/v1/timetable/substitutions` | hod, principal, tenant_admin |  |
