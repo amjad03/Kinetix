@@ -62,7 +62,7 @@ export class EnrolmentService {
     const items = checklistFor({ admissionType: a.admissionType, nationality: a.nationality, seatType: a.seatType ?? (a.quota === 'merit' ? 'merit' : a.quota), category: categoryOf(a), claims: a.claims ?? {}, board: typeof a.answers?.board === 'string' ? a.answers.board : null, homeBoards: home, externalAllotment: !!a.externalAllotmentRef });
     const added = await tx
       .insert(admissionChecklistItems)
-      .values(items.map((i) => ({ tenantId: actor.tenantId, applicationId, itemKey: i.key, label: i.label, required: i.required, original: i.original, why: i.why })))
+      .values(items.map((i, n) => ({ tenantId: actor.tenantId, applicationId, itemKey: i.key, label: i.label, required: i.required, original: i.original, why: i.why, sortOrder: n })))
       .onConflictDoNothing()
       .returning({ id: admissionChecklistItems.id });
     if (added.length) await audit(tx, { ...auditActor(actor), action: 'admissions.checklist_created.v1', subjectType: 'application', subjectId: applicationId, data: { items: added.length } });
@@ -71,7 +71,7 @@ export class EnrolmentService {
 
   async checklist(tx: Tx, applicationId: string) {
     const a = await this.admissions.application(tx, applicationId);
-    const rows = await tx.select().from(admissionChecklistItems).where(eq(admissionChecklistItems.applicationId, applicationId)).orderBy(asc(admissionChecklistItems.createdAt), asc(admissionChecklistItems.itemKey));
+    const rows = await tx.select().from(admissionChecklistItems).where(eq(admissionChecklistItems.applicationId, applicationId)).orderBy(asc(admissionChecklistItems.sortOrder), asc(admissionChecklistItems.createdAt));
     const today = await this.admissions.today(tx);
     const state = checklistState(rows.map((r) => ({ itemKey: r.itemKey, required: r.required, status: r.status as ChecklistStatus, dueOn: r.dueOn })), today);
     return { applicationId, applicationNo: a.applicationNo, provisional: a.provisional, provisionalUntil: a.provisionalUntil, confirmedAt: a.admissionConfirmedAt, items: rows, ...state };

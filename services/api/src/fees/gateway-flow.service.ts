@@ -275,7 +275,11 @@ export class GatewayFlow implements OnModuleInit {
   private async apply(tx: Tx, accountId: string, e: WebhookEvent): Promise<{ outcome: string; paymentId?: string }> {
     const [pay] = await tx.select().from(feePayments).where(eq(feePayments.providerOrderId, e.orderId)).for('update');
     // Not a tuition fee: it may be an admission application fee ordered through the same adapter.
-    if (!pay) return (await this.appFees.applyGatewayEvent(tx, accountId, e)) ?? { outcome: 'unknown_order' };
+    if (!pay) {
+      // (The event row's payment link is to tuition-fee payments only; the application payment keeps the order id.)
+      const r = await this.appFees.applyGatewayEvent(tx, accountId, e);
+      return r ? { outcome: r.outcome } : { outcome: 'unknown_order' };
+    }
     // Signed by a different account than the order was made with: not this payment's notice.
     if (pay.gatewayAccountId && pay.gatewayAccountId !== accountId) return { outcome: 'wrong_account', paymentId: pay.id };
     if (e.kind === 'refund') return { outcome: 'refund_noted', paymentId: pay.id };

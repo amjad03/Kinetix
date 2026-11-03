@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS "admission_checklist_items" (
   "required" boolean NOT NULL DEFAULT true,
   "original" boolean NOT NULL DEFAULT false,
   "why" text,
+  "sort_order" integer NOT NULL DEFAULT 0,
   "status" text NOT NULL DEFAULT 'pending',
   "due_on" date,
   "reference_no" text,

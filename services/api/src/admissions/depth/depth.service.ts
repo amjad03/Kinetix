@@ -118,7 +118,7 @@ export class DepthService {
   // ---- seat matrix and preferences ------------------------------------------------------------------
 
   async seatMatrix(tx: Tx, cycleId: string) {
-    return tx.select().from(admissionSeatMatrix).where(eq(admissionSeatMatrix.cycleId, cycleId)).orderBy(asc(admissionSeatMatrix.optionLabel), asc(admissionSeatMatrix.category));
+    return tx.select().from(admissionSeatMatrix).where(eq(admissionSeatMatrix.cycleId, cycleId)).orderBy(asc(admissionSeatMatrix.optionLabel), asc(admissionSeatMatrix.sortOrder), asc(admissionSeatMatrix.seatType), asc(admissionSeatMatrix.category));
   }
 
   /**

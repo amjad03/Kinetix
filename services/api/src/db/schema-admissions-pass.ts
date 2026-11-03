@@ -63,6 +63,7 @@ export const admissionChecklistItems = pgTable(
     /** The college keeps the original (it then goes on the custody register). */
     original: boolean('original').notNull().default(false),
     why: text('why'),
+    sortOrder: integer('sort_order').notNull().default(0),
     /** pending | received | verified | deferred | waived */
     status: text('status').notNull().default('pending'),
     dueOn: date('due_on'),
