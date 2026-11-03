@@ -59,7 +59,7 @@ export class PaymentsAdminController {
         action: 'payments.razorpay_updated',
         subjectType: 'tenant',
         subjectId: p.tenantId,
-        data: { keyId: b.keyId, mode: keyMode(b.keyId), ...changed },
+        data: { keyId: b.keyId, ...changed, mode: keyMode(b.keyId) },
       });
       return this.gateway.view(tx, await this.slug(tx));
     });

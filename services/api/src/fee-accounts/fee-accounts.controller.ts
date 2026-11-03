@@ -298,13 +298,16 @@ export class FeeAccountsController {
    * invoice) the student's open invoices, oldest first. Returns how much came off.
    */
   private async applyConcession(tx: Tx, c: typeof feeConcessions.$inferSelect): Promise<number> {
-    if (c.invoiceId) return reduceCharge(tx, c.invoiceId, c.amountPaise, c.headCodes);
+    // Scholarships and sponsorships are booked apart from concessions (accrual basis).
+    const kind = ['scholarship', 'government', 'sponsor'].includes(c.kind) ? 'scholarship' : 'concession';
+    const ctx = { kind, userId: c.decidedBy ?? c.requestedBy, note: c.number } as const;
+    if (c.invoiceId) return reduceCharge(tx, c.invoiceId, c.amountPaise, c.headCodes, ctx);
     const open = await tx.select({ id: feeInvoices.id }).from(feeInvoices).where(and(eq(feeInvoices.studentId, c.studentId), eq(feeInvoices.status, 'due'))).orderBy(feeInvoices.dueOn, feeInvoices.createdAt);
     let left = c.amountPaise;
     let applied = 0;
     for (const inv of open) {
       if (left <= 0) break;
-      const got = await reduceCharge(tx, inv.id, left, c.headCodes);
+      const got = await reduceCharge(tx, inv.id, left, c.headCodes, ctx);
       applied += got;
       left -= got;
     }
@@ -356,7 +359,7 @@ export class FeeAccountsController {
         let chargeInvoiceId: string | null = null;
         if (b.chargePaise > 0) {
           const fine = (await headsOf(tx, p.tenantId)).find((h) => h.kind === 'fine');
-          const charge = await raiseInvoice(tx, { tenantId: p.tenantId, studentId: chq.studentId, sectionId: inv.sectionId, title: `Cheque return charge (${chq.chequeNo})`, dueOn: b.on, createdBy: p.userId, kind: 'charge', lines: [{ code: fine?.code ?? 'FIN', name: 'Cheque return charge', priority: fine?.sortOrder ?? 9000, amountPaise: b.chargePaise }] });
+          const charge = await raiseInvoice(tx, { tenantId: p.tenantId, studentId: chq.studentId, sectionId: inv.sectionId, title: `Cheque return charge (${chq.chequeNo})`, dueOn: b.on, createdBy: p.userId, kind: 'charge', lines: [{ code: fine?.code ?? 'FIN', name: 'Cheque return charge', priority: fine?.sortOrder ?? 9000, amountPaise: b.chargePaise }], feeAccountId: inv.feeAccountId, accrualKind: 'bounce_charge', date: b.on });
           chargeInvoiceId = charge.id;
         }
         await tx.update(feeCheques).set({ status: to, bouncedOn: b.on, bounceReason: b.reason, bounceChargePaise: b.chargePaise, chargeInvoiceId }).where(eq(feeCheques.id, id));
@@ -441,7 +444,7 @@ export class FeeAccountsController {
         const [line] = back;
         const heads = await headsOf(tx, p.tenantId);
         const h = heads.find((x) => x.code === line?.headCode);
-        await chargeHead(tx, orig.invoiceId, { code: line?.headCode ?? 'GEN', name: h?.name ?? 'Fee', priority: h?.sortOrder ?? 500, gstRate: h?.gstRate ?? 0 }, orig.amountPaise);
+        await chargeHead(tx, orig.invoiceId, { code: line?.headCode ?? 'GEN', name: h?.name ?? 'Fee', priority: h?.sortOrder ?? 500, gstRate: h?.gstRate ?? 0 }, orig.amountPaise, { kind: 'fee', userId: p.userId, date: today, note: `${r.number} reverted` });
       }
       const [inv] = await tx.select().from(feeInvoices).where(eq(feeInvoices.id, orig.invoiceId)).for('update');
       const paid = inv.paidPaise + orig.amountPaise;
@@ -465,7 +468,7 @@ export class FeeAccountsController {
       const [pay] = await tx.select().from(feePayments).where(eq(feePayments.id, r.paymentId));
       await unallocate(tx, pay, r.amountPaise);
       // A withdrawal: the refunded part is no longer charged, so the fee does not fall due again.
-      if (r.closeDues) await reduceCharge(tx, r.invoiceId, r.amountPaise);
+      if (r.closeDues) await reduceCharge(tx, r.invoiceId, r.amountPaise, [], { kind: 'withdrawal', userId: p.userId, note: r.number });
       const [row] = await tx.update(feeRefundRequests).set({ status: 'paid', payMode: b.mode, payReference: b.reference || null, refundId: refund.id, paidBy: p.userId, paidAt: new Date() }).where(eq(feeRefundRequests.id, id)).returning();
       await this.log(tx, p, 'refund.paid', 'fee_refund_request', id, { mode: b.mode, reference: b.reference });
       await this.notifications.feeDeskNotice(tx, r.studentId, { text: deskTexts.refundPaid(r.amountPaise, b.mode.replace('_', ' ')), data: { refundId: id, studentId: r.studentId }, dedupeKey: `refund-paid:${id}` });
@@ -490,7 +493,7 @@ export class FeeAccountsController {
     });
   }
 
-  /** Approving a write-off lowers what the invoice asks for. The books are kept on receipts, so nothing is posted. */
+  /** Approving a write-off lowers what the invoice asks for; on the accrual basis it is journalised to fees written off. */
   @Post('write-offs/:id/decide')
   @Auth('user', HEADS)
   decideWriteOff(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(Decide)) b: z.infer<typeof Decide>) {
@@ -502,7 +505,7 @@ export class FeeAccountsController {
       if (b.decision === 'approve') {
         const [inv] = await tx.select().from(feeInvoices).where(eq(feeInvoices.id, w.invoiceId)).for('update');
         if (w.amountPaise > inv.amountPaise - inv.paidPaise) throw new ConflictException('The invoice no longer has that much due');
-        await reduceCharge(tx, inv.id, w.amountPaise);
+        await reduceCharge(tx, inv.id, w.amountPaise, [], { kind: 'write_off', userId: p.userId, note: w.number });
       }
       const status = b.decision === 'approve' ? 'approved' : 'rejected';
       const [row] = await tx.update(feeWriteOffs).set({ status, decidedBy: p.userId, decidedAt: new Date(), decisionNote: b.comment || null }).where(eq(feeWriteOffs.id, id)).returning();

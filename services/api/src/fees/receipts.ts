@@ -1,6 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { postFeeCollection, reverseSource } from '../books/books.service.js';
+import { postReceivableCollection, syncAccruals } from './accruals.js';
 import type { Tx } from '../db/db.service.js';
 import { feeReceipts, feePaymentAllocations, feeInvoiceLines, acctFunds } from '../db/schema-fee-depth.js';
 import { studentCredits } from '../db/schema-depth.js';
@@ -8,16 +9,19 @@ import { feeInvoices, feePayments, receiptCounters, students } from '../db/schem
 import { DEFAULT_SERIES, formatSeries, fyOf } from '../fee-accounts/fee-accounts.logic.js';
 import { settingsOf } from '../fee-accounts/fee-accounts.service.js';
 import { headsOf } from './fee-lines.js';
+import { accountLedgerCode, accountOfInvoice, type FeeAccount, seriesKey } from './fee-accounts-core.js';
 
 /** Receipt numbers, the books for a payment, and taking a receipt back (cancelled or a bounced cheque). */
 
 /**
- * The next receipt number on `date`: the institution's receipt series, restarting each financial year, or a head's
- * own series (its prefix) when every rupee of the receipt went to that head.
+ * The next receipt number on `date`: the institution's receipt series, restarting each financial year; a head's own
+ * series (its prefix) when every rupee of the receipt went to that head; otherwise the fee account's own series when
+ * the receipt is for an account that has one (the trust's receipts run apart from the college's).
  */
-export async function nextReceiptNo(tx: Tx, tenantId: string, date: string, headPrefix?: string | null): Promise<string> {
+export async function nextReceiptNo(tx: Tx, tenantId: string, date: string, headPrefix?: string | null, account?: FeeAccount | null): Promise<string> {
   const fy = fyOf(date);
-  const key = headPrefix ? `${fy}:${headPrefix}` : fy;
+  const own = !headPrefix && account?.receiptPrefix ? account : null;
+  const key = headPrefix ? `${fy}:${headPrefix}` : own ? `${fy}:${seriesKey(own)}` : fy;
   const [counter] = await tx
     .insert(receiptCounters)
     .values({ tenantId, financialYear: key, lastNo: 1 })
@@ -25,7 +29,7 @@ export async function nextReceiptNo(tx: Tx, tenantId: string, date: string, head
     .returning();
   const s = await settingsOf(tx, tenantId);
   const base = s.series.receipt ?? DEFAULT_SERIES.receipt;
-  return formatSeries(headPrefix ? { prefix: headPrefix, next: 1, pad: base.pad } : base, date, counter.lastNo);
+  return formatSeries(headPrefix ? { prefix: headPrefix, next: 1, pad: base.pad } : own ? { prefix: own.receiptPrefix!, next: 1, pad: base.pad } : base, date, counter.lastNo);
 }
 
 /** The receipt series a set of heads takes: a head's own prefix when they are all that one head. */
@@ -42,9 +46,21 @@ export function moneyAccountFor(s: Awaited<ReturnType<typeof settingsOf>>, metho
   return s.paymentModes.find((m) => m.mode === mode)?.accountCode ?? (method === 'cash' ? s.mappings.cash : s.mappings.bank);
 }
 
-/** Posts a paid payment to the books from its allocation: each head's income ledger and fund, GST split out. */
+/**
+ * Posts a paid payment to the books from its allocation: each head's income ledger and fund (the fee account's books
+ * when it keeps its own), GST split out, the money into the account's own bank or cash ledger. On the accrual basis
+ * the charge was booked when it was raised, so the payment clears the students' receivable instead.
+ */
 export async function postPayment(tx: Tx, pay: typeof feePayments.$inferSelect, receiptNo: string, date: string, userId?: string | null): Promise<void> {
   const s = await settingsOf(tx, pay.tenantId);
+  const account = await accountOfInvoice(tx, pay.invoiceId);
+  if (s.basis === 'accrual') {
+    await syncAccruals(tx, { tenantId: pay.tenantId, userId }, pay.invoiceId, date);
+    const [st] = await tx.select({ name: students.fullName }).from(students).where(eq(students.id, pay.studentId));
+    const money = (await accountLedgerCode(tx, account, pay.method)) ?? moneyAccountFor(s, pay.method);
+    await postReceivableCollection(tx, { tenantId: pay.tenantId, userId, paymentId: pay.id, date, receiptNo, student: st?.name ?? 'student', method: pay.method, moneyAccountCode: money, paise: pay.amountPaise, conveniencePaise: pay.conveniencePaise, otherIncomeCode: s.mappings.otherIncome ?? '4100', fundId: account?.fundId ?? null });
+    return;
+  }
   const heads = new Map((await headsOf(tx, pay.tenantId)).map((h) => [h.code, h]));
   const funds = new Map((await tx.select({ id: acctFunds.id, code: acctFunds.code }).from(acctFunds)).map((f) => [f.code, f.id]));
   const allocs = await tx
@@ -55,13 +71,14 @@ export async function postPayment(tx: Tx, pay: typeof feePayments.$inferSelect, 
   const credits = allocs.length
     ? allocs.map((a) => {
         const h = heads.get(a.headCode);
-        return { accountCode: h?.accountCode ?? s.mappings.feeIncome, fundId: (h?.fundCode && funds.get(h.fundCode)) || null, paise: a.paise, gstRate: Number(a.gst ?? h?.gstRate ?? 0) };
+        return { accountCode: h?.accountCode ?? s.mappings.feeIncome, fundId: account?.fundId ?? ((h?.fundCode && funds.get(h.fundCode)) || null), paise: a.paise, gstRate: Number(a.gst ?? h?.gstRate ?? 0) };
       })
-    : [{ accountCode: s.mappings.feeIncome, fundId: null, paise: pay.amountPaise, gstRate: 0 }];
+    : [{ accountCode: s.mappings.feeIncome, fundId: account?.fundId ?? null, paise: pay.amountPaise, gstRate: 0 }];
   // A convenience fee the payer added goes to other income (it pays the gateway's charge).
-  if (pay.conveniencePaise > 0) credits.push({ accountCode: s.mappings.otherIncome ?? '4100', fundId: null, paise: pay.conveniencePaise, gstRate: 0 });
+  if (pay.conveniencePaise > 0) credits.push({ accountCode: s.mappings.otherIncome ?? '4100', fundId: account?.fundId ?? null, paise: pay.conveniencePaise, gstRate: 0 });
   const [st] = await tx.select({ name: students.fullName }).from(students).where(eq(students.id, pay.studentId));
-  await postFeeCollection(tx, { tenantId: pay.tenantId, userId, paymentId: pay.id, date, receiptNo, student: st?.name ?? 'student', method: pay.method, moneyAccountCode: moneyAccountFor(s, pay.method), credits });
+  const money = (await accountLedgerCode(tx, account, pay.method)) ?? moneyAccountFor(s, pay.method);
+  await postFeeCollection(tx, { tenantId: pay.tenantId, userId, paymentId: pay.id, date, receiptNo, student: st?.name ?? 'student', method: pay.method, moneyAccountCode: money, credits });
 }
 
 /** A student's advance credit balance. */

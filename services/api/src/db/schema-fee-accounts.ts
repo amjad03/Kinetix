@@ -241,6 +241,26 @@ export interface RefundSlab {
   deductionRupees: number;
 }
 
+/** How families may pay online: part payments, the least part, and how long a payment link stays open. */
+export interface OnlineSettings {
+  allowPartial?: boolean;
+  minPartRupees?: number;
+  linkValidDays?: number;
+  /** Ask the gateway about online payments still pending after this many minutes. */
+  pollAfterMinutes?: number;
+}
+/**
+ * One step of the reminder schedule: days from the due date (negative before, 0 on the day, positive after), who is
+ * told (the family always; then the class teacher, the HOD, the principal) and on which channels.
+ */
+export interface EscalationStep {
+  offsetDays: number;
+  audience: ('family' | 'class_teacher' | 'hod' | 'principal')[];
+  channels: ('app' | 'sms' | 'whatsapp' | 'email')[];
+  /** Only when at least this much is overdue (rupees). */
+  minRupees?: number;
+}
+
 export interface Series {
   prefix: string;
   next: number;
@@ -283,6 +303,12 @@ export const feeAccountsSettings = pgTable(
     reminders: jsonb('reminders').$type<ReminderSchedule>().notNull().default({}),
     convenience: jsonb('convenience').$type<ConvenienceFee>().notNull().default({}),
     refundRules: jsonb('refund_rules').$type<RefundSlab[]>().notNull().default([]),
+    /** cash (income on receipts) or accrual (charges, concessions, waivers and fines journalised when they happen); online payment rules; reminder escalation steps (migration 0190). */
+    basis: text('basis').notNull().default('cash'),
+    /** Invoices raised from this moment are booked on the accrual basis; older ones stay on receipts. */
+    accrualSince: ts('accrual_since'),
+    online: jsonb('online').$type<OnlineSettings>().notNull().default({}),
+    escalations: jsonb('escalations').$type<EscalationStep[]>().notNull().default([]),
   },
   (t) => [uniqueIndex('fee_accounts_settings_uq').on(t.tenantId)],
 );

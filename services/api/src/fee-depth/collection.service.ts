@@ -16,10 +16,13 @@ import { headsOf, lineState, type LineState } from '../fees/fee-lines.js';
 import { FeesService } from '../fees/fees.service.js';
 import { allocatePaid } from '../fees/fees-depth.logic.js';
 import { creditBalance, moneyAccountFor, nextReceiptNo, prefixFor } from '../fees/receipts.js';
+import { accountLedgerCode, feeAccountById } from '../fees/fee-accounts-core.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 
 export interface CollectMode extends ReceiptMode {
   method: 'cash' | 'cheque' | 'dd' | 'card' | 'upi' | 'bank_transfer' | 'online' | 'scholarship';
+  /** The POS terminal a card or UPI payment was taken on at the counter (its approval code is the reference). */
+  terminalId?: string | null;
 }
 
 export interface CollectInput {
@@ -132,45 +135,67 @@ export class CollectionService {
     const order = b.modes.map((m, i) => ({ m, i })).sort((x, y) => Number(x.m.method !== 'cash') - Number(y.m.method !== 'cash')).map((x) => x.i);
     const modes = order.map((i) => b.modes[i]);
     const split = splitByModes(plan.pieces.map((x) => ({ line: x.line, paise: x.paise })), modes);
-    const receiptNo = await nextReceiptNo(tx, p.tenantId, date, await prefixFor(tx, p.tenantId, plan.pieces.map((x) => x.line.headCode)));
-    const [receipt] = await tx
-      .insert(feeReceipts)
-      .values({ tenantId: p.tenantId, receiptNo, studentId: b.studentId, totalPaise: amount, advancePaise: plan.excessPaise, modes: b.modes, note: b.note ?? '', collectedBy: p.userId, collectedOn: date, reissueOf: b.reissueOf ?? null })
-      .returning();
-    // One payment per fee and mode.
-    const groups = new Map<string, { invoiceId: string; mode: number; pieces: typeof split }>();
-    for (const x of split) {
-      const k = `${x.line.invoiceId}:${x.mode}`;
-      const g = groups.get(k) ?? { invoiceId: x.line.invoiceId, mode: x.mode, pieces: [] };
-      g.pieces.push(x);
-      groups.set(k, g);
-    }
+    // One receipt per fee account: the trust's fees and the college's are numbered in their own series and banked
+    // in their own accounts. Advance (more than was due) goes on the default account's receipt.
+    const invAccount = new Map((plan.pieces.length ? await tx.select({ id: feeInvoices.id, a: feeInvoices.feeAccountId }).from(feeInvoices).where(inArray(feeInvoices.id, [...new Set(plan.pieces.map((x) => x.line.invoiceId))])) : []).map((r) => [r.id, r.a]));
+    const def = await feeAccountById(tx, null);
+    const keyOf = (invoiceId: string) => invAccount.get(invoiceId) ?? def?.id ?? '';
+    const byAccount = new Map<string, typeof split>();
+    for (const x of split) byAccount.set(keyOf(x.line.invoiceId), [...(byAccount.get(keyOf(x.line.invoiceId)) ?? []), x]);
+    if (!byAccount.size) byAccount.set(def?.id ?? '', []);
+    const advanceKey = byAccount.has(def?.id ?? '') ? (def?.id ?? '') : [...byAccount.keys()][0];
+    const made: { id: string; receiptNo: string; accountId: string | null; totalPaise: number }[] = [];
     const payments: (typeof feePayments.$inferSelect)[] = [];
-    for (const g of groups.values()) {
-      const m = modes[g.mode];
-      const paise = g.pieces.reduce((s2, x) => s2 + x.paise, 0);
-      const ref = m.method === 'cheque' || m.method === 'dd' ? `${m.method.toUpperCase()} ${m.chequeNo} ${m.bankName}` : (m.reference ?? null);
-      const [pay] = await tx.insert(feePayments).values({ tenantId: p.tenantId, invoiceId: g.invoiceId, studentId: b.studentId, amountPaise: paise, method: m.method, status: 'created', reference: ref, recordedBy: p.userId, receiptId: receipt.id }).returning();
-      const paid = await this.fees.markPaid(tx, pay.id, { allocations: g.pieces.map((x) => ({ lineId: x.line.id, headCode: x.line.headCode, paise: x.paise })), notify: false, date });
-      payments.push(paid);
+    for (const [accountKey, items] of byAccount) {
+      const account = await feeAccountById(tx, accountKey || null);
+      const advance = accountKey === advanceKey ? plan.excessPaise : 0;
+      // This receipt's own share of each mode (cash first, as split).
+      const share = modes.map((m, i) => ({ ...m, amountPaise: items.filter((x) => x.mode === i).reduce((t, x) => t + x.paise, 0) }));
+      // The advance is what each mode brought beyond the dues it paid.
+      if (advance > 0) for (const [i, m] of modes.entries()) share[i].amountPaise += m.amountPaise - split.filter((x) => x.mode === i).reduce((t, x) => t + x.paise, 0);
+      const total = items.reduce((t, x) => t + x.paise, 0) + advance;
+      const receiptNo = await nextReceiptNo(tx, p.tenantId, date, await prefixFor(tx, p.tenantId, items.map((x) => x.line.headCode)), account);
+      const [receipt] = await tx
+        .insert(feeReceipts)
+        .values({ tenantId: p.tenantId, receiptNo, studentId: b.studentId, totalPaise: total, advancePaise: advance, modes: byAccount.size > 1 ? share.filter((m) => m.amountPaise > 0) : b.modes, note: b.note ?? '', collectedBy: p.userId, collectedOn: date, reissueOf: b.reissueOf ?? null, feeAccountId: account?.id ?? null })
+        .returning();
+      made.push({ id: receipt.id, receiptNo, accountId: account?.id ?? null, totalPaise: total });
+      // One payment per fee and mode.
+      const groups = new Map<string, { invoiceId: string; mode: number; pieces: typeof split }>();
+      for (const x of items) {
+        const k = `${x.line.invoiceId}:${x.mode}`;
+        const g = groups.get(k) ?? { invoiceId: x.line.invoiceId, mode: x.mode, pieces: [] };
+        g.pieces.push(x);
+        groups.set(k, g);
+      }
+      for (const g of groups.values()) {
+        const m = modes[g.mode];
+        const paise = g.pieces.reduce((s2, x) => s2 + x.paise, 0);
+        const ref = m.method === 'cheque' || m.method === 'dd' ? `${m.method.toUpperCase()} ${m.chequeNo} ${m.bankName}` : (m.reference ?? null);
+        const [pay] = await tx.insert(feePayments).values({ tenantId: p.tenantId, invoiceId: g.invoiceId, studentId: b.studentId, amountPaise: paise, method: m.method, status: 'created', reference: ref, recordedBy: p.userId, receiptId: receipt.id, posTerminal: m.terminalId ?? null }).returning();
+        const paid = await this.fees.markPaid(tx, pay.id, { allocations: g.pieces.map((x) => ({ lineId: x.line.id, headCode: x.line.headCode, paise: x.paise })), notify: false, date });
+        payments.push(paid);
+      }
+      if (advance > 0) {
+        await tx.insert(studentCredits).values({ tenantId: p.tenantId, studentId: b.studentId, amountPaise: advance, kind: 'advance', note: `Advance with receipt ${receiptNo}`, createdBy: p.userId });
+        const advMode = modes.find((m) => m.method === 'cash') ?? modes[0];
+        await postAdvance(tx, { tenantId: p.tenantId, userId: p.userId, receiptId: receipt.id, date, receiptNo, student: plan.student.fullName, moneyAccountCode: (await accountLedgerCode(tx, account, advMode.method)) ?? moneyAccountFor(s, advMode.method), paise: advance });
+      }
+      // Cheques and DDs go into the register now, one row per instrument and receipt.
+      for (const [i, m] of modes.entries()) {
+        if (m.method !== 'cheque' && m.method !== 'dd') continue;
+        const mine = payments.filter((x) => x.receiptId === receipt.id && x.method === m.method && x.reference?.includes(m.chequeNo ?? ''));
+        if (!mine.length) continue;
+        await tx.insert(feeCheques).values({ tenantId: p.tenantId, paymentId: mine[0].id, receiptId: receipt.id, studentId: b.studentId, chequeNo: m.chequeNo!, bankName: m.bankName!, chequeDate: m.chequeDate!, amountPaise: byAccount.size > 1 ? share[i].amountPaise : m.amountPaise, kind: m.method, createdBy: p.userId }).onConflictDoNothing();
+      }
+      await auditUser(tx, p, 'fee_receipt.collected', 'fee_receipt', receipt.id, { receiptNo, totalPaise: total, modes: b.modes.map((m) => m.method), advancePaise: advance, invoices: groups.size, feeAccount: account?.code ?? null });
     }
-    if (plan.excessPaise > 0) {
-      await tx.insert(studentCredits).values({ tenantId: p.tenantId, studentId: b.studentId, amountPaise: plan.excessPaise, kind: 'advance', note: `Advance with receipt ${receiptNo}`, createdBy: p.userId });
-      const advMode = modes.find((m) => m.method === 'cash') ?? modes[0];
-      await postAdvance(tx, { tenantId: p.tenantId, userId: p.userId, receiptId: receipt.id, date, receiptNo, student: plan.student.fullName, moneyAccountCode: moneyAccountFor(s, advMode.method), paise: plan.excessPaise });
-    }
-    // Cheques and DDs go into the register now, one row per instrument.
-    for (const m of b.modes.filter((x) => x.method === 'cheque' || x.method === 'dd')) {
-      const first = payments.find((x) => x.method === m.method && x.reference?.includes(m.chequeNo ?? ''));
-      if (!first) continue;
-      await tx.insert(feeCheques).values({ tenantId: p.tenantId, paymentId: first.id, receiptId: receipt.id, studentId: b.studentId, chequeNo: m.chequeNo!, bankName: m.bankName!, chequeDate: m.chequeDate!, amountPaise: m.amountPaise, kind: m.method, createdBy: p.userId }).onConflictDoNothing();
-    }
-    await auditUser(tx, p, 'fee_receipt.collected', 'fee_receipt', receipt.id, { receiptNo, totalPaise: amount, modes: b.modes.map((m) => m.method), advancePaise: plan.excessPaise, invoices: groups.size });
     if (b.notify !== false) {
       const titles = [...new Set(plan.pieces.map((x) => x.line.headName))].slice(0, 3).join(', ');
-      await this.notifications.feePaid(tx, { paymentId: payments[0]?.id ?? receipt.id, studentId: b.studentId, studentName: plan.student.fullName, title: titles || 'Advance', amountPaise: amount, receiptNo });
+      await this.notifications.feePaid(tx, { paymentId: payments[0]?.id ?? made[0].id, studentId: b.studentId, studentName: plan.student.fullName, title: titles || 'Advance', amountPaise: amount, receiptNo: made.map((r) => r.receiptNo).join(', ') });
     }
-    return this.view(tx, receipt.id);
+    const first = await this.view(tx, made[0].id);
+    return made.length > 1 ? { ...first, receipts: made } : first;
   }
 
   /** Pays open fees from the advance credit the student holds, oldest first, on one receipt. */
@@ -181,7 +206,7 @@ export class CollectionService {
     if (amount <= 0) throw new ConflictException(balance <= 0 ? 'This student holds no advance' : 'Nothing is due');
     const date = await this.today(tx);
     const plan = await this.plan(tx, studentId, amount);
-    const receiptNo = await nextReceiptNo(tx, p.tenantId, date);
+    const receiptNo = await nextReceiptNo(tx, p.tenantId, date, null, await feeAccountById(tx, null));
     const [receipt] = await tx.insert(feeReceipts).values({ tenantId: p.tenantId, receiptNo, studentId, totalPaise: amount, modes: [{ method: 'credit', amountPaise: amount, reference: 'Advance credit' }], note: 'Paid from advance', collectedBy: p.userId, collectedOn: date }).returning();
     const byInvoice = new Map<string, typeof plan.pieces>();
     for (const x of plan.pieces) byInvoice.set(x.line.invoiceId, [...(byInvoice.get(x.line.invoiceId) ?? []), x]);

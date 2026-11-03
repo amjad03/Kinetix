@@ -228,8 +228,8 @@ export class FeeSetupController {
         const [f] = await tx.select().from(feeLateFees).where(eq(feeLateFees.id, r.lateFeeId)).for('update');
         const fin = await fineHead(tx, p.tenantId);
         const want = Math.min(r.amountPaise, f.appliedPaise - f.waivedPaise);
-        applied = await reduceCharge(tx, r.invoiceId, want, [fin.code]);
-        if (applied < want) applied += await reduceCharge(tx, r.invoiceId, want - applied);
+        applied = await reduceCharge(tx, r.invoiceId, want, [fin.code], { kind: 'waiver', userId: p.userId, note: r.number });
+        if (applied < want) applied += await reduceCharge(tx, r.invoiceId, want - applied, [], { kind: 'waiver', userId: p.userId, note: r.number });
         await tx.update(feeLateFees).set({ waivedPaise: f.waivedPaise + applied, waiveReason: `${r.number}: ${r.reason}` }).where(eq(feeLateFees.id, f.id));
       }
       const [row] = await tx.update(feeWaiverRequests).set({ status: out.status, level: out.level, trail: out.trail, decidedBy: p.userId, decidedAt: new Date(), decisionNote: b.comment || null }).where(eq(feeWaiverRequests.id, id)).returning();

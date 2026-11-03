@@ -90,13 +90,16 @@ export async function postFeeReceipt(tx: Tx, p: { tenantId: string; paymentId: s
   }
 }
 
-/** A fee refund posts the refund expense against the bank. */
-export async function postFeeRefund(tx: Tx, p: { tenantId: string; userId: string; refundId: string; date: string; amountPaise: number; student: string; reason: string }): Promise<void> {
+/**
+ * A fee refund posts the refund expense against the bank (the fee account's own bank when it has one). On the accrual
+ * basis the dues it reopens go back to the receivable instead of the expense (`debitCode`).
+ */
+export async function postFeeRefund(tx: Tx, p: { tenantId: string; userId: string; refundId: string; date: string; amountPaise: number; student: string; reason: string; debitCode?: string; bankCode?: string | null; fundId?: string | null }): Promise<void> {
   try {
     await tx.transaction(async (sp) => {
       await ensureChart(sp, p.tenantId);
-      const expense = await accountByCode(sp, POSTING.refunds);
-      const bank = await accountByCode(sp, POSTING.bank);
+      const expense = await accountByCode(sp, p.debitCode ?? POSTING.refunds).catch(() => accountByCode(sp, POSTING.refunds));
+      const bank = await accountByCode(sp, p.bankCode ?? POSTING.bank).catch(() => accountByCode(sp, POSTING.bank));
       await postVoucher(sp, { tenantId: p.tenantId, userId: p.userId }, {
         type: 'payment',
         date: p.date,
@@ -107,6 +110,7 @@ export async function postFeeRefund(tx: Tx, p: { tenantId: string; userId: strin
         ],
         sourceType: 'fee_refund',
         sourceId: p.refundId,
+        fundId: p.fundId ?? null,
       });
     });
   } catch (e) {

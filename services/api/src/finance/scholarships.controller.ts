@@ -9,6 +9,7 @@ import { assertCanSeeStudent } from '../common/student-access.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { assessments, feeInvoices, marks, scholarshipApplications, scholarshipSchemes, students } from '../db/schema.js';
+import { reduceCharge } from '../fees/fee-lines.js';
 import { FEE_ROLES } from '../fees/fees.service.js';
 import { discountFor } from './gl.js';
 import { BOUND, assertNotRouted } from '../workflows/bound-flows.js';
@@ -166,11 +167,12 @@ export async function decideScholarship(tx: Tx, ctx: { tenantId: string; userId:
     for (const inv of open) {
       const paise = discountFor(scheme.kind, scheme.value, inv.amountPaise - inv.paidPaise, fixedLeft);
       if (paise <= 0) continue;
-      fixedLeft -= scheme.kind === 'fixed' ? paise : 0;
-      const settled = inv.amountPaise - paise <= inv.paidPaise;
-      await tx.update(feeInvoices).set({ amountPaise: sql`${feeInvoices.amountPaise} - ${paise}`, ...(settled ? { status: 'paid' as const } : {}), updatedAt: new Date() }).where(eq(feeInvoices.id, inv.id));
-      adjustments.push({ invoiceId: inv.id, paise });
-      awarded += paise;
+      // Through the invoice's heads, so the receipt split, the ledger and (accrual basis) the books follow.
+      const off = await reduceCharge(tx, inv.id, paise, [], { kind: 'scholarship', userId: ctx.userId, note: 'Scholarship' });
+      if (off <= 0) continue;
+      fixedLeft -= scheme.kind === 'fixed' ? off : 0;
+      adjustments.push({ invoiceId: inv.id, paise: off });
+      awarded += off;
     }
   }
   const [row] = await tx

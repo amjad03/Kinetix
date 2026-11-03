@@ -1,9 +1,9 @@
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
-/** A hosted checkout page the app opens by posting these fields to the gateway (PayU). */
+/** A hosted checkout page the app opens: posting these fields to the gateway (PayU, CCAvenue) or going to the url (Easebuzz). */
 export interface HostedCheckout {
   url: string;
-  method: 'POST';
+  method: 'POST' | 'GET';
   fields: Record<string, string>;
 }
 
@@ -11,6 +11,8 @@ export interface Order {
   orderId: string;
   /** Present for gateways whose checkout is a hosted page rather than an in-app SDK. */
   hosted?: HostedCheckout;
+  /** The session the gateway's own SDK opens (Cashfree's payment_session_id). */
+  session?: { id: string; environment: 'sandbox' | 'production' };
 }
 
 /** Who is paying, for gateways whose checkout needs it up front. */
@@ -27,6 +29,8 @@ export interface OrderInput {
   payer?: Payer;
   /** Where the gateway sends the browser after payment (hosted checkouts). */
   returnUrl?: string;
+  /** Where the gateway posts its server-to-server notice (gateways that take it per order). */
+  notifyUrl?: string;
 }
 
 /** One line of a gateway's settlement: a payment or refund and what was paid out for it. */
@@ -45,8 +49,44 @@ export interface GatewaySettlement {
   lines: GatewaySettlementLine[];
 }
 
+/** What the gateway says about an order now (status polling for payments still pending). */
+export interface GatewayStatus {
+  status: 'paid' | 'pending' | 'failed';
+  providerPaymentId?: string;
+  amountPaise?: number;
+}
+
+/** A webhook read and checked: the event (payment or refund) it reports. */
+export interface WebhookEvent {
+  /** The gateway's own id of the event, so a retried notice is processed once. */
+  key: string;
+  kind: 'payment' | 'refund';
+  orderId: string;
+  providerPaymentId: string;
+  amountPaise: number;
+  status: 'paid' | 'failed' | 'refunded';
+}
+
+/** ok false: the signature did not check out. event null: a genuine notice we do not act on. */
+export type WebhookRead = { ok: false } | { ok: true; event: WebhookEvent | null };
+
+export interface RefundInput {
+  providerPaymentId: string;
+  providerOrderId?: string | null;
+  amountPaise: number;
+  refundRef: string;
+  /** The original payment's amount (Easebuzz asks for it). */
+  paidPaise?: number;
+}
+
 export const paiseToRupees = (paise: number) => (paise / 100).toFixed(2);
-export const rupeesToPaise = (r: string | number) => Math.round(Number(r) * 100);
+/** Rupees as a gateway writes them ("1,250.50", 1250.5) to integer paise, without floating-point drift. */
+export const rupeesToPaise = (r: string | number) => {
+  const t = String(r ?? '').replace(/[,\s₹]/g, '');
+  const m = /^(-?)(\d*)(?:\.(\d{0,2})\d*)?$/.exec(t);
+  if (!m || (!m[2] && !m[3])) return Number.NaN;
+  return (m[1] ? -1 : 1) * (Number(m[2] || '0') * 100 + Number((m[3] ?? '').padEnd(2, '0')));
+};
 export const sha512 = (s: string) => createHash('sha512').update(s).digest('hex');
 
 /** Settlements the fake gateways report (tests set this). */
@@ -62,12 +102,12 @@ export interface RazorpayKeys {
 export type PingResult = { ok: true } | { ok: false; error: 'AUTHENTICATION_FAILED' | 'GATEWAY_ERROR' | 'NETWORK_ERROR'; status?: number };
 
 /**
- * The common gateway interface: one institution's account at Razorpay or PayU (or the demo).
- * Create an order, open the hosted or SDK checkout, verify the payment and the webhook, refund,
- * and fetch the settlement for reconciliation.
+ * The common gateway interface: one account at Razorpay, PayU, Cashfree, Easebuzz or CCAvenue (or the demo), chosen
+ * per institution and per fee account. Create an order, open the hosted or SDK checkout, verify the payment and the
+ * webhook, ask for the status of a pending payment, refund, and fetch the settlement for reconciliation.
  */
 export abstract class PaymentProvider {
-  /** 'razorpay', 'payu' or 'demo'. */
+  /** 'razorpay', 'payu', 'cashfree', 'easebuzz', 'ccavenue' or 'demo'. */
   abstract readonly name: string;
   /** The public key the app's checkout needs. */
   abstract readonly keyId: string;
@@ -76,19 +116,33 @@ export abstract class PaymentProvider {
   abstract verifyPayment(orderId: string, paymentId: string, signature: string, fields?: Record<string, string>): boolean;
   /** A webhook's signature over its raw body. */
   abstract verifyWebhook(rawBody: Buffer, signature: string): boolean;
+  /** Checks a webhook (the signature in its headers or body) and reads the event it reports. */
+  abstract readWebhook(rawBody: Buffer, headers: Record<string, string | undefined>): WebhookRead;
+  /** Asks the gateway about an order (a payment the app never confirmed and no webhook reported). */
+  abstract fetchStatus(orderId: string, amountPaise: number): Promise<GatewayStatus>;
   /** Refunds all or part of a captured payment at the gateway. */
-  abstract refund(o: { providerPaymentId: string; amountPaise: number; refundRef: string }): Promise<{ refundId: string }>;
+  abstract refund(o: RefundInput): Promise<{ refundId: string }>;
   /** The gateway's settlement for a day, pulled by API (for reconciliation); null when it paid nothing out. */
   abstract fetchSettlement(day: string): Promise<GatewaySettlement | null>;
 }
 
 export const hmacHex = (secret: string, data: string | Buffer) => createHmac('sha256', secret).update(data).digest('hex');
 
-function safeEqual(a: string, b: string): boolean {
+export function safeEqual(a: string, b: string): boolean {
   const x = Buffer.from(a);
   const y = Buffer.from(b);
   return x.length === y.length && timingSafeEqual(x, y);
 }
+
+export function readJson<T>(raw: Buffer | string): T | null {
+  try {
+    return JSON.parse(typeof raw === 'string' ? raw : raw.toString('utf8')) as T;
+  } catch {
+    return null;
+  }
+}
+
+export const formFields = (raw: Buffer | string) => Object.fromEntries(new URLSearchParams(typeof raw === 'string' ? raw : raw.toString('utf8'))) as Record<string, string>;
 
 // ----- Razorpay ----------------------------------------------------------------------------------------
 
@@ -97,15 +151,22 @@ export abstract class RazorpayApi {
   abstract createOrder(keys: RazorpayKeys, o: OrderInput): Promise<Order>;
   /** A harmless authenticated call (list one order) to check the keys work. */
   abstract ping(keys: RazorpayKeys): Promise<PingResult>;
-  abstract refund(keys: RazorpayKeys, o: { providerPaymentId: string; amountPaise: number; refundRef: string }): Promise<{ refundId: string }>;
+  abstract refund(keys: RazorpayKeys, o: RefundInput): Promise<{ refundId: string }>;
   abstract settlement(keys: RazorpayKeys, day: string): Promise<GatewaySettlement | null>;
+  /** The payments made against an order (GET /v1/orders/:id/payments). */
+  abstract orderPayments(keys: RazorpayKeys, orderId: string): Promise<{ id: string; status: string; amount: number }[]>;
 }
 
 const basic = (k: RazorpayKeys) => `Basic ${Buffer.from(`${k.keyId}:${k.keySecret}`).toString('base64')}`;
 
 export class HttpRazorpayApi extends RazorpayApi {
+  /** `base` points at a stand-in in tests (PAYMENT_GATEWAY_TEST_BASE). */
+  constructor(private readonly base = 'https://api.razorpay.com') {
+    super();
+  }
+
   async createOrder(keys: RazorpayKeys, o: OrderInput): Promise<Order> {
-    const res = await fetch('https://api.razorpay.com/v1/orders', {
+    const res = await fetch(`${this.base}/v1/orders`, {
       method: 'POST',
       headers: { authorization: basic(keys), 'content-type': 'application/json' },
       body: JSON.stringify({ amount: o.amountPaise, currency: 'INR', receipt: o.receipt.slice(0, 40), notes: o.notes }),
@@ -116,8 +177,14 @@ export class HttpRazorpayApi extends RazorpayApi {
     return { orderId: body.id };
   }
 
-  async refund(keys: RazorpayKeys, o: { providerPaymentId: string; amountPaise: number; refundRef: string }): Promise<{ refundId: string }> {
-    const res = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(o.providerPaymentId)}/refund`, {
+  async orderPayments(keys: RazorpayKeys, orderId: string) {
+    const res = await fetch(`${this.base}/v1/orders/${encodeURIComponent(orderId)}/payments`, { headers: { authorization: basic(keys) }, signal: AbortSignal.timeout(15_000) });
+    if (!res.ok) throw new Error(`Razorpay status failed: ${res.status}`);
+    return (((await res.json()) as { items?: { id: string; status: string; amount: number }[] }).items ?? []).map((i) => ({ id: i.id, status: i.status, amount: i.amount }));
+  }
+
+  async refund(keys: RazorpayKeys, o: RefundInput): Promise<{ refundId: string }> {
+    const res = await fetch(`${this.base}/v1/payments/${encodeURIComponent(o.providerPaymentId)}/refund`, {
       method: 'POST',
       headers: { authorization: basic(keys), 'content-type': 'application/json' },
       body: JSON.stringify({ amount: o.amountPaise, receipt: o.refundRef.slice(0, 40) }),
@@ -129,7 +196,7 @@ export class HttpRazorpayApi extends RazorpayApi {
 
   async settlement(keys: RazorpayKeys, day: string): Promise<GatewaySettlement | null> {
     const [y, m, d] = day.split('-').map(Number);
-    const res = await fetch(`https://api.razorpay.com/v1/settlements/recon/combined?year=${y}&month=${m}&day=${d}&count=100`, { headers: { authorization: basic(keys) }, signal: AbortSignal.timeout(20_000) });
+    const res = await fetch(`${this.base}/v1/settlements/recon/combined?year=${y}&month=${m}&day=${d}&count=100`, { headers: { authorization: basic(keys) }, signal: AbortSignal.timeout(20_000) });
     if (!res.ok) throw new Error(`Razorpay settlement fetch failed: ${res.status}`);
     const body = (await res.json()) as { items?: { entity_id: string; type: string; order_id?: string; amount: number; fee: number; tax: number; credit: number; debit: number; settlement_id?: string }[] };
     const items = (body.items ?? []).filter((i) => i.type === 'payment' || i.type === 'refund');
@@ -143,7 +210,7 @@ export class HttpRazorpayApi extends RazorpayApi {
 
   async ping(keys: RazorpayKeys): Promise<PingResult> {
     try {
-      const res = await fetch('https://api.razorpay.com/v1/orders?count=1', { headers: { authorization: basic(keys) }, signal: AbortSignal.timeout(10_000) });
+      const res = await fetch(`${this.base}/v1/orders?count=1`, { headers: { authorization: basic(keys) }, signal: AbortSignal.timeout(10_000) });
       if (res.ok) return { ok: true };
       return { ok: false, error: res.status === 401 ? 'AUTHENTICATION_FAILED' : 'GATEWAY_ERROR', status: res.status };
     } catch {
@@ -157,8 +224,15 @@ export class HttpRazorpayApi extends RazorpayApi {
  * secret starting with "wrong" fails "Test connection" the way Razorpay answers bad keys (401).
  */
 export class FakeRazorpayApi extends RazorpayApi {
+  /** Payments the fake reports for an order (tests set them). */
+  static readonly payments = new Map<string, { id: string; status: string; amount: number }[]>();
+
   async createOrder(): Promise<Order> {
     return { orderId: `order_fake${randomUUID().replace(/-/g, '').slice(0, 14)}` };
+  }
+
+  async orderPayments(_keys: RazorpayKeys, orderId: string) {
+    return FakeRazorpayApi.payments.get(orderId) ?? [];
   }
 
   async refund(): Promise<{ refundId: string }> {
@@ -199,7 +273,30 @@ export class RazorpayProvider extends PaymentProvider {
     return safeEqual(hmacHex(this.webhookSecret, rawBody), signature);
   }
 
-  refund(o: { providerPaymentId: string; amountPaise: number; refundRef: string }) {
+  /** x-razorpay-signature over the body; payment.captured and order.paid pay, payment.failed fails, refund.processed refunds. */
+  readWebhook(rawBody: Buffer, headers: Record<string, string | undefined>): WebhookRead {
+    const sig = headers['x-razorpay-signature'];
+    if (!sig || !this.verifyWebhook(rawBody, sig)) return { ok: false };
+    const body = readJson<{ event?: string; payload?: { payment?: { entity?: { id: string; order_id: string; amount: number } }; refund?: { entity?: { id: string; payment_id: string; amount: number } } } }>(rawBody);
+    const pay = body?.payload?.payment?.entity;
+    const eventId = headers['x-razorpay-event-id'];
+    const refund = body?.payload?.refund?.entity;
+    if (body?.event === 'refund.processed' && refund && pay) return { ok: true, event: { key: eventId ?? `refund:${refund.id}`, kind: 'refund', orderId: pay.order_id, providerPaymentId: refund.payment_id, amountPaise: refund.amount, status: 'refunded' } };
+    if (!pay || typeof pay.order_id !== 'string') return { ok: true, event: null };
+    if (body?.event === 'payment.captured' || body?.event === 'order.paid') return { ok: true, event: { key: eventId ?? `paid:${pay.id}`, kind: 'payment', orderId: pay.order_id, providerPaymentId: pay.id, amountPaise: pay.amount, status: 'paid' } };
+    if (body?.event === 'payment.failed') return { ok: true, event: { key: eventId ?? `failed:${pay.id}`, kind: 'payment', orderId: pay.order_id, providerPaymentId: pay.id, amountPaise: pay.amount, status: 'failed' } };
+    return { ok: true, event: null };
+  }
+
+  async fetchStatus(orderId: string): Promise<GatewayStatus> {
+    const items = await this.api.orderPayments({ keyId: this.keyId, keySecret: this.keySecret }, orderId);
+    const captured = items.find((i) => i.status === 'captured');
+    if (captured) return { status: 'paid', providerPaymentId: captured.id, amountPaise: captured.amount };
+    if (items.length && items.every((i) => i.status === 'failed')) return { status: 'failed' };
+    return { status: 'pending' };
+  }
+
+  refund(o: RefundInput) {
     return this.api.refund({ keyId: this.keyId, keySecret: this.keySecret }, o);
   }
 
@@ -216,11 +313,13 @@ export interface PayuKeys {
   salt: string;
 }
 
-/** PayU's server-to-server API (test connection, refund, settlement), called with one institution's key and salt. */
+/** PayU's server-to-server API (test connection, status, refund, settlement), called with one institution's key and salt. */
 export abstract class PayuApi {
   abstract ping(keys: PayuKeys): Promise<PingResult>;
-  abstract refund(keys: PayuKeys, o: { providerPaymentId: string; amountPaise: number; refundRef: string }): Promise<{ refundId: string }>;
+  abstract refund(keys: PayuKeys, o: RefundInput): Promise<{ refundId: string }>;
   abstract settlement(keys: PayuKeys, day: string): Promise<GatewaySettlement | null>;
+  /** verify_payment for one txnid: its status, PayU id and amount. */
+  abstract verify(keys: PayuKeys, txnid: string): Promise<{ status: string; mihpayid?: string; amount?: string } | null>;
 }
 
 /** PayU hosts: the sandbox (default) or live. */
@@ -230,13 +329,18 @@ export const payuHosts = (mode: 'test' | 'live') =>
     : { pay: 'https://test.payu.in/_payment', api: 'https://test.payu.in/merchant/postservice.php?form=2' };
 
 export class HttpPayuApi extends PayuApi {
-  constructor(private readonly mode: 'test' | 'live') {
+  constructor(
+    private readonly mode: 'test' | 'live',
+    /** A stand-in's address in tests (PAYMENT_GATEWAY_TEST_BASE). */
+    private readonly base?: string,
+  ) {
     super();
   }
 
   private async call(keys: PayuKeys, command: string, var1: string, extra: Record<string, string> = {}): Promise<Record<string, any>> {
     const body = new URLSearchParams({ key: keys.key, command, var1, hash: sha512(`${keys.key}|${command}|${var1}|${keys.salt}`), ...extra });
-    const res = await fetch(payuHosts(this.mode).api, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body, signal: AbortSignal.timeout(20_000) });
+    const url = this.base ? `${this.base}/merchant/postservice.php?form=2` : payuHosts(this.mode).api;
+    const res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body, signal: AbortSignal.timeout(20_000) });
     if (!res.ok) throw new Error(`PayU ${command} failed: ${res.status}`);
     return (await res.json()) as Record<string, any>;
   }
@@ -250,7 +354,13 @@ export class HttpPayuApi extends PayuApi {
     }
   }
 
-  async refund(keys: PayuKeys, o: { providerPaymentId: string; amountPaise: number; refundRef: string }): Promise<{ refundId: string }> {
+  async verify(keys: PayuKeys, txnid: string) {
+    const r = await this.call(keys, 'verify_payment', txnid);
+    const t = ((r.transaction_details ?? {}) as Record<string, { status?: string; mihpayid?: string; amt?: string }>)[txnid];
+    return t ? { status: String(t.status ?? ''), mihpayid: t.mihpayid, amount: t.amt } : null;
+  }
+
+  async refund(keys: PayuKeys, o: RefundInput): Promise<{ refundId: string }> {
     const r = await this.call(keys, 'cancel_refund_transaction', o.providerPaymentId, { var2: o.refundRef.slice(0, 23), var3: paiseToRupees(o.amountPaise) });
     if (Number(r.status) !== 1) throw new Error(`PayU refund failed: ${String(r.msg ?? 'unknown')}`);
     return { refundId: String(r.request_id ?? r.mihpayid ?? o.refundRef) };
@@ -274,8 +384,15 @@ export class HttpPayuApi extends PayuApi {
 
 /** PAYU_FAKE=true (tests, local e2e): no calls leave the machine; a salt starting with "wrong" fails "Test connection". */
 export class FakePayuApi extends PayuApi {
+  /** What verify_payment answers per txnid (tests set it). */
+  static readonly verified = new Map<string, { status: string; mihpayid?: string; amount?: string }>();
+
   async ping(keys: PayuKeys): Promise<PingResult> {
     return keys.salt.startsWith('wrong') ? { ok: false, error: 'AUTHENTICATION_FAILED', status: 401 } : { ok: true };
+  }
+
+  async verify(_keys: PayuKeys, txnid: string) {
+    return FakePayuApi.verified.get(txnid) ?? null;
   }
 
   async refund(): Promise<{ refundId: string }> {
@@ -295,6 +412,9 @@ export const payuRequestHash = (key: string, salt: string, f: { txnid: string; a
 export const payuResponseHash = (key: string, salt: string, f: Record<string, string>) =>
   sha512([salt, f.status ?? '', '', '', '', '', '', f.udf5 ?? '', f.udf4 ?? '', f.udf3 ?? '', f.udf2 ?? '', f.udf1 ?? '', f.email ?? '', f.firstname ?? '', f.productinfo ?? '', f.amount ?? '', f.txnid ?? '', key].join('|'));
 
+/** A payer's first name as hosted checkouts want it (letters and digits only). */
+export const firstNameOf = (name: string) => name.split(' ')[0]?.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 40) || 'Parent';
+
 /** One institution's PayU account: merchant key + salt; the salt also signs responses and webhooks. */
 export class PayuProvider extends PaymentProvider {
   readonly name = 'payu';
@@ -304,6 +424,7 @@ export class PayuProvider extends PaymentProvider {
     private readonly salt: string,
     private readonly api: PayuApi,
     private readonly mode: 'test' | 'live',
+    private readonly payUrl?: string,
   ) {
     super();
   }
@@ -313,7 +434,7 @@ export class PayuProvider extends PaymentProvider {
     const amount = paiseToRupees(o.amountPaise);
     const payer = o.payer ?? { name: 'Parent', email: '', phone: '' };
     const email = payer.email || 'noreply@zynetix.invalid';
-    const firstname = payer.name.split(' ')[0]?.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 40) || 'Parent';
+    const firstname = firstNameOf(payer.name);
     const productinfo = o.receipt.slice(0, 100);
     const udf1 = o.notes.tenantId ?? '';
     const udf2 = o.notes.invoiceId ?? '';
@@ -331,7 +452,7 @@ export class PayuProvider extends PaymentProvider {
       furl: o.returnUrl ?? '',
       hash: payuRequestHash(this.keyId, this.salt, { txnid, amount, productinfo, firstname, email, udf1, udf2 }),
     };
-    return { orderId: txnid, hosted: { url: payuHosts(this.mode).pay, method: 'POST', fields } };
+    return { orderId: txnid, hosted: { url: this.payUrl ?? payuHosts(this.mode).pay, method: 'POST', fields } };
   }
 
   verifyPayment(orderId: string, paymentId: string, signature: string, fields?: Record<string, string>): boolean {
@@ -341,11 +462,26 @@ export class PayuProvider extends PaymentProvider {
 
   /** The webhook is PayU's form post: its own `hash` field (passed as the signature) proves it. */
   verifyWebhook(rawBody: Buffer, signature: string): boolean {
-    const f = Object.fromEntries(new URLSearchParams(rawBody.toString('utf8')));
+    const f = formFields(rawBody);
     return !!signature && safeEqual(payuResponseHash(this.keyId, this.salt, f), signature);
   }
 
-  refund(o: { providerPaymentId: string; amountPaise: number; refundRef: string }) {
+  readWebhook(rawBody: Buffer): WebhookRead {
+    const f = formFields(rawBody);
+    if (!f.hash || !this.verifyWebhook(rawBody, f.hash)) return { ok: false };
+    const status = f.status === 'success' ? 'paid' : f.status === 'failure' ? 'failed' : null;
+    if (!f.txnid || !f.mihpayid || !status) return { ok: true, event: null };
+    return { ok: true, event: { key: `${f.status}:${f.mihpayid}`, kind: 'payment', orderId: f.txnid, providerPaymentId: f.mihpayid, amountPaise: rupeesToPaise(f.amount), status } };
+  }
+
+  async fetchStatus(orderId: string): Promise<GatewayStatus> {
+    const t = await this.api.verify({ key: this.keyId, salt: this.salt }, orderId);
+    if (t?.status === 'success') return { status: 'paid', providerPaymentId: t.mihpayid, amountPaise: t.amount ? rupeesToPaise(t.amount) : undefined };
+    if (t && ['failure', 'failed', 'dropped', 'bounced', 'usercancelled'].includes(t.status.toLowerCase())) return { status: 'failed' };
+    return { status: 'pending' };
+  }
+
+  refund(o: RefundInput) {
     return this.api.refund({ key: this.keyId, salt: this.salt }, o);
   }
 
@@ -375,6 +511,14 @@ export class DemoPaymentProvider extends PaymentProvider {
 
   verifyWebhook(rawBody: Buffer, signature: string): boolean {
     return safeEqual(hmacHex(DemoPaymentProvider.SECRET, rawBody), signature);
+  }
+
+  readWebhook(): WebhookRead {
+    return { ok: false };
+  }
+
+  async fetchStatus(): Promise<GatewayStatus> {
+    return { status: 'pending' };
   }
 
   async refund(): Promise<{ refundId: string }> {

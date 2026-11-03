@@ -9,8 +9,11 @@ import { feeReceipts } from '../db/schema-fee-depth.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import type { RoleName } from '../auth/principal.js';
-import { allocatePayment } from './fee-lines.js';
+import { allocatePayment, ensureLines, feeToday, findHead, headsOf } from './fee-lines.js';
+import { accrues, syncAccruals } from './accruals.js';
 import { nextReceiptNo, postPayment, prefixFor } from './receipts.js';
+import { accountOfInvoice } from './fee-accounts-core.js';
+import { flagDuplicate } from './duplicates.js';
 
 export const FEE_ROLES: RoleName[] = ['tenant_admin', 'principal', 'accountant'];
 
@@ -66,10 +69,12 @@ export class FeesService {
       const [r] = await tx.select({ no: feeReceipts.receiptNo }).from(feeReceipts).where(eq(feeReceipts.id, receiptId));
       receiptNo = r.no;
     } else {
-      receiptNo = await nextReceiptNo(tx, payment.tenantId, today, await prefixFor(tx, payment.tenantId, pieces.map((x) => x.headCode)));
+      // Numbered in the series of the fee account the invoice belongs to.
+      const account = await accountOfInvoice(tx, payment.invoiceId);
+      receiptNo = await nextReceiptNo(tx, payment.tenantId, today, await prefixFor(tx, payment.tenantId, pieces.map((x) => x.headCode)), account);
       const [r] = await tx
         .insert(feeReceipts)
-        .values({ tenantId: payment.tenantId, receiptNo, studentId: payment.studentId, totalPaise: payment.amountPaise, modes: [{ method: payment.method, amountPaise: payment.amountPaise, reference: payment.reference ?? details.providerPaymentId ?? null }], collectedBy: payment.recordedBy, collectedOn: today })
+        .values({ tenantId: payment.tenantId, receiptNo, studentId: payment.studentId, totalPaise: payment.amountPaise, modes: [{ method: payment.method, amountPaise: payment.amountPaise, reference: payment.reference ?? details.providerPaymentId ?? null }], collectedBy: payment.recordedBy, collectedOn: today, feeAccountId: account?.id ?? null })
         .returning();
       receiptId = r.id;
     }
@@ -100,6 +105,8 @@ export class FeesService {
         receiptNo,
       });
     await postPayment(tx, paid, receiptNo, today, payment.recordedBy);
+    // Kept, but flagged when it looks like money already received (the same reference, or the same amount the same day).
+    await flagDuplicate(tx, paid, today);
     return paid;
   }
 
@@ -124,7 +131,17 @@ export class FeesService {
     const sectionOf = new Map(rows.map((r) => [r.id, r.sectionId]));
     const fresh = due.filter((c) => !skip.has(c.studentId) && sectionOf.has(c.studentId));
     if (fresh.length > 0) {
-      await tx.insert(feeInvoices).values(fresh.map((c) => ({ tenantId: p.tenantId, studentId: c.studentId, sectionId: sectionOf.get(c.studentId)!, batchId, title, amountPaise: c.amountPaise, dueOn, createdBy: p.userId })));
+      // Hostel, transport and mess charges sit on the same student fee ledger, under their head's fee account.
+      const head = findHead(await headsOf(tx, p.tenantId), title);
+      const made = await tx.insert(feeInvoices).values(fresh.map((c) => ({ tenantId: p.tenantId, studentId: c.studentId, sectionId: sectionOf.get(c.studentId)!, batchId, title, amountPaise: c.amountPaise, dueOn, createdBy: p.userId, feeAccountId: head?.feeAccountId ?? null }))).returning({ id: feeInvoices.id });
+      // On the accrual basis the charges are booked now, under their head.
+      if (made.length && (await accrues(tx, made[0].id))) {
+        const day = await feeToday(tx);
+        for (const m of made) {
+          await ensureLines(tx, m.id);
+          await syncAccruals(tx, { tenantId: p.tenantId, userId: p.userId }, m.id, day);
+        }
+      }
       for (const c of fresh) await this.notifications.feeIssued(tx, { batchId: `${batchId}:${c.studentId}`, title, amountPaise: c.amountPaise, dueOn, studentIds: [c.studentId] });
     }
     return { charged: fresh.length, skipped: charges.length - fresh.length };

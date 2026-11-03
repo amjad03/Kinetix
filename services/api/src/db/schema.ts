@@ -1419,6 +1419,8 @@ export const feeInvoices = pgTable(
     /** Dues moved to the next year's arrears invoice (`carried_to`). */
     carriedPaise: bigint('carried_paise', { mode: 'number' }).notNull().default(0),
     carriedTo: uuid('carried_to'),
+    /** The fee account (trust, college, hostel) the invoice is collected into; null is the default account (migration 0189). */
+    feeAccountId: uuid('fee_account_id'),
   },
   (t) => [index('fee_invoices_student_idx').on(t.studentId, t.dueOn), index('fee_invoices_section_idx').on(t.sectionId, t.status)],
 );
@@ -1455,6 +1457,15 @@ export const feePayments = pgTable(
     receiptId: uuid('receipt_id'),
     /** The gateway's convenience fee the payer added on top (not credited to the invoice). */
     conveniencePaise: bigint('convenience_paise', { mode: 'number' }).notNull().default(0),
+    /** The gateway credentials (payment_gateway_accounts) an online payment was ordered with (migration 0189). */
+    gatewayAccountId: uuid('gateway_account_id'),
+    /** When the gateway was last asked about a pending online payment, and how often. */
+    statusCheckedAt: timestamp('status_checked_at', { withTimezone: true }),
+    statusChecks: integer('status_checks').notNull().default(0),
+    /** The payment link it was paid through. */
+    linkId: uuid('link_id'),
+    /** A card or UPI payment taken on a POS terminal at the counter: the terminal (the approval code is the reference). */
+    posTerminal: text('pos_terminal'),
   },
   (t) => [
     uniqueIndex('fee_payments_order_uq').on(t.providerOrderId),
@@ -1480,8 +1491,17 @@ export const receiptCounters = pgTable(
  * API; only the last four characters of the key secret are kept in clear, to recognise it.
  */
 export const paymentGatewayAccounts = pgTable('payment_gateway_accounts', {
-  tenantId: tenantId().primaryKey(),
+  id: id(),
+  tenantId: tenantId(),
+  /** Null: the institution's default gateway; otherwise this fee account's own (migration 0189). */
+  feeAccountId: uuid('fee_account_id'),
+  /** razorpay, payu, cashfree, easebuzz or ccavenue. */
   provider: text('provider').notNull().default('razorpay'),
+  /** test (the gateway's sandbox) or live. */
+  mode: text('mode').notNull().default('test'),
+  /** CCAvenue's access code (public, sent with each request). */
+  accessCode: text('access_code'),
+  active: boolean('active').notNull().default(true),
   /** Public: the app's checkout needs it. rzp_test_… or rzp_live_…. */
   keyId: text('key_id').notNull(),
   keySecretEnc: text('key_secret_enc').notNull(),
@@ -4056,6 +4076,8 @@ export const TENANT_TABLES = [
   'exam_relative_grades', 'curriculum_equivalences', 'student_readmissions',
   // Examinations flagship (migrations 0186-0188; schema-exam-flagship.ts).
   'exam_application_subjects', 'qp_appointments', 'qp_set_draws', 'marks_unlock_requests',
+  // Fees flagship: fee accounts, gateways, links, accruals, flags, transfers, reminder steps (migrations 0189-0191; schema-fee-flagship.ts).
+  'fee_accounts', 'gateway_webhook_events', 'fee_payment_links', 'fee_accruals', 'fee_payment_flags', 'fee_programme_transfers', 'fee_reminder_sends',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -8197,6 +8219,9 @@ export const tallySyncLog = pgTable(
     attempts: integer('attempts').notNull().default(0),
     lastError: text('last_error'),
     requestXml: text('request_xml'),
+    /** When a failed push is tried again on its own (growing wait), and the Tally company it goes to (migration 0191). */
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    company: text('company'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

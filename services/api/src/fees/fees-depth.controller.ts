@@ -184,7 +184,7 @@ export class FeesDepthController implements OnModuleInit {
       const already = before?.appliedPaise ?? 0;
       if (fine.amountPaise <= already) continue;
       const delta = fine.amountPaise - already;
-      await chargeHead(tx, inv.id, await fineHead(tx, tenantId), delta);
+      await chargeHead(tx, inv.id, await fineHead(tx, tenantId), delta, { kind: 'fine', date: today, note: `${fine.daysLate} days late` });
       if (before) await tx.update(feeLateFees).set({ daysLate: fine.daysLate, appliedPaise: fine.amountPaise, lastRunOn: today, ruleId: rule.id }).where(eq(feeLateFees.id, before.id));
       else await tx.insert(feeLateFees).values({ tenantId, invoiceId: inv.id, ruleId: rule.id, daysLate: fine.daysLate, appliedPaise: fine.amountPaise, lastRunOn: today });
       assessed++;
@@ -233,8 +233,8 @@ export class FeesDepthController implements OnModuleInit {
       const amount = Math.min(b.amountPaise ?? open, open, unpaid);
       if (amount <= 0) throw new ConflictException('There is nothing left to waive');
       const fin = await fineHead(tx, p.tenantId);
-      const off = await reduceCharge(tx, inv.id, amount, [fin.code]);
-      if (off < amount) await reduceCharge(tx, inv.id, amount - off);
+      const off = await reduceCharge(tx, inv.id, amount, [fin.code], { kind: 'waiver', userId: p.userId, note: b.reason });
+      if (off < amount) await reduceCharge(tx, inv.id, amount - off, [], { kind: 'waiver', userId: p.userId, note: b.reason });
       const [row] = await tx.update(feeLateFees).set({ waivedPaise: f.waivedPaise + amount, waiveReason: b.reason }).where(eq(feeLateFees.id, id)).returning();
       await auditUser(tx, p, 'fees.late_fee_waived', 'fee_late_fee', id, { amountPaise: amount, reason: b.reason });
       return row;

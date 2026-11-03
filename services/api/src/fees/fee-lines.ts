@@ -6,6 +6,24 @@ import { feeAccountsSettings } from '../db/schema-fee-accounts.js';
 import { feeInvoices, feePayments } from '../db/schema.js';
 import { DEFAULT_HEADS, headOf } from '../fee-accounts/fee-accounts.logic.js';
 import { allocateAcross, reductionPlan, type LineBalance } from './fee-depth.logic.js';
+import { type ReductionKind, syncAccruals } from './accruals.js';
+import { accountForHeads } from './fee-accounts-core.js';
+import { tenants } from '../db/schema.js';
+import { localParts } from '../common/time.js';
+
+/** Today in the institution's time zone (the date of the books' entries for changes made now). */
+export async function feeToday(tx: Tx): Promise<string> {
+  const [t] = await tx.select({ tz: tenants.timezone }).from(tenants);
+  return localParts(new Date(), t?.tz ?? 'Asia/Kolkata').date;
+}
+
+/** Who and when, for the books' entries a change makes, and what kind of change it is. */
+export interface ChangeCtx {
+  userId?: string | null;
+  date?: string;
+  kind?: string;
+  note?: string;
+}
 
 /**
  * Invoice lines by fee head, and the money on them. An invoice's amount is always the sum of its lines' net charge
@@ -57,18 +75,23 @@ export interface NewLine {
   gstRate?: number;
 }
 
-/** Raises an invoice with its lines; the amount is their total. */
+/**
+ * Raises an invoice with its lines; the amount is their total. It belongs to the given fee account, else the account
+ * of its first head that names one, else the default. On the accrual basis the charge is booked at once.
+ */
 export async function raiseInvoice(
   tx: Tx,
-  v: { tenantId: string; studentId: string; sectionId: string; title: string; dueOn: string; createdBy: string; lines: NewLine[]; batchId?: string; structureId?: string | null; academicYear?: string | null; kind?: string },
+  v: { tenantId: string; studentId: string; sectionId: string; title: string; dueOn: string; createdBy: string; lines: NewLine[]; batchId?: string; structureId?: string | null; academicYear?: string | null; kind?: string; feeAccountId?: string | null; accrualKind?: string; date?: string },
 ) {
   const lines = v.lines.filter((l) => l.amountPaise > 0);
   const amount = lines.reduce((s, l) => s + l.amountPaise, 0);
+  const feeAccountId = v.feeAccountId ?? (await accountForHeads(tx, [...lines].sort((a, b) => a.priority - b.priority).map((l) => l.code)));
   const [inv] = await tx
     .insert(feeInvoices)
-    .values({ tenantId: v.tenantId, studentId: v.studentId, sectionId: v.sectionId, batchId: v.batchId ?? randomUUID(), title: v.title, amountPaise: amount, dueOn: v.dueOn, createdBy: v.createdBy, structureId: v.structureId ?? null, academicYear: v.academicYear ?? null, kind: v.kind ?? 'fee', status: amount > 0 ? 'due' : 'paid' })
+    .values({ tenantId: v.tenantId, studentId: v.studentId, sectionId: v.sectionId, batchId: v.batchId ?? randomUUID(), title: v.title, amountPaise: amount, dueOn: v.dueOn, createdBy: v.createdBy, structureId: v.structureId ?? null, academicYear: v.academicYear ?? null, kind: v.kind ?? 'fee', status: amount > 0 ? 'due' : 'paid', feeAccountId })
     .returning();
   if (lines.length) await tx.insert(feeInvoiceLines).values(lines.map((l) => ({ tenantId: v.tenantId, invoiceId: inv.id, headCode: l.code, headName: l.name, priority: l.priority, amountPaise: l.amountPaise, gstRate: l.gstRate ?? 0 })));
+  if (amount > 0) await syncAccruals(tx, { tenantId: v.tenantId, userId: v.createdBy }, inv.id, v.date ?? (await feeToday(tx)), { chargeKind: v.accrualKind });
   return inv;
 }
 
@@ -146,7 +169,7 @@ export async function lineState(tx: Tx, invoiceIds: string[]): Promise<LineState
 }
 
 /** Adds a charge under a head (a fine, a revision, a cheque-return charge) to an invoice and reopens it. */
-export async function chargeHead(tx: Tx, invoiceId: string, head: { code: string; name: string; priority: number; gstRate?: number }, deltaPaise: number): Promise<void> {
+export async function chargeHead(tx: Tx, invoiceId: string, head: { code: string; name: string; priority: number; gstRate?: number }, deltaPaise: number, c: ChangeCtx = {}): Promise<void> {
   if (deltaPaise === 0) return;
   await ensureLines(tx, invoiceId);
   const [inv] = await tx.select().from(feeInvoices).where(eq(feeInvoices.id, invoiceId)).for('update');
@@ -155,13 +178,14 @@ export async function chargeHead(tx: Tx, invoiceId: string, head: { code: string
   else await tx.insert(feeInvoiceLines).values({ tenantId: inv.tenantId, invoiceId, headCode: head.code, headName: head.name, priority: head.priority, amountPaise: deltaPaise, gstRate: head.gstRate ?? 0 });
   const amount = inv.amountPaise + deltaPaise;
   await tx.update(feeInvoices).set({ amountPaise: amount, status: inv.status === 'cancelled' ? 'cancelled' : inv.paidPaise >= amount ? 'paid' : 'due', updatedAt: new Date() }).where(eq(feeInvoices.id, invoiceId));
+  await syncAccruals(tx, { tenantId: inv.tenantId, userId: c.userId }, invoiceId, c.date ?? (await feeToday(tx)), { chargeKind: c.kind ?? 'charge', note: c.note });
 }
 
 /**
  * Takes up to `amount` off what an invoice still asks for (the named heads only, when given), lowest-priority heads
  * first, never below what is already paid. Returns how much came off; the invoice is paid when nothing is left.
  */
-export async function reduceCharge(tx: Tx, invoiceId: string, amount: number, heads: string[] = []): Promise<number> {
+export async function reduceCharge(tx: Tx, invoiceId: string, amount: number, heads: string[] = [], c: ChangeCtx & { kind?: ReductionKind } = {}): Promise<number> {
   const state = await lineState(tx, [invoiceId]);
   const plan = reductionPlan(
     state.map((l) => ({ id: l.id, headCode: l.headCode, priority: l.priority, netPaise: l.netPaise, unpaidPaise: l.balancePaise })),
@@ -174,6 +198,7 @@ export async function reduceCharge(tx: Tx, invoiceId: string, amount: number, he
   const [inv] = await tx.select().from(feeInvoices).where(eq(feeInvoices.id, invoiceId)).for('update');
   const left = inv.amountPaise - applied;
   await tx.update(feeInvoices).set({ amountPaise: left, status: inv.status === 'cancelled' ? 'cancelled' : inv.paidPaise >= left ? 'paid' : 'due', updatedAt: new Date() }).where(eq(feeInvoices.id, invoiceId));
+  await syncAccruals(tx, { tenantId: inv.tenantId, userId: c.userId }, invoiceId, c.date ?? (await feeToday(tx)), { kind: c.kind ?? 'adjustment', note: c.note });
   return applied;
 }
 

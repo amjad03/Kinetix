@@ -10,6 +10,10 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { assetGlPostings, budgets, costExpenses, departmentStaff, departments, feeInvoices, feePayments, feeRefunds, invPurchaseOrders, payrollRuns, payslips, students, tenants } from '../db/schema.js';
 import { postFeeRefund } from '../books/books.service.js';
+import { settingsOf } from '../fee-accounts/fee-accounts.service.js';
+import { accrues } from '../fees/accruals.js';
+import { accountLedgerCode, accountOfInvoice } from '../fees/fee-accounts-core.js';
+import { feeToday } from '../fees/fee-lines.js';
 import { FEE_ROLES } from '../fees/fees.service.js';
 import { monthEnd, requireDay } from '../hr/dates.js';
 import { PayrollService } from '../hr/payroll.service.js';
@@ -178,6 +182,21 @@ export async function issueRefund(tx: Tx, ctx: { tenantId: string; userId: strin
   await tx.update(feeInvoices).set({ paidPaise: sql`${feeInvoices.paidPaise} - ${b.amountPaise}`, status: sql`case when ${feeInvoices.status} = 'paid' then 'due'::invoice_status else ${feeInvoices.status} end`, updatedAt: new Date() }).where(eq(feeInvoices.id, pay.invoiceId));
   await audit(tx, { tenantId: ctx.tenantId, actorType: 'user', actorId: ctx.userId, action: 'fees.refunded', subjectType: 'fee_refund', subjectId: row.id, data: { paymentId: pay.id, amountPaise: b.amountPaise } });
   const [st] = await tx.select({ n: students.fullName }).from(students).where(eq(students.id, pay.studentId));
-  await postFeeRefund(tx, { tenantId: ctx.tenantId, userId: ctx.userId, refundId: row.id, date: new Date().toISOString().slice(0, 10), amountPaise: b.amountPaise, student: st?.n ?? 'student', reason: b.reason });
+  // Out of the fee account's own bank; on the accrual basis the reopened dues go back to the receivable.
+  const account = await accountOfInvoice(tx, pay.invoiceId);
+  const s = await settingsOf(tx, ctx.tenantId);
+  const accrual = await accrues(tx, pay.invoiceId);
+  await postFeeRefund(tx, {
+    tenantId: ctx.tenantId,
+    userId: ctx.userId,
+    refundId: row.id,
+    date: await feeToday(tx),
+    amountPaise: b.amountPaise,
+    student: st?.n ?? 'student',
+    reason: b.reason,
+    debitCode: accrual ? (s.mappings.receivable ?? '1100') : undefined,
+    bankCode: (await accountLedgerCode(tx, account, 'bank_transfer')) ?? s.mappings.bank,
+    fundId: account?.fundId ?? null,
+  });
   return row;
 }

@@ -97,6 +97,12 @@ const EnvSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((v) => v === 'true'),
+  /**
+   * Tests and local e2e only: every gateway host of accounts in test mode (Cashfree, Easebuzz, CCAvenue, and PayU's
+   * API) is replaced by this base (a local stand-in answering with the gateways' documented sample payloads). Never
+   * set in production; ignored for accounts in live mode.
+   */
+  PAYMENT_GATEWAY_TEST_BASE: z.url().optional(),
   /** Public base URL of this API (for OIDC callbacks and PayU return URLs); falls back to the request's own origin. */
   API_PUBLIC_URL: z.url().optional(),
   /**

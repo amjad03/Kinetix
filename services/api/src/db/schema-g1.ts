@@ -100,6 +100,8 @@ export const feeStructures = pgTable('fee_structures', {
   creditHead: text('credit_head'),
   instalmentPlanId: uuid('instalment_plan_id'),
   sortOrder: integer('sort_order').notNull().default(0),
+  /** The fee account its invoices are collected into (the trust, the college, the hostel); null is the default (migration 0189). */
+  feeAccountId: uuid('fee_account_id'),
 });
 
 /** A device a person has chosen to trust (a hash of its install id; the id itself is never stored). */

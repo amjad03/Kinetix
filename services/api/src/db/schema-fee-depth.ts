@@ -54,6 +54,8 @@ export const feeHeads = pgTable(
     receiptPrefix: text('receipt_prefix'),
     active: boolean('active').notNull().default(true),
     createdAt: createdAt(),
+    /** The fee account (trust, college, hostel) this head is collected into; null is the default account (migration 0189). */
+    feeAccountId: uuid('fee_account_id'),
   },
   (t) => [uniqueIndex('fee_heads_code_uq').on(t.tenantId, t.code)],
 );
@@ -70,6 +72,8 @@ export const feeStudentProfiles = pgTable(
     batch: text('batch'),
     optedHeads: text('opted_heads').array().notNull().default(sql`'{}'`),
     note: text('note').notNull().default(''),
+    /** The student's fee reference quoted in NEFT narrations and on challans (migration 0190). */
+    feeRef: text('fee_ref'),
     createdAt: createdAt(),
     updatedAt: ts('updated_at').notNull().defaultNow(),
   },
@@ -222,6 +226,8 @@ export const feeReceipts = pgTable(
     collectedBy: userRef('collected_by'),
     collectedOn: date('collected_on').notNull(),
     createdAt: createdAt(),
+    /** The fee account whose series numbered it (migration 0189). */
+    feeAccountId: uuid('fee_account_id'),
   },
   (t) => [uniqueIndex('fee_receipts_no_uq').on(t.tenantId, t.receiptNo), index('fee_receipts_student_idx').on(t.studentId, t.collectedOn), index('fee_receipts_day_idx').on(t.tenantId, t.collectedOn)],
 );
@@ -292,6 +298,14 @@ export const feeGovtScholarships = pgTable(
     createdBy: userRef('created_by'),
     createdAt: createdAt(),
     updatedAt: ts('updated_at').notNull().defaultNow(),
+    /** What the institution expects to receive, whether that holds the dues back from reminders and holds, the
+     * institution's verification date, the portal's own status text, the caste/income category and the fee it pays (migration 0190). */
+    expectedPaise: paise('expected_paise').notNull().default(0),
+    holdDues: boolean('hold_dues').notNull().default(true),
+    verifiedOn: date('verified_on'),
+    portalStatus: text('portal_status'),
+    category: text('category'),
+    invoiceId: uuid('invoice_id'),
   },
   (t) => [uniqueIndex('fee_govt_scholarships_app_uq').on(t.tenantId, t.portal, t.applicationNo), index('fee_govt_scholarships_student_idx').on(t.studentId)],
 );
@@ -385,6 +399,11 @@ export const acctBankLines = pgTable(
     voucherId: uuid('voucher_id').references(() => acctVouchers.id, { onDelete: 'set null' }),
     settlementBatchId: uuid('settlement_batch_id').references(() => settlementBatches.id, { onDelete: 'set null' }),
     matchKind: text('match_kind'),
+    /** A challan or a family's NEFT the line paid, the receipt it made and the student (migration 0190). */
+    challanId: uuid('challan_id'),
+    transferId: uuid('transfer_id'),
+    receiptId: uuid('receipt_id'),
+    studentId: uuid('student_id'),
     matchedBy: userRef('matched_by'),
     matchedAt: ts('matched_at'),
     note: text('note'),

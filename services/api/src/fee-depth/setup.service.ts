@@ -186,7 +186,7 @@ export class FeeSetupService {
     const batchId = crypto.randomUUID();
     for (const r of rows) {
       const st = facts.get(r.studentId)!;
-      const inv = await raiseInvoice(tx, { tenantId: p.tenantId, studentId: r.studentId, sectionId: st.sectionId, title: fs.name, dueOn, createdBy: p.userId, lines: r.lines, batchId, structureId: fs.id, academicYear: fs.academicYear ?? fyOf(today), kind: 'fee' });
+      const inv = await raiseInvoice(tx, { tenantId: p.tenantId, studentId: r.studentId, sectionId: st.sectionId, title: fs.name, dueOn, createdBy: p.userId, lines: r.lines, batchId, structureId: fs.id, academicYear: fs.academicYear ?? fyOf(today), kind: 'fee', feeAccountId: fs.feeAccountId ?? null, date: today });
       await tx.insert(feeAssignments).values({ tenantId: p.tenantId, structureId: fs.id, studentId: r.studentId, invoiceId: inv.id, amountPaise: r.amountPaise, prorataPercent: r.prorataPercent, assignedBy: p.userId });
       if (plan) await tx.insert(feeInstalments).values(splitInstalments(inv.amountPaise, inv.dueOn, plan.parts).map((x) => ({ tenantId: p.tenantId, invoiceId: inv.id, planId: plan.id, ...x })));
     }
@@ -233,10 +233,10 @@ export class FeeSetupService {
         const goal = target?.amountPaise ?? 0;
         after += goal;
         if (goal > now) {
-          await chargeHead(tx, inv.id, { code, name: target?.name ?? line?.headName ?? code, priority: target?.priority ?? line?.priority ?? 500, gstRate: target?.gstRate ?? 0 }, goal - now);
+          await chargeHead(tx, inv.id, { code, name: target?.name ?? line?.headName ?? code, priority: target?.priority ?? line?.priority ?? 500, gstRate: target?.gstRate ?? 0 }, goal - now, { kind: 'fee', userId: p.userId, note: 'Structure revised' });
           delta += goal - now;
         } else if (goal < now) {
-          const off = await reduceCharge(tx, inv.id, now - goal, [code]);
+          const off = await reduceCharge(tx, inv.id, now - goal, [code], { kind: 'revision', userId: p.userId, note: 'Structure revised' });
           delta -= off;
           if (off < now - goal) after += now - goal - off;
         }

@@ -32,6 +32,8 @@ const Mode = z.object({
   chequeNo: z.string().trim().min(3).max(20).nullish(),
   bankName: z.string().trim().min(2).max(80).nullish(),
   chequeDate: Day.nullish(),
+  /** The POS terminal a card or UPI payment was taken on (the approval code goes in reference). */
+  terminalId: z.string().trim().max(40).nullish(),
 });
 const Alloc = z.object({ invoiceId: z.uuid(), headCode: z.string().trim().min(1).max(12), amountPaise: z.number().int().min(0) });
 const CollectBody = z.object({ studentId: z.uuid(), modes: z.array(Mode).min(1).max(6), allocations: z.array(Alloc).max(200).optional(), keepExcess: z.boolean().default(false), note: z.string().trim().max(300).default(''), date: Day.optional() });
@@ -414,7 +416,7 @@ export class CollectionController {
 
   private async carryRows(tx: Tx, fromYear: string, studentIds?: string[]) {
     const rows = await tx
-      .select({ id: feeInvoices.id, studentId: feeInvoices.studentId, sectionId: students.sectionId, title: feeInvoices.title, invoiceNo: feeInvoices.invoiceNo, academicYear: feeInvoices.academicYear, dueOn: feeInvoices.dueOn, balancePaise: sql<number>`(${feeInvoices.amountPaise} - ${feeInvoices.paidPaise})::bigint`.mapWith(Number), student: students.fullName, rollNo: students.rollNo })
+      .select({ id: feeInvoices.id, studentId: feeInvoices.studentId, feeAccountId: feeInvoices.feeAccountId, sectionId: students.sectionId, title: feeInvoices.title, invoiceNo: feeInvoices.invoiceNo, academicYear: feeInvoices.academicYear, dueOn: feeInvoices.dueOn, balancePaise: sql<number>`(${feeInvoices.amountPaise} - ${feeInvoices.paidPaise})::bigint`.mapWith(Number), student: students.fullName, rollNo: students.rollNo })
       .from(feeInvoices)
       .innerJoin(students, eq(students.id, feeInvoices.studentId))
       .where(and(eq(feeInvoices.status, 'due'), sql`${feeInvoices.carriedTo} is null`, sql`(coalesce(${feeInvoices.academicYear}, '') = ${fromYear} or (${feeInvoices.academicYear} is null and ${feeInvoices.dueOn} between ${`${fromYear.slice(0, 4)}-04-01`}::date and ${`${Number(fromYear.slice(0, 4)) + 1}-03-31`}::date))`, studentIds?.length ? inArray(feeInvoices.studentId, studentIds) : undefined))
@@ -434,10 +436,12 @@ export class CollectionController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const rows = await this.carryRows(tx, b.fromYear, b.studentIds);
       if (!rows.length) throw new BadRequestException('Nothing is due on that year’s fees');
+      // One arrears invoice per student and fee account (the trust's dues stay the trust's).
       const byStudent = new Map<string, typeof rows>();
-      for (const r of rows) byStudent.set(r.studentId, [...(byStudent.get(r.studentId) ?? []), r]);
+      for (const r of rows) byStudent.set(`${r.studentId}|${r.feeAccountId ?? ''}`, [...(byStudent.get(`${r.studentId}|${r.feeAccountId ?? ''}`) ?? []), r]);
       let moved = 0;
-      for (const [studentId, invs] of byStudent) {
+      for (const invs of byStudent.values()) {
+        const studentId = invs[0].studentId;
         const state = await lineState(tx, invs.map((i) => i.id));
         const heads = new Map<string, { code: string; name: string; priority: number; amountPaise: number; gstRate: number }>();
         for (const l of state.filter((x) => x.balancePaise > 0)) {
@@ -445,17 +449,17 @@ export class CollectionController {
           h.amountPaise += l.balancePaise;
           heads.set(l.headCode, h);
         }
-        const arrears = await raiseInvoice(tx, { tenantId: p.tenantId, studentId, sectionId: invs[0].sectionId, title: `Arrears brought forward from ${b.fromYear}`, dueOn: b.dueOn, createdBy: p.userId, lines: [...heads.values()], academicYear: b.toYear, kind: 'arrears' });
+        const arrears = await raiseInvoice(tx, { tenantId: p.tenantId, studentId, sectionId: invs[0].sectionId, title: `Arrears brought forward from ${b.fromYear}`, dueOn: b.dueOn, createdBy: p.userId, lines: [...heads.values()], academicYear: b.toYear, kind: 'arrears', feeAccountId: invs[0].feeAccountId });
         for (const inv of invs) {
           const bal = inv.balancePaise;
-          const off = await reduceCharge(tx, inv.id, bal);
+          const off = await reduceCharge(tx, inv.id, bal, [], { kind: 'carry_forward', userId: p.userId });
           await tx.update(feeInvoices).set({ carriedPaise: sql`${feeInvoices.carriedPaise} + ${off}`, carriedTo: arrears.id }).where(eq(feeInvoices.id, inv.id));
           await tx.insert(feeCarryForwards).values({ tenantId: p.tenantId, studentId, fromYear: b.fromYear, toYear: b.toYear, fromInvoiceId: inv.id, toInvoiceId: arrears.id, amountPaise: off, createdBy: p.userId });
           moved += off;
         }
       }
-      await auditUser(tx, p, 'fees.carried_forward', 'fee_carry_forward', undefined, { fromYear: b.fromYear, toYear: b.toYear, students: byStudent.size, amountPaise: moved });
-      return { students: byStudent.size, invoices: rows.length, amountPaise: moved };
+      await auditUser(tx, p, 'fees.carried_forward', 'fee_carry_forward', undefined, { fromYear: b.fromYear, toYear: b.toYear, students: new Set(rows.map((r) => r.studentId)).size, amountPaise: moved });
+      return { students: new Set(rows.map((r) => r.studentId)).size, invoices: rows.length, amountPaise: moved };
     });
   }
 
