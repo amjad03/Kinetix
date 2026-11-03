@@ -216,6 +216,10 @@ export const payrollAdjustments = pgTable(
     status: text('status').notNull().default('pending'), // pending | approved | rejected
     runId: uuid('run_id').references(() => payrollRuns.id, { onDelete: 'set null' }),
     loanId: uuid('loan_id'),
+    /** False for reimbursements against bills: paid in full, not taxable salary. */
+    taxable: boolean('taxable').notNull().default(true),
+    /** False when the amount is not wages for ESI and professional tax (reimbursements). */
+    wage: boolean('wage').notNull().default(true),
     createdBy: by('created_by'),
     decidedBy: by('decided_by'),
     decidedAt: timestamp('decided_at', { withTimezone: true }),

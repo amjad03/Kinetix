@@ -1,7 +1,7 @@
 /**
  * Re-encrypts every value kept under SECRETS_ENCRYPTION_KEY with the current key: institutions' and fee accounts' payment gateway secrets,
- * connector settings, SSO client secrets, offline pairing signing keys, staff two-factor secrets, staff Aadhaar and bank
- * accounts, and the encrypted health and counselling fields (common/sensitive.ts; plain values from before encryption are
+ * connector settings, SSO client secrets, offline pairing signing keys, staff two-factor secrets, staff Aadhaar, bank
+ * accounts, PAN and UAN (hr/staff-ids.ts), and the encrypted health and counselling fields (common/sensitive.ts; plain values from before encryption are
  * sealed on the way). Rotation: set the new key with a higher SECRETS_ENCRYPTION_KEY_VERSION, keep the old one in
  * SECRETS_ENCRYPTION_OLD_KEYS ("1:<base64>"), deploy, run this, then remove the old key. Runs as the owner role
  * (DATABASE_URL) because it touches every institution. Safe to run again.
@@ -20,6 +20,7 @@ import { tenantSigningKeys } from './schema-assist.js';
 import { userMfa } from './schema-foundation.js';
 import { feeChallans } from './schema-fee-depth.js';
 import { resealNumber } from '../fee-depth/bank-numbers.js';
+import { resealStaffIds } from '../hr/staff-ids.js';
 
 type Db = NodePgDatabase<typeof s>;
 
@@ -95,6 +96,9 @@ export async function rotateAll(db: Db, box: SecretBox): Promise<Record<string, 
       if (changed) await db.update(s.staffProfiles).set({ aadhaarEnc, bankAccountEnc }).where(eq(s.staffProfiles.userId, r.userId));
     });
   }
+
+  // Staff PAN and UAN (hr/staff-ids.ts): plain values from before migration 0198 are sealed on the way.
+  out.staff_identifiers = await resealStaffIds(db, box);
 
   // Bank account numbers of the fee and accounts desk (fee-depth/bank-numbers.ts): plain ones are sealed on the way.
   for (const r of await db.select({ id: s.acctAccounts.id, tenantId: s.acctAccounts.tenantId, accountNo: s.acctAccounts.accountNo }).from(s.acctAccounts).where(sql`${s.acctAccounts.accountNo} is not null and ${s.acctAccounts.accountNo} <> ''`)) {

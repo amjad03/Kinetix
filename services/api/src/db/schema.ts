@@ -3036,9 +3036,23 @@ export const staffProfiles = pgTable(
     status: text('status').notNull().default('active'),
     gender: text('gender'),
     dateOfBirth: date('date_of_birth'),
-    pan: text('pan'),
-    uan: text('uan'),
+    /** AES-256-GCM (hr/staff-ids.ts), bound to "<tenantId>:staff.<userId>.pan"; the last four in clear. */
+    panEnc: text('pan_enc'),
+    panLast4: text('pan_last4'),
+    /** AES-256-GCM like the PAN, bound to "<tenantId>:staff.<userId>.uan". */
+    uanEnc: text('uan_enc'),
+    uanLast4: text('uan_last4'),
     esiNumber: text('esi_number'),
+    /** matrix (7th CPC level and cell) | structure (lines set by hand) | consolidated (one fixed amount) | hourly (guest faculty). */
+    payBasis: text('pay_basis').notNull().default('structure'),
+    /** pay_matrix_levels (schema-hr3.ts); the foreign key is in migration 0199. */
+    payLevelId: uuid('pay_level_id'),
+    /** The cell on the level, from 1. */
+    payCell: smallint('pay_cell'),
+    /** HRA city class: X (30%), Y (20%), Z (10%) of basic once DA passes 50%. */
+    hraClass: text('hra_class').notNull().default('Y'),
+    /** Guest and visiting faculty: paid per teaching hour. */
+    hourlyRatePaise: bigint('hourly_rate_paise', { mode: 'number' }),
     taxRegime: text('tax_regime').notNull().default('new'),
     tax80cPaise: bigint('tax_80c_paise', { mode: 'number' }).notNull().default(0),
     taxOtherDeductionsPaise: bigint('tax_other_deductions_paise', { mode: 'number' }).notNull().default(0),
@@ -3201,6 +3215,10 @@ export const jobOpenings = pgTable('job_openings', {
   approvedAt: timestamp('approved_at', { withTimezone: true }),
   decisionNote: text('decision_note'),
   closesOn: date('closes_on'),
+  /** Shown on the public careers page (/v1/public/careers/<slug>) while open. */
+  published: boolean('published').notNull().default(false),
+  /** Eligibility as advertised (UGC/AICTE qualifications, experience). */
+  eligibility: text('eligibility').notNull().default(''),
   createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: createdAt(),
 });
@@ -3296,6 +3314,8 @@ export const payrollSettings = pgTable('payroll_settings', {
   ledgers: jsonb('ledgers').notNull(),
   /** Labour Welfare Fund: a fixed contribution in the listed months (Karnataka: Rs 50 + Rs 100 in December). */
   lwf: jsonb('lwf').$type<{ enabled: boolean; employeePaise: number; employerPaise: number; months: number[] }>().notNull().default({ enabled: true, employeePaise: 5000, employerPaise: 10000, months: [12] }),
+  /** The salary transfer file's bank format and the institution's debit account (sealed; hr/bank-files.ts). */
+  bankFile: jsonb('bank_file').$type<{ format: 'generic' | 'sbi' | 'canara' | 'hdfc'; debitAccountEnc: string | null; debitAccountLast4: string | null; corporateId: string }>().notNull().default({ format: 'generic', debitAccountEnc: null, debitAccountLast4: null, corporateId: '' }),
   updatedAt: updatedAt(),
 });
 
@@ -3456,6 +3476,11 @@ export const vaultDocuments = pgTable(
 );
 
 export const TENANT_TABLES = [
+  'tax_declarations',
+  'tax_declaration_items',
+  'reimbursement_claims',
+  'pay_matrix_levels',
+  'pay_matrix_moves',
   'institution_branding',
   'doc_templates',
   'doc_template_versions',
@@ -7417,6 +7442,8 @@ export const separations = pgTable(
     noticeShortfallDays: integer('notice_shortfall_days').notNull().default(0),
     settlementPaise: bigint('settlement_paise', { mode: 'number' }),
     settlementNote: text('settlement_note'),
+    /** The worked full-and-final lines (hr/settlement.ts) behind settlementPaise. */
+    settlementLines: jsonb('settlement_lines').$type<{ code: string; label: string; kind: 'earning' | 'recovery'; amountPaise: number; basis: string }[] | null>(),
     relievedOn: date('relieved_on'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),

@@ -12,6 +12,7 @@ import { requireDay, requireMonth } from './dates.js';
 import { HR_ROLES, PAYROLL_ROLES, STAFF_ROLES, requireVersion } from './hr.access.js';
 import { bankAad, HrService, NO_SECRETS_KEY } from './hr.service.js';
 import { formatSeries, takeNumbers } from './hr-settings.js';
+import { sealStaffIds } from './staff-ids.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
 const Paise = z.number().int().min(0).max(100_000_000_00);
@@ -110,7 +111,7 @@ export class HrController {
       requireVersion(before.version, b.expectedVersion);
       if (b.dateOfJoining && b.dateOfLeaving && b.dateOfLeaving < b.dateOfJoining) throw new BadRequestException('The leaving date is before the joining date');
       await this.assertRefs(tx, b);
-      const { expectedVersion: _v, ...fields } = b;
+      const { expectedVersion: _v, pan: _pan, uan: _uan, ...fields } = b;
       let employeeCode = b.employeeCode || (before.version === 0 ? '' : (before.employeeCode ?? ''));
       if (!employeeCode) {
         if (before.version !== 0) throw new BadRequestException('Enter the employee code');
@@ -126,8 +127,7 @@ export class HrController {
         dateOfLeaving: b.dateOfLeaving ?? null,
         gender: b.gender ?? null,
         dateOfBirth: b.dateOfBirth ?? null,
-        pan: b.pan ?? null,
-        uan: b.uan ?? null,
+        ...sealStaffIds(p.tenantId, userId, { pan: b.pan ?? null, uan: b.uan ?? null }),
         esiNumber: b.esiNumber ?? null,
       };
       try {

@@ -209,9 +209,9 @@ export class PayrollController {
   ecr(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Res({ passthrough: true }) res: Response) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const { run, settings, rows } = await this.payroll.exportRows(tx, p.tenantId, id);
-      const missing = rows.filter(({ d }) => d.employeePfPaise > 0 && !d.uan).map(({ d }) => d.user.fullName);
+      const missing = rows.filter(({ d, ids }) => d.employeePfPaise > 0 && !ids.uan).map(({ d }) => d.user.fullName);
       const text = ecrText(
-        rows.filter(({ d }) => d.employeePfPaise > 0 && d.uan).map(({ d }) => ({ uan: d.uan!, name: d.user.fullName, grossPaise: d.grossPaise, pfWagePaise: d.pfWagePaise, pfCeilingPaise: settings.pfWageCeilingPaise, pfCapAtCeiling: settings.pfCapAtCeiling, employeePfPaise: d.employeePfPaise, epsPaise: d.employer.epsPaise, epfPaise: d.employer.epfPaise, ncpDays: d.lopDays })),
+        rows.filter(({ d, ids }) => d.employeePfPaise > 0 && ids.uan).map(({ d, ids }) => ({ uan: ids.uan!, name: d.user.fullName, grossPaise: d.grossPaise, pfWagePaise: d.pfWagePaise, pfCeilingPaise: settings.pfWageCeilingPaise, pfCapAtCeiling: settings.pfCapAtCeiling, employeePfPaise: d.employeePfPaise, epsPaise: d.employer.epsPaise, epfPaise: d.employer.epfPaise, ncpDays: d.lopDays })),
       );
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payroll.export_ecr', subjectType: 'payroll_run', subjectId: id, data: { month: run.month, version: run.version, missingUan: missing.length } });
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -302,12 +302,12 @@ export class PayrollController {
     if (!k.success) throw new BadRequestException('kind must be pf, esi, pt, tds or lwf');
     return this.db.withTenant(p.tenantId, async (tx) => {
       const { run, settings, rows } = await this.payroll.exportRows(tx, p.tenantId, id);
-      const stat: StatRow[] = rows.map(({ d }) => ({
+      const stat: StatRow[] = rows.map(({ d, ids }) => ({
         name: d.user.fullName,
         employeeCode: d.user.employeeCode,
-        uan: d.uan,
+        uan: ids.uan,
         esiNumber: d.esiNumber,
-        pan: d.pan,
+        pan: ids.pan,
         regime: d.taxRegime,
         grossPaise: d.grossPaise,
         lopDays: d.lopDays,

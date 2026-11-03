@@ -17,4 +17,26 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (!url) throw new Error('DATABASE_URL is not set');
   await runMigrations(url);
   console.log('Migrations applied.');
+  await sealStaffIdentifiers(url);
+}
+
+/**
+ * Staff PAN and UAN kept in clear before migration 0198 are encrypted now, as the owner role (every institution). The
+ * built image (dist) runs it; the TypeScript dev runner cannot load the app's modules, so it says to run the rotation job.
+ */
+async function sealStaffIdentifiers(url: string) {
+  let reseal: typeof import('../hr/staff-ids.js').resealStaffIds;
+  try {
+    ({ resealStaffIds: reseal } = await import('../hr/staff-ids.js'));
+  } catch {
+    console.log('Staff PAN/UAN not sealed by this runner: run `pnpm secrets:rotate` to encrypt any kept in clear.');
+    return;
+  }
+  const pool = new pg.Pool({ connectionString: url, max: 1 });
+  try {
+    const r = await reseal(drizzle(pool));
+    if (r.rotated || r.failed) console.log(`Staff PAN/UAN: ${r.rotated} of ${r.rows} records encrypted${r.failed ? `; ${r.failed} could not be read` : ''}.`);
+  } finally {
+    await pool.end();
+  }
 }

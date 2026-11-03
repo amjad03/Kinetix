@@ -1282,6 +1282,20 @@
       "when": 1791506051000,
       "tag": "0195_attendance_detention_lists",
       "breakpoints": true
+    },
+    {
+      "idx": 183,
+      "version": "7",
+      "when": 1791506060000,
+      "tag": "0198_hr_identifiers_tax_declarations",
+      "breakpoints": true
+    },
+    {
+      "idx": 184,
+      "version": "7",
+      "when": 1791506061000,
+      "tag": "0199_hr_pay_matrix_settlement_careers",
+      "breakpoints": true
     }
   ]
 }

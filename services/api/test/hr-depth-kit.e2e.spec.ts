@@ -8,6 +8,7 @@ import { readXlsx, writeWorkbook } from '../src/common/xlsx.js';
 import * as depth from '../src/db/schema-depth.js';
 import * as s from '../src/db/schema.js';
 import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
+import { sealStaffIds } from '../src/hr/staff-ids.js';
 
 /**
  * HR depth on the record kit: the staff master (details, qualifications, experience, publications, documents),
@@ -374,7 +375,7 @@ describe('HR depth on the record kit', () => {
     const da = (await post('accountant', '/v1/records/salary-components', { code: 'DA', name: 'Dearness allowance', kind: 'earning', calc: 'percent', startPercent: 50, baseCode: 'BASIC', pfWage: true, taxable: true }).expect(201)).body;
     daId = da.id;
     expect(da).toMatchObject({ percent: 50, calc: 'percent' });
-    await db.update(s.staffProfiles).set({ uan: '100200300400' }).where(eq(s.staffProfiles.userId, ids.teacher2));
+    await db.update(s.staffProfiles).set(sealStaffIds(t.tenantId, ids.teacher2, { uan: '100200300400' })).where(eq(s.staffProfiles.userId, ids.teacher2));
     const st = (await put('accountant', `/v1/payroll/structures/${ids.teacher2}`, { effectiveFrom: '2026-04-01', lines: [{ componentId: c.BASIC, monthlyPaise: 20_000_00 }, { componentId: da.id, monthlyPaise: 1 }, { componentId: c.HRA, monthlyPaise: 8_000_00 }] }).expect(200)).body;
     expect(st.lines.find((l: { code: string }) => l.code === 'DA').monthlyPaise).toBe(10_000_00);
     // September at 50%, approved and locked.

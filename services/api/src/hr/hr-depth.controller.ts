@@ -12,6 +12,7 @@ import { payrollAdjustments, payrollTaxProfile, staffQualifications, tdsChallans
 import { form16Pdf } from './form16-pdf.js';
 import { hasAnyRole, HR_ROLES, isHr, isPayrollStaff, PAYROLL_APPROVERS, PAYROLL_ROLES, STAFF_ROLES } from './hr.access.js';
 import { compositeScore, EVAL_CRITERIA, financialYearOf, fyMonths, loadBand, monthsBetween, overtimeAmount, quarterOf, RATER_KINDS, ratingAverage, slotHours, type KindSummary, type RaterKind } from './hr-depth.logic.js';
+import { openStaffId } from './staff-ids.js';
 
 const Month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a month like 2026-10');
 const FY = z.string().regex(/^\d{4}-\d{2}$/, 'Use a financial year like 2026-27');
@@ -375,8 +376,9 @@ export class HrDepthController {
     const pdf = await this.db.withTenant(p.tenantId, async (tx) => {
       const [profile] = await tx.select().from(payrollTaxProfile);
       if (!profile) throw new ConflictException('Record the institution\'s TAN and PAN first');
-      const [emp] = await tx.select({ name: users.fullName, code: staffProfiles.employeeCode, pan: staffProfiles.pan }).from(staffProfiles).innerJoin(users, eq(users.id, staffProfiles.userId)).where(eq(staffProfiles.userId, userId));
-      if (!emp) throw new NotFoundException('Staff member not found');
+      const [found] = await tx.select({ name: users.fullName, code: staffProfiles.employeeCode, tenantId: staffProfiles.tenantId, panEnc: staffProfiles.panEnc }).from(staffProfiles).innerJoin(users, eq(users.id, staffProfiles.userId)).where(eq(staffProfiles.userId, userId));
+      if (!found) throw new NotFoundException('Staff member not found');
+      const emp = { name: found.name, code: found.code, pan: openStaffId(found.tenantId, userId, 'pan', found.panEnc) };
       const months = fyMonths(year);
       const slips = await tx.select({ month: payrollRuns.month, gross: payslips.grossPaise, taxable: payslips.taxableGrossPaise, pt: payslips.ptPaise, pf: payslips.employeePfPaise, tds: payslips.tdsPaise }).from(payslips).innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId)).where(and(eq(payslips.userId, userId), eq(payrollRuns.status, 'locked'), inArray(payrollRuns.month, months))).orderBy(asc(payrollRuns.month));
       if (slips.length === 0) throw new NotFoundException('No locked payroll for this year');

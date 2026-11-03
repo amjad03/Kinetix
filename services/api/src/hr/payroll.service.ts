@@ -15,6 +15,7 @@ import { HrService } from './hr.service.js';
 import { requireVersion } from './hr.access.js';
 import { annualTax, computePayslip, daysInMonth, fyStart, resolveLines, type StructureLine } from './payroll-math.js';
 import { csv as csvText } from './exports.js';
+import { openStaffId } from './staff-ids.js';
 import { monthTakesAdjustments } from './hr-depth.controller.js';
 import { monthLabel } from './payslip-pdf.js';
 import { formatSeries, takeNumbers } from './hr-settings.js';
@@ -28,7 +29,7 @@ export const DEFAULT_COMPONENTS = [
 ] as const;
 
 type Run = typeof payrollRuns.$inferSelect;
-type StoredPayslip = Omit<Payslip, 'id' | 'runId' | 'month' | 'runStatus'> & { pfWagePaise: number; esiPaise: number; ptPaise: number; lwfPaise?: number; tdsPaise: number; employeePfPaise: number; pan: string | null; uan: string | null; esiNumber: string | null; employerCostPaise: number; taxableGrossPaise?: number };
+type StoredPayslip = Omit<Payslip, 'id' | 'runId' | 'month' | 'runStatus'> & { pfWagePaise: number; esiPaise: number; ptPaise: number; lwfPaise?: number; tdsPaise: number; employeePfPaise: number; esiNumber: string | null; employerCostPaise: number; taxableGrossPaise?: number };
 
 /** The rate of a percentage component in force in a month (YYYY-MM): the latest revision from that month or before. */
 export function rateIn(rates: { componentId: string; effectiveMonth: string; percent: number }[], componentId: string, month: string): number | null {
@@ -209,7 +210,7 @@ export class PayrollService {
 
     // Approved overtime, arrears, bonuses and recoveries for this month go onto the payslip in full.
     const adjRows = await tx.select().from(payrollAdjustments).where(and(eq(payrollAdjustments.payMonth, month), eq(payrollAdjustments.status, 'approved'), or(isNull(payrollAdjustments.runId), eq(payrollAdjustments.runId, run.id))));
-    const ADJ_NAME: Record<string, [string, string]> = { overtime: ['OT', 'Overtime'], arrear: ['ARR', 'Arrears'], bonus: ['BONUS', 'Bonus'], recovery: ['REC', 'Recovery'], encashment: ['LENC', 'Leave encashment'] };
+    const ADJ_NAME: Record<string, [string, string]> = { overtime: ['OT', 'Overtime'], arrear: ['ARR', 'Arrears'], bonus: ['BONUS', 'Bonus'], recovery: ['REC', 'Recovery'], encashment: ['LENC', 'Leave encashment'], reimbursement: ['REIMB', 'Reimbursement'], guest_hours: ['GUEST', 'Guest lectures'] };
 
     await tx.delete(payslips).where(eq(payslips.runId, run.id));
     const skipped: Run['skipped'] = [];
@@ -228,11 +229,14 @@ export class PayrollService {
       // and everyone else only their adjustments.
       const full = supplementary ? run.staffIds.includes(s.userId) && !paidThisMonth.has(s.userId) : true;
       if (supplementary && !full && extras.length === 0) continue;
-      if (full && !structure) {
+      // Guest and visiting faculty paid by the hour have no structure: their payslip is the approved hours alone.
+      const hourly = prof.payBasis === 'hourly' && !structure;
+      if (hourly && extras.length === 0) continue;
+      if (full && !structure && !hourly) {
         skipped.push({ userId: s.userId, fullName: s.fullName, reason: 'No salary structure' });
         continue;
       }
-      const lines: StructureLine[] = full
+      const lines: StructureLine[] = full && structure
         ? resolveLines(
             lineRows.filter((l) => l.structureId === structure!.id).map((l) => ({ code: l.code, name: l.name, kind: l.kind as 'earning', monthlyPaise: l.monthlyPaise, pfWage: l.pfWage, taxable: l.taxable, calc: l.calc, percent: l.percent, baseCode: l.baseCode })),
             (code) => {
@@ -254,7 +258,7 @@ export class PayrollService {
         ptSlabs: settings.ptSlabs,
         staff: { regime: prof.taxRegime as 'new', pfEnabled: prof.pfEnabled, esiEnabled: prof.esiEnabled, ptEnabled: prof.ptEnabled, tax80cPaise: prof.tax80cPaise, taxOtherDeductionsPaise: prof.taxOtherDeductionsPaise },
         ytd: { grossTaxablePaise: y?.taxable ?? 0, ptPaise: y?.pt ?? 0, employeePfPaise: y?.pf ?? 0, tdsPaise: y?.tds ?? 0 },
-        extras: extras.map((a) => ({ code: a.loanId ? 'LADV' : (ADJ_NAME[a.kind]?.[0] ?? 'ADJ'), name: a.loanId ? 'Loan / advance recovery' : (ADJ_NAME[a.kind]?.[1] ?? 'Adjustment'), amountPaise: a.amountPaise, taxable: true, recovery: a.kind === 'recovery' })),
+        extras: extras.map((a) => ({ code: a.loanId ? 'LADV' : (ADJ_NAME[a.kind]?.[0] ?? 'ADJ'), name: a.loanId ? 'Loan / advance recovery' : (ADJ_NAME[a.kind]?.[1] ?? 'Adjustment'), amountPaise: a.amountPaise, taxable: a.taxable, wage: a.wage, recovery: a.kind === 'recovery' })),
       });
       const employerCost = c.grossPaise + c.employer.epfPaise + c.employer.epsPaise + c.employer.esiPaise + c.employer.lwfPaise;
       const data: StoredPayslip = {
@@ -277,8 +281,6 @@ export class PayrollService {
         tdsPaise: c.tdsPaise,
         employeePfPaise: c.employeePfPaise,
         taxableGrossPaise: c.taxableGrossPaise,
-        pan: prof.pan,
-        uan: prof.uan,
         esiNumber: prof.esiNumber,
         employerCostPaise: employerCost,
       };
@@ -513,13 +515,14 @@ export class PayrollService {
   // ----- Form 24Q ----------------------------------------------------------------------------------------
 
   private async taxRows(tx: Tx, from: string, to: string) {
-    return tx
-      .select({ userId: payslips.userId, month: payrollRuns.month, gross: payslips.grossPaise, taxable: payslips.taxableGrossPaise, tds: payslips.tdsPaise, pt: payslips.ptPaise, pf: payslips.employeePfPaise, data: payslips.data, pan: staffProfiles.pan, regime: staffProfiles.taxRegime, code: staffProfiles.employeeCode, doj: staffProfiles.dateOfJoining, dol: staffProfiles.dateOfLeaving, c80: staffProfiles.tax80cPaise, other: staffProfiles.taxOtherDeductionsPaise })
+    const rows = await tx
+      .select({ userId: payslips.userId, month: payrollRuns.month, gross: payslips.grossPaise, taxable: payslips.taxableGrossPaise, tds: payslips.tdsPaise, pt: payslips.ptPaise, pf: payslips.employeePfPaise, data: payslips.data, panEnc: staffProfiles.panEnc, tenantId: staffProfiles.tenantId, regime: staffProfiles.taxRegime, code: staffProfiles.employeeCode, doj: staffProfiles.dateOfJoining, dol: staffProfiles.dateOfLeaving, c80: staffProfiles.tax80cPaise, other: staffProfiles.taxOtherDeductionsPaise })
       .from(payslips)
       .innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId))
       .innerJoin(staffProfiles, eq(staffProfiles.userId, payslips.userId))
       .where(and(eq(payrollRuns.status, 'locked'), gte(payrollRuns.month, from), lte(payrollRuns.month, to)))
       .orderBy(asc(payrollRuns.month), asc(staffProfiles.employeeCode));
+    return rows.map(({ panEnc, tenantId, ...r }) => ({ ...r, pan: openStaffId(tenantId, r.userId, 'pan', panEnc) }));
   }
 
   /** Annexure I (deductee details): one row per staff member per month of the quarter, with the challan the TDS went in. */
@@ -589,7 +592,15 @@ export class PayrollService {
     if (run.status === 'reversed') throw new ConflictException('This run was reversed');
     const settings = await this.hr.settings(tx, tenantId);
     const rows = await tx.select().from(payslips).where(eq(payslips.runId, id));
-    const profiles = new Map((await tx.select().from(staffProfiles)).map((r) => [r.userId, r]));
-    return { run, settings, rows: rows.map((r) => ({ row: r, d: r.data as StoredPayslip, prof: profiles.get(r.userId) })) };
+    const profiles = new Map((await tx.select().from(staffProfiles).where(rows.length ? inArray(staffProfiles.userId, rows.map((r) => r.userId)) : sql`false`)).map((r) => [r.userId, r]));
+    // PAN and UAN are decrypted for the export only; they are never copied into the payslip's stored figures.
+    return {
+      run,
+      settings,
+      rows: rows.map((r) => {
+        const prof = profiles.get(r.userId);
+        return { row: r, d: r.data as StoredPayslip, prof, ids: { pan: prof ? openStaffId(prof.tenantId, prof.userId, 'pan', prof.panEnc) : null, uan: prof ? openStaffId(prof.tenantId, prof.userId, 'uan', prof.uanEnc) : null } };
+      }),
+    };
   }
 }

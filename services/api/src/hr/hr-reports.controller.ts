@@ -7,11 +7,20 @@ import { DbService } from '../db/db.service.js';
 import { PAYROLL_ROLES } from './hr.access.js';
 import { LeaveService } from './leave.service.js';
 import { cadreRatio, sfr } from './hr-master.logic.js';
+import { openStaffId, type StaffIdField } from './staff-ids.js';
 
 export const HR_REPORTS = ['staff-strength', 'staff-category', 'faculty-cadre', 'sfr', 'naac-faculty', 'publications', 'attendance-register', 'leave-register', 'leave-balances', 'payroll-register', 'salary-statement', 'pf', 'esi', 'pt', 'pt-return', 'lwf', 'tds', 'bank-transfer', 'form16', 'appraisal-summary', 'fdp-summary', 'attrition'] as const;
 export type HrReport = (typeof HR_REPORTS)[number];
 
 type Row = Record<string, string | number | null>;
+
+/**
+ * Decrypts the PAN or UAN a report selected as "_t" (tenant), "_u" (staff user) and "_enc" (stored value) into `field`,
+ * dropping the helper columns. Identifiers are never decrypted in SQL.
+ */
+export const openIds = (rows: Row[], field: StaffIdField): Row[] =>
+  rows.map(({ _t, _u, _enc, ...r }) => ({ ...r, [field]: (_t && _u ? openStaffId(String(_t), String(_u), field, _enc as string | null) : null) ?? '' }));
+const idCols = (enc: SQL) => sql`sp.tenant_id::text as "_t", sp.user_id::text as "_u", ${enc} as "_enc"`;
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 /** Indian financial year of a month or date: 2026-05 → 2026 (April 2026 to March 2027). */
@@ -32,7 +41,7 @@ export class HrReportsController {
   @Auth('user', PAYROLL_ROLES)
   report(@CurrentPrincipal() p: UserPrincipal, @Param('kind') kind: string, @Query() q: Record<string, string | undefined>) {
     if (!HR_REPORTS.includes(kind as HrReport)) throw new BadRequestException('Unknown report');
-    const today = new Date().toISOString().slice(0, 10);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     const month = q.month && MONTH.test(q.month) ? q.month : today.slice(0, 7);
     const fy = q.fy && /^\d{4}$/.test(q.fy) ? Number(q.fy) : fyOf(month);
     const year = q.year && /^\d{4}$/.test(q.year) ? Number(q.year) : Number(today.slice(0, 4));
@@ -97,8 +106,8 @@ export class HrReportsController {
         }
         case 'naac-faculty':
           columns = ['code', 'name', 'pan', 'gender', 'department', 'designation', 'appointedOn', 'nature', 'highestQualification', 'phd', 'phdYear', 'netSet', 'experienceHere', 'experienceTotal', 'publications', 'stillServing'];
-          rows = await run(sql`
-            select sp.employee_code as code, u.full_name as name, coalesce(sp.pan, '') as pan, coalesce(sp.gender, '') as gender, coalesce(d.name, '') as department, coalesce(g.name, '') as designation,
+          rows = openIds(await run(sql`
+            select sp.employee_code as code, u.full_name as name, ${idCols(sql`sp.pan_enc`)}, coalesce(sp.gender, '') as gender, coalesce(d.name, '') as department, coalesce(g.name, '') as designation,
               sp.date_of_joining::text as "appointedOn", case sp.post_type when 'sanctioned' then 'Full time (sanctioned post)' when 'self_financing' then 'Full time (self-financing)' else 'Guest / part time' end as nature,
               coalesce((select q.title from staff_qualifications q where q.user_id = sp.user_id and q.kind = 'degree' order by case q.level when 'Post-doctoral' then 1 when 'Ph.D.' then 2 when 'M.Phil.' then 3 when 'PG' then 4 when 'UG' then 5 else 6 end, q.year desc nulls last limit 1), '') as "highestQualification",
               case sp.phd_status when 'awarded' then 'Yes' when 'submitted' then 'Thesis submitted' when 'pursuing' then 'Pursuing' else 'No' end as phd, sp.phd_year as "phdYear",
@@ -109,7 +118,7 @@ export class HrReportsController {
               case when sp.status = 'exited' then 'No' else 'Yes' end as "stillServing"
             from staff_profiles sp join users u on u.id = sp.user_id left join departments d on d.id = sp.department_id left join designations g on g.id = sp.designation_id
             where sp.staff_category = 'teaching' and sp.date_of_joining is not null and sp.date_of_joining <= ${`${fy + 1}-03-31`}::date
-              and (sp.date_of_leaving is null or sp.date_of_leaving >= ${`${fy}-04-01`}::date) ${deptCond(sql`sp.department_id`)} order by 5, 2`);
+              and (sp.date_of_leaving is null or sp.date_of_leaving >= ${`${fy}-04-01`}::date) ${deptCond(sql`sp.department_id`)} order by department, name`), 'pan');
           break;
         case 'publications':
           columns = ['code', 'name', 'department', 'kind', 'title', 'venue', 'year', 'issnIsbn', 'indexing', 'impactFactor', 'authorRole', 'verified'];
@@ -160,7 +169,7 @@ export class HrReportsController {
           break;
         case 'pf':
           columns = ['code', 'name', 'uan', 'pfWagePaise', 'pfPaise', 'epfPaise', 'epsPaise'];
-          rows = (await run(slips(sql`s.data->>'uan' as uan, coalesce((s.data->>'pfWagePaise')::bigint, 0) as "pfWagePaise", s.employee_pf_paise as "pfPaise", coalesce((s.data->'employer'->>'epfPaise')::bigint, 0) as "epfPaise", coalesce((s.data->'employer'->>'epsPaise')::bigint, 0) as "epsPaise"`))).filter((r) => Number(r.pfPaise) > 0);
+          rows = openIds(await run(slips(sql`${idCols(sql`sp.uan_enc`)}, coalesce((s.data->>'pfWagePaise')::bigint, 0) as "pfWagePaise", s.employee_pf_paise as "pfPaise", coalesce((s.data->'employer'->>'epfPaise')::bigint, 0) as "epfPaise", coalesce((s.data->'employer'->>'epsPaise')::bigint, 0) as "epsPaise"`)), 'uan').filter((r) => Number(r.pfPaise) > 0);
           break;
         case 'esi':
           columns = ['code', 'name', 'esiNumber', 'grossPaise', 'esiPaise', 'esiEmployerPaise'];
@@ -191,7 +200,7 @@ export class HrReportsController {
           break;
         case 'tds':
           columns = ['code', 'name', 'pan', 'taxableGrossPaise', 'tdsPaise'];
-          rows = await run(slips(sql`s.data->>'pan' as pan, s.taxable_gross_paise as "taxableGrossPaise", s.tds_paise as "tdsPaise"`));
+          rows = openIds(await run(slips(sql`${idCols(sql`sp.pan_enc`)}, s.taxable_gross_paise as "taxableGrossPaise", s.tds_paise as "tdsPaise"`)), 'pan');
           break;
         case 'bank-transfer':
           columns = ['code', 'name', 'bank', 'ifsc', 'account', 'netPaise'];
@@ -199,11 +208,11 @@ export class HrReportsController {
           break;
         case 'form16':
           columns = ['code', 'name', 'pan', 'regime', 'months', 'taxableGrossPaise', 'tdsPaise'];
-          rows = await run(sql`
-            select s.data->'user'->>'employeeCode' as code, s.data->'user'->>'fullName' as name, max(s.data->>'pan') as pan, max(s.data->>'taxRegime') as regime, count(*)::int as months,
+          rows = openIds(await run(sql`
+            select s.data->'user'->>'employeeCode' as code, s.data->'user'->>'fullName' as name, max(sp.tenant_id::text) as "_t", s.user_id::text as "_u", max(sp.pan_enc) as "_enc", max(s.data->>'taxRegime') as regime, count(*)::int as months,
               sum(s.taxable_gross_paise)::bigint as "taxableGrossPaise", sum(s.tds_paise)::bigint as "tdsPaise"
             from payslips s join payroll_runs r on r.id = s.run_id left join staff_profiles sp on sp.user_id = s.user_id
-            where r.status = 'locked' and r.month >= ${`${fy}-04`} and r.month <= ${`${fy + 1}-03`} ${deptCond(sql`sp.department_id`)} group by 1, 2 order by 2`);
+            where r.status = 'locked' and r.month >= ${`${fy}-04`} and r.month <= ${`${fy + 1}-03`} ${deptCond(sql`sp.department_id`)} group by 1, 2, s.user_id order by 2`), 'pan');
           break;
         case 'appraisal-summary':
           columns = ['period', 'code', 'name', 'department', 'status', 'finalScore', 'grade'];
