@@ -104,7 +104,7 @@ export function LibraryKiosk({ branchId }: { branchId?: string }) {
             </p>
           )}
           <form
-            className="mx-auto flex w-full max-w-xl gap-3"
+            className="mx-auto flex w-full max-w-xl flex-col gap-3 sm:flex-row"
             onSubmit={(e) => {
               e.preventDefault();
               submit();
