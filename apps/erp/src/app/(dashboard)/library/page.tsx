@@ -32,14 +32,15 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
   const copies = b.reduce((s, x) => s + x.copies, 0);
   const onShelf = b.reduce((s, x) => s + availableCopies(x), 0);
   const overdue = l.filter((x) => x.overdue);
-  const accruing = overdue.reduce((s, x) => s + finePreview(x.dueOn, today), 0);
+  // The API's fine so far (open days, the member's rule); the flat estimate only if it is missing.
+  const accruing = overdue.reduce((s, x) => s + (x.fineSoFarPaise ?? finePreview(x.dueOn, today)), 0);
   const f = fines.data ?? [];
   const unpaid = unpaidFines(f);
   const { t } = await getI18n();
 
   return (
     <>
-      <PageHeader title={t('nav.library')} subtitle={t('lib.subtitle')} actions={<><LhtLinks module="library" here="home" /><LinkButton href="/library/circulation" variant="outlined">{t('dx.link.circ')}</LinkButton><LinkButton href="/library/e-resources" variant="outlined">{t('dx.link.eres')}</LinkButton><LinkButton href="/scan" variant="outlined">{t('nav.scan')}</LinkButton><LinkButton href="/library/stock-checks" variant="outlined">{t('cops.sc.title')}</LinkButton><LinkButton href="/module-settings/library" variant="outlined">{t('cops.settings')}</LinkButton></>} />
+      <PageHeader title={t('nav.library')} subtitle={t('lib.subtitle')} actions={<><LhtLinks module="library" here="home" /><LinkButton href="/library/opac" variant="outlined">{t('lp.opac.title')}</LinkButton><LinkButton href="/library/reports" variant="outlined">{t('lp.rep.title')}</LinkButton><LinkButton href="/library/circulation" variant="outlined">{t('dx.link.circ')}</LinkButton><LinkButton href="/library/e-resources" variant="outlined">{t('dx.link.eres')}</LinkButton><LinkButton href="/scan" variant="outlined">{t('nav.scan')}</LinkButton><LinkButton href="/library/stock-checks" variant="outlined">{t('cops.sc.title')}</LinkButton><LinkButton href="/module-settings/library" variant="outlined">{t('cops.settings')}</LinkButton></>} />
       {books.error !== undefined || loans.error !== undefined || fines.error !== undefined ? (
         <ErrorState message={(books.error ?? loans.error ?? fines.error)!} />
       ) : (

@@ -1,13 +1,14 @@
 import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import { API_URL, SESSION_COOKIE } from '@/lib/config';
+import { libraryFilePath } from '@/lib/library-pass';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** The library, hostel and transport files: a student's bus pass, a route's passes, the catalogue as MARC. */
+/** The library, hostel and transport files: a student's bus pass, a route's passes, the catalogue as MARC (and the library's own, below). */
 const TARGETS: Record<string, (id: string) => string | null> = {
   'bus-pass': (id) => (UUID.test(id) ? `/v1/transport/passes/${id}.pdf` : null),
   'route-passes': (id) => (UUID.test(id) ? `/v1/transport/passes/route/${id}.pdf` : null),
@@ -18,7 +19,7 @@ const TARGETS: Record<string, (id: string) => string | null> = {
 export async function GET(req: NextRequest) {
   const kind = req.nextUrl.searchParams.get('kind') ?? '';
   const id = req.nextUrl.searchParams.get('id') ?? '';
-  const path = TARGETS[kind]?.(id);
+  const path = TARGETS[kind]?.(id) ?? libraryFilePath(kind, id, req.nextUrl.searchParams);
   if (!path) return new Response('Not found', { status: 404 });
   const site = req.headers.get('sec-fetch-site');
   if (site && site !== 'same-origin') return new Response('Forbidden', { status: 403 });
