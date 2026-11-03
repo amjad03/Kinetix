@@ -23,6 +23,16 @@ export class BoardSyncController {
     return this.db.withTenant(p.tenantId, (tx) => this.svc.now(tx, p));
   }
 
+  /**
+   * Today on the board: the room's periods (holidays, compensatory working days, substitutes and special classes
+   * applied) and the signed-in teacher's own day, with the period on now and whether its diary entry is written.
+   */
+  @Get('classroom/today')
+  @Auth('board')
+  today(@CurrentPrincipal() p: BoardPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => this.svc.today(tx, p));
+  }
+
   /** Switches the board to the current period, keeping the period so attendance lands against it. */
   @Post('classroom/now/open')
   @HttpCode(200)

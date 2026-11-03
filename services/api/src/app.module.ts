@@ -67,6 +67,8 @@ import { AcademicsModule } from './academics/academics.module.js';
 import { AttendanceGovernanceModule } from './attendance-governance/governance.module.js';
 import { AttendanceDeskModule } from './attendance-desk/desk.module.js';
 import { AcademicPlanningModule } from './academic-planning/planning.module.js';
+import { TimetableStudioModule } from './timetable-studio/studio.module.js';
+import { TeachingLogModule } from './teaching-log/teaching-log.module.js';
 import { InstitutionModule } from './institution/institution.module.js';
 import { AffiliationModule } from './affiliation/affiliation.module.js';
 import { TrustModule } from './trust/trust.module.js';
@@ -237,6 +239,8 @@ import { AccessModule } from './access/access.module.js';
     ExamCellModule,
     AttendanceDeskModule,
     AcademicPlanningModule,
+    TimetableStudioModule,
+    TeachingLogModule,
     AccessModule,
   ],
 })

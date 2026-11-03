@@ -117,6 +117,10 @@ class Period {
     this.isNow = false,
     this.attendanceTaken = false,
     this.lessonPlanned = false,
+    this.substituteFor,
+    this.coveredBy,
+    this.batch,
+    this.logged = false,
   });
 
   factory Period.fromJson(Map<String, dynamic> j) => Period(
@@ -129,6 +133,10 @@ class Period {
     isNow: j['isNow'] as bool,
     attendanceTaken: j['attendanceTaken'] as bool,
     lessonPlanned: j['lessonPlanned'] as bool? ?? false,
+    substituteFor: (j['substituteFor'] as Map?)?['fullName'] as String?,
+    coveredBy: (j['coveredBy'] as Map?)?['fullName'] as String?,
+    batch: j['batch'] as String?,
+    logged: j['logged'] as bool? ?? false,
   );
 
   final String slotId;
@@ -142,6 +150,18 @@ class Period {
 
   /// A lesson plan is saved for this period on this day.
   bool lessonPlanned;
+
+  /// This teacher covers the period for a colleague that day (their name).
+  final String? substituteFor;
+
+  /// A colleague covers this period that day (their name).
+  final String? coveredBy;
+
+  /// A lab or tutorial batch ("B1"), null for the whole class.
+  final String? batch;
+
+  /// The teaching diary has an entry for this period that day.
+  bool logged;
 
   /// The period's length in minutes.
   int get minutes => endsAt.minutes - startsAt.minutes;
@@ -1242,4 +1262,23 @@ class TopicVideo {
   bool get canShare => shareStatus == 'none' || shareStatus == 'rejected';
 
   String get thumbnailUrl => 'https://i.ytimg.com/vi/$youtubeVideoId/mqdefault.jpg';
+}
+
+
+/// How a period was taught (the teaching diary's delivery).
+const teachingDeliveries = ['lecture', 'tutorial', 'practical', 'seminar', 'discussion', 'demonstration', 'revision', 'test', 'online', 'field_visit'];
+
+/// A teaching diary entry as the API returns it.
+class DiaryEntry {
+  const DiaryEntry({required this.id, required this.againstPlan, required this.topicIds});
+  factory DiaryEntry.fromJson(Map<String, dynamic> j) => DiaryEntry(
+    id: j['id'] as String,
+    againstPlan: j['againstPlan'] as String? ?? 'unplanned',
+    topicIds: [for (final t in (j['topicIds'] as List? ?? const [])) t as String],
+  );
+  final String id;
+
+  /// as_planned | ahead | behind | unplanned
+  final String againstPlan;
+  final List<String> topicIds;
 }

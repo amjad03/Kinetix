@@ -1310,6 +1310,20 @@
       "when": 1791506061000,
       "tag": "0199_hr_pay_matrix_settlement_careers",
       "breakpoints": true
+    },
+    {
+      "idx": 187,
+      "version": "7",
+      "when": 1791506062000,
+      "tag": "0200_timetable_versions",
+      "breakpoints": true
+    },
+    {
+      "idx": 188,
+      "version": "7",
+      "when": 1791506063000,
+      "tag": "0201_teaching_logs",
+      "breakpoints": true
     }
   ]
 }

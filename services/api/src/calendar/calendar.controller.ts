@@ -8,7 +8,10 @@ import { hashKioskPin, KIOSK_PIN, kioskPinParts } from '../common/kiosk-pin.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { calendarEvents, guardians, notifications, programs, sections, students, tenants, type TenantSettings } from '../db/schema.js';
+import { calendarEvents, guardians, notifications, programs, sections, students, teacherSubstitutions, tenants, timetableSlots, type TenantSettings } from '../db/schema.js';
+import { specialClasses } from '../db/schema-academic-ops.js';
+import { DomainEvents, EventBus } from '../events/events.js';
+import { texts } from '../notifications/texts.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { addDays, parseDate } from '../teacher/teacher.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
@@ -129,7 +132,50 @@ export class CalendarAdminController {
   constructor(
     private readonly db: DbService,
     private readonly notifications: NotificationsService,
+    private readonly events: EventBus,
   ) {}
+
+  /**
+   * What a published entry changes elsewhere: a holiday cancels the substitutions arranged and the special classes
+   * planned for its days (their teachers are told) and counts the timetable periods that will not meet; every published
+   * entry is announced as a domain event for other modules.
+   */
+  private async propagate(tx: Tx, p: UserPrincipal, e: typeof calendarEvents.$inferSelect) {
+    let periods = 0;
+    let substitutions = 0;
+    let special = 0;
+    if (e.kind === 'holiday') {
+      const inScope = (programId: string) => e.programIds === null || e.programIds.includes(programId);
+      const subs = await tx
+        .select({ id: teacherSubstitutions.id, teacherId: teacherSubstitutions.substituteTeacherId, programId: sections.programId, date: teacherSubstitutions.date })
+        .from(teacherSubstitutions)
+        .innerJoin(timetableSlots, eq(timetableSlots.id, teacherSubstitutions.slotId))
+        .innerJoin(sections, eq(sections.id, timetableSlots.sectionId))
+        .where(and(eq(teacherSubstitutions.status, 'assigned'), gte(teacherSubstitutions.date, e.startsOn), lte(teacherSubstitutions.date, e.endsOn)));
+      const cancelSubs = subs.filter((x) => inScope(x.programId) && e.sectionIds === null);
+      if (cancelSubs.length) await tx.update(teacherSubstitutions).set({ status: 'cancelled' }).where(inArray(teacherSubstitutions.id, cancelSubs.map((x) => x.id)));
+      substitutions = cancelSubs.length;
+      const sc = await tx
+        .select({ id: specialClasses.id, teacherId: specialClasses.teacherId, programId: sections.programId, sectionId: specialClasses.sectionId })
+        .from(specialClasses)
+        .innerJoin(sections, eq(sections.id, specialClasses.sectionId))
+        .where(and(eq(specialClasses.status, 'scheduled'), gte(specialClasses.date, e.startsOn), lte(specialClasses.date, e.endsOn)));
+      const cancelSc = sc.filter((x) => inScope(x.programId) && (e.sectionIds === null || e.sectionIds.includes(x.sectionId)));
+      if (cancelSc.length) await tx.update(specialClasses).set({ status: 'cancelled' }).where(inArray(specialClasses.id, cancelSc.map((x) => x.id)));
+      special = cancelSc.length;
+      // Weekly periods that fall on the holiday's days.
+      const slots = await tx.select({ dayOfWeek: timetableSlots.dayOfWeek, programId: sections.programId, teacherId: timetableSlots.teacherId }).from(timetableSlots).innerJoin(sections, eq(sections.id, timetableSlots.sectionId)).where(isNull(timetableSlots.archivedAt));
+      const days: number[] = [];
+      for (let d = e.startsOn; d <= e.endsOn; d = addDays(d, 1)) days.push(new Date(`${d}T00:00:00Z`).getUTCDay() || 7);
+      const hit = slots.filter((x) => inScope(x.programId));
+      periods = days.reduce((n, wd) => n + hit.filter((x) => x.dayOfWeek === wd).length, 0);
+      const teachers = [...new Set([...cancelSubs.map((x) => x.teacherId), ...cancelSc.map((x) => x.teacherId)])];
+      if (teachers.length)
+        await this.notifications.notifyUsers(tx, teachers, { kind: 'calendar', text: texts.calendar(e), data: { calendarEventId: e.id, startsOn: e.startsOn }, dedupeKey: `calendar-staff:${e.id}` }, { replace: true });
+    }
+    await this.events.emit(tx, p.tenantId, { type: DomainEvents.CalendarPublished, aggregateType: 'calendar_event', aggregateId: e.id, actorId: p.userId, payload: { kind: e.kind, startsOn: e.startsOn, endsOn: e.endsOn, programIds: e.programIds, periodsAffected: periods, substitutionsCancelled: substitutions, specialClassesCancelled: special } });
+    return { periodsAffected: periods, substitutionsCancelled: substitutions, specialClassesCancelled: special };
+  }
 
   @Post()
   @Auth('user', STAFF_ADMIN_ROLES)
@@ -142,7 +188,8 @@ export class CalendarAdminController {
         .returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'calendar.created', subjectType: 'calendar_event', subjectId: e.id, data: { kind: e.kind, title: e.title, startsOn: e.startsOn, endsOn: e.endsOn, draft: !e.published } });
       if (b.notify !== false && e.published) await this.notifications.calendarEvent(tx, e);
-      return e;
+      const effect = e.published ? await this.propagate(tx, p, e) : null;
+      return { ...e, effect };
     });
   }
 
@@ -160,7 +207,8 @@ export class CalendarAdminController {
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'calendar.updated', subjectType: 'calendar_event', subjectId: id, data: { kind: e.kind, title: e.title, startsOn: e.startsOn, endsOn: e.endsOn } });
       // The same notification is updated in place (it is keyed by the entry); drafts tell nobody yet.
       if (b.notify !== false && e.published) await this.notifications.calendarEvent(tx, e);
-      return e;
+      const effect = e.published ? await this.propagate(tx, p, e) : null;
+      return { ...e, effect };
     });
   }
 
@@ -174,6 +222,7 @@ export class CalendarAdminController {
       for (const e of rows) {
         await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: b.publish ? 'calendar.published' : 'calendar.unpublished', subjectType: 'calendar_event', subjectId: e.id, changes: { published: { before: !b.publish, after: b.publish } } });
         if (b.publish && b.notify !== false) await this.notifications.calendarEvent(tx, e);
+        if (b.publish) await this.propagate(tx, p, e);
         if (!b.publish) await tx.update(notifications).set({ retractedAt: new Date() }).where(and(eq(notifications.dedupeKey, `calendar:${e.id}`), isNull(notifications.retractedAt)));
       }
       return { changed: rows.length };

@@ -18,7 +18,8 @@ import {
   users,
   whiteboards,
 } from '../db/schema.js';
-import { addDays } from '../teacher/teacher.service.js';
+import { addDays, parseDate } from '../teacher/teacher.service.js';
+import { DayTimetableService } from '../timetable/day-timetable.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 import { RecordingsService } from '../recordings/recordings.service.js';
 import { WhiteboardsService } from '../whiteboards/whiteboards.service.js';
@@ -34,6 +35,7 @@ export class ParentController {
     private readonly boards: WhiteboardsService,
     private readonly recordings: RecordingsService,
     private readonly vis: ParentVisibilityService,
+    private readonly dayTimetable: DayTimetableService,
   ) {}
 
   @Get('children')
@@ -221,6 +223,24 @@ export class ParentController {
         .leftJoin(subjects, eq(subjects.id, timetableSlots.subjectId))
         .where(and(eq(attendanceRecords.studentId, studentId), gte(attendanceRecords.date, addDays(today, -(days - 1)))))
         .orderBy(desc(attendanceRecords.date), asc(timetableSlots.startsAt));
+    });
+  }
+
+  /**
+   * The child's timetable for a week (or `days` days from `from`, at most 14) as they have it: their lab batch, their
+   * elective options, substitutes, special classes, holidays and compensatory working days. Defaults to this week.
+   */
+  @Get('children/:id/timetable')
+  @Auth('user', ['guardian', 'student'])
+  week(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) studentId: string, @Query('from') fromQ?: string, @Query('days') daysQ?: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const child = await this.child(tx, p, studentId);
+      const today = localParts(this.clock.now(), await this.timetable.tenantTimezone(tx)).date;
+      const monday = addDays(today, -((new Date(`${today}T00:00:00Z`).getUTCDay() || 7) - 1));
+      const from = fromQ ? parseDate(fromQ, 'from') : monday;
+      const n = Math.min(Math.max(Number(daysQ) || 7, 1), 14);
+      const days = await this.dayTimetable.forSection(tx, child.section.id, from, addDays(from, n - 1), child.id);
+      return { student: child, today, from, days };
     });
   }
 

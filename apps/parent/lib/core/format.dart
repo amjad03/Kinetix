@@ -19,6 +19,12 @@ class Fmt {
   String longDay(DateTime d) => DateFormat('EEEE, d MMMM', _locale).format(d);
   String shortDay(DateTime d) => DateFormat('EEE d MMM', _locale).format(d);
 
+  /// "Mon", "सोम", "ಸೋಮ"
+  String weekdayShort(DateTime d) => DateFormat('EEE', _locale).format(d);
+
+  /// The name of an ISO weekday (1 = Monday): "Monday".
+  String weekdayName(int isoDay) => DateFormat('EEEE', _locale).format(DateTime(2026, 1, 4 + isoDay));
+
   /// "October 2026"
   String month(DateTime d) => DateFormat('MMMM y', _locale).format(d);
 

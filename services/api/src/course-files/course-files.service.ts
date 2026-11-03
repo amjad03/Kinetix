@@ -8,6 +8,7 @@ import {
   attendanceRecords,
   chapters,
   coSets,
+  courseOutcomes,
   lessonPlans,
   marks,
   recordings,
@@ -21,6 +22,7 @@ import {
   whiteboards,
 } from '../db/schema.js';
 import type { CourseFileData } from './course-file-pdf.js';
+import { teachingLogs } from '../db/schema-academics-pass.js';
 
 const DAYS = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const ATTENDANCE_THRESHOLD = 75;
@@ -115,6 +117,21 @@ export class CourseFilesService {
     const wbs = await tx.select({ title: whiteboards.title, updatedAt: whiteboards.updatedAt, sharedAt: whiteboards.sharedAt }).from(whiteboards).where(and(eq(whiteboards.sectionId, o.sectionId), eq(whiteboards.subjectId, o.subjectId))).orderBy(desc(whiteboards.updatedAt)).limit(100);
     const recs = await tx.select({ title: recordings.title, startedAt: recordings.startedAt, durationMs: recordings.durationMs }).from(recordings).where(and(eq(recordings.sectionId, o.sectionId), eq(recordings.subjectId, o.subjectId))).orderBy(desc(recordings.startedAt)).limit(100);
 
+    // Course details, outcome statements and the teaching diary for the NBA course file.
+    const faculty = [...new Set(slots.filter((s) => !s.archivedAt).map((s) => s.teacher))];
+    const outcomes = active ? await tx.select({ code: courseOutcomes.code, statement: courseOutcomes.statement }).from(courseOutcomes).where(eq(courseOutcomes.coSetId, active.id)).orderBy(asc(courseOutcomes.ord), asc(courseOutcomes.code)) : [];
+    const logs = await tx.select().from(teachingLogs).where(and(eq(teachingLogs.sectionId, o.sectionId), eq(teachingLogs.subjectId, o.subjectId))).orderBy(desc(teachingLogs.date), desc(teachingLogs.startsAt));
+    const titles = new Map(syllabus.flatMap((c) => c.topics).length ? (await tx.select({ id: topics.id, title: topics.title }).from(topics).where(inArray(topics.id, [...new Set(logs.flatMap((l) => l.topicIds))].concat(['00000000-0000-0000-0000-000000000000'])))).map((t) => [t.id, t.title]) : []);
+    const planLabel: Record<string, string> = { as_planned: 'As planned', ahead: 'Ahead', behind: 'Behind', unplanned: 'No plan' };
+    const diary = {
+      logged: logs.length,
+      asPlanned: logs.filter((l) => l.againstPlan === 'as_planned').length,
+      ahead: logs.filter((l) => l.againstPlan === 'ahead').length,
+      behind: logs.filter((l) => l.againstPlan === 'behind').length,
+      unplanned: logs.filter((l) => l.againstPlan === 'unplanned').length,
+      entries: logs.slice(0, 60).map((l) => ({ date: l.date, topics: l.topicIds.map((id) => titles.get(id) ?? '').filter(Boolean).join('; ') || l.summary, delivery: l.delivery, againstPlan: planLabel[l.againstPlan] ?? l.againstPlan })),
+    };
+
     const data: CourseFileData = {
       institution: tenant?.name ?? '',
       section: section.name,
@@ -131,7 +148,23 @@ export class CourseFilesService {
       attainment,
       whiteboards: wbs.map((w) => ({ title: w.title, updatedOn: date(w.updatedAt), shared: !!w.sharedAt })),
       recordings: recs.map((r) => ({ title: r.title, recordedOn: date(r.startedAt), minutes: Math.round(r.durationMs / 60_000) })),
+      course: { credits: subject.credits, ltp: `${subject.lectureHours}-${subject.tutorialHours}-${subject.practicalHours}`, type: subject.courseType, faculty },
+      outcomes,
+      diary,
     };
+    const covered = syllabus.flatMap((c) => c.topics).filter((t) => t.coveredOn).length;
+    data.checklist = [
+      { item: 'Syllabus linked', done: syllabus.length > 0 },
+      { item: 'Course outcomes stated', done: outcomes.length > 0 },
+      { item: 'Timetable', done: timetable.length > 0 },
+      { item: 'Lesson plans', done: plans[0].total > 0 },
+      { item: 'Teaching diary kept', done: diary.logged > 0 },
+      { item: 'Syllabus covered (at least 90%)', done: syllabus.flatMap((c) => c.topics).length > 0 && covered / syllabus.flatMap((c) => c.topics).length >= 0.9 },
+      { item: 'Attendance register', done: attendance.sessions > 0 },
+      { item: 'Assessments with marks', done: assessmentRows.length > 0 },
+      { item: 'CO attainment calculated', done: attainment.length > 0 },
+      { item: 'Teaching material (boards or recordings)', done: wbs.length + recs.length > 0 },
+    ];
     const topicList = syllabus.flatMap((c) => c.topics);
     const summary = {
       topics: topicList.length,
@@ -143,6 +176,9 @@ export class CourseFilesService {
       outcomes: attainment.length,
       whiteboards: data.whiteboards.length,
       recordings: data.recordings.length,
+      diaryEntries: diary.logged,
+      checklistDone: data.checklist.filter((c) => c.done).length,
+      checklistItems: data.checklist.length,
     };
     return { data, summary };
   }

@@ -408,6 +408,14 @@ export interface TeacherPeriod {
   attendanceTaken: boolean;
   /** A lesson plan is saved for this period on this date. */
   lessonPlanned?: boolean;
+  /** The teacher covers this period for a colleague on this date (a substitution). */
+  substituteFor?: { id: string; fullName: string } | null;
+  /** A colleague covers this period of the teacher on this date. */
+  coveredBy?: { id: string; fullName: string } | null;
+  /** A lab or tutorial batch ("B1"); null for the whole class. */
+  batch?: string | null;
+  /** The teaching diary has an entry for this period on this date. */
+  logged?: boolean;
 }
 
 /** GET /v1/teacher/timetable?date=YYYY-MM-DD */

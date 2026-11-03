@@ -1617,5 +1617,16 @@
   "attendanceReasonOutside": "आप परिसर से बाहर लगते हैं",
   "attendanceReasonPhone": "यह वह फ़ोन नहीं है जिससे आप सामान्यतः उपस्थिति लगाते हैं",
   "attendanceReasonLate": "पीरियड शुरू हुए काफ़ी समय हो गया",
-  "attendanceReasonLocation": "आपके स्थान की पुष्टि नहीं हो सकी"
+  "attendanceReasonLocation": "आपके स्थान की पुष्टि नहीं हो सकी",
+  "ttPrevWeek": "पिछला सप्ताह",
+  "ttNextWeek": "अगला सप्ताह",
+  "ttHoliday": "छुट्टी: {title}। कक्षाएँ नहीं होंगी।",
+  "ttFollows": "इस कार्य दिवस पर {day} की समय-सारिणी चलेगी।",
+  "ttNoClasses": "इस दिन कोई कक्षा नहीं।",
+  "ttSubstitute": "{teacher} ({usual} के स्थान पर)",
+  "ttNow": "अभी",
+  "ttBatch": "बैच {batch}",
+  "ttElective": "वैकल्पिक",
+  "ttSpecial": "अतिरिक्त कक्षा",
+  "ttChildTimetable": "{name} की समय-सारिणी"
 }

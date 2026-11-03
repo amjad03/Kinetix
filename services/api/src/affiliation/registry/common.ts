@@ -116,6 +116,7 @@ export function karnatakaNep(): ProfileRules {
       ],
     },
     attendance: { minPercent: 75, condonableToPercent: null, basis: 'per_subject' },
+    calendar: { minWorkingDaysPerTerm: 90, minWorkingDaysPerYear: 180, source: 'UGC minimum standards of instruction: 180 teaching days a year (90 a semester); KSHEC academic calendar for state universities' },
     examApplication: { fields: ['Register Number', 'Name as in the SSLC marks card', 'Programme and semester', 'Papers applied (regular and repeater)', 'Medium of answering', 'Fee paid and receipt number', 'Photo and signature'], lateFeeAllowed: true },
     revaluation: { revaluation: true, retotalling: false, photocopy: true, windowDays: null, changeThresholdPercent: null },
     marksCard: {
@@ -205,6 +206,7 @@ export function schoolBoard(): ProfileRules {
     classification: { basis: 'percent', classes: [], minForAward: null },
     credits: { degreeTotal: null, perTermTypical: null, exits: [] },
     attendance: { minPercent: 75, condonableToPercent: null, basis: 'overall' },
+    calendar: { minWorkingDaysPerTerm: null, minWorkingDaysPerYear: 220, source: 'RTE Act 2009 schedule: 200 instructional days for classes I-V, 220 for VI-VIII; boards follow 220 for secondary' },
     examApplication: { fields: ['Name as in the school admission register', 'Date of birth', 'Father / mother / guardian name', 'Subjects and languages offered', 'Medium', 'Category', 'Photo and signature', 'Fee paid'], lateFeeAllowed: true },
     revaluation: { revaluation: true, retotalling: true, photocopy: true, windowDays: null, changeThresholdPercent: null },
     marksCard: {

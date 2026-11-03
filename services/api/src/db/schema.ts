@@ -396,6 +396,8 @@ export const timetableSlots = pgTable(
     batch: text('batch'),
     /** Other classes taught together with this one in the same period (a combined class). */
     combinedSectionIds: uuid('combined_section_ids').array(),
+    /** The timetable version that published this period (migration 0200; null for periods added in the live editor). */
+    versionId: uuid('version_id'),
   },
   (t) => [index('timetable_teacher_day_idx').on(t.teacherId, t.dayOfWeek)],
 );
@@ -4135,6 +4137,8 @@ export const TENANT_TABLES = [
   'fee_accounts', 'gateway_webhook_events', 'fee_payment_links', 'fee_accruals', 'fee_payment_flags', 'fee_programme_transfers', 'fee_reminder_sends',
   // Admissions pass: seat conversions, programme approvals, checklist, credentials, broadcasts (migrations 0196-0197; schema-admissions-pass.ts).
   'admission_seat_conversions', 'admission_programme_settings', 'admission_checklist_items', 'admission_credential_issues', 'admission_broadcasts', 'admission_broadcast_sends',
+  // Academics pass: timetable versions, teacher unavailability and the teaching diary (migrations 0200-0201; schema-academics-pass.ts).
+  'timetable_versions', 'timetable_version_slots', 'faculty_unavailability', 'teaching_logs',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------

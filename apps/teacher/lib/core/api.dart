@@ -414,6 +414,10 @@ abstract class TeacherApi implements AnnouncementSource {
   /// The lesson plan for a period on [date], or the suggested topics when none is saved.
   Future<PeriodPlan> periodPlan({required String slotId, required String date});
 
+  /// Writes the teaching diary of a period on [date]: the topics taught (marked covered), how, and why it differed from
+  /// the lesson plan (`POST /v1/teaching-log`).
+  Future<DiaryEntry> writeDiary({required String slotId, required String date, required List<String> topicIds, required String delivery, String summary = '', String? deviationReason});
+
   /// Saves the plan for a period (an edit clears the head's review).
   Future<PeriodPlan> saveLessonPlan({
     required String slotId,
@@ -1050,6 +1054,10 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<Me> updatePreferredLanguage(String language) async =>
       Me.fromJson(await _send('PATCH', '/v1/me', body: {'preferredLanguage': language}));
+
+  @override
+  Future<DiaryEntry> writeDiary({required String slotId, required String date, required List<String> topicIds, required String delivery, String summary = '', String? deviationReason}) async =>
+      DiaryEntry.fromJson(await _send('POST', '/v1/teaching-log', body: {'slotId': slotId, 'date': date, 'topicIds': topicIds, 'delivery': delivery, 'summary': summary, 'source': 'teacher_app', if (deviationReason != null && deviationReason.trim().isNotEmpty) 'deviationReason': deviationReason.trim()}) as Map<String, dynamic>);
 
   @override
   Future<DayTimetable> timetable({String? date}) async =>

@@ -3929,5 +3929,21 @@
         "type": "String"
       }
     }
-  }
+  },
+  "ttPrevWeek": "Previous week",
+  "ttNextWeek": "Next week",
+  "ttHoliday": "Holiday: {title}. There are no classes.",
+  "@ttHoliday": {"placeholders": {"title": {"type": "String"}}},
+  "ttFollows": "This working day follows {day}'s timetable.",
+  "@ttFollows": {"placeholders": {"day": {"type": "String"}}},
+  "ttNoClasses": "No classes this day.",
+  "ttSubstitute": "{teacher} (for {usual})",
+  "@ttSubstitute": {"placeholders": {"teacher": {"type": "String"}, "usual": {"type": "String"}}},
+  "ttNow": "Now",
+  "ttBatch": "Batch {batch}",
+  "@ttBatch": {"placeholders": {"batch": {"type": "String"}}},
+  "ttElective": "Elective",
+  "ttSpecial": "Extra class",
+  "ttChildTimetable": "{name}'s timetable",
+  "@ttChildTimetable": {"placeholders": {"name": {"type": "String"}}}
 }

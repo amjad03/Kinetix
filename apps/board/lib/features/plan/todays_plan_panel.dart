@@ -9,6 +9,7 @@ import '../../l10n/l10n.dart';
 import '../ai/ai_widgets.dart';
 import '../board/side_panel.dart';
 import 'plan_timer.dart';
+import 'today_timetable.dart';
 
 const planAccent = Color(0xFF81C995);
 
@@ -90,6 +91,8 @@ class _TodaysPlanPanelState extends State<TodaysPlanPanel> {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(OnlineStrings(context).copied)));
               },
             ),
+          // Today's periods in this room, and the diary of the one on now.
+          if (widget.board.api != null && widget.board.session != null) TodayTimetableSection(key: ValueKey('today-${widget.board.session?.sessionId}'), board: widget.board),
           Expanded(child: _body(context)),
         ],
       ),

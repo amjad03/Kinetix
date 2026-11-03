@@ -43,6 +43,10 @@ export const DomainEvents = {
   // Attendance: the detention list feeding examination eligibility, and QR scans held for the teacher.
   DetentionListPublished: 'attendance.detention_list_published',
   DetentionListWithdrawn: 'attendance.detention_list_withdrawn',
+  // Academics: a timetable version became the live timetable, a calendar entry was published, a teaching diary entry was reviewed.
+  TimetablePublished: 'timetable.version_published',
+  CalendarPublished: 'calendar.event_published',
+  TeachingLogReviewed: 'academics.teaching_log_reviewed',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

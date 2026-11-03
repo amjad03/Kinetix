@@ -91,16 +91,16 @@ void main() {
     expect(find.text('हिन्दी'), findsOneWidget);
   });
 
-  testWidgets('soon entries explain themselves', (tester) async {
+  testWidgets('the timetable is built: no entry is marked Soon any more', (tester) async {
     await pumpApp(tester);
     await openProfile(tester);
     await scrollTo(tester, find.text('Timetable'));
     await tester.tap(find.text('Timetable'));
-    await tester.pump();
-    expect(find.text('Timetable is coming in a later update'), findsOneWidget);
-    // Results and library are built now.
-    expect(find.text('Marks'), findsNothing);
-    expect(find.text('Soon'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('Corporate Accounting'), findsWidgets);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('Soon'), findsNothing);
   });
 
   testWidgets('signs out after confirming', (tester) async {

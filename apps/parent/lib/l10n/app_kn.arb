@@ -1105,5 +1105,18 @@
   "paymentPending": "ಇನ್ನೂ ದೃಢಪಟ್ಟಿಲ್ಲ. ನೀವು ಪಾವತಿಸಿದ್ದರೆ ಕೆಲವು ನಿಮಿಷಗಳಲ್ಲಿ ಇಲ್ಲಿ ಕಾಣುತ್ತದೆ.",
   "payDueNow": "ಕಂತು {amount}",
   "atLeastPart": "ಒಮ್ಮೆಗೆ ಕನಿಷ್ಠ {amount} ಪಾವತಿಸಿ",
-  "downloadReceipt": "ರಸೀದಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ (PDF)"
+  "downloadReceipt": "ರಸೀದಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ (PDF)",
+  "ttPrevWeek": "ಹಿಂದಿನ ವಾರ",
+  "ttNextWeek": "ಮುಂದಿನ ವಾರ",
+  "ttHoliday": "ರಜೆ: {title}. ತರಗತಿಗಳು ಇರುವುದಿಲ್ಲ.",
+  "ttFollows": "ಈ ಕೆಲಸದ ದಿನ {day} ದಿನದ ವೇಳಾಪಟ್ಟಿ ನಡೆಯುತ್ತದೆ.",
+  "ttNoClasses": "ಈ ದಿನ ತರಗತಿಗಳಿಲ್ಲ.",
+  "ttSubstitute": "{teacher} ({usual} ಬದಲಿಗೆ)",
+  "ttNow": "ಈಗ",
+  "ttBatch": "ಬ್ಯಾಚ್ {batch}",
+  "ttElective": "ಐಚ್ಛಿಕ",
+  "ttSpecial": "ಹೆಚ್ಚುವರಿ ತರಗತಿ",
+  "ttChildTimetable": "{name} ಅವರ ವೇಳಾಪಟ್ಟಿ",
+  "timetable": "ವೇಳಾಪಟ್ಟಿ",
+  "timetableSubtitle": "ವಾರದ ತರಗತಿಗಳು"
 }

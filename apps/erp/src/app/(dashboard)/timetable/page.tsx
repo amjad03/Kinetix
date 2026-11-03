@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { Wand2 } from 'lucide-react';
+import { Button } from '@/components/shadcn/button';
 import { getI18n } from '@/i18n/server';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
@@ -53,7 +56,13 @@ export default async function TimetablePage({ searchParams }: { searchParams: Pr
           view ? (
             <div className="flex flex-wrap items-end gap-3">
               <UrlSelect label={t('tt.of')} value={`${view.kind}=${view.id}`} options={options} minWidth={240} testId="timetable-of" />
-              <TimetablePrint pdf={`/api/download?kind=acad-report&report=timetable&format=pdf&by=${by}&id=${view.id}`} />
+              <TimetablePrint pdf={`/api/download?kind=tt-grid&version=live&by=${by}&id=${view.id}`} />
+              <Button variant="outline" className="h-9" asChild>
+                <Link href="/timetable/studio" data-testid="open-studio">
+                  <Wand2 />
+                  {t('tts2.openStudio')}
+                </Link>
+              </Button>
             </div>
           ) : undefined
         }

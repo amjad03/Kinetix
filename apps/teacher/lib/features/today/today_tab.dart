@@ -13,6 +13,7 @@ import '../../widgets/common.dart';
 import '../attendance/attendance_screen.dart';
 import '../board/connect_screen.dart';
 import '../remote/remote_screen.dart';
+import '../plans/diary_screen.dart';
 import '../plans/lesson_plan_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 import 'today_controller.dart';
@@ -169,6 +170,7 @@ class TodayTab extends StatelessWidget {
                         onAttendance: () => _takeAttendance(context, p),
                         onTeach: p.isNow && controller.connection == null ? () => _connect(context) : null,
                         onSyllabus: () => openSyllabus(context, api: api, section: p.section, subject: p.subject, teacherName: me.fullName),
+                        onDiary: !_diaryOpen(controller, p) ? null : () => openDiary(context, api: api, period: p, date: controller.selectedDate!, onSaved: () => controller.markLogged(p.slotId)),
                         onPlan: () => openLessonPlan(
                           context,
                           api: api,
@@ -559,6 +561,14 @@ class HolidayCard extends StatelessWidget {
   }
 }
 
+/// The diary can be written once a period has begun: any period of an earlier day, today's from its start.
+bool _diaryOpen(TodayController c, Period p) {
+  if (c.isSelectedFuture || c.selectedDate == null || c.today == null) return false;
+  if (p.logged || c.selectedDate!.compareTo(c.today!) < 0 || p.isNow) return true;
+  final now = DateTime.now();
+  return now.hour * 60 + now.minute >= p.startsAt.minutes && c.selectedDate == isoDate(now);
+}
+
 class _PeriodCard extends StatelessWidget {
   const _PeriodCard({
     required this.period,
@@ -567,6 +577,7 @@ class _PeriodCard extends StatelessWidget {
     required this.onSyllabus,
     required this.onPlan,
     this.onTeach,
+    this.onDiary,
   });
 
   final Period period;
@@ -576,6 +587,9 @@ class _PeriodCard extends StatelessWidget {
   final VoidCallback onPlan;
   final VoidCallback? onTeach;
 
+  /// Writes the teaching diary (null for a day still to come).
+  final VoidCallback? onDiary;
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -584,7 +598,7 @@ class _PeriodCard extends StatelessWidget {
     final now = period.isNow;
     final onCard = now ? c.onPrimaryContainer : c.onSurface;
     final muted = now ? c.onPrimaryContainer : c.onSurfaceVariant;
-    final where = [period.section.name, if (period.room != null) period.room!.name].join(' · ');
+    final where = [period.section.name, if (period.batch != null) l.batchLabel(period.batch!), if (period.room != null) period.room!.name].join(' · ');
 
     final Widget attendance;
     if (period.attendanceTaken) {
@@ -645,10 +659,23 @@ class _PeriodCard extends StatelessWidget {
                       Text(period.subject.name, style: context.text.titleMedium?.copyWith(color: onCard)),
                       const SizedBox(height: 2),
                       Text(where, style: context.text.bodyMedium?.copyWith(color: muted)),
+                      if (period.substituteFor != null)
+                        Text(l.coveringFor(period.substituteFor!), key: Key('coveringFor-${period.slotId}'), style: context.text.bodySmall?.copyWith(color: c.tertiary, fontWeight: FontWeight.w600)),
+                      if (period.coveredBy != null)
+                        Text(l.coveredBy(period.coveredBy!), key: Key('coveredBy-${period.slotId}'), style: context.text.bodySmall?.copyWith(color: muted, fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
                 if (now) Pill(l.now, key: const Key('nowPill'), background: c.primary, foreground: c.onPrimary),
+                // The teaching diary sits beside the title, so the actions below stay one row on a phone.
+                if (onDiary != null)
+                  IconButton(
+                    key: Key('diary-${period.slotId}'),
+                    onPressed: onDiary,
+                    visualDensity: VisualDensity.compact,
+                    tooltip: period.logged ? l.diaryWritten : l.diaryWrite,
+                    icon: Icon(period.logged ? Icons.task_alt : Icons.history_edu_outlined, size: 20, color: onCard),
+                  ),
               ],
             ),
             const SizedBox(height: Kx.s12),

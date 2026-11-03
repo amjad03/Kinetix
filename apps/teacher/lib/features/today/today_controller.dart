@@ -96,6 +96,14 @@ class TodayController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The teaching diary of a period was written.
+  void markLogged(String slotId) {
+    for (final p in day?.periods ?? const <Period>[]) {
+      if (p.slotId == slotId) p.logged = true;
+    }
+    notifyListeners();
+  }
+
   Future<void> _run(Future<void> Function() body) async {
     loading = true;
     error = null;

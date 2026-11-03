@@ -151,6 +151,14 @@ export const RulesSchema = z.object({
     condonableToPercent: pct.nullable(),
     basis: z.enum(['per_subject', 'overall']),
   }),
+  /** Minimum working (instructional) days the regulations require; the academic calendar is checked against them. */
+  calendar: z
+    .object({
+      minWorkingDaysPerTerm: z.number().int().min(0).max(366).nullable(),
+      minWorkingDaysPerYear: z.number().int().min(0).max(366).nullable(),
+      source: z.string().trim().max(300),
+    })
+    .optional(),
   examApplication: z.object({ fields: z.array(z.string().trim().min(1).max(60)).max(30), lateFeeAllowed: z.boolean() }),
   revaluation: z.object({
     revaluation: z.boolean(),

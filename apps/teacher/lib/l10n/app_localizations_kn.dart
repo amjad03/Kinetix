@@ -4451,4 +4451,85 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get claimStatusCancelled => 'ರದ್ದು';
+
+  @override
+  String get diaryWrite => 'ದಿನಚರಿ ಬರೆಯಿರಿ';
+
+  @override
+  String get diaryWritten => 'ದಿನಚರಿ ಬರೆಯಲಾಗಿದೆ';
+
+  @override
+  String get diaryTitle => 'ಬೋಧನಾ ದಿನಚರಿ';
+
+  @override
+  String get diaryTopics => 'ಕಲಿಸಿದ ವಿಷಯಗಳು';
+
+  @override
+  String get diaryTopicsHelp => 'ಇವುಗಳನ್ನು ತರಗತಿಗೆ ಪೂರ್ಣಗೊಂಡಂತೆ ಗುರುತಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get diaryDelivery => 'ಹೇಗೆ ಕಲಿಸಲಾಯಿತು';
+
+  @override
+  String get diarySummary => 'ಏನು ಮಾಡಲಾಯಿತು';
+
+  @override
+  String get diaryDeviation => 'ಪಾಠ ಯೋಜನೆಯಿಂದ ವ್ಯತ್ಯಾಸ ಏಕೆ';
+
+  @override
+  String get diarySave => 'ದಿನಚರಿ ಉಳಿಸಿ';
+
+  @override
+  String get diarySaved => 'ದಿನಚರಿ ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get diaryNoSyllabus => 'ಈ ವಿಷಯಕ್ಕೆ ಪಠ್ಯಕ್ರಮ ಜೋಡಿಸಿಲ್ಲ; ಏನು ಮಾಡಲಾಯಿತು ಎಂದು ಬರೆಯಿರಿ.';
+
+  @override
+  String get diaryNeedSomething => 'ಕಲಿಸಿದ ವಿಷಯಗಳನ್ನು ಆರಿಸಿ ಅಥವಾ ಏನು ಮಾಡಲಾಯಿತು ಎಂದು ಬರೆಯಿರಿ.';
+
+  @override
+  String coveringFor(String name) {
+    return '$name ಬದಲಿಗೆ';
+  }
+
+  @override
+  String coveredBy(String name) {
+    return '$name ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದ್ದಾರೆ';
+  }
+
+  @override
+  String batchLabel(String batch) {
+    return 'ಬ್ಯಾಚ್ $batch';
+  }
+
+  @override
+  String get delivery_lecture => 'ಉಪನ್ಯಾಸ';
+
+  @override
+  String get delivery_tutorial => 'ಬೋಧನಾ ತರಗತಿ';
+
+  @override
+  String get delivery_practical => 'ಪ್ರಾಯೋಗಿಕ';
+
+  @override
+  String get delivery_seminar => 'ವಿಚಾರ ಸಂಕಿರಣ';
+
+  @override
+  String get delivery_discussion => 'ಚರ್ಚೆ';
+
+  @override
+  String get delivery_demonstration => 'ಪ್ರಾತ್ಯಕ್ಷಿಕೆ';
+
+  @override
+  String get delivery_revision => 'ಪುನರಾವರ್ತನೆ';
+
+  @override
+  String get delivery_test => 'ಪರೀಕ್ಷೆ';
+
+  @override
+  String get delivery_online => 'ಆನ್‌ಲೈನ್';
+
+  @override
+  String get delivery_field_visit => 'ಕ್ಷೇತ್ರ ಭೇಟಿ';
 }

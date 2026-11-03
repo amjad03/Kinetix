@@ -86,6 +86,8 @@ export function describeRules(r: ProfileRules): { section: RuleSection; lines: s
     lines: [
       `At least ${n(r.attendance.minPercent)}% attendance ${r.attendance.basis === 'per_subject' ? 'in each subject' : 'overall'} to be allowed to write the examination.`,
       r.attendance.condonableToPercent !== null ? `Shortage down to ${n(r.attendance.condonableToPercent)}% may be condoned on valid grounds.` : 'Condonation as the university or board notifies.',
+      ...(r.calendar?.minWorkingDaysPerTerm != null ? [`At least ${n(r.calendar.minWorkingDaysPerTerm)} working days a ${r.terminology.term}.`] : []),
+      ...(r.calendar?.minWorkingDaysPerYear != null ? [`At least ${n(r.calendar.minWorkingDaysPerYear)} working days a year.`] : []),
     ],
   });
 
