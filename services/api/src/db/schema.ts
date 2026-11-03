@@ -5716,7 +5716,7 @@ export const transportIncidents = pgTable('transport_incidents', {
   tenantId: tenantId(),
   vehicleId: uuid('vehicle_id').references(() => transportVehicles.id),
   tripId: uuid('trip_id').references(() => transportTrips.id),
-  kind: text('kind').$type<'accident' | 'breakdown' | 'delay' | 'behaviour' | 'other'>().notNull(),
+  kind: text('kind').$type<'accident' | 'breakdown' | 'delay' | 'behaviour' | 'sos' | 'other'>().notNull(),
   severity: text('severity').$type<'low' | 'medium' | 'high'>().notNull().default('low'),
   description: text('description').notNull(),
   occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),

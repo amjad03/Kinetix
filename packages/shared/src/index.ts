@@ -613,6 +613,8 @@ export interface TransportPositionEvent {
   nextStop: { id: string; name: string; seq: number } | null;
   /** Minutes to the next stop at the bus's current pace. */
   etaMinutes: number | null;
+  /** Minutes behind the next stop's timetable at that pace (0 on time; absent when the stop has no time). */
+  lateMinutes?: number | null;
   at: string;
 }
 export * from './admissions.js';

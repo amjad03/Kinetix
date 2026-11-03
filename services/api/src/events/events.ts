@@ -50,6 +50,9 @@ export const DomainEvents = {
   // Library: a no-dues clearance (for a transfer certificate or exit) and a fine put on the fee account.
   LibraryClearanceIssued: 'library.clearance_issued',
   LibraryFineCharged: 'library.fine_charged',
+  // Transport: an SOS from the bus, and a fee change after the month was billed (a move or a cancelled seat).
+  TransportSosRaised: 'transport.sos_raised',
+  TransportFeeAdjusted: 'transport.fee_adjusted',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 
