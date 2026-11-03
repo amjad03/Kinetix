@@ -342,6 +342,15 @@ class ApiClient {
   /// Marks a topic as taught today to the open class (by the signed-in teacher).
   Future<void> markTopicTaught(String topicId) async => _sendOrDefer('POST', '/v1/coverage', body: {'topicId': topicId});
 
+  /// Today in this board's room and the signed-in teacher's day (`GET /v1/classroom/today`); null from a server without it.
+  Future<Map<String, dynamic>?> classroomToday() async {
+    final j = await _send('GET', '/v1/classroom/today');
+    return j is Map<String, dynamic> ? j : null;
+  }
+
+  /// Saves the teaching diary of the period open on the board, with the topics marked taught here today.
+  Future<void> writeTeachingLogFromBoard({String summary = ''}) async => _send('POST', '/v1/classroom/teaching-log', body: {'summary': summary});
+
   /// Undoes [markTopicTaught].
   Future<void> unmarkTopicTaught(String topicId) async => _sendOrDefer('DELETE', '/v1/coverage', body: {'topicId': topicId});
 

@@ -60,6 +60,9 @@ void main() {
   /// What GET /v1/lesson-plans/current returns (null: a free session, so an empty body).
   Map<String, dynamic>? current;
 
+  /// What GET /v1/classroom/today returns (null: an older server, which answers with something else).
+  Map<String, dynamic>? today;
+
   Future<BoardController> pump(WidgetTester tester, {bool signedIn = true}) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(1920, 1080);
@@ -71,6 +74,8 @@ void main() {
       final path = req.url.path;
       if (path == '/v1/devices/enroll') return http.Response(jsonEncode({'deviceToken': 'dev', 'device': {'name': 'Board'}}), 201);
       if (path == '/v1/lesson-plans/current') return current == null ? http.Response('', 200) : json(current!);
+      if (path == '/v1/classroom/today' && today != null) return json(today!);
+      if (path == '/v1/classroom/teaching-log') return json({'id': 'log1', 'againstPlan': 'as_planned'});
       if (path == '/v1/content/syllabus') return http.Response('', 200);
       if (path == '/v1/coverage') {
         if (req.method == 'POST') return json({'topicId': 't1', 'coveredOn': '2026-10-05'});
@@ -118,7 +123,46 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  setUp(() => current = _current());
+  setUp(() {
+    current = _current();
+    today = null;
+  });
+
+  testWidgets("shows today's periods in the room with a substitute, and saves the diary of the one on now", (tester) async {
+    today = {
+      'date': '2026-10-05',
+      'time': '10:20',
+      'room': {'id': 'r1', 'name': 'Room 204'},
+      'holiday': null,
+      'currentSlotId': 'slot1',
+      'roomPeriods': [
+        {'slotId': 'slot0', 'startsAt': '09:00', 'endsAt': '09:55', 'section': 'BCom Sem 1 A', 'subject': 'Financial Accounting', 'teacher': 'Ravi Kumar', 'usualTeacher': null, 'batch': null, 'isNow': false, 'logged': true},
+        {'slotId': 'slot1', 'startsAt': '10:00', 'endsAt': '10:55', 'section': 'BCom Sem 3 A', 'subject': 'Corporate Accounting', 'teacher': 'Anita Sharma', 'usualTeacher': 'Sudhir Kamath', 'batch': null, 'isNow': true, 'logged': false},
+      ],
+      'myPeriods': [],
+    };
+    final board = await pump(tester);
+    await open(tester);
+    expect(find.byKey(const Key('board-today')), findsOneWidget);
+    expect(find.text('Today in Room 204'), findsOneWidget);
+    expect(find.text('Corporate Accounting · BCom Sem 3 A · Anita Sharma (for Sudhir Kamath)'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('board-diary')));
+    await tester.pumpAndSettle();
+    expect(requests.where((r) => r.url.path == '/v1/classroom/teaching-log' && r.method == 'POST'), hasLength(1));
+    expect(find.text('Saved to the teaching diary'), findsOneWidget);
+    // Let the message go.
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    board.dispose();
+  });
+
+  testWidgets('a holiday in the room says so', (tester) async {
+    today = {'date': '2026-10-05', 'room': {'id': 'r1', 'name': 'Room 204'}, 'holiday': 'Dasara', 'currentSlotId': null, 'roomPeriods': [], 'myPeriods': []};
+    final board = await pump(tester);
+    await open(tester);
+    expect(find.text('Holiday: Dasara. No classes today.'), findsOneWidget);
+    board.dispose();
+  });
 
   testWidgets("shows the open period's plan, read-only, with a step timer", (tester) async {
     final board = await pump(tester);
