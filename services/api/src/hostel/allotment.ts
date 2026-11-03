@@ -66,6 +66,11 @@ export async function allotBed(tx: Tx, p: UserPrincipal, now: Date, studentId: s
   if (!student) throw new NotFoundException('Student not found');
   const today = await todayIn(tx, now);
   await checkBed(tx, studentId, bedId, today);
+  // UGC anti-ragging regulations: the student's and the parent's undertakings before a bed, when the hostel asks for it.
+  if ((await readSettings(tx, p.tenantId, 'hostel')).rules.allotNeedsUndertaking) {
+    const u = await tx.execute<{ status: string }>(sql`select status from antiragging_undertakings where student_id = ${studentId}::uuid order by year_label desc limit 1`);
+    if (!['received', 'verified'].includes(u.rows[0]?.status ?? '')) throw new ConflictException('The anti-ragging undertakings (student and parent) are not in yet');
+  }
   const [taken] = await tx.select({ id: hostelAllotments.id }).from(hostelAllotments).where(and(eq(hostelAllotments.bedId, bedId), isNull(hostelAllotments.vacatedOn)));
   if (taken) throw new ConflictException('That bed is taken');
   const [has] = await tx.select({ id: hostelAllotments.id }).from(hostelAllotments).where(and(eq(hostelAllotments.studentId, studentId), isNull(hostelAllotments.vacatedOn)));

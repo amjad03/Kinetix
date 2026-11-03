@@ -330,6 +330,8 @@ export const hostelRoomTypes = pgTable('hostel_room_types', {
   description: text('description').notNull().default(''),
   sortOrder: integer('sort_order').notNull().default(0),
   createdAt: createdAt(),
+  /** What a room of this type has (migration 0204); a room's own list adds to it. */
+  amenities: text('amenities').array().notNull().default(sql`'{}'::text[]`),
 });
 
 /** A student's application for a hostel seat, ranked by the allotment rules (distance, merit, seniority). */
@@ -437,6 +439,9 @@ export const hostelSettlements = pgTable('hostel_settlements', {
   note: text('note').notNull().default(''),
   createdBy: by('created_by'),
   createdAt: createdAt(),
+  /** When the net was put on the student's fee ledger (a credit, or a charge when they owe), and the entry (migration 0205). */
+  ledgerPostedAt: ts('ledger_posted_at'),
+  ledgerRef: text('ledger_ref').notNull().default(''),
 });
 
 /** Wardens, resident tutors and security assigned to a hostel. */
@@ -451,6 +456,8 @@ export const hostelStaff = pgTable('hostel_staff', {
   untilOn: date('until_on'),
   phone: text('phone').notNull().default(''),
   createdAt: createdAt(),
+  /** The blocks a warden looks after (migration 0204); empty = the whole hostel. */
+  blockIds: uuid('block_ids').array().notNull().default(sql`'{}'::uuid[]`),
 });
 
 /** The duty roster: who is on duty in which hostel, on which day and shift. */
@@ -486,6 +493,12 @@ export const hostelSickbay = pgTable('hostel_sickbay', {
   parentAlerted: boolean('parent_alerted').notNull().default(false),
   recordedBy: by('recorded_by'),
   createdAt: createdAt(),
+  /** routine | urgent | emergency (migration 0204): an emergency alerts the family and the wardens at once. */
+  severity: text('severity').notNull().default('routine'),
+  /** Who took the student to hospital, when they got there, and how it ended. */
+  escort: text('escort').notNull().default(''),
+  hospitalAt: ts('hospital_at'),
+  outcome: text('outcome').notNull().default(''),
 });
 
 /** A resident who came back after curfew; repeated late entries are escalated to the family and the discipline register. */
@@ -575,6 +588,10 @@ export const messBills = pgTable(
     status: text('status').notNull().default('draft'),
     chargedTitle: text('charged_title'),
     createdAt: createdAt(),
+    /** Diet system (migration 0205): diets eaten, the month's rate a diet, and the fixed establishment charge. */
+    diets: integer('diets').notNull().default(0),
+    dietRatePaise: paise('diet_rate_paise').notNull().default(0),
+    establishmentPaise: paise('establishment_paise').notNull().default(0),
   },
   (t) => [uniqueIndex('mess_bills_uq').on(t.studentId, t.month)],
 );

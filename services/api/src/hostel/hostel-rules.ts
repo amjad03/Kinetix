@@ -13,11 +13,29 @@ export interface PriorityWeights {
  * Priority for allotment: farther homes, better merit and senior years come first. Distance counts a point per 10 km
  * (up to 1,000 km), merit its score (0-100), seniority 10 points a year; each part has its weight from the settings.
  */
-export function priority(a: { distanceKm: number | null; meritScore: number | null; term: number }, w: PriorityWeights): number {
+export function priority(a: { distanceKm: number | null; meritScore: number | null; term: number; category?: string | null }, w: PriorityWeights, categoryPoints: Record<string, number> = {}): number {
   const dist = Math.min(Math.max(a.distanceKm ?? 0, 0), 1000) / 10;
   const merit = Math.min(Math.max(a.meritScore ?? 0, 0), 100);
   const senior = Math.max(a.term, 1) * 10;
-  return Math.round((w.distance * dist + w.merit * merit + w.seniority * senior) * 100) / 100;
+  const cat = categoryPoints[(a.category ?? '').toLowerCase()] ?? 0;
+  return Math.round((w.distance * dist + w.merit * merit + w.seniority * senior + cat) * 100) / 100;
+}
+
+/** The reserved categories an application can carry (state and central reservation, persons with disabilities). */
+export const ALLOT_CATEGORIES = ['general', 'obc', 'sc', 'st', 'ews', 'pwd', 'defence', 'sports', 'ncc', 'foreign'] as const;
+
+/**
+ * The extra priority points a category earns, from the setting "sc:20, st:20, pwd:25" (category: points, comma
+ * separated). Unknown categories and bad numbers are ignored; points are capped at 1,000.
+ */
+export function parseCategoryPoints(spec: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const part of String(spec ?? '').split(',')) {
+    const [k, v] = part.split(':').map((x) => x.trim().toLowerCase());
+    const n = Number(v);
+    if (k && (ALLOT_CATEGORIES as readonly string[]).includes(k) && Number.isFinite(n) && n >= 0) out[k] = Math.min(n, 1000);
+  }
+  return out;
 }
 
 export const daysInMonth = (month: string) => {
@@ -104,4 +122,59 @@ export function genderFits(hostelGender: string, studentGender: string | null): 
   if (hostelGender === 'boys') return ['male', 'm', 'boy'].includes(g);
   if (hostelGender === 'girls') return ['female', 'f', 'girl'].includes(g);
   return true;
+}
+
+export interface DietBill extends MessBill {
+  diets: number;
+  dietRatePaise: number;
+  establishmentPaise: number;
+}
+
+/**
+ * The diet system: a resident eats one diet a day on the plan, less the days on approved mess leave (any length).
+ * The bill is the diets at the month's rate a diet, plus the plan's fixed establishment charge (pro rata for a part
+ * month). Nothing is rebated separately: leave days are simply not eaten.
+ */
+export function dietBill(month: string, sub: { startsOn: string; endedOn: string | null }, plan: { monthlyFeePaise: number }, leaves: { fromOn: string; toOn: string }[], dietRatePaise: number): DietBill {
+  const dim = daysInMonth(month);
+  const first = `${month}-01`;
+  const last = `${month}-${String(dim).padStart(2, '0')}`;
+  const days = overlapDays(sub.startsOn, sub.endedOn, first, last);
+  const subEnd = sub.endedOn && sub.endedOn < last ? sub.endedOn : last;
+  const subStart = sub.startsOn > first ? sub.startsOn : first;
+  // Leave days inside the month and the subscription, counted once even when leaves overlap.
+  const away = new Set<string>();
+  for (const l of leaves) {
+    const s = l.fromOn > subStart ? l.fromOn : subStart;
+    const e = l.toOn < subEnd ? l.toOn : subEnd;
+    for (let d = s; d <= e; d = nextDay(d)) away.add(d);
+  }
+  const leaveDays = Math.min(away.size, days);
+  const diets = days - leaveDays;
+  const establishment = days === dim ? plan.monthlyFeePaise : Math.round((plan.monthlyFeePaise * days) / dim);
+  const gross = diets * dietRatePaise + establishment;
+  return { days, leaveDays, rebateDays: 0, grossPaise: gross, rebatePaise: 0, netPaise: gross, diets, dietRatePaise, establishmentPaise: establishment };
+}
+
+/** The month's rate a diet: what the mess spent over the diets eaten, to the nearest paisa (0 when nobody ate). */
+export function dietRate(spentPaise: number, diets: number): number {
+  return diets > 0 ? Math.round(spentPaise / diets) : 0;
+}
+
+const nextDay = (d: string) => new Date(Date.parse(`${d}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+
+/**
+ * How late a resident coming in is, in whole minutes: after the curfew (local "HH:MM"; the small hours before 5 am
+ * count from the evening before), or after the time their pass said they would be back, whichever is later.
+ */
+export function minutesLate(local: { time: string }, curfew: string, expectedBackAt?: Date | null, at?: Date): number {
+  const [ch, cm] = curfew.split(':').map(Number);
+  const [h, m] = local.time.split(':').map(Number);
+  const curfewMin = (Number.isFinite(ch) ? ch : 21) * 60 + (Number.isFinite(cm) ? cm : 0);
+  const nowMin = h * 60 + m;
+  let late = 0;
+  if (nowMin >= curfewMin) late = nowMin - curfewMin;
+  else if (h < 5) late = 24 * 60 - curfewMin + nowMin;
+  if (expectedBackAt && at && at > expectedBackAt) late = Math.max(late, Math.floor((at.getTime() - expectedBackAt.getTime()) / 60_000));
+  return late;
 }

@@ -71,7 +71,7 @@ export const DEFAULTS: Record<OpsModule, ModuleDefaults> = {
     defaults: { stockCheckScope: 'all' },
   },
   hostel: {
-    rules: { outpassNeedsApproval: true, curfew: '21:00', maxLeaveDays: 7, parentNotifiedOnOut: true, outpassNeedsParentApproval: false, lateEntryEscalateAfter: 3, lateEntryWindowDays: 30, cautionDepositPaise: 500000, allotWeightDistance: 1, allotWeightMerit: 1, allotWeightSeniority: 1 },
+    rules: { outpassNeedsApproval: true, curfew: '21:00', maxLeaveDays: 7, parentNotifiedOnOut: true, outpassNeedsParentApproval: false, lateEntryEscalateAfter: 3, lateEntryWindowDays: 30, cautionDepositPaise: 500000, allotWeightDistance: 1, allotWeightMerit: 1, allotWeightSeniority: 1, allotCategoryPoints: 'sc:20, st:20, obc:10, ews:10, pwd:25', allotNeedsUndertaking: false, lateEntryAlertParents: true },
     templates: { outpassSlip: 'Out-pass for {name} ({room}) to {destination}, back by {back}.' },
     defaults: { messPlan: '', vacateNoticeDays: 15 },
   },
@@ -349,6 +349,25 @@ export const REPORTS: Record<string, ReportDef> = {
     columns: [['month', 'Month'], ['student', 'Student'], ['rollNo', 'Roll no.'], ['days', 'Days'], ['rebateDays', 'Rebate days'], ['gross', 'Gross (₹)'], ['rebate', 'Rebate (₹)'], ['net', 'Net (₹)'], ['status', 'Status']],
     sql: `select b.month, s.full_name as student, s.roll_no as "rollNo", b.days, b.rebate_days as "rebateDays", round(b.gross_paise / 100.0, 2) as gross, round(b.rebate_paise / 100.0, 2) as rebate, round(b.net_paise / 100.0, 2) as net, b.status
           from mess_bills b join students s on s.id = b.student_id where to_date(b.month || '-01', 'YYYY-MM-DD') between date_trunc('month', ${D}::date) and ${T} and ($3::text is null or b.status = $3) order by b.month desc, s.full_name`,
+    filters: ['from', 'to', 'status'],
+  },
+  'hostel.defaulters': {
+    module: 'hostel',
+    columns: [['student', 'Student'], ['rollNo', 'Roll no.'], ['place', 'Block · Room'], ['invoices', 'Unpaid bills'], ['oldestDue', 'Oldest due'], ['daysOverdue', 'Days overdue'], ['balance', 'Balance (₹)'], ['phone', 'Guardian phone']],
+    sql: `select s.full_name as student, s.roll_no as "rollNo",
+            coalesce((select k.name || ' · ' || r.number from hostel_allotments a join hostel_beds b on b.id = a.bed_id join hostel_rooms r on r.id = b.room_id join hostel_blocks k on k.id = r.block_id where a.student_id = s.id and a.vacated_on is null limit 1), 'Left') as place,
+            count(*)::int as invoices, min(i.due_on)::text as "oldestDue", (least(${T}::date, current_date) - min(i.due_on))::int as "daysOverdue", round(sum(i.amount_paise - i.paid_paise) / 100.0, 2) as balance,
+            coalesce((select u.phone from guardians g join users u on u.id = g.user_id where g.student_id = s.id order by g.is_primary desc, g.created_at limit 1), '') as phone
+          from fee_invoices i join students s on s.id = i.student_id
+          where (i.title ilike 'hostel%' or i.title ilike 'mess%') and i.amount_paise > i.paid_paise and i.due_on < least(${T}::date, current_date) and i.due_on >= ${D} and $3::text is null
+          group by s.id, s.full_name, s.roll_no order by sum(i.amount_paise - i.paid_paise) desc, s.full_name`,
+    filters: ['from', 'to'],
+  },
+  'hostel.gate-log': {
+    module: 'hostel',
+    columns: [['at', 'When'], ['direction', 'Out or in'], ['student', 'Student'], ['rollNo', 'Roll no.'], ['method', 'By'], ['minutesLate', 'Minutes late'], ['gate', 'Gate'], ['note', 'Note']],
+    sql: `select to_char(l.at at time zone 'Asia/Kolkata', 'YYYY-MM-DD HH24:MI') as at, l.direction, s.full_name as student, s.roll_no as "rollNo", l.method, l.minutes_late as "minutesLate", l.gate, l.note
+          from hostel_gate_logs l join students s on s.id = l.student_id where (l.at at time zone 'Asia/Kolkata')::date between ${D} and ${T} and ($3::text is null or l.direction = $3) order by l.at desc limit 5000`,
     filters: ['from', 'to', 'status'],
   },
   'transport.stop-list': {

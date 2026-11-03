@@ -5,7 +5,8 @@ import { alias } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 import { readSettings } from '../campus-ops/settings.js';
 import { auditUser } from '../common/audit.js';
-import { Bool, choiceFilter, choices, familyUserIds, oneOf, OptionalDecimal, qual, Rupees, rupeesOf, staffOptions, studentByRoll, todayIn, yesNo } from '../common/lht-kit.js';
+import { Bool, choiceFilter, choices, familyUserIds, oneOf, OptionalDecimal, qual, Rupees, rupeesOf, staffOptions, studentByRoll, todayIn, usersWithRoles, yesNo } from '../common/lht-kit.js';
+import { studentCredits } from '../db/schema-depth.js';
 import { nextNumber } from '../common/ops.js';
 import { Clock } from '../common/time.js';
 import { assets, healthVisits, hostelAllotments, hostelBeds, hostelBlocks, hostelComplaints, hostelGatePasses, hostelRooms, hostelVisitors, invItems, messPlans, messSubscriptions, sections, students, users } from '../db/schema.js';
@@ -18,6 +19,8 @@ import { fail, int, outcome, required } from '../import/row-helpers.js';
 import { eachRow } from '../records/import.js';
 import { allotBed, decidePass, defaultHostel, gateMove, residentOf, transfer, vacate } from './allotment.js';
 import { HOSTEL_ROLES } from './hostel.controller.js';
+import { ALLOT_CATEGORIES, parseCategoryPoints } from './hostel-rules.js';
+import { blockScope, complaintScope, roomScope, studentScope } from './hostel-scope.js';
 
 /**
  * The hostel's lists as record kit entities: hostels, room types, blocks, rooms and beds; residents (allot, vacate
@@ -43,10 +46,13 @@ const STAFF_ROLES = choices(['warden', 'Warden'], ['resident_tutor', 'Resident t
 const SHIFTS = choices(['morning', 'Morning'], ['evening', 'Evening'], ['night', 'Night']);
 const DUTY_STATUSES = choices(['scheduled', 'Scheduled'], ['done', 'Done'], ['missed', 'Missed']);
 const CONDITIONS = choices(['good', 'Good'], ['damaged', 'Damaged'], ['missing', 'Missing']);
-const BILLING = choices(['fixed', 'Fixed each month'], ['per_day', 'Per day']);
+const BILLING = choices(['fixed', 'Fixed each month'], ['per_day', 'Per day'], ['diet', 'Diet system (share of the month’s spending)']);
+const SEVERITIES = choices(['routine', 'Routine'], ['urgent', 'Urgent'], ['emergency', 'Medical emergency']);
 const MEALS = ['breakfast', 'lunch', 'snacks', 'dinner'];
+const CATEGORY_WORDS: Record<string, string> = { general: 'General', obc: 'OBC', sc: 'SC', st: 'ST', ews: 'EWS', pwd: 'Person with disability', defence: 'Defence ward', sports: 'Sports quota', ncc: 'NCC', foreign: 'Foreign national' };
+const CATEGORIES = choices(...ALLOT_CATEGORIES.map((c) => [c, CATEGORY_WORDS[c]] as [string, string]));
 
-async function hostelOptions(ctx: KitCtx): Promise<FieldOption[]> {
+export async function hostelOptions(ctx: KitCtx): Promise<FieldOption[]> {
   return (await ctx.tx.select({ id: hostels.id, name: hostels.name }).from(hostels).orderBy(asc(hostels.sortOrder), asc(hostels.name))).map((r) => ({ value: r.id, label: r.name }));
 }
 async function blockOptions(ctx: KitCtx): Promise<FieldOption[]> {
@@ -78,11 +84,11 @@ async function planOptions(ctx: KitCtx): Promise<FieldOption[]> {
 }
 
 /** A student named by roll number in the add form (the list shows their roll number). */
-const studentField = (label = 'Student (roll no.)'): RecordField => ({ label, type: 'text', schema: Text(40), required: true, edit: false, rowKey: 'rollNo', apply: async () => undefined });
+export const studentField = (label = 'Student (roll no.)'): RecordField => ({ label, type: 'text', schema: Text(40), required: true, edit: false, rowKey: 'rollNo', apply: async () => undefined });
 /** The student columns most lists show. */
-const studentCols = { studentId: students.id, studentName: students.fullName, rollNo: students.rollNo, className: sections.displayName };
-const withStudent = (col: AnyColumn) => (q: Parameters<NonNullable<RecordEntity['list']['joins']>>[0]) => q.innerJoin(students, eq(students.id, col)).innerJoin(sections, eq(sections.id, students.sectionId));
-const studentSearch = [students.fullName, students.rollNo];
+export const studentCols = { studentId: students.id, studentName: students.fullName, rollNo: students.rollNo, className: sections.displayName };
+export const withStudent = (col: AnyColumn) => (q: Parameters<NonNullable<RecordEntity['list']['joins']>>[0]) => q.innerJoin(students, eq(students.id, col)).innerJoin(sections, eq(sections.id, students.sectionId));
+export const studentSearch = [students.fullName, students.rollNo];
 const studentLabel = (r: Record<string, unknown>) => `${r.rollNo} ${r.studentName}`;
 
 /** Where a bed is, as SQL text "Block · Room · Bed". */
@@ -91,6 +97,19 @@ const placeOf = (bed: AnyColumn) => sql<string | null>`(select hb.name || ' · '
 const hostelOfBed = (bed: AnyColumn) => sql<string | null>`(select hb.hostel_id from hostel_beds b join hostel_rooms r on r.id = b.room_id join hostel_blocks hb on hb.id = r.block_id where b.id = ${qual(bed)})`;
 
 const decider = alias(users, 'decider');
+
+/** The student's anti-ragging undertaking for the academic year now running (pending | received | verified, null = none asked). */
+const undertakingOf = (student: AnyColumn) =>
+  sql<string | null>`(select u.status from antiragging_undertakings u where u.student_id = ${qual(student)} order by u.year_label desc limit 1)`;
+
+const AMENITY_HELP = 'Separated by commas: Wi-Fi, geyser, study table, wardrobe, balcony…';
+/** "Wi-Fi, geyser" → ['Wi-Fi', 'Geyser'] (each up to 40 letters, at most 20). */
+const AmenityText = z
+  .string()
+  .trim()
+  .max(600)
+  .transform((v) => [...new Set(v.split(',').map((x) => x.trim()).filter(Boolean).map((x) => x.charAt(0).toUpperCase() + x.slice(1)))])
+  .refine((a) => a.length <= 20 && a.every((x) => x.length <= 40), 'At most 20 amenities, each up to 40 letters');
 
 @Injectable()
 export class HostelRecords implements OnModuleInit {
@@ -132,6 +151,67 @@ export class HostelRecords implements OnModuleInit {
 
   private today(ctx: KitCtx) {
     return todayIn(ctx.tx, this.clock.now());
+  }
+
+  /** A medical emergency: the family and every warden are told at once (push, and SMS where the family has it on). */
+  private async emergency(ctx: KitCtx, s: { id: string; fullName: string }, id: string, symptoms: string, hospital: string, family: string[]) {
+    const wardens = await usersWithRoles(ctx.tx, ['hostel_warden']);
+    const where = hospital ? ` and is being taken to ${hospital}` : '';
+    await this.notifications.notifyUsers(ctx.tx, [...new Set([...family, ...wardens])], {
+      kind: 'welfare',
+      text: {
+        en: { title: `Medical emergency: ${s.fullName}`, body: `${s.fullName} needs urgent medical care${where}: ${symptoms.slice(0, 120)}. Please call the warden now.` },
+        hi: { title: `चिकित्सा आपात स्थिति: ${s.fullName}`, body: `${s.fullName} को तुरंत चिकित्सा देखभाल की आवश्यकता है: ${symptoms.slice(0, 120)}। कृपया अभी वार्डन को फ़ोन करें।` },
+        kn: { title: `ವೈದ್ಯಕೀಯ ತುರ್ತು: ${s.fullName}`, body: `${s.fullName} ಅವರಿಗೆ ತುರ್ತು ವೈದ್ಯಕೀಯ ಆರೈಕೆ ಬೇಕಾಗಿದೆ: ${symptoms.slice(0, 120)}. ದಯವಿಟ್ಟು ಈಗಲೇ ವಾರ್ಡನ್‌ಗೆ ಕರೆ ಮಾಡಿ.` },
+      },
+      data: { studentId: s.id, sickbayId: id, emergency: 'yes' },
+      dedupeKey: `hostel-emergency:${id}`,
+    });
+    await auditUser(ctx.tx, ctx.p, 'hostel_sickbay.emergency', 'hostel_sickbay', id, { notified: family.length + wardens.length });
+  }
+
+  /**
+   * Puts a vacate settlement on the student's fee ledger: a refund due becomes a credit the accountant pays out (or
+   * sets against other fees); a balance the student owes becomes a fee charge. Posted once.
+   */
+  private async postSettlement(ctx: KitCtx, id: string): Promise<string> {
+    const [st] = await ctx.tx.select().from(hostelSettlements).where(eq(hostelSettlements.id, id)).for('update');
+    if (st.ledgerPostedAt) throw new ConflictException('Already on the fee account');
+    if (st.status !== 'pending') throw new ConflictException('This settlement is closed');
+    let ref = '';
+    if (st.netRefundPaise > 0) {
+      const [c] = await ctx.tx.insert(studentCredits).values({ tenantId: ctx.p.tenantId, studentId: st.studentId, amountPaise: st.netRefundPaise, kind: 'adjustment', note: `Hostel vacate settlement ${st.vacatedOn}`, createdBy: ctx.p.userId }).returning({ id: studentCredits.id });
+      ref = `credit:${c.id}`;
+    } else if (st.netRefundPaise < 0) {
+      const title = `Hostel settlement dues ${st.vacatedOn}`;
+      await this.fees.chargeStudents(ctx.tx, ctx.p, title, await this.today(ctx), [{ studentId: st.studentId, amountPaise: -st.netRefundPaise }]);
+      ref = `invoice:${title}`;
+    } else throw new ConflictException('Nothing to post: the settlement nets to zero');
+    await ctx.tx.update(hostelSettlements).set({ ledgerPostedAt: this.clock.now(), ledgerRef: ref }).where(eq(hostelSettlements.id, id));
+    await auditUser(ctx.tx, ctx.p, 'hostel_settlement.posted', 'hostel_settlement', id, { netRefundPaise: st.netRefundPaise, ref });
+    return st.netRefundPaise > 0 ? `Credit ₹${(st.netRefundPaise / 100).toFixed(2)}` : `Charged ₹${(-st.netRefundPaise / 100).toFixed(2)}`;
+  }
+
+  /**
+   * Charges damage to a room's item through the fees: to the student named (by roll number), or shared equally among
+   * the room's residents (the last one takes the odd paise). The item is marked damaged.
+   */
+  private async chargeDamage(ctx: KitCtx, id: string, p: { amount: number; student: string; note: string }): Promise<string> {
+    const [a] = await ctx.tx.select({ a: hostelRoomAssets, room: hostelRooms.number, block: hostelBlocks.name }).from(hostelRoomAssets).innerJoin(hostelRooms, eq(hostelRooms.id, hostelRoomAssets.roomId)).innerJoin(hostelBlocks, eq(hostelBlocks.id, hostelRooms.blockId)).where(eq(hostelRoomAssets.id, id));
+    let who: string[];
+    if (p.student) who = [(await studentByRoll(ctx.tx, p.student)).id];
+    else
+      who = (await ctx.tx.select({ id: hostelAllotments.studentId }).from(hostelAllotments).innerJoin(hostelBeds, eq(hostelBeds.id, hostelAllotments.bedId)).where(and(eq(hostelBeds.roomId, a.a.roomId), isNull(hostelAllotments.vacatedOn))).orderBy(asc(hostelAllotments.startsOn), asc(hostelAllotments.id))).map((r) => r.id);
+    if (!who.length) throw new ConflictException('Nobody lives in this room; name the student');
+    const share = Math.floor(p.amount / who.length);
+    const charges = who.map((studentId, i) => ({ studentId, amountPaise: i === who.length - 1 ? p.amount - share * (who.length - 1) : share }));
+    const day = await this.today(ctx);
+    const title = `Hostel damage: ${a.a.name} (${a.block} ${a.room}) ${day}`.slice(0, 120);
+    const r = await this.fees.chargeStudents(ctx.tx, ctx.p, title, day, charges);
+    if (!r.charged) throw new ConflictException('This damage is already charged today');
+    await ctx.tx.update(hostelRoomAssets).set({ condition: 'damaged', checkedOn: day, note: p.note || a.a.note }).where(eq(hostelRoomAssets.id, id));
+    await auditUser(ctx.tx, ctx.p, 'hostel_room_asset.damage_charged', 'hostel_room_asset', id, { amountPaise: p.amount, students: who.length, title, changes: { condition: { before: a.a.condition, after: 'damaged' } } });
+    return `${r.charged} × ₹${(share / 100).toFixed(2)}`;
   }
 
   /** A status change with its audit entry; refused unless the record is in one of `from`. */
@@ -200,7 +280,7 @@ export class HostelRecords implements OnModuleInit {
       roles: { read: HOSTEL_ROLES, write: HOSTEL_ROLES },
       label: (r) => String(r.name),
       list: {
-        select: { id: hostelRoomTypes.id, name: hostelRoomTypes.name, bedsPerRoom: hostelRoomTypes.bedsPerRoom, ac: hostelRoomTypes.ac, attachedBath: hostelRoomTypes.attachedBath, feeRupees: rupeesOf(hostelRoomTypes.feePaise), description: hostelRoomTypes.description, sortOrder: hostelRoomTypes.sortOrder, rooms },
+        select: { id: hostelRoomTypes.id, name: hostelRoomTypes.name, bedsPerRoom: hostelRoomTypes.bedsPerRoom, ac: hostelRoomTypes.ac, attachedBath: hostelRoomTypes.attachedBath, feeRupees: rupeesOf(hostelRoomTypes.feePaise), description: hostelRoomTypes.description, amenities: sql<string>`array_to_string(${hostelRoomTypes.amenities}, ', ')`, sortOrder: hostelRoomTypes.sortOrder, rooms },
         search: [hostelRoomTypes.name, hostelRoomTypes.description],
         sorts: { name: hostelRoomTypes.name, fee: hostelRoomTypes.feePaise, rooms },
         defaultSort: { id: 'name', dir: 'asc' },
@@ -212,6 +292,7 @@ export class HostelRecords implements OnModuleInit {
         attachedBath: { label: 'Attached bathroom', type: 'boolean', schema: Bool, column: hostelRoomTypes.attachedBath, bulk: true },
         fee: { label: 'Room fee a month (₹)', type: 'number', schema: Rupees, column: hostelRoomTypes.feePaise, rowKey: 'feeRupees', required: true },
         description: { label: 'Description', type: 'textarea', schema: z.string().trim().max(300), column: hostelRoomTypes.description },
+        amenities: { label: 'Amenities', type: 'text', schema: AmenityText, apply: async (ctx, id, v) => void (await ctx.tx.update(hostelRoomTypes).set({ amenities: v as string[] }).where(eq(hostelRoomTypes.id, id))), rowKey: 'amenities', help: AMENITY_HELP },
       },
       order: { column: hostelRoomTypes.sortOrder },
       duplicate: async (ctx, row) => ({ name: await copyName(ctx.tx, hostelRoomTypes, hostelRoomTypes.name, String(row.name)) }),
@@ -221,6 +302,7 @@ export class HostelRecords implements OnModuleInit {
         { key: 'ac', header: 'AC' },
         { key: 'attachedBath', header: 'Attached bathroom' },
         { key: 'feeRupees', header: 'Fee a month (₹)' },
+        { key: 'amenities', header: 'Amenities' },
         { key: 'rooms', header: 'Rooms' },
       ],
       actions: {
@@ -254,6 +336,7 @@ export class HostelRecords implements OnModuleInit {
         filters: { hostel: { label: 'Hostel', options: hostelOptions, where: (v) => uuidEq(hostelBlocks.hostelId, v) }, gender: choiceFilter('For', hostelBlocks.gender, GENDERS) },
         sorts: { name: hostelBlocks.name, hostel: hostels.name, beds, occupied },
         defaultSort: { id: 'name', dir: 'asc' },
+        scope: (ctx) => blockScope(ctx.p, hostelBlocks.id),
       },
       fields: {
         name: { label: 'Name', type: 'text', schema: Text(60), column: hostelBlocks.name, required: true },
@@ -291,7 +374,7 @@ export class HostelRecords implements OnModuleInit {
       roles: { read: HOSTEL_ROLES, write: HOSTEL_ROLES },
       label: (r) => `${r.blockName} · ${r.number}`,
       list: {
-        select: { id: hostelRooms.id, number: hostelRooms.number, floor: hostelRooms.floor, blockId: hostelRooms.blockId, blockName: hostelBlocks.name, hostelName: hostels.name, roomTypeId: hostelRooms.roomTypeId, roomTypeName: hostelRoomTypes.name, feeRupees: rupeesOf(hostelRooms.monthlyFeePaise), status: hostelRooms.status, note: hostelRooms.note, beds: bedCount, occupied, free: sql<number>`${bedCount} - ${occupied}`, residents },
+        select: { id: hostelRooms.id, number: hostelRooms.number, floor: hostelRooms.floor, blockId: hostelRooms.blockId, blockName: hostelBlocks.name, hostelName: hostels.name, roomTypeId: hostelRooms.roomTypeId, roomTypeName: hostelRoomTypes.name, feeRupees: rupeesOf(hostelRooms.monthlyFeePaise), status: hostelRooms.status, note: hostelRooms.note, ownAmenities: sql<string>`array_to_string(${hostelRooms.amenities}, ', ')`, amenities: sql<string>`(select string_agg(distinct x, ', ' order by x) from unnest(${hostelRooms.amenities} || coalesce(${hostelRoomTypes.amenities}, '{}'::text[])) x)`, beds: bedCount, occupied, free: sql<number>`${bedCount} - ${occupied}`, residents },
         joins: (q) => q.innerJoin(hostelBlocks, eq(hostelBlocks.id, hostelRooms.blockId)).leftJoin(hostels, eq(hostels.id, hostelBlocks.hostelId)).leftJoin(hostelRoomTypes, eq(hostelRoomTypes.id, hostelRooms.roomTypeId)),
         search: [hostelRooms.number, hostelBlocks.name, hostels.name],
         filters: {
@@ -300,10 +383,12 @@ export class HostelRecords implements OnModuleInit {
           type: { label: 'Room type', options: typeOptions, where: (v) => uuidEq(hostelRooms.roomTypeId, v) },
           status: choiceFilter('Status', hostelRooms.status, ROOM_STATUSES),
           vacancy: yesNo('Free beds', sql`${bedCount} > ${occupied}`, sql`${bedCount} <= ${occupied}`, ['Has a free bed', 'Full']),
+          amenity: { label: 'Has amenity', where: (v) => (/^[\p{L}\p{N} '-]{1,40}$/u.test(v) ? sql`lower(${v}) = any (select lower(x) from unnest(${hostelRooms.amenities} || coalesce(${hostelRoomTypes.amenities}, '{}'::text[])) x)` : undefined) },
           floor: { label: 'Floor', where: (v) => (/^\d{1,2}$/.test(v) ? eq(hostelRooms.floor, Number(v)) : undefined) },
         },
         sorts: { number: sql`length(${hostelRooms.number}), ${hostelRooms.number}`, block: hostelBlocks.name, floor: hostelRooms.floor, fee: hostelRooms.monthlyFeePaise, free: sql`${bedCount} - ${occupied}` },
         defaultSort: { id: 'number', dir: 'asc' },
+        scope: (ctx) => roomScope(ctx.p, hostelRooms.id),
         tiebreak: [hostelBlocks.name],
       },
       fields: {
@@ -315,6 +400,7 @@ export class HostelRecords implements OnModuleInit {
         beds: { label: 'Beds', type: 'number', schema: Int(1, 20), required: true, edit: false, apply: async () => undefined },
         status: { label: 'Status', type: 'select', schema: oneOf(ROOM_STATUSES), options: ROOM_STATUSES, column: hostelRooms.status, create: false, bulk: true },
         note: { label: 'Note', type: 'text', schema: z.string().trim().max(300), column: hostelRooms.note },
+        amenities: { label: 'Amenities of this room', type: 'text', schema: AmenityText, create: false, apply: async (ctx, id, v) => void (await ctx.tx.update(hostelRooms).set({ amenities: v as string[] }).where(eq(hostelRooms.id, id))), rowKey: 'ownAmenities', bulk: true, help: 'Added to the room type’s amenities. ' + AMENITY_HELP },
       },
       create: async (ctx, v) => {
         const [type] = v.roomTypeId ? await ctx.tx.select().from(hostelRoomTypes).where(eq(hostelRoomTypes.id, String(v.roomTypeId))) : [];
@@ -336,6 +422,7 @@ export class HostelRecords implements OnModuleInit {
         { key: 'beds', header: 'Beds' },
         { key: 'occupied', header: 'Occupied' },
         { key: 'free', header: 'Free' },
+        { key: 'amenities', header: 'Amenities' },
         { key: 'residents', header: 'Residents' },
       ],
       remove: { guard: async (ctx, id) => ((await ctx.tx.select({ n: sql<number>`count(*)::int` }).from(hostelAllotments).innerJoin(hostelBeds, eq(hostelBeds.id, hostelAllotments.bedId)).where(and(eq(hostelBeds.roomId, id), isNull(hostelAllotments.vacatedOn))))[0].n > 0 ? 'Students live in this room' : null) },
@@ -412,7 +499,7 @@ export class HostelRecords implements OnModuleInit {
       roles: { read: HOSTEL_ROLES, write: HOSTEL_ROLES },
       label: studentLabel,
       list: {
-        select: { id: hostelAllotments.id, ...studentCols, term: sections.term, bedId: hostelAllotments.bedId, place: placeOf(hostelAllotments.bedId), hostelId: hostelOfBed(hostelAllotments.bedId), startsOn: hostelAllotments.startsOn, vacatedOn: hostelAllotments.vacatedOn, vacateReason: hostelAllotments.vacateReason, feeRupees: rupeesOf(roomFee), internshipUntil: hold, status: sql<string>`case when ${hostelAllotments.vacatedOn} is null then 'resident' else 'left' end` },
+        select: { id: hostelAllotments.id, ...studentCols, term: sections.term, bedId: hostelAllotments.bedId, place: placeOf(hostelAllotments.bedId), hostelId: hostelOfBed(hostelAllotments.bedId), startsOn: hostelAllotments.startsOn, vacatedOn: hostelAllotments.vacatedOn, vacateReason: hostelAllotments.vacateReason, feeRupees: rupeesOf(roomFee), internshipUntil: hold, undertaking: undertakingOf(hostelAllotments.studentId), status: sql<string>`case when ${hostelAllotments.vacatedOn} is null then 'resident' else 'left' end` },
         joins: withStudent(hostelAllotments.studentId),
         search: [...studentSearch, sections.displayName],
         filters: {
@@ -420,10 +507,11 @@ export class HostelRecords implements OnModuleInit {
           hostel: { label: 'Hostel', options: hostelOptions, where: (v) => (/^[0-9a-f-]{36}$/.test(v) ? sql`${hostelOfBed(hostelAllotments.bedId)} = ${v}::uuid` : undefined) },
           block: { label: 'Block', options: blockOptions, where: (v) => (/^[0-9a-f-]{36}$/.test(v) ? sql`exists (select 1 from hostel_beds b join hostel_rooms r on r.id = b.room_id where b.id = ${qual(hostelAllotments.bedId)} and r.block_id = ${v}::uuid)` : undefined) },
           term: { label: 'Year or semester', where: (v) => (/^\d{1,2}$/.test(v) ? eq(sections.term, Number(v)) : undefined) },
+          undertaking: { label: 'Anti-ragging undertaking', options: choices(['verified', 'Verified'], ['received', 'Received'], ['missing', 'Not given']), where: (v) => (v === 'missing' ? sql`${undertakingOf(hostelAllotments.studentId)} is null or ${undertakingOf(hostelAllotments.studentId)} = 'pending'` : ['verified', 'received'].includes(v) ? sql`${undertakingOf(hostelAllotments.studentId)} = ${v}` : undefined) },
         },
         sorts: { name: students.fullName, roll: students.rollNo, place: placeOf(hostelAllotments.bedId), since: hostelAllotments.startsOn, left: hostelAllotments.vacatedOn },
         defaultSort: { id: 'place', dir: 'asc' },
-        scope: () => undefined,
+        scope: (ctx) => studentScope(ctx.p, hostelAllotments.studentId),
       },
       fields: {
         student: studentField(),
@@ -444,6 +532,7 @@ export class HostelRecords implements OnModuleInit {
         { key: 'vacatedOn', header: 'Left on' },
         { key: 'feeRupees', header: 'Room fee (₹)' },
         { key: 'internshipUntil', header: 'Away on internship until' },
+        { key: 'undertaking', header: 'Anti-ragging undertaking' },
         { key: 'vacateReason', header: 'Reason for leaving' },
       ],
       remove: { guard: async () => 'An allotment stays in the record; vacate the bed instead' },
@@ -511,7 +600,7 @@ export class HostelRecords implements OnModuleInit {
         gender: { label: 'Gender', type: 'select', schema: oneOf(STUDENT_GENDERS), options: STUDENT_GENDERS, column: hostelApplications.gender, required: true },
         distanceKm: { label: 'Distance from home (km)', type: 'number', schema: OptionalDecimal(0, 20000), column: hostelApplications.distanceKm },
         meritScore: { label: 'Merit score (0-100)', type: 'number', schema: OptionalDecimal(0, 100), column: hostelApplications.meritScore },
-        category: { label: 'Category', type: 'text', schema: z.string().trim().max(40), column: hostelApplications.category },
+        category: { label: 'Category', type: 'select', schema: oneOf(CATEGORIES), options: CATEGORIES, column: hostelApplications.category, help: 'Reserved categories earn the priority points set in the hostel settings' },
         needs: { label: 'Special needs', type: 'textarea', schema: z.string().trim().max(300), column: hostelApplications.needs },
       },
       create: async (ctx, v) => {
@@ -694,6 +783,7 @@ export class HostelRecords implements OnModuleInit {
         },
         sorts: { asked: hostelGatePasses.createdAt, back: hostelGatePasses.expectedBackAt, out: hostelGatePasses.outAt, name: students.fullName },
         defaultSort: { id: 'asked', dir: 'desc' },
+        scope: (ctx) => studentScope(ctx.p, hostelGatePasses.studentId),
       },
       columns: [
         { key: 'rollNo', header: 'Roll no.' },
@@ -732,6 +822,7 @@ export class HostelRecords implements OnModuleInit {
         filters: { inside: yesNo('Inside now', isNull(hostelVisitors.outAt), sql`${hostelVisitors.outAt} is not null`, ['Inside now', 'Left']), when: { label: 'When', options: choices(['today', 'Today'], ['week', 'Last 7 days']), where: (v) => (v === 'today' ? sql`${hostelVisitors.inAt} > now() - interval '1 day'` : v === 'week' ? sql`${hostelVisitors.inAt} > now() - interval '7 days'` : undefined) } },
         sorts: { in: hostelVisitors.inAt, out: hostelVisitors.outAt, visitor: hostelVisitors.visitorName },
         defaultSort: { id: 'in', dir: 'desc' },
+        scope: (ctx) => studentScope(ctx.p, hostelVisitors.studentId),
       },
       fields: {
         student: studentField('Visiting (roll no.)'),
@@ -783,6 +874,7 @@ export class HostelRecords implements OnModuleInit {
         filters: { category: choiceFilter('Category', hostelComplaints.category, COMPLAINT_CATS), status: choiceFilter('Status', hostelComplaints.status, COMPLAINT_STATUSES), room: { label: 'Room', options: roomOptions, where: (v) => uuidEq(hostelComplaints.roomId, v) } },
         sorts: { raised: hostelComplaints.createdAt, status: hostelComplaints.status, resolved: hostelComplaints.resolvedAt },
         defaultSort: { id: 'raised', dir: 'desc' },
+        scope: (ctx) => complaintScope(ctx.p),
       },
       fields: {
         student: { label: 'Student (roll no.)', type: 'text', schema: z.string().trim().max(40), edit: false, rowKey: 'rollNo', apply: async () => undefined },
@@ -828,6 +920,7 @@ export class HostelRecords implements OnModuleInit {
         filters: { kind: choiceFilter('Kind', hostelIncidents.kind, INCIDENT_KINDS), status: choiceFilter('Status', hostelIncidents.status, choices(['open', 'Open'], ['closed', 'Closed'])), fine: yesNo('Fine', sql`${hostelIncidents.finePaise} > 0`, sql`${hostelIncidents.finePaise} = 0`, ['Fined', 'No fine']) },
         sorts: { on: hostelIncidents.occurredOn, name: students.fullName, fine: hostelIncidents.finePaise },
         defaultSort: { id: 'on', dir: 'desc' },
+        scope: (ctx) => studentScope(ctx.p, hostelIncidents.studentId),
       },
       fields: {
         student: studentField(),
@@ -887,6 +980,7 @@ export class HostelRecords implements OnModuleInit {
         filters: { escalated: yesNo('Escalated', eq(hostelLateEntries.escalated, true), eq(hostelLateEntries.escalated, false)), when: { label: 'When', options: choices(['week', 'Last 7 days'], ['month', 'Last 30 days']), where: (v) => (v === 'week' ? sql`${hostelLateEntries.enteredAt} > now() - interval '7 days'` : v === 'month' ? sql`${hostelLateEntries.enteredAt} > now() - interval '30 days'` : undefined) } },
         sorts: { at: hostelLateEntries.enteredAt, minutes: hostelLateEntries.minutesLate, name: students.fullName },
         defaultSort: { id: 'at', dir: 'desc' },
+        scope: (ctx) => studentScope(ctx.p, hostelLateEntries.studentId),
       },
       fields: {
         student: studentField(),
@@ -1021,7 +1115,7 @@ export class HostelRecords implements OnModuleInit {
       roles: { read: [...HOSTEL_ROLES, 'accountant'], write: [...HOSTEL_ROLES, 'accountant'] },
       label: (r) => `${r.rollNo} ${r.studentName} · ${r.vacatedOn}`,
       list: {
-        select: { id: hostelSettlements.id, ...studentCols, vacatedOn: hostelSettlements.vacatedOn, feeRupees: rupeesOf(hostelSettlements.monthlyFeePaise), daysUsed: hostelSettlements.daysUsed, daysInMonth: hostelSettlements.daysInMonth, prorataRupees: rupeesOf(hostelSettlements.prorataRefundPaise), depositRupees: rupeesOf(hostelSettlements.depositPaise), damagesRupees: rupeesOf(hostelSettlements.damagesPaise), duesRupees: rupeesOf(hostelSettlements.duesPaise), netRupees: rupeesOf(hostelSettlements.netRefundPaise), status: hostelSettlements.status, paidOn: hostelSettlements.paidOn, reference: hostelSettlements.reference },
+        select: { id: hostelSettlements.id, ...studentCols, ledgerPostedAt: hostelSettlements.ledgerPostedAt, ledgerRef: hostelSettlements.ledgerRef, vacatedOn: hostelSettlements.vacatedOn, feeRupees: rupeesOf(hostelSettlements.monthlyFeePaise), daysUsed: hostelSettlements.daysUsed, daysInMonth: hostelSettlements.daysInMonth, prorataRupees: rupeesOf(hostelSettlements.prorataRefundPaise), depositRupees: rupeesOf(hostelSettlements.depositPaise), damagesRupees: rupeesOf(hostelSettlements.damagesPaise), duesRupees: rupeesOf(hostelSettlements.duesPaise), netRupees: rupeesOf(hostelSettlements.netRefundPaise), status: hostelSettlements.status, paidOn: hostelSettlements.paidOn, reference: hostelSettlements.reference },
         joins: withStudent(hostelSettlements.studentId),
         search: [...studentSearch, hostelSettlements.reference],
         filters: { status: choiceFilter('Status', hostelSettlements.status, choices(['pending', 'To pay'], ['paid', 'Paid'])) },
@@ -1042,13 +1136,22 @@ export class HostelRecords implements OnModuleInit {
         { key: 'status', header: 'Status' },
         { key: 'paidOn', header: 'Paid on' },
         { key: 'reference', header: 'Reference' },
+        { key: 'ledgerPostedAt', header: 'On the fee account' },
+        { key: 'ledgerRef', header: 'Fee account entry' },
       ],
       actions: {
+        post: {
+          label: 'Post to the fee account',
+          roles: [...HOSTEL_ROLES, 'accountant'],
+          apply: async (ctx, id) => this.postSettlement(ctx, id),
+        },
         paid: {
           label: 'Refund paid',
           params: z.object({ reference: z.string().trim().max(80).default('') }).default({ reference: '' }),
           apply: async (ctx, id, raw) => {
             const s = await this.move<typeof hostelSettlements.$inferSelect>(ctx, hostelSettlements, hostelSettlements.id, hostelSettlements.status, 'hostel_settlement', id, ['pending'], 'paid', { paidOn: await this.today(ctx), reference: (raw as { reference: string }).reference });
+            // A refund already put on the fee account as a credit is paid out of it.
+            if (s.ledgerPostedAt && s.netRefundPaise > 0) await ctx.tx.insert(studentCredits).values({ tenantId: ctx.p.tenantId, studentId: s.studentId, amountPaise: -s.netRefundPaise, kind: 'refund', note: `Hostel refund paid ${(raw as { reference: string }).reference}`.trim(), createdBy: ctx.p.userId });
             // The held deposit was part of this refund.
             await ctx.tx.update(hostelDeposits).set({ status: 'refunded', damagesPaise: s.damagesPaise, refundedPaise: sql`greatest(0, ${hostelDeposits.amountPaise} - ${s.damagesPaise})`, refundedOn: await this.today(ctx) }).where(and(eq(hostelDeposits.studentId, s.studentId), eq(hostelDeposits.status, 'held')));
           },
@@ -1068,7 +1171,7 @@ export class HostelRecords implements OnModuleInit {
       roles: { read: HOSTEL_ROLES, write: HOSTEL_ROLES },
       label: (r) => `${r.name} · ${r.hostelName}`,
       list: {
-        select: { id: hostelStaff.id, hostelId: hostelStaff.hostelId, hostelName: hostels.name, userId: hostelStaff.userId, name: users.fullName, role: hostelStaff.role, fromOn: hostelStaff.fromOn, untilOn: hostelStaff.untilOn, phone: hostelStaff.phone, current: sql<boolean>`${hostelStaff.untilOn} is null or ${hostelStaff.untilOn} >= current_date` },
+        select: { id: hostelStaff.id, hostelId: hostelStaff.hostelId, hostelName: hostels.name, userId: hostelStaff.userId, name: users.fullName, role: hostelStaff.role, fromOn: hostelStaff.fromOn, untilOn: hostelStaff.untilOn, phone: hostelStaff.phone, blocks: sql<string>`coalesce((select string_agg(k.name, ', ' order by k.name) from hostel_blocks k where k.id = any(${hostelStaff.blockIds})), '')`, current: sql<boolean>`${hostelStaff.untilOn} is null or ${hostelStaff.untilOn} >= current_date` },
         joins: (q) => q.innerJoin(hostels, eq(hostels.id, hostelStaff.hostelId)).innerJoin(users, eq(users.id, hostelStaff.userId)),
         search: [users.fullName, hostels.name],
         filters: { hostel: { label: 'Hostel', options: hostelOptions, where: (v) => uuidEq(hostelStaff.hostelId, v) }, role: choiceFilter('Role', hostelStaff.role, STAFF_ROLES), current: yesNo('Current', sql`(${hostelStaff.untilOn} is null or ${hostelStaff.untilOn} >= current_date)`, sql`${hostelStaff.untilOn} < current_date`, ['Serving now', 'Past']) },
@@ -1083,6 +1186,21 @@ export class HostelRecords implements OnModuleInit {
         fromOn: { label: 'From', type: 'date', schema: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15'), column: hostelStaff.fromOn, required: true },
         untilOn: { label: 'Until', type: 'date', schema: DateText, column: hostelStaff.untilOn, bulk: true },
         phone: { label: 'Duty phone', type: 'phone', schema: z.string().trim().max(20), column: hostelStaff.phone },
+        blocks: {
+          label: 'Blocks looked after',
+          type: 'text',
+          schema: z.string().trim().max(400),
+          rowKey: 'blocks',
+          help: 'Block names separated by commas; empty = the whole hostel. A warden assigned here sees only these blocks.',
+          apply: async (ctx, id, v) => {
+            const [st] = await ctx.tx.select({ hostelId: hostelStaff.hostelId }).from(hostelStaff).where(eq(hostelStaff.id, id));
+            const names = String(v ?? '').split(',').map((x) => x.trim()).filter(Boolean);
+            const found = names.length ? await ctx.tx.select({ id: hostelBlocks.id, name: hostelBlocks.name }).from(hostelBlocks).where(and(eq(hostelBlocks.hostelId, st.hostelId), sql`lower(${hostelBlocks.name}) in (${sql.join(names.map((n) => sql`${n.toLowerCase()}`), sql`, `)})`)) : [];
+            const missing = names.filter((n) => !found.some((f) => f.name.toLowerCase() === n.toLowerCase()));
+            if (missing.length) throw new BadRequestException(`No block ${missing.join(', ')} in this hostel`);
+            await ctx.tx.update(hostelStaff).set({ blockIds: found.map((f) => f.id) }).where(eq(hostelStaff.id, id));
+          },
+        },
       },
       move: { label: 'Move to hostel', options: hostelOptions, column: hostelStaff.hostelId },
       columns: [
@@ -1091,6 +1209,7 @@ export class HostelRecords implements OnModuleInit {
         { key: 'hostelName', header: 'Hostel' },
         { key: 'fromOn', header: 'From' },
         { key: 'untilOn', header: 'Until' },
+        { key: 'blocks', header: 'Blocks looked after' },
         { key: 'phone', header: 'Duty phone' },
       ],
     };
@@ -1149,18 +1268,22 @@ export class HostelRecords implements OnModuleInit {
       roles: { read: HOSTEL_ROLES, write: HOSTEL_ROLES },
       label: (r) => `${r.rollNo} ${r.studentName}`,
       list: {
-        select: { id: hostelSickbay.id, ...studentCols, admittedAt: hostelSickbay.admittedAt, dischargedAt: hostelSickbay.dischargedAt, symptoms: hostelSickbay.symptoms, treatment: hostelSickbay.treatment, referredTo: hostelSickbay.referredTo, parentAlerted: hostelSickbay.parentAlerted, healthVisitId: hostelSickbay.healthVisitId },
+        select: { id: hostelSickbay.id, ...studentCols, admittedAt: hostelSickbay.admittedAt, dischargedAt: hostelSickbay.dischargedAt, severity: hostelSickbay.severity, symptoms: hostelSickbay.symptoms, treatment: hostelSickbay.treatment, referredTo: hostelSickbay.referredTo, escort: hostelSickbay.escort, hospitalAt: hostelSickbay.hospitalAt, outcome: hostelSickbay.outcome, parentAlerted: hostelSickbay.parentAlerted, healthVisitId: hostelSickbay.healthVisitId },
         joins: withStudent(hostelSickbay.studentId),
         search: [...studentSearch, hostelSickbay.symptoms],
-        filters: { inside: yesNo('In the sick bay', isNull(hostelSickbay.dischargedAt), sql`${hostelSickbay.dischargedAt} is not null`, ['In the sick bay now', 'Discharged']) },
+        filters: { inside: yesNo('In the sick bay', isNull(hostelSickbay.dischargedAt), sql`${hostelSickbay.dischargedAt} is not null`, ['In the sick bay now', 'Discharged']), severity: choiceFilter('Severity', hostelSickbay.severity, SEVERITIES) },
         sorts: { admitted: hostelSickbay.admittedAt, discharged: hostelSickbay.dischargedAt, name: students.fullName },
         defaultSort: { id: 'admitted', dir: 'desc' },
+        scope: (ctx) => studentScope(ctx.p, hostelSickbay.studentId),
       },
       fields: {
         student: studentField(),
         symptoms: { label: 'Symptoms', type: 'textarea', schema: Text(500), column: hostelSickbay.symptoms, required: true },
         treatment: { label: 'Treatment', type: 'textarea', schema: z.string().trim().max(500), column: hostelSickbay.treatment },
         referredTo: { label: 'Referred to', type: 'text', schema: z.string().trim().max(160), column: hostelSickbay.referredTo, help: 'A doctor or hospital, if referred' },
+        severity: { label: 'Severity', type: 'select', schema: oneOf(SEVERITIES), options: SEVERITIES, column: hostelSickbay.severity, help: 'A medical emergency alerts the family and every warden at once' },
+        escort: { label: 'Taken to hospital by', type: 'text', schema: z.string().trim().max(160), column: hostelSickbay.escort },
+        outcome: { label: 'Outcome', type: 'textarea', schema: z.string().trim().max(500), column: hostelSickbay.outcome, create: false },
       },
       create: async (ctx, v) => {
         const s = await studentByRoll(ctx.tx, String(v.student));
@@ -1168,8 +1291,10 @@ export class HostelRecords implements OnModuleInit {
         // The visit goes on the student's health record too.
         const [visit] = await ctx.tx.insert(healthVisits).values(sealVisit(ctx.p.tenantId, s.id, { tenantId: ctx.p.tenantId, studentId: s.id, visitedAt: now, complaint: String(v.symptoms), action: [String(v.treatment ?? ''), v.referredTo ? `Referred to ${v.referredTo}` : ''].filter(Boolean).join('. '), sentHome: false, recordedBy: ctx.p.userId })).returning({ id: healthVisits.id });
         const family = await familyUserIds(ctx.tx, s.id);
-        const [row] = await ctx.tx.insert(hostelSickbay).values({ tenantId: ctx.p.tenantId, studentId: s.id, healthVisitId: visit.id, admittedAt: now, symptoms: String(v.symptoms), treatment: String(v.treatment ?? ''), referredTo: String(v.referredTo ?? ''), parentAlerted: family.length > 0, recordedBy: ctx.p.userId }).returning({ id: hostelSickbay.id });
-        await this.notifications.notifyUsers(ctx.tx, family, {
+        const severity = String(v.severity ?? 'routine');
+        const [row] = await ctx.tx.insert(hostelSickbay).values({ tenantId: ctx.p.tenantId, studentId: s.id, healthVisitId: visit.id, admittedAt: now, severity, symptoms: String(v.symptoms), treatment: String(v.treatment ?? ''), referredTo: String(v.referredTo ?? ''), escort: String(v.escort ?? ''), hospitalAt: severity === 'emergency' && v.referredTo ? now : null, parentAlerted: family.length > 0, recordedBy: ctx.p.userId }).returning({ id: hostelSickbay.id });
+        if (severity === 'emergency') await this.emergency(ctx, s, row.id, String(v.symptoms), String(v.referredTo ?? ''), family);
+        else await this.notifications.notifyUsers(ctx.tx, family, {
           kind: 'welfare',
           text: {
             en: { title: `${s.fullName} is in the hostel sick bay`, body: `${s.fullName} was admitted to the sick bay: ${String(v.symptoms).slice(0, 120)}. The warden will keep you informed.` },
@@ -1188,10 +1313,36 @@ export class HostelRecords implements OnModuleInit {
         { key: 'studentName', header: 'Student' },
         { key: 'symptoms', header: 'Symptoms' },
         { key: 'treatment', header: 'Treatment' },
+        { key: 'severity', header: 'Severity' },
         { key: 'referredTo', header: 'Referred to' },
+        { key: 'escort', header: 'Taken by' },
+        { key: 'hospitalAt', header: 'At hospital' },
+        { key: 'outcome', header: 'Outcome' },
         { key: 'parentAlerted', header: 'Family told' },
       ],
       actions: {
+        hospital: {
+          label: 'Taken to hospital',
+          params: z.object({ hospital: z.string().trim().min(2, 'Name the hospital').max(160), escort: z.string().trim().max(160).default('') }),
+          apply: async (ctx, id, raw) => {
+            const p = raw as { hospital: string; escort: string };
+            const [b] = await ctx.tx.select().from(hostelSickbay).where(eq(hostelSickbay.id, id)).for('update');
+            if (b.dischargedAt) throw new ConflictException('Already discharged');
+            await ctx.tx.update(hostelSickbay).set({ referredTo: p.hospital, escort: p.escort || b.escort, hospitalAt: this.clock.now(), severity: b.severity === 'routine' ? 'urgent' : b.severity }).where(eq(hostelSickbay.id, id));
+            const [st] = await ctx.tx.select({ id: students.id, fullName: students.fullName }).from(students).where(eq(students.id, b.studentId));
+            await this.notifications.notifyUsers(ctx.tx, await familyUserIds(ctx.tx, b.studentId), {
+              kind: 'welfare',
+              text: {
+                en: { title: `${st.fullName} has been taken to hospital`, body: `${st.fullName} was taken to ${p.hospital}${p.escort ? ` with ${p.escort}` : ''}. Please call the warden.` },
+                hi: { title: `${st.fullName} को अस्पताल ले जाया गया है`, body: `${st.fullName} को ${p.hospital} ले जाया गया है। कृपया वार्डन को फ़ोन करें।` },
+                kn: { title: `${st.fullName} ಅವರನ್ನು ಆಸ್ಪತ್ರೆಗೆ ಕರೆದೊಯ್ಯಲಾಗಿದೆ`, body: `${st.fullName} ಅವರನ್ನು ${p.hospital} ಗೆ ಕರೆದೊಯ್ಯಲಾಗಿದೆ. ದಯವಿಟ್ಟು ವಾರ್ಡನ್‌ಗೆ ಕರೆ ಮಾಡಿ.` },
+              },
+              data: { studentId: b.studentId, sickbayId: id },
+              dedupeKey: `hostel-hospital:${id}`,
+            });
+            await auditUser(ctx.tx, ctx.p, 'hostel_sickbay.hospital', 'hostel_sickbay', id, { changes: { referredTo: { before: b.referredTo, after: p.hospital } } });
+          },
+        },
         discharge: {
           label: 'Discharge',
           params: z.object({ note: z.string().trim().max(300).default('') }).default({ note: '' }),
@@ -1222,6 +1373,7 @@ export class HostelRecords implements OnModuleInit {
         filters: { room: { label: 'Room', options: roomOptions, where: (v) => uuidEq(hostelRoomAssets.roomId, v) }, condition: choiceFilter('Condition', hostelRoomAssets.condition, CONDITIONS), block: { label: 'Block', options: blockOptions, where: (v) => uuidEq(hostelRooms.blockId, v) } },
         sorts: { room: sql`${hostelBlocks.name}, ${hostelRooms.number}`, name: hostelRoomAssets.name, checked: hostelRoomAssets.checkedOn },
         defaultSort: { id: 'room', dir: 'asc' },
+        scope: (ctx) => roomScope(ctx.p, hostelRoomAssets.roomId),
       },
       fields: {
         roomId: { label: 'Room', type: 'select', schema: z.uuid(), options: roomOptions, column: hostelRoomAssets.roomId, required: true },
@@ -1245,6 +1397,13 @@ export class HostelRecords implements OnModuleInit {
         { key: 'checkedOn', header: 'Checked on' },
         { key: 'note', header: 'Note' },
       ],
+      actions: {
+        chargeDamage: {
+          label: 'Charge damage to the room',
+          params: z.object({ amount: Rupees.refine((n) => n > 0, 'Give the amount'), student: z.string().trim().max(40).default(''), note: z.string().trim().max(200).default('') }),
+          apply: async (ctx, id, raw) => this.chargeDamage(ctx, id, raw as { amount: number; student: string; note: string }),
+        },
+      },
     };
   }
 
@@ -1277,7 +1436,7 @@ export class HostelRecords implements OnModuleInit {
           help: 'For example: breakfast, lunch, dinner',
         },
         billing: { label: 'Billing', type: 'select', schema: oneOf(BILLING), options: BILLING, column: messPlans.billing, required: true },
-        fee: { label: 'Fee a month (₹)', type: 'number', schema: Rupees, column: messPlans.monthlyFeePaise, rowKey: 'feeRupees', required: true },
+        fee: { label: 'Fee a month (₹)', type: 'number', schema: Rupees, column: messPlans.monthlyFeePaise, rowKey: 'feeRupees', required: true, help: 'For a diet system plan, the fixed establishment charge a month' },
         perDay: { label: 'Rate a day (₹)', type: 'number', schema: Rupees, column: messPlans.perDayPaise, rowKey: 'perDayRupees', help: 'For per-day billing' },
         rebateMinDays: { label: 'Rebate after (days of leave)', type: 'number', schema: Int(1, 60), column: messPlans.rebateMinDays },
         rebate: { label: 'Rebate a day (₹)', type: 'number', schema: Rupees, column: messPlans.rebatePerDayPaise, rowKey: 'rebateRupees', help: 'Empty or 0 gives back the day’s share of the fee' },
@@ -1414,7 +1573,7 @@ export class HostelRecords implements OnModuleInit {
       roles: { read: [...HOSTEL_ROLES, 'accountant'], write: HOSTEL_ROLES },
       label: (r) => `${r.rollNo} ${r.studentName} · ${r.month}`,
       list: {
-        select: { id: messBills.id, ...studentCols, month: messBills.month, planName: messPlans.name, days: messBills.days, leaveDays: messBills.leaveDays, rebateDays: messBills.rebateDays, grossRupees: rupeesOf(messBills.grossPaise), rebateRupees: rupeesOf(messBills.rebatePaise), netRupees: rupeesOf(messBills.netPaise), status: messBills.status, chargedTitle: messBills.chargedTitle },
+        select: { id: messBills.id, ...studentCols, month: messBills.month, planName: messPlans.name, days: messBills.days, leaveDays: messBills.leaveDays, rebateDays: messBills.rebateDays, diets: messBills.diets, dietRateRupees: rupeesOf(messBills.dietRatePaise), establishmentRupees: rupeesOf(messBills.establishmentPaise), grossRupees: rupeesOf(messBills.grossPaise), rebateRupees: rupeesOf(messBills.rebatePaise), netRupees: rupeesOf(messBills.netPaise), status: messBills.status, chargedTitle: messBills.chargedTitle },
         joins: (q) => withStudent(messBills.studentId)(q).leftJoin(messPlans, eq(messPlans.id, messBills.planId)),
         search: studentSearch,
         filters: { month: { label: 'Month', where: (v) => (/^\d{4}-\d{2}$/.test(v) ? eq(messBills.month, v) : undefined) }, status: choiceFilter('Status', messBills.status, choices(['draft', 'Not charged'], ['charged', 'Charged'])), plan: { label: 'Plan', options: planOptions, where: (v) => uuidEq(messBills.planId, v) } },
@@ -1430,6 +1589,9 @@ export class HostelRecords implements OnModuleInit {
         { key: 'days', header: 'Days' },
         { key: 'leaveDays', header: 'Leave days' },
         { key: 'rebateDays', header: 'Rebate days' },
+        { key: 'diets', header: 'Diets' },
+        { key: 'dietRateRupees', header: 'Rate a diet (₹)' },
+        { key: 'establishmentRupees', header: 'Establishment (₹)' },
         { key: 'grossRupees', header: 'Gross (₹)' },
         { key: 'rebateRupees', header: 'Rebate (₹)' },
         { key: 'netRupees', header: 'Net (₹)' },
@@ -1469,8 +1631,11 @@ function setTerms(table: typeof hostels | typeof hostelBlocks, idCol: AnyColumn)
 export async function rankApplications(ctx: KitCtx): Promise<void> {
   const rules = (await readSettings(ctx.tx, ctx.p.tenantId, 'hostel')).rules;
   const w = { distance: Number(rules.allotWeightDistance), merit: Number(rules.allotWeightMerit), seniority: Number(rules.allotWeightSeniority) };
+  // Reserved categories earn their points on top (see parseCategoryPoints).
+  const pts = Object.entries(parseCategoryPoints(rules.allotCategoryPoints));
+  const cat = pts.length ? sql`case lower(a.category) ${sql.join(pts.map(([k, v]) => sql`when ${k} then ${v}::numeric`), sql` `)} else 0 end` : sql`0`;
   await ctx.tx.execute(sql`
-    update hostel_applications a set priority = round((${w.distance} * least(greatest(coalesce(a.distance_km, 0), 0), 1000) / 10 + ${w.merit} * least(greatest(coalesce(a.merit_score, 0), 0), 100) + ${w.seniority} * greatest(sec.term, 1) * 10)::numeric, 2)
+    update hostel_applications a set priority = round((${w.distance} * least(greatest(coalesce(a.distance_km, 0), 0), 1000) / 10 + ${w.merit} * least(greatest(coalesce(a.merit_score, 0), 0), 100) + ${w.seniority} * greatest(sec.term, 1) * 10 + ${cat})::numeric, 2)
     from students s join sections sec on sec.id = s.section_id
     where s.id = a.student_id and a.status in ('applied', 'approved', 'waitlisted')`);
 }

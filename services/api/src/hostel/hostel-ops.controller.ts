@@ -16,11 +16,12 @@ import { FeesService } from '../fees/fees.service.js';
 import { allotBed, checkBed, residentOf } from './allotment.js';
 import { HOSTEL_ROLES } from './hostel.controller.js';
 import { rankApplications } from './hostel.records.js';
-import { daysInMonth, messBill } from './hostel-rules.js';
+import { ALLOT_CATEGORIES, daysInMonth, dietBill, dietRate, messBill } from './hostel-rules.js';
+import { messExpenses } from '../db/schema-hostel-pass.js';
 
 const Month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a month like 2026-10');
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
-const ApplyBody = z.object({ studentId: z.uuid(), gender: z.enum(['male', 'female', 'other']), distanceKm: z.number().min(0).max(20000).optional(), hostelId: z.uuid().optional(), roomTypeId: z.uuid().optional(), needs: z.string().trim().max(300).default('') });
+const ApplyBody = z.object({ studentId: z.uuid(), gender: z.enum(['male', 'female', 'other']), category: z.enum(ALLOT_CATEGORIES).default('general'), distanceKm: z.number().min(0).max(20000).optional(), hostelId: z.uuid().optional(), roomTypeId: z.uuid().optional(), needs: z.string().trim().max(300).default('') });
 const RequestBody = z.object({ studentId: z.uuid(), kind: z.enum(['change', 'vacate']), roomTypeId: z.uuid().optional(), reason: z.string().trim().min(3).max(500), effectiveOn: Day });
 const LeaveBody = z.object({ studentId: z.uuid(), fromOn: Day, toOn: Day, reason: z.string().trim().max(300).default('') });
 const RosterBody = z.object({ hostelId: z.uuid(), from: Day, to: Day, shift: z.enum(['morning', 'evening', 'night']), userIds: z.array(z.uuid()).min(1).max(50) });
@@ -102,7 +103,7 @@ export class HostelOpsController {
       if (await residentOf(tx, b.studentId)) throw new ConflictException('This student already has a bed');
       const [open] = await tx.select({ id: hostelApplications.id }).from(hostelApplications).where(and(eq(hostelApplications.studentId, b.studentId), inArray(hostelApplications.status, ['applied', 'approved', 'waitlisted'])));
       if (open) throw new ConflictException('An application is already open');
-      const [row] = await tx.insert(hostelApplications).values({ tenantId: p.tenantId, number: await nextNumber(tx, p.tenantId, 'HAP'), studentId: b.studentId, gender: b.gender, distanceKm: b.distanceKm ?? null, hostelId: b.hostelId ?? null, roomTypeId: b.roomTypeId ?? null, needs: b.needs, createdBy: p.userId }).returning();
+      const [row] = await tx.insert(hostelApplications).values({ tenantId: p.tenantId, number: await nextNumber(tx, p.tenantId, 'HAP'), studentId: b.studentId, gender: b.gender, category: b.category, distanceKm: b.distanceKm ?? null, hostelId: b.hostelId ?? null, roomTypeId: b.roomTypeId ?? null, needs: b.needs, createdBy: p.userId }).returning();
       await rankApplications({ tx, p });
       await auditUser(tx, p, 'hostel_application.created', 'hostel_application', row.id, { byFamily: true });
       return row;
@@ -205,20 +206,27 @@ export class HostelOpsController {
       const charged = new Set((await tx.select({ s: messBills.studentId }).from(messBills).where(and(eq(messBills.month, b.month), eq(messBills.status, 'charged')))).map((r) => r.s));
       const byStudent = new Map<string, typeof subs>();
       for (const r of subs) byStudent.set(r.s.studentId, [...(byStudent.get(r.s.studentId) ?? []), r]);
+      // Diet system plans share the month's mess spending by the diets eaten: the rate comes first, over every member.
+      const dietRows = subs.filter((r) => r.plan.billing === 'diet');
+      const totalDiets = dietRows.reduce((t, r) => t + dietBill(b.month, { startsOn: r.s.startsOn, endedOn: r.s.endedOn }, r.plan, leaves.filter((l) => l.studentId === r.s.studentId), 0).diets, 0);
+      const [{ spent }] = await tx.select({ spent: sql<number>`coalesce(sum(${messExpenses.amountPaise}), 0)::bigint` }).from(messExpenses).where(eq(messExpenses.month, b.month));
+      const rate = dietRate(Number(spent), totalDiets);
       let made = 0;
       for (const [studentId, rows] of byStudent) {
         if (charged.has(studentId)) continue;
-        const total = { days: 0, leaveDays: 0, rebateDays: 0, grossPaise: 0, rebatePaise: 0, netPaise: 0 };
+        const total = { days: 0, leaveDays: 0, rebateDays: 0, grossPaise: 0, rebatePaise: 0, netPaise: 0, diets: 0, dietRatePaise: 0, establishmentPaise: 0 };
         for (const r of rows) {
-          const bill = messBill(b.month, { startsOn: r.s.startsOn, endedOn: r.s.endedOn }, r.plan, leaves.filter((l) => l.studentId === studentId));
-          for (const k of Object.keys(total) as (keyof typeof total)[]) total[k] += bill[k];
+          const mine = leaves.filter((l) => l.studentId === studentId);
+          const bill = r.plan.billing === 'diet' ? dietBill(b.month, { startsOn: r.s.startsOn, endedOn: r.s.endedOn }, r.plan, mine, rate) : { ...messBill(b.month, { startsOn: r.s.startsOn, endedOn: r.s.endedOn }, r.plan, mine), diets: 0, dietRatePaise: 0, establishmentPaise: 0 };
+          for (const k of Object.keys(total) as (keyof typeof total)[]) if (k !== 'dietRatePaise') total[k] += bill[k];
+          if (bill.dietRatePaise) total.dietRatePaise = bill.dietRatePaise;
         }
         const planId = rows[rows.length - 1].plan.id;
         await tx.insert(messBills).values({ tenantId: p.tenantId, studentId, planId, month: b.month, ...total }).onConflictDoUpdate({ target: [messBills.studentId, messBills.month], set: { planId, ...total } });
         made++;
       }
-      await auditUser(tx, p, 'mess_bill.run', 'mess_bill', undefined, { month: b.month, bills: made });
-      return { month: b.month, bills: made, alreadyCharged: charged.size };
+      await auditUser(tx, p, 'mess_bill.run', 'mess_bill', undefined, { month: b.month, bills: made, dietRatePaise: rate, diets: totalDiets });
+      return { month: b.month, bills: made, alreadyCharged: charged.size, diets: totalDiets, spentPaise: Number(spent), dietRatePaise: rate };
     });
   }
 

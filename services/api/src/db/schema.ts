@@ -4119,6 +4119,8 @@ export const TENANT_TABLES = [
   // Library, hostel and transport depth (0168-0170).
   'library_branches', 'library_budgets', 'library_acquisitions', 'library_copies', 'library_member_categories', 'library_members', 'library_fine_waivers', 'library_periodicals', 'library_periodical_issues', 'library_repository', 'library_repository_access', 'library_ill', 'library_gate_log', 'library_alert_subscriptions', 'library_clearances',
   'hostels', 'hostel_room_types', 'hostel_applications', 'hostel_bed_holds', 'hostel_requests', 'hostel_deposits', 'hostel_settlements', 'hostel_staff', 'hostel_duties', 'hostel_sickbay', 'hostel_late_entries', 'hostel_incidents', 'hostel_room_assets', 'mess_leaves', 'mess_bills',
+  // Hostel production pass (migrations 0204-0205; schema-hostel-pass.ts).
+  'hostel_gate_logs', 'hostel_committees', 'mess_inspections', 'mess_expenses',
   'transport_change_requests', 'transport_maintenance', 'transport_route_overrides', 'transport_pickup_persons', 'transport_handovers', 'transport_driver_duty',
   // Campus life, welfare, communication and LMS depth (migrations 0174-0176, schema-life.ts).
   'activity_units', 'unit_members', 'unit_activities', 'unit_hours', 'student_achievements', 'outreach_activities', 'club_budgets', 'club_expense_claims',
@@ -4325,6 +4327,8 @@ export const hostelRooms = pgTable(
     /** available | maintenance | closed */
     status: text('status').notNull().default('available'),
     note: text('note').notNull().default(''),
+    /** Wi-Fi, geyser, study table… (migration 0204). */
+    amenities: text('amenities').array().notNull().default(sql`'{}'::text[]`),
   },
   (t) => [uniqueIndex('hostel_rooms_number_uq').on(t.blockId, t.number)],
 );
@@ -4353,6 +4357,8 @@ export const hostelAllotments = pgTable(
     createdBy: uuid('created_by').notNull().references(() => users.id),
     vacateReason: text('vacate_reason').notNull().default(''),
     createdAt: createdAt(),
+    /** The resident's gate QR token for this stay (migration 0204); made on first use. */
+    gateToken: text('gate_token'),
   },
   (t) => [
     uniqueIndex('hostel_allotments_student_uq').on(t.studentId).where(sql`vacated_on is null`),

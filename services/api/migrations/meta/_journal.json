@@ -1324,6 +1324,20 @@
       "when": 1791506063000,
       "tag": "0201_teaching_logs",
       "breakpoints": true
+    },
+    {
+      "idx": 189,
+      "version": "7",
+      "when": 1791506066000,
+      "tag": "0204_hostel_gate_safety",
+      "breakpoints": true
+    },
+    {
+      "idx": 190,
+      "version": "7",
+      "when": 1791506067000,
+      "tag": "0205_hostel_mess_diet",
+      "breakpoints": true
     }
   ]
 }

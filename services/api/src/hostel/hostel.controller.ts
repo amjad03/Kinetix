@@ -14,10 +14,13 @@ import { hostelAllotments, hostelBeds, hostelBlocks, hostelComplaints, hostelGat
 import { FeesService } from '../fees/fees.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { hostelRoomTypes, hostelSickbay } from '../db/schema-lht.js';
+import { hostelGateLogs } from '../db/schema-hostel-pass.js';
 import { allotBed, decidePass, defaultHostel, gateMove, requestStatus, transfer, vacate } from './allotment.js';
+import { assertStudentInScope, blockScope, complaintScope, studentScope } from './hostel-scope.js';
 
 export const HOSTEL_ROLES: RoleName[] = ['hostel_warden', 'tenant_admin', 'principal'];
 const MEALS = ['breakfast', 'lunch', 'snacks', 'dinner'] as const;
+const PASS_STATUSES = ['parent_pending', 'requested', 'approved', 'issued', 'out', 'returned', 'rejected', 'cancelled'];
 
 const BlockBody = z.object({ name: z.string().trim().min(1).max(60), gender: z.enum(['boys', 'girls', 'mixed']).default('mixed'), hostelId: z.uuid().optional() });
 const RoomBody = z.object({ number: z.string().trim().min(1).max(20), floor: z.number().int().min(0).max(50).default(0), beds: z.number().int().min(1).max(20), monthlyFeePaise: Paise.optional(), roomTypeId: z.uuid().optional() });
@@ -65,6 +68,7 @@ export class HostelController {
           occupied: sql<number>`(select count(*)::int from hostel_allotments a join hostel_beds b on b.id = a.bed_id join hostel_rooms r on r.id = b.room_id where r.block_id = "hostel_blocks"."id" and a.vacated_on is null)`,
         })
         .from(hostelBlocks)
+        .where(blockScope(p, hostelBlocks.id))
         .orderBy(asc(hostelBlocks.name)),
     );
   }
@@ -123,7 +127,7 @@ export class HostelController {
         .innerJoin(hostelBlocks, eq(hostelBlocks.id, hostelRooms.blockId))
         .leftJoin(hostelAllotments, and(eq(hostelAllotments.bedId, hostelBeds.id), isNull(hostelAllotments.vacatedOn)))
         .leftJoin(students, eq(students.id, hostelAllotments.studentId))
-        .where(and(blockId ? eq(hostelBlocks.id, blockId) : undefined, free === 'true' ? isNull(hostelAllotments.id) : undefined))
+        .where(and(blockId && /^[0-9a-f-]{36}$/.test(blockId) ? eq(hostelBlocks.id, blockId) : undefined, free === 'true' ? isNull(hostelAllotments.id) : undefined, blockScope(p, hostelBlocks.id)))
         .orderBy(asc(hostelBlocks.name), asc(hostelRooms.number), asc(hostelBeds.label))
         .limit(1000),
     );
@@ -246,7 +250,7 @@ export class HostelController {
   @Auth('user', HOSTEL_ROLES)
   nightRoll(@CurrentPrincipal() p: UserPrincipal, @Query('night') night?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const day = night ? Day.parse(night) : await this.today(tx);
+      const day = night ? this.day(night) : await this.today(tx);
       const rows = await tx
         .select({ studentId: students.id, studentName: students.fullName, room: hostelRooms.number, block: hostelBlocks.name, status: hostelNightAttendance.status })
         .from(hostelAllotments)
@@ -255,7 +259,7 @@ export class HostelController {
         .innerJoin(hostelRooms, eq(hostelRooms.id, hostelBeds.roomId))
         .innerJoin(hostelBlocks, eq(hostelBlocks.id, hostelRooms.blockId))
         .leftJoin(hostelNightAttendance, and(eq(hostelNightAttendance.studentId, students.id), eq(hostelNightAttendance.night, day)))
-        .where(and(isNull(hostelAllotments.vacatedOn), sql`${hostelAllotments.startsOn} <= ${day}::date`))
+        .where(and(isNull(hostelAllotments.vacatedOn), sql`${hostelAllotments.startsOn} <= ${day}::date`, blockScope(p, hostelBlocks.id)))
         .orderBy(asc(hostelBlocks.name), asc(hostelRooms.number), asc(students.fullName))
         .limit(1000);
       const count = (s: string | null) => rows.filter((r) => r.status === s).length;
@@ -277,6 +281,7 @@ export class HostelController {
       const ids = [...new Set(b.marks.map((m) => m.studentId))];
       const res = await tx.select({ id: students.id, name: students.fullName }).from(hostelAllotments).innerJoin(students, eq(students.id, hostelAllotments.studentId)).where(and(inArray(hostelAllotments.studentId, ids), isNull(hostelAllotments.vacatedOn)));
       if (res.length !== ids.length) throw new BadRequestException('Only students with a hostel bed can be marked');
+      for (const sid of ids) await assertStudentInScope(tx, p, sid);
       const out = await tx.select({ id: hostelGatePasses.studentId }).from(hostelGatePasses).where(and(inArray(hostelGatePasses.studentId, ids), eq(hostelGatePasses.status, 'out')));
       let absent = 0;
       for (const m of b.marks) {
@@ -299,6 +304,7 @@ export class HostelController {
   issuePass(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(PassBody)) b: z.infer<typeof PassBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.assertResident(tx, b.studentId);
+      await assertStudentInScope(tx, p, b.studentId);
       if (new Date(b.expectedBackAt) <= this.clock.now()) throw new BadRequestException('The expected return time has passed');
       const hr = (await readSettings(tx, p.tenantId, 'hostel')).rules;
       if (new Date(b.expectedBackAt).getTime() - this.clock.now().getTime() > Number(hr.maxLeaveDays) * 86_400_000) throw new BadRequestException(`A pass can cover at most ${String(hr.maxLeaveDays)} days`);
@@ -328,6 +334,7 @@ export class HostelController {
   @Auth('user', HOSTEL_ROLES)
   cancelPass(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
+      await this.passInScope(tx, p, id);
       const [pass] = await tx.update(hostelGatePasses).set({ status: 'cancelled' }).where(and(eq(hostelGatePasses.id, id), eq(hostelGatePasses.status, 'issued'))).returning();
       if (!pass) throw new ConflictException('Only a pass that has not been used can be cancelled');
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.pass_cancelled', subjectType: 'hostel_gate_pass', subjectId: id });
@@ -386,12 +393,13 @@ export class HostelController {
   @Get('gate-passes')
   @Auth('user', HOSTEL_ROLES)
   passes(@CurrentPrincipal() p: UserPrincipal, @Query('status') status?: string) {
+    if (status !== undefined && !PASS_STATUSES.includes(status)) throw new BadRequestException('Unknown pass status');
     return this.db.withTenant(p.tenantId, (tx) =>
       tx
         .select({ pass: hostelGatePasses, studentName: students.fullName, overdue: sql<boolean>`${hostelGatePasses.status} = 'out' and ${hostelGatePasses.expectedBackAt} < ${this.clock.now().toISOString()}::timestamptz` })
         .from(hostelGatePasses)
         .innerJoin(students, eq(students.id, hostelGatePasses.studentId))
-        .where(status ? eq(hostelGatePasses.status, status) : undefined)
+        .where(and(status ? eq(hostelGatePasses.status, status) : undefined, studentScope(p, hostelGatePasses.studentId)))
         .orderBy(desc(hostelGatePasses.createdAt))
         .limit(200),
     );
@@ -404,6 +412,7 @@ export class HostelController {
   visitorIn(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(VisitorBody)) b: z.infer<typeof VisitorBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.assertResident(tx, b.studentId);
+      await assertStudentInScope(tx, p, b.studentId);
       const [v] = await tx.insert(hostelVisitors).values({ tenantId: p.tenantId, ...b, inAt: this.clock.now(), loggedBy: p.userId }).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.visitor_in', subjectType: 'hostel_visitor', subjectId: v.id });
       return v;
@@ -415,7 +424,7 @@ export class HostelController {
   @Auth('user', HOSTEL_ROLES)
   visitorOut(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [v] = await tx.update(hostelVisitors).set({ outAt: this.clock.now() }).where(and(eq(hostelVisitors.id, id), isNull(hostelVisitors.outAt))).returning();
+      const [v] = await tx.update(hostelVisitors).set({ outAt: this.clock.now() }).where(and(eq(hostelVisitors.id, id), isNull(hostelVisitors.outAt), studentScope(p, hostelVisitors.studentId))).returning();
       if (!v) throw new ConflictException('Visitor not found or already signed out');
       return v;
     });
@@ -430,7 +439,7 @@ export class HostelController {
         .select({ visitor: hostelVisitors, studentName: students.fullName })
         .from(hostelVisitors)
         .innerJoin(students, eq(students.id, hostelVisitors.studentId))
-        .where(inside === 'true' ? isNull(hostelVisitors.outAt) : undefined)
+        .where(and(inside === 'true' ? isNull(hostelVisitors.outAt) : undefined, studentScope(p, hostelVisitors.studentId)))
         .orderBy(desc(hostelVisitors.inAt))
         .limit(200),
     );
@@ -518,7 +527,16 @@ export class HostelController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       if (b.studentId) await assertCanSeeStudent(tx, p, b.studentId, HOSTEL_ROLES);
       else if (!this.isWarden(p)) throw new BadRequestException('Say which student this is about');
-      const [c] = await tx.insert(hostelComplaints).values({ tenantId: p.tenantId, ...b, raisedBy: p.userId }).returning();
+      // A resident's complaint is about their own room unless another is named.
+      let roomId = b.roomId ?? null;
+      if (!roomId && b.studentId) {
+        const [r] = await tx.select({ roomId: hostelBeds.roomId }).from(hostelAllotments).innerJoin(hostelBeds, eq(hostelBeds.id, hostelAllotments.bedId)).where(and(eq(hostelAllotments.studentId, b.studentId), isNull(hostelAllotments.vacatedOn)));
+        roomId = r?.roomId ?? null;
+      } else if (roomId) {
+        const [r] = await tx.select({ id: hostelRooms.id }).from(hostelRooms).where(eq(hostelRooms.id, roomId));
+        if (!r) throw new NotFoundException('Room not found');
+      }
+      const [c] = await tx.insert(hostelComplaints).values({ tenantId: p.tenantId, ...b, roomId, raisedBy: p.userId }).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hostel.complaint_raised', subjectType: 'hostel_complaint', subjectId: c.id });
       return c;
     });
@@ -528,13 +546,15 @@ export class HostelController {
   @Get('complaints')
   @Auth('user')
   complaints(@CurrentPrincipal() p: UserPrincipal, @Query('status') status?: string, @Query('studentId') studentId?: string) {
+    if (status !== undefined && !['open', 'in_progress', 'resolved'].includes(status)) throw new BadRequestException('Unknown complaint status');
+    if (studentId !== undefined && !/^[0-9a-f-]{36}$/i.test(studentId)) throw new BadRequestException('Unknown student');
     return this.db.withTenant(p.tenantId, async (tx) => {
       // A linked guardian (or the student) may read every complaint about that child, whoever raised it.
       if (studentId) await assertCanSeeStudent(tx, p, studentId, HOSTEL_ROLES);
       return tx
         .select()
         .from(hostelComplaints)
-        .where(and(studentId ? eq(hostelComplaints.studentId, studentId) : this.isWarden(p) ? undefined : eq(hostelComplaints.raisedBy, p.userId), status ? eq(hostelComplaints.status, status) : undefined))
+        .where(and(studentId ? eq(hostelComplaints.studentId, studentId) : this.isWarden(p) ? undefined : eq(hostelComplaints.raisedBy, p.userId), status ? eq(hostelComplaints.status, status) : undefined, this.isWarden(p) ? complaintScope(p) : undefined))
         .orderBy(desc(hostelComplaints.createdAt))
         .limit(200);
     });
@@ -549,7 +569,7 @@ export class HostelController {
       const [c] = await tx
         .update(hostelComplaints)
         .set({ status: b.status, resolution: b.resolution ?? null, resolvedAt: b.status === 'resolved' ? this.clock.now() : null })
-        .where(and(eq(hostelComplaints.id, id), inArray(hostelComplaints.status, ['open', 'in_progress'])))
+        .where(and(eq(hostelComplaints.id, id), inArray(hostelComplaints.status, ['open', 'in_progress']), complaintScope(p)))
         .returning();
       if (!c) throw new ConflictException('Complaint not found or already resolved');
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `hostel.complaint_${b.status}`, subjectType: 'hostel_complaint', subjectId: id });
@@ -580,7 +600,9 @@ export class HostelController {
         .where(eq(hostelSickbay.studentId, studentId))
         .orderBy(desc(hostelSickbay.admittedAt))
         .limit(5);
-      return { resident: !!bed, bed: bed ?? null, passes, nights, sickbay };
+      // Every move through the gate (the family sees when their child went out and came back).
+      const gateLog = await tx.select({ id: hostelGateLogs.id, direction: hostelGateLogs.direction, at: hostelGateLogs.at, method: hostelGateLogs.method, minutesLate: hostelGateLogs.minutesLate, withPass: sql<boolean>`${hostelGateLogs.gatePassId} is not null` }).from(hostelGateLogs).where(eq(hostelGateLogs.studentId, studentId)).orderBy(desc(hostelGateLogs.at)).limit(30);
+      return { resident: !!bed, bed: bed ?? null, passes, nights, sickbay, gateLog, outNow: gateLog[0]?.direction === 'out' };
     });
   }
 
@@ -591,11 +613,30 @@ export class HostelController {
   }
 
   private async gate(p: UserPrincipal, id: string, _from: string, to: 'out' | 'in') {
-    return this.db.withTenant(p.tenantId, (tx) => gateMove(tx, p, this.clock.now(), this.notifications, id, to));
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      await this.passInScope(tx, p, id);
+      return gateMove(tx, p, this.clock.now(), this.notifications, id, to);
+    });
   }
 
   private decidePass(p: UserPrincipal, id: string, to: 'issued' | 'rejected') {
-    return this.db.withTenant(p.tenantId, (tx) => decidePass(tx, p, id, to));
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      await this.passInScope(tx, p, id);
+      return decidePass(tx, p, id, to);
+    });
+  }
+
+  /** A pass of a resident outside the warden's blocks is refused. */
+  private async passInScope(tx: Tx, p: UserPrincipal, id: string) {
+    const [pass] = await tx.select({ studentId: hostelGatePasses.studentId }).from(hostelGatePasses).where(eq(hostelGatePasses.id, id));
+    if (!pass) throw new NotFoundException('Pass not found');
+    await assertStudentInScope(tx, p, pass.studentId);
+  }
+
+  private day(v: string): string {
+    const r = Day.safeParse(v);
+    if (!r.success) throw new BadRequestException('Use a date like 2026-10-15');
+    return r.data;
   }
 
   private async assertResident(tx: Tx, studentId: string) {
