@@ -172,13 +172,13 @@ export async function budgetReportRows(tx: Tx, fy: string) {
 }
 
 /** Refunds part or all of a paid fee: the invoice's received amount goes down and it is open again if now short. */
-export async function issueRefund(tx: Tx, ctx: { tenantId: string; userId: string }, b: { paymentId: string; amountPaise: number; reason: string }) {
+export async function issueRefund(tx: Tx, ctx: { tenantId: string; userId: string }, b: { paymentId: string; amountPaise: number; reason: string; at?: Date }) {
   const [pay] = await tx.select().from(feePayments).where(eq(feePayments.id, b.paymentId)).for('update');
   if (!pay || pay.status !== 'paid') throw new NotFoundException('Paid payment not found');
   // A refund reverted later (its money came back) no longer counts.
   const [done] = await tx.select({ t: sql<number>`coalesce(sum(${feeRefunds.amountPaise}), 0)::bigint` }).from(feeRefunds).where(and(eq(feeRefunds.paymentId, pay.id), sql`${feeRefunds.id} not in (select refund_id from fee_refund_requests where status = 'reverted' and refund_id is not null)`));
   if (Number(done.t) + b.amountPaise > pay.amountPaise) throw new BadRequestException('That is more than was paid');
-  const [row] = await tx.insert(feeRefunds).values({ tenantId: ctx.tenantId, paymentId: pay.id, invoiceId: pay.invoiceId, studentId: pay.studentId, amountPaise: b.amountPaise, reason: b.reason, refundedBy: ctx.userId }).returning();
+  const [row] = await tx.insert(feeRefunds).values({ tenantId: ctx.tenantId, paymentId: pay.id, invoiceId: pay.invoiceId, studentId: pay.studentId, amountPaise: b.amountPaise, reason: b.reason, refundedBy: ctx.userId, ...(b.at ? { refundedAt: b.at } : {}) }).returning();
   await tx.update(feeInvoices).set({ paidPaise: sql`${feeInvoices.paidPaise} - ${b.amountPaise}`, status: sql`case when ${feeInvoices.status} = 'paid' then 'due'::invoice_status else ${feeInvoices.status} end`, updatedAt: new Date() }).where(eq(feeInvoices.id, pay.invoiceId));
   await audit(tx, { tenantId: ctx.tenantId, actorType: 'user', actorId: ctx.userId, action: 'fees.refunded', subjectType: 'fee_refund', subjectId: row.id, data: { paymentId: pay.id, amountPaise: b.amountPaise } });
   const [st] = await tx.select({ n: students.fullName }).from(students).where(eq(students.id, pay.studentId));
@@ -190,7 +190,7 @@ export async function issueRefund(tx: Tx, ctx: { tenantId: string; userId: strin
     tenantId: ctx.tenantId,
     userId: ctx.userId,
     refundId: row.id,
-    date: await feeToday(tx),
+    date: b.at ? b.at.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) : await feeToday(tx),
     amountPaise: b.amountPaise,
     student: st?.n ?? 'student',
     reason: b.reason,

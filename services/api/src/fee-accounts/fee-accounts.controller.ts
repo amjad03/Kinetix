@@ -78,6 +78,14 @@ const SettingsBody = z.object({
   reminders: z.object({ enabled: z.boolean().optional(), daysBefore: z.array(z.number().int().min(0).max(90)).max(6).optional(), daysAfter: z.array(z.number().int().min(1).max(365)).max(8).optional(), channels: z.array(z.enum(['app', 'sms', 'whatsapp'])).max(3).optional(), dailySummary: z.boolean().optional() }).optional(),
   convenience: z.object({ percent: z.number().min(0).max(10).optional(), flatRupees: z.number().min(0).max(1000).optional() }).optional(),
   refundRules: z.array(z.object({ untilDays: z.number().int().min(0).max(3650).nullable(), percent: z.number().min(0).max(100), deductionRupees: z.number().min(0).max(1_000_000) })).max(10).optional(),
+  /** cash (income on receipts) or accrual (charges, concessions, waivers and fines journalised as they happen). */
+  basis: z.enum(['cash', 'accrual']).optional(),
+  online: z.object({ allowPartial: z.boolean().optional(), minPartRupees: z.number().min(0).max(10_000_000).optional(), linkValidDays: z.number().int().min(1).max(60).optional(), pollAfterMinutes: z.number().int().min(5).max(1440).optional() }).optional(),
+  escalations: z
+    .array(z.object({ offsetDays: z.number().int().min(-90).max(365), audience: z.array(z.enum(['family', 'class_teacher', 'principal', 'accountant'])).min(1).max(4), channels: z.array(z.enum(['app', 'sms', 'whatsapp', 'email'])).min(1).max(4), minRupees: z.number().min(0).max(10_000_000).optional() }))
+    .max(12)
+    .refine((x) => new Set(x.map((s) => s.offsetDays)).size === x.length, 'Each reminder step needs its own day')
+    .optional(),
 });
 
 /**
@@ -153,6 +161,11 @@ export class FeeAccountsController {
           reminders: b.reminders ?? cur.reminders,
           convenience: b.convenience ?? cur.convenience,
           refundRules: b.refundRules ?? cur.refundRules,
+          basis: b.basis ?? cur.basis,
+          // Switching to accrual books invoices raised from now; older ones stay on receipts.
+          accrualSince: b.basis === 'accrual' && cur.basis !== 'accrual' ? this.clock.now() : b.basis === 'cash' ? null : cur.accrualSince,
+          online: b.online ? { ...cur.online, ...b.online } : cur.online,
+          escalations: b.escalations ?? cur.escalations,
           updatedBy: p.userId,
           updatedAt: new Date(),
         })
@@ -464,7 +477,7 @@ export class FeeAccountsController {
       if (!r) throw new NotFoundException('Refund not found');
       if (r.status !== 'approved') throw new ConflictException('Only an approved refund can be paid');
       await assertPeriodOpen(tx, await this.today(tx));
-      const refund = await issueRefund(tx, { tenantId: p.tenantId, userId: p.userId }, { paymentId: r.paymentId, amountPaise: r.amountPaise, reason: `${r.number}: ${r.reason}` });
+      const refund = await issueRefund(tx, { tenantId: p.tenantId, userId: p.userId }, { paymentId: r.paymentId, amountPaise: r.amountPaise, reason: `${r.number}: ${r.reason}`, at: this.clock.now() });
       const [pay] = await tx.select().from(feePayments).where(eq(feePayments.id, r.paymentId));
       await unallocate(tx, pay, r.amountPaise);
       // A withdrawal: the refunded part is no longer charged, so the fee does not fall due again.

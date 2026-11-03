@@ -127,6 +127,8 @@ const EnvSchema = z.object({
   MODELS_BASE_URL: z.url().optional(),
   /** Base of the QR verification links on certificates and ID cards: <this>/<institution slug>/<token>. */
   VERIFY_BASE_URL: z.url().default('http://localhost:3000/verify'),
+  /** Base of fee payment links sent to families: <this>/<institution slug>/<token> (the ERP's public pay page). */
+  PAY_LINK_BASE_URL: z.url().default('http://localhost:3000/pay'),
   /**
    * Master key for secrets stored in the database (institutions' Razorpay secrets): 32 random
    * bytes, base64 (`openssl rand -base64 32`). Required with PAYMENTS_PROVIDER=razorpay. To

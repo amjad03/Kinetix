@@ -15,13 +15,26 @@ import { RecordRegistry, type FieldOption, type KitCtx, type RecordEntity } from
 import { copyName, DateText, Int, OptionalText, Text, uuidEq } from '../records/helpers.js';
 import { eachRow } from '../records/import.js';
 import { CodeList, joinCodes, never, opts, rowOf, rupeeField, rupeesOf, Rupees, setColumn } from './kit.js';
+import { feeAccounts } from '../db/schema-fee-flagship.js';
+
+async function feeAccountOptions(ctx: KitCtx): Promise<FieldOption[]> {
+  return (await ctx.tx.select({ id: feeAccounts.id, code: feeAccounts.code, name: feeAccounts.name }).from(feeAccounts).where(eq(feeAccounts.active, true)).orderBy(asc(feeAccounts.sortOrder))).map((a) => ({ value: a.id, label: `${a.code} ${a.name}` }));
+}
 
 const W = FEE_ROLES;
 const HEAD_KINDS = ['tuition', 'exam', 'lab', 'transport', 'hostel', 'uniform', 'books', 'library', 'fine', 'deposit', 'admission', 'other'];
 const LINKED = ['none', 'transport', 'hostel', 'opt_in'];
 const CONCESSION_CATEGORIES = ['merit', 'sibling', 'staff_ward', 'sports', 'government', 'need', 'management', 'other'];
 const QUOTAS = ['government', 'management', 'nri', 'sports', 'other'];
-const PORTALS = ['nsp', 'state', 'institution', 'other'];
+const PORTALS = ['ssp', 'nsp', 'state', 'central', 'institution', 'other'];
+const PORTAL_OPTIONS = [
+  { value: 'ssp', label: 'Karnataka SSP' },
+  { value: 'nsp', label: 'National Scholarship Portal' },
+  { value: 'state', label: 'Other state portal' },
+  { value: 'central', label: 'Central scheme (ministry portal)' },
+  { value: 'institution', label: 'Institution' },
+  { value: 'other', label: 'Other' },
+];
 const yes = (v: string) => ['yes', 'y', 'true', '1'].includes(lc(v));
 const num = (v: string, what: string) => {
   const n = Number(v.replace(/[₹,\s]/g, ''));
@@ -86,7 +99,7 @@ export function feeHeadsEntity(): RecordEntity {
     roles: { read: W, write: W },
     label: (r) => `${r.code} ${r.name}`,
     list: {
-      select: { id: feeHeads.id, code: feeHeads.code, name: feeHeads.name, kind: feeHeads.kind, sortOrder: feeHeads.sortOrder, accountCode: feeHeads.accountCode, fundCode: feeHeads.fundCode, gstRate: feeHeads.gstRate, sac: feeHeads.sac, refundable: feeHeads.refundable, optional: feeHeads.optional, linkedModule: feeHeads.linkedModule, receiptPrefix: feeHeads.receiptPrefix, active: feeHeads.active, used: headInUse },
+      select: { id: feeHeads.id, code: feeHeads.code, name: feeHeads.name, kind: feeHeads.kind, sortOrder: feeHeads.sortOrder, accountCode: feeHeads.accountCode, fundCode: feeHeads.fundCode, gstRate: feeHeads.gstRate, sac: feeHeads.sac, refundable: feeHeads.refundable, optional: feeHeads.optional, linkedModule: feeHeads.linkedModule, receiptPrefix: feeHeads.receiptPrefix, active: feeHeads.active, used: headInUse, feeAccountId: feeHeads.feeAccountId, feeAccount: sql<string | null>`(select a.name from fee_accounts a where a.id = fee_heads.fee_account_id)` },
       search: [feeHeads.code, feeHeads.name],
       filters: {
         kind: { label: 'Kind', options: opts(HEAD_KINDS), where: (v) => (HEAD_KINDS.includes(v) ? eq(feeHeads.kind, v) : undefined) },
@@ -109,6 +122,7 @@ export function feeHeadsEntity(): RecordEntity {
       optional: { label: 'Optional', type: 'boolean', schema: z.boolean(), column: feeHeads.optional, bulk: true, help: 'Charged only to students in the linked module or who opted in' },
       linkedModule: { label: 'Linked to', type: 'select', schema: z.enum(LINKED as [string, ...string[]]), column: feeHeads.linkedModule, options: [{ value: 'none', label: 'Nothing' }, { value: 'transport', label: 'Transport (students on a route)' }, { value: 'hostel', label: 'Hostel (students with a bed)' }, { value: 'opt_in', label: 'Students who opted in' }], bulk: true },
       receiptPrefix: { label: 'Own receipt series', type: 'text', schema: OptionalText(30), column: feeHeads.receiptPrefix, help: 'A prefix to number this head’s receipts on their own, such as TRN/' },
+      feeAccountId: { label: 'Fee account', type: 'select', schema: z.union([z.uuid(), z.literal('')]).nullable().transform((v) => v || null), column: feeHeads.feeAccountId, options: feeAccountOptions, bulk: true, help: 'The trust, college or hostel account this head is collected into (blank: the default account)' },
       active: { label: 'Active', type: 'boolean', schema: z.boolean(), column: feeHeads.active, bulk: true, create: false },
     },
     order: { column: feeHeads.sortOrder },
@@ -226,6 +240,7 @@ export function feeStructuresEntity(): RecordEntity {
         perCreditRupees: rupeesOf(feeStructures.perCreditPaise),
         creditHead: feeStructures.creditHead,
         instalmentPlanId: feeStructures.instalmentPlanId,
+        feeAccountId: feeStructures.feeAccountId,
         status: feeStructures.status,
         active: feeStructures.active,
         heads: sql<number>`jsonb_array_length(${feeStructures.items})`,
@@ -258,11 +273,12 @@ export function feeStructuresEntity(): RecordEntity {
       perCreditRupees: { label: 'Fee per credit (₹)', type: 'number', schema: Rupees, rowKey: 'perCreditRupees', apply: draftOnly(feeStructures.perCreditPaise, (v) => Math.round(Number(v) * 100)), help: 'Charged for each registered credit, on top of the heads' },
       creditHead: { label: 'Credit fee head', type: 'select', schema: OptionalText(12), rowKey: 'creditHead', apply: draftOnly(feeStructures.creditHead), options: headOptions },
       instalmentPlanId: { label: 'Instalment plan', type: 'select', schema: z.union([z.uuid(), z.literal('')]).nullable().transform((v) => v || null), rowKey: 'instalmentPlanId', apply: draftOnly(feeStructures.instalmentPlanId), options: planOptions, bulk: true },
+      feeAccountId: { label: 'Fee account', type: 'select', schema: z.union([z.uuid(), z.literal('')]).nullable().transform((v) => v || null), rowKey: 'feeAccountId', apply: draftOnly(feeStructures.feeAccountId), options: feeAccountOptions, bulk: true, help: 'Its invoices are collected into this account (blank: by the heads, else the default)' },
     },
     create: async (ctx, v) => {
       const [row] = await ctx.tx
         .insert(feeStructures)
-        .values({ tenantId: ctx.p.tenantId, name: String(v.name), academicYear: (v.academicYear as string) ?? null, programId: (v.programId as string) ?? null, campusId: (v.campusId as string) ?? null, term: (v.term as number) ?? null, batch: (v.batch as string) ?? null, quota: (v.quota as string) ?? null, category: (v.category as string) ?? null, dueInDays: (v.dueInDays as number) ?? 30, perCreditPaise: Math.round(Number(v.perCreditRupees ?? 0) * 100), creditHead: (v.creditHead as string) ?? null, instalmentPlanId: (v.instalmentPlanId as string) ?? null, items: [], status: 'draft', active: false, createdBy: ctx.p.userId })
+        .values({ tenantId: ctx.p.tenantId, name: String(v.name), academicYear: (v.academicYear as string) ?? null, programId: (v.programId as string) ?? null, campusId: (v.campusId as string) ?? null, term: (v.term as number) ?? null, batch: (v.batch as string) ?? null, quota: (v.quota as string) ?? null, category: (v.category as string) ?? null, dueInDays: (v.dueInDays as number) ?? 30, perCreditPaise: Math.round(Number(v.perCreditRupees ?? 0) * 100), creditHead: (v.creditHead as string) ?? null, instalmentPlanId: (v.instalmentPlanId as string) ?? null, feeAccountId: (v.feeAccountId as string) ?? null, items: [], status: 'draft', active: false, createdBy: ctx.p.userId })
         .returning({ id: feeStructures.id });
       return row.id;
     },
@@ -854,12 +870,12 @@ export function govtScholarshipsEntity(): RecordEntity {
     roles: { read: W, write: W },
     label: (r) => `${r.scheme} ${r.applicationNo} (${r.student})`,
     list: {
-      select: { id: feeGovtScholarships.id, studentId: feeGovtScholarships.studentId, student: students.fullName, rollNo: students.rollNo, section: sections.displayName, scheme: feeGovtScholarships.scheme, portal: feeGovtScholarships.portal, applicationNo: feeGovtScholarships.applicationNo, academicYear: feeGovtScholarships.academicYear, status: feeGovtScholarships.status, appliedRupees: rupeesOf(feeGovtScholarships.appliedPaise), appliedPaise: feeGovtScholarships.appliedPaise, appliedOn: feeGovtScholarships.appliedOn, sanctionedPaise: feeGovtScholarships.sanctionedPaise, receivedPaise: feeGovtScholarships.receivedPaise, receivedOn: feeGovtScholarships.receivedOn, note: feeGovtScholarships.note, rollForCreate: students.rollNo },
+      select: { id: feeGovtScholarships.id, studentId: feeGovtScholarships.studentId, student: students.fullName, rollNo: students.rollNo, section: sections.displayName, scheme: feeGovtScholarships.scheme, portal: feeGovtScholarships.portal, applicationNo: feeGovtScholarships.applicationNo, academicYear: feeGovtScholarships.academicYear, status: feeGovtScholarships.status, appliedRupees: rupeesOf(feeGovtScholarships.appliedPaise), appliedPaise: feeGovtScholarships.appliedPaise, appliedOn: feeGovtScholarships.appliedOn, sanctionedPaise: feeGovtScholarships.sanctionedPaise, receivedPaise: feeGovtScholarships.receivedPaise, receivedOn: feeGovtScholarships.receivedOn, note: feeGovtScholarships.note, rollForCreate: students.rollNo, expectedRupees: rupeesOf(feeGovtScholarships.expectedPaise), expectedPaise: feeGovtScholarships.expectedPaise, holdDues: feeGovtScholarships.holdDues, category: feeGovtScholarships.category, portalStatus: feeGovtScholarships.portalStatus, verifiedOn: feeGovtScholarships.verifiedOn },
       joins: (q) => q.innerJoin(students, eq(students.id, feeGovtScholarships.studentId)).innerJoin(sections, eq(sections.id, students.sectionId)),
       search: [feeGovtScholarships.scheme, feeGovtScholarships.applicationNo, students.fullName, students.rollNo],
       filters: {
-        status: { label: 'Status', options: opts(['applied', 'sanctioned', 'received', 'rejected', 'lapsed']), where: (v) => eq(feeGovtScholarships.status, v) },
-        portal: { label: 'Portal', options: [{ value: 'nsp', label: 'National Scholarship Portal' }, { value: 'state', label: 'State portal' }, { value: 'institution', label: 'Institution' }, { value: 'other', label: 'Other' }], where: (v) => eq(feeGovtScholarships.portal, v) },
+        status: { label: 'Status', options: opts(['applied', 'verified', 'sanctioned', 'received', 'rejected', 'lapsed']), where: (v) => eq(feeGovtScholarships.status, v) },
+        portal: { label: 'Portal', options: PORTAL_OPTIONS, where: (v) => eq(feeGovtScholarships.portal, v) },
         year: { label: 'Year', options: yearOptions, where: (v) => eq(feeGovtScholarships.academicYear, v) },
       },
       sorts: { student: students.fullName, scheme: feeGovtScholarships.scheme, applied: feeGovtScholarships.appliedOn, received: feeGovtScholarships.receivedOn, amount: feeGovtScholarships.appliedPaise },
@@ -868,7 +884,10 @@ export function govtScholarshipsEntity(): RecordEntity {
     fields: {
       rollForCreate: { label: 'Student roll no', type: 'text', schema: Text(40), rowKey: 'rollForCreate', required: true, edit: false, apply: async () => undefined, help: 'The student’s roll number' },
       scheme: { label: 'Scheme', type: 'text', schema: Text(120), column: feeGovtScholarships.scheme, required: true, help: 'e.g. Post-matric scholarship (SC/ST)' },
-      portal: { label: 'Portal', type: 'select', schema: z.enum(PORTALS as [string, ...string[]]), column: feeGovtScholarships.portal, options: [{ value: 'nsp', label: 'National Scholarship Portal' }, { value: 'state', label: 'State portal' }, { value: 'institution', label: 'Institution' }, { value: 'other', label: 'Other' }], required: true, bulk: true },
+      portal: { label: 'Portal', type: 'select', schema: z.enum(PORTALS as [string, ...string[]]), column: feeGovtScholarships.portal, options: PORTAL_OPTIONS, required: true, bulk: true },
+      category: { label: 'Category', type: 'text', schema: OptionalText(40), column: feeGovtScholarships.category, help: 'e.g. SC, ST, Cat-1, 2A, minority' },
+      expectedRupees: rupeeField('Amount expected (₹)', feeGovtScholarships, feeGovtScholarships.expectedPaise, 'expectedRupees'),
+      holdDues: { label: 'Hold the dues it covers', type: 'boolean', schema: z.boolean(), column: feeGovtScholarships.holdDues, bulk: true, help: 'Until the money comes, the expected amount does not count as overdue (no reminders or holds for it)' },
       applicationNo: { label: 'Application number', type: 'text', schema: Text(60), column: feeGovtScholarships.applicationNo, required: true },
       academicYear: { label: 'Academic year', type: 'text', schema: z.string().regex(/^\d{4}-\d{2}$/, 'Use a year like 2026-27'), column: feeGovtScholarships.academicYear, required: true, bulk: true },
       appliedRupees: rupeeField('Amount applied for (₹)', feeGovtScholarships, feeGovtScholarships.appliedPaise, 'appliedRupees'),
@@ -881,7 +900,7 @@ export function govtScholarshipsEntity(): RecordEntity {
       });
       const [row] = await ctx.tx
         .insert(feeGovtScholarships)
-        .values({ tenantId: ctx.p.tenantId, studentId: st.id, scheme: String(v.scheme), portal: String(v.portal ?? 'state'), applicationNo: String(v.applicationNo), academicYear: String(v.academicYear), appliedPaise: Math.round(Number(v.appliedRupees ?? 0) * 100), appliedOn: (v.appliedOn as string) ?? null, note: String(v.note ?? ''), createdBy: ctx.p.userId })
+        .values({ tenantId: ctx.p.tenantId, studentId: st.id, scheme: String(v.scheme), portal: String(v.portal ?? 'state'), applicationNo: String(v.applicationNo), academicYear: String(v.academicYear), appliedPaise: Math.round(Number(v.appliedRupees ?? 0) * 100), expectedPaise: Math.round(Number(v.expectedRupees ?? v.appliedRupees ?? 0) * 100), category: (v.category as string) ?? null, holdDues: v.holdDues === undefined ? true : !!v.holdDues, appliedOn: (v.appliedOn as string) ?? null, note: String(v.note ?? ''), createdBy: ctx.p.userId })
         .returning({ id: feeGovtScholarships.id });
       return row.id;
     },

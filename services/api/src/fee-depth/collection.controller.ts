@@ -358,7 +358,7 @@ export class CollectionController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [g] = await tx.select().from(feeGovtScholarships).where(eq(feeGovtScholarships.id, id)).for('update');
       if (!g) throw new NotFoundException('Scholarship not found');
-      if (g.status !== 'applied') throw new ConflictException('Only an applied scholarship can be sanctioned');
+      if (!['applied', 'verified'].includes(g.status)) throw new ConflictException('Only an applied or verified scholarship can be sanctioned');
       const [row] = await tx.update(feeGovtScholarships).set({ status: 'sanctioned', sanctionedPaise: b.amountPaise, sanctionedOn: b.on, updatedAt: new Date() }).where(eq(feeGovtScholarships.id, id)).returning();
       await auditUser(tx, p, 'govt_scholarship.sanctioned', 'govt_scholarship', id, { amountPaise: b.amountPaise, on: b.on });
       return row;
@@ -373,9 +373,12 @@ export class CollectionController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [g] = await tx.select().from(feeGovtScholarships).where(eq(feeGovtScholarships.id, id)).for('update');
       if (!g) throw new NotFoundException('Scholarship not found');
-      if (!['applied', 'sanctioned'].includes(g.status)) throw new ConflictException('This scholarship is closed');
+      // Instalments of a scholarship (SSP pays in parts) are received one by one until the sanctioned amount is in.
+      const target = g.sanctionedPaise || g.expectedPaise || 0;
+      if (!['applied', 'verified', 'sanctioned'].includes(g.status) && !(g.status === 'received' && target > g.receivedPaise)) throw new ConflictException('This scholarship is closed');
       const v = await this.collectScholarship(tx, p, g.studentId, b, `${g.scheme} (${g.applicationNo})`);
-      const [row] = await tx.update(feeGovtScholarships).set({ status: 'received', receivedPaise: b.amountPaise, receivedOn: b.on, reference: b.reference, receiptId: v.id, sanctionedPaise: g.sanctionedPaise || b.amountPaise, updatedAt: new Date() }).where(eq(feeGovtScholarships.id, id)).returning();
+      const received = g.receivedPaise + b.amountPaise;
+      const [row] = await tx.update(feeGovtScholarships).set({ status: 'received', receivedPaise: received, receivedOn: b.on, reference: b.reference, receiptId: v.id, sanctionedPaise: g.sanctionedPaise || received, updatedAt: new Date() }).where(eq(feeGovtScholarships.id, id)).returning();
       await auditUser(tx, p, 'govt_scholarship.received', 'govt_scholarship', id, { amountPaise: b.amountPaise, receiptNo: v.receiptNo });
       return { ...row, receiptNo: v.receiptNo };
     });
@@ -397,7 +400,7 @@ export class CollectionController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [g] = await tx.select().from(feeGovtScholarships).where(eq(feeGovtScholarships.id, id)).for('update');
       if (!g) throw new NotFoundException('Scholarship not found');
-      if (!['applied', 'sanctioned'].includes(g.status)) throw new ConflictException('This scholarship is closed');
+      if (!['applied', 'verified', 'sanctioned'].includes(g.status)) throw new ConflictException('This scholarship is closed');
       const [row] = await tx.update(feeGovtScholarships).set({ status: b.status, note: `${g.note ? `${g.note}\n` : ''}${b.reason}`, updatedAt: new Date() }).where(eq(feeGovtScholarships.id, id)).returning();
       await auditUser(tx, p, `govt_scholarship.${b.status}`, 'govt_scholarship', id, { reason: b.reason });
       return row;

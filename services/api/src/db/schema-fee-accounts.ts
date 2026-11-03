@@ -251,11 +251,11 @@ export interface OnlineSettings {
 }
 /**
  * One step of the reminder schedule: days from the due date (negative before, 0 on the day, positive after), who is
- * told (the family always; then the class teacher, the HOD, the principal) and on which channels.
+ * told (the family; then the class teacher, the principal, the accounts office) and on which channels.
  */
 export interface EscalationStep {
   offsetDays: number;
-  audience: ('family' | 'class_teacher' | 'hod' | 'principal')[];
+  audience: ('family' | 'class_teacher' | 'principal' | 'accountant')[];
   channels: ('app' | 'sms' | 'whatsapp' | 'email')[];
   /** Only when at least this much is overdue (rupees). */
   minRupees?: number;

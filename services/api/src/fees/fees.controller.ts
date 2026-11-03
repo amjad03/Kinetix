@@ -13,13 +13,14 @@ import {
   Post,
   Query,
   Req,
+  Res,
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { and, asc, desc, eq, gte, inArray, ne, sql } from 'drizzle-orm';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
@@ -38,6 +39,12 @@ import { settingsOf } from '../fee-accounts/fee-accounts.service.js';
 import { convenienceFee } from './fee-depth.logic.js';
 import type { PaymentProvider } from './payment-provider.js';
 import { naturalAsc } from '../common/natural-order.js';
+import { GatewayFlow } from './gateway-flow.service.js';
+import { syncAccruals } from './accruals.js';
+import { feeToday } from './fee-lines.js';
+
+const RETURN_PAGE = (ok: boolean) =>
+  `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Payment</title><style>body{font-family:system-ui,sans-serif;margin:0;display:grid;place-items:center;min-height:100vh;background:#f6f7f9;color:#1f2937}main{max-width:28rem;padding:2rem;text-align:center}</style></head><body><main><h1>${ok ? 'Thank you' : 'Payment not completed'}</h1><p>${ok ? 'Your payment has reached the institution. The receipt will appear in the app in a moment; you can close this window.' : 'The payment did not go through. No money was taken by the institution; you can close this window and try again.'}</p></main></body></html>`;
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
 const Paise = z.number().int().min(100).max(100_000_000_00);
@@ -69,6 +76,7 @@ export class FeesController {
     private readonly lookups: SystemLookups,
     private readonly applicationFees: ApplicationFeesService,
     private readonly walletTopups: WalletTopupService,
+    private readonly flow: GatewayFlow,
   ) {}
 
   /** One invoice per active student of the class. */
@@ -182,6 +190,8 @@ export class FeesController {
       if (!inv) throw new NotFoundException('Invoice not found');
       if (inv.paidPaise > 0) throw new BadRequestException('Money has been received against this invoice; it cannot be cancelled');
       await tx.update(feeInvoices).set({ status: 'cancelled', updatedAt: new Date() }).where(eq(feeInvoices.id, id));
+      // On the accrual basis what was booked for it is reversed.
+      await syncAccruals(tx, { tenantId: p.tenantId, userId: p.userId }, id, await feeToday(tx), { note: 'Invoice cancelled' });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'fees.cancelled', subjectType: 'fee_invoice', subjectId: id });
       return { id, status: 'cancelled' };
     });
@@ -231,7 +241,19 @@ export class FeesController {
         .where(and(eq(feePayments.studentId, studentId), eq(feePayments.status, 'paid')))
         .orderBy(desc(feePayments.paidAt));
       const duePaise = invoices.filter((i) => i.status === 'due').reduce((s, i) => s + i.amountPaise - i.paidPaise, 0);
-      return { duePaise, onlinePayments: await this.gateway.availableName(tx), invoices, payments };
+      // Invoices of a fee account with its own gateway say which one the app opens.
+      const own = await tx.select({ id: feeInvoices.id, a: feeInvoices.feeAccountId }).from(feeInvoices).where(and(eq(feeInvoices.studentId, studentId), eq(feeInvoices.status, 'due'), sql`${feeInvoices.feeAccountId} is not null`));
+      const names = new Map<string, string | null>();
+      for (const o of own) if (!names.has(o.a!)) names.set(o.a!, await this.gateway.availableName(tx, o.a));
+      const accountOf = new Map(own.map((o) => [o.id, o.a!]));
+      const s = await settingsOf(tx, p.tenantId);
+      return {
+        duePaise,
+        onlinePayments: await this.gateway.availableName(tx),
+        online: { allowPartial: s.online.allowPartial !== false, minPartPaise: Math.round((s.online.minPartRupees ?? 0) * 100) },
+        invoices: invoices.map((i) => (accountOf.has(i.id) ? { ...i, onlinePayments: names.get(accountOf.get(i.id)!) ?? null } : i)),
+        payments,
+      };
     });
   }
 
@@ -239,45 +261,34 @@ export class FeesController {
   @Post('invoices/:id/checkout')
   @Auth('user')
   async checkout(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(CheckoutBody)) body: z.infer<typeof CheckoutBody>) {
-    const { inv, amountPaise, payer, provider, conveniencePaise } = await this.db.withTenant(p.tenantId, async (tx) => {
-      // Fees go to the institution's own Razorpay account; without one, only the counter.
-      const provider = await this.gateway.forTenant(tx);
-      if (!provider) throw new ServiceUnavailableException(PAYMENTS_NOT_CONFIGURED);
+    await this.db.withTenant(p.tenantId, async (tx) => {
+      // Fees go to the fee account's own gateway (else the institution's); without one, only the counter.
+      if (!(await this.gateway.availableName(tx))) {
+        const [inv] = await tx.select({ a: feeInvoices.feeAccountId }).from(feeInvoices).where(eq(feeInvoices.id, id));
+        if (!inv?.a || !(await this.gateway.availableName(tx, inv.a))) throw new ServiceUnavailableException(PAYMENTS_NOT_CONFIGURED);
+      }
       const inv = await this.openInvoice(tx, id);
       await this.fees.assertCanSee(tx, p, inv.studentId);
-      const balance = inv.amountPaise - inv.paidPaise;
-      const amountPaise = body.amountPaise ?? balance;
-      if (amountPaise > balance) throw new BadRequestException('That is more than the balance due');
-      const [payer] = await tx.select({ fullName: users.fullName, email: users.email, phone: users.phone }).from(users).where(eq(users.id, p.userId));
-      // The institution may pass the gateway's charge on to the payer (Settings → convenience fee).
-      const conveniencePaise = convenienceFee((await settingsOf(tx, p.tenantId)).convenience, amountPaise);
-      return { inv, amountPaise, payer, provider, conveniencePaise };
     });
-    // The gateway call happens outside the transaction.
-    const order = await provider.createOrder({ amountPaise: amountPaise + conveniencePaise, receipt: `inv_${id.slice(0, 8)}`, notes: { invoiceId: id, tenantId: p.tenantId }, payer: { name: payer?.fullName ?? '', email: payer?.email ?? '', phone: payer?.phone ?? '' }, returnUrl: body.returnUrl });
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const [pay] = await tx
-        .insert(feePayments)
-        .values({ tenantId: p.tenantId, invoiceId: id, studentId: inv.studentId, amountPaise, conveniencePaise, method: 'online', status: 'created', provider: provider.name, providerOrderId: order.orderId, payerUserId: p.userId })
-        .returning();
-      const [tenant] = await tx.select({ name: tenants.name }).from(tenants);
-      return {
-        paymentId: pay.id,
-        provider: provider.name,
-        // The institution's own public key: the app's checkout pays into its account.
-        keyId: provider.keyId,
-        orderId: order.orderId,
-        /** A hosted checkout (PayU): the app posts these fields to the url in a browser. */
-        hosted: order.hosted ?? null,
-        amountPaise: amountPaise + conveniencePaise,
-        feePaise: amountPaise,
-        conveniencePaise,
-        currency: 'INR',
-        name: tenant?.name ?? 'ZYNETIX',
-        description: inv.title,
-        prefill: { name: payer?.fullName ?? '', email: payer?.email ?? '', contact: payer?.phone ?? '' },
-      };
+    return this.flow.startCheckout(p.tenantId, p.userId, id, { amountPaise: body.amountPaise, returnUrl: body.returnUrl });
+  }
+
+  /**
+   * Asks the gateway about a payment still pending (the app calls it when a hosted checkout or the Cashfree SDK
+   * returns); credits it when the gateway says it is paid.
+   */
+  @Post('payments/:id/refresh')
+  @HttpCode(200)
+  @Auth('user')
+  async refresh(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    await this.db.withTenant(p.tenantId, async (tx) => {
+      const studentId = await this.flow.studentOf(tx, id);
+      if (!studentId) throw new NotFoundException('Payment not found');
+      await this.fees.assertCanSee(tx, p, studentId);
     });
+    const r = await this.flow.refresh(p.tenantId, id);
+    if (r.status !== 'paid') return { paymentId: id, status: r.status };
+    return { paymentId: id, status: 'paid', receipt: await this.db.withTenant(p.tenantId, (tx) => this.fees.receipt(tx, p, id)) };
   }
 
   /** The app reports the checkout result; the gateway's signature proves it. */
@@ -290,8 +301,8 @@ export class FeesController {
       if (!pay || pay.method !== 'online') throw new NotFoundException('Payment not found');
       await this.fees.assertCanSee(tx, p, pay.studentId);
       if (pay.status !== 'paid') {
-        // Signed with the institution's key secret.
-        const provider = await this.gateway.forTenant(tx);
+        // Signed with the key secret of the account the order was made with.
+        const provider = await this.gateway.forAccountId(tx, pay.gatewayAccountId);
         if (!pay.providerOrderId || !provider || !provider.verifyPayment(pay.providerOrderId, body.providerPaymentId, body.signature, body.fields)) {
           throw new ForbiddenException('The payment could not be verified');
         }
@@ -314,21 +325,17 @@ export class FeesController {
    */
   @Post('webhooks/razorpay/:tenantSlug')
   @HttpCode(200)
-  async tenantWebhook(@Param('tenantSlug') slug: string, @Req() req: RawBodyRequest<Request>, @Headers('x-razorpay-signature') signature?: string) {
+  async tenantWebhook(@Param('tenantSlug') slug: string, @Req() req: RawBodyRequest<Request>, @Headers('x-razorpay-signature') signature?: string, @Headers('x-razorpay-event-id') eventId?: string) {
     const tenant = /^[a-z0-9-]{1,64}$/.test(slug) ? await this.lookups.tenantBySlug(slug) : undefined;
     if (!tenant) throw new NotFoundException('Not found');
+    if (!req.rawBody || !signature) throw new UnauthorizedException('Bad signature');
+    // Checked with each of the institution's Razorpay accounts (the default and any fee account's own); each event once.
+    const r = await this.flow.webhook(tenant.id, 'razorpay', req.rawBody, { 'x-razorpay-signature': signature, 'x-razorpay-event-id': eventId });
+    if (!r.ok) throw new UnauthorizedException('Bad signature');
     const entity = this.paymentEntity(req);
-    await this.db.withTenant(tenant.id, async (tx) => {
-      const provider = await this.gateway.forTenant(tx);
-      this.assertSigned(provider, req, signature);
-      if (!entity) return;
-      // RLS: an order of another institution is simply not found here.
-      const [pay] = await tx.select().from(feePayments).where(eq(feePayments.providerOrderId, entity.order_id));
-      if (pay) await this.credit(tx, pay, entity);
-      // Otherwise it may be a canteen wallet top-up or an admission application fee.
-      else if (!(await this.walletTopups.creditByOrder(tx, entity))) await this.applicationFees.creditByOrder(tx, entity);
-    });
-    return { ok: true };
+    // Not a fee: it may be a canteen wallet top-up or an admission application fee (RLS keeps it to this institution).
+    if (r.outcome === 'unknown_order' && entity) await this.db.withTenant(tenant.id, async (tx) => (await this.walletTopups.creditByOrder(tx, entity)) || (await this.applicationFees.creditByOrder(tx, entity)));
+    return { ok: true, outcome: r.outcome };
   }
 
   /**
@@ -359,15 +366,41 @@ export class FeesController {
   async payuWebhook(@Param('tenantSlug') slug: string, @Req() req: RawBodyRequest<Request>) {
     const tenant = /^[a-z0-9-]{1,64}$/.test(slug) ? await this.lookups.tenantBySlug(slug) : undefined;
     if (!tenant) throw new NotFoundException('Not found');
-    const f = Object.fromEntries(new URLSearchParams(req.rawBody?.toString('utf8') ?? '')) as Record<string, string>;
-    await this.db.withTenant(tenant.id, async (tx) => {
-      const provider = await this.gateway.forTenant(tx);
-      this.assertSigned(provider, req, f.hash);
-      if (f.status !== 'success' || !f.txnid) return;
-      const [pay] = await tx.select().from(feePayments).where(eq(feePayments.providerOrderId, f.txnid));
-      if (pay) await this.credit(tx, pay, { id: f.mihpayid, amount: Math.round(Number(f.amount) * 100) });
-    });
-    return { ok: true };
+    if (!req.rawBody) throw new UnauthorizedException('Bad signature');
+    const r = await this.flow.webhook(tenant.id, 'payu', req.rawBody, {});
+    if (!r.ok) throw new UnauthorizedException('Bad signature');
+    return { ok: true, outcome: r.outcome };
+  }
+
+  /**
+   * Cashfree (x-webhook-signature over the timestamp and body), Easebuzz (the reverse hash in the form) and CCAvenue
+   * (encResp, which only the working key decrypts): the server-to-server notice of each institution's own account.
+   */
+  @Post('webhooks/:provider/:tenantSlug')
+  @HttpCode(200)
+  async gatewayWebhook(@Param('provider') provider: string, @Param('tenantSlug') slug: string, @Req() req: RawBodyRequest<Request>) {
+    if (!['cashfree', 'easebuzz', 'ccavenue'].includes(provider)) throw new NotFoundException('Not found');
+    const tenant = /^[a-z0-9-]{1,64}$/.test(slug) ? await this.lookups.tenantBySlug(slug) : undefined;
+    if (!tenant || !req.rawBody) throw new NotFoundException('Not found');
+    const r = await this.flow.webhook(tenant.id, provider, req.rawBody, { 'x-webhook-signature': req.header('x-webhook-signature'), 'x-webhook-timestamp': req.header('x-webhook-timestamp') });
+    if (!r.ok) throw new UnauthorizedException('Bad signature');
+    return { ok: true, outcome: r.outcome };
+  }
+
+  /**
+   * Where a hosted checkout (PayU, Easebuzz, CCAvenue) sends the payer's browser back: the post is checked like the
+   * webhook (so the payment is credited even if the webhook is late) and a page tells the payer to return to the app.
+   */
+  @Post('gateway-return/:provider/:tenantSlug')
+  @HttpCode(200)
+  async gatewayReturn(@Param('provider') provider: string, @Param('tenantSlug') slug: string, @Req() req: RawBodyRequest<Request>, @Res({ passthrough: true }) res: Response) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    if (!['payu', 'easebuzz', 'ccavenue'].includes(provider)) return RETURN_PAGE(false);
+    const tenant = /^[a-z0-9-]{1,64}$/.test(slug) ? await this.lookups.tenantBySlug(slug) : undefined;
+    if (!tenant || !req.rawBody) return RETURN_PAGE(false);
+    const r = await this.flow.webhook(tenant.id, provider, req.rawBody, {});
+    return RETURN_PAGE(r.ok && ['credited', 'already_paid', 'duplicate'].includes(r.outcome));
   }
 
   private paymentEntity(req: Request) {

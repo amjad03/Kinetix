@@ -14,6 +14,9 @@ import { ageBucket, eligible80G, fyOf, gstSplit, headOf } from './fee-accounts.l
 import { ensureInvoiceNumbers, historyOf, settingsOf } from './fee-accounts.service.js';
 import { chainOf } from './chains.js';
 import { chainRole } from '../fees/fee-depth.logic.js';
+import { FLAGSHIP_REPORTS, flagshipReport } from '../fee-flagship/reports.js';
+import { feeAccounts } from '../db/schema-fee-flagship.js';
+import { eq } from 'drizzle-orm';
 
 type Row = Record<string, unknown>;
 const PG_TS = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}(?:\.\d+)?)([+-]\d{2})(:?\d{2})?$/;
@@ -24,7 +27,7 @@ const num = (r: Row[], ...keys: string[]): Row[] => r.map((x) => Object.fromEntr
 const sum = (r: Row[], key: string) => r.reduce((a, x) => a + Number(x[key] ?? 0), 0);
 
 export const ENTITIES = ['structures', 'accounts', 'invoices', 'receipts', 'concessions', 'refunds', 'write-offs', 'vouchers', 'voucher-requests', 'ledgers', 'budgets', 'cheques', 'closings', 'waivers', 'custom-plans', 'challans', 'govt-scholarships', 'funds'] as const;
-export const REPORTS = ['daily-collection', 'head-collection', 'outstanding', 'concessions', 'refunds', 'cheques', 'student-ledger', 'cash-book', 'bank-book', 'day-book', 'trial-balance', 'income-expenditure', 'balance-sheet', 'budget-vs-actual', 'gst', '80g', 'cashier-collection', 'discounts', 'scholarships', 'receipt-register', 'challans', 'carry-forward', 'fund-summary'] as const;
+export const REPORTS = ['daily-collection', 'head-collection', 'outstanding', 'concessions', 'refunds', 'cheques', 'student-ledger', 'cash-book', 'bank-book', 'day-book', 'trial-balance', 'income-expenditure', 'balance-sheet', 'budget-vs-actual', 'gst', '80g', 'cashier-collection', 'discounts', 'scholarships', 'receipt-register', 'challans', 'carry-forward', 'fund-summary', ...FLAGSHIP_REPORTS] as const;
 
 /** Lists, single records (with their audit history) and reports for the fees and accounts desk. Read only. */
 @Controller('v1/fee-accounts')
@@ -306,7 +309,9 @@ export class FeeAccountsReadsController {
       const to = q.to ? Day.parse(q.to) : today;
       if (from > to) throw new BadRequestException('The start date is after the end date');
       const paidIn = sql`p.status = 'paid' and (p.paid_at at time zone 'Asia/Kolkata')::date between ${from}::date and ${to}::date`;
-      const fundId = q.fund && /^[0-9a-f-]{36}$/i.test(q.fund) ? q.fund : undefined;
+      // A fee account's books are its fund.
+      const acctFund = q.account && /^[0-9a-f-]{36}$/i.test(q.account) ? (await tx.select({ f: feeAccounts.fundId }).from(feeAccounts).where(eq(feeAccounts.id, q.account)))[0]?.f : undefined;
+      const fundId = q.fund && /^[0-9a-f-]{36}$/i.test(q.fund) ? q.fund : (acctFund ?? undefined);
       const out = (rows: Row[], totals: Record<string, number> = {}) => ({ key, from, to, fy, rows, totals });
       switch (key) {
         case 'daily-collection': {
@@ -507,7 +512,8 @@ export class FeeAccountsReadsController {
           return out(rows, { amountPaise: sum(rows, 'amountPaise'), eligiblePaise: sum(rows.filter((r) => r.eligible), 'amountPaise') });
         }
       }
-      return out([]);
+      const extra = await flagshipReport(tx, key, q, from, to);
+      return extra ? out(extra.rows, extra.totals) : out([]);
     });
   }
 }

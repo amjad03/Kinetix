@@ -30,4 +30,15 @@ export const feeTexts = {
         kn: { title: `${day} ರ ಶುಲ್ಕ ಸಂಗ್ರಹ`, body: `${receipts} ರಸೀದಿಗಳಲ್ಲಿ ${c} ಸಂಗ್ರಹಿಸಲಾಗಿದೆ. ಇನ್ನೂ ಬಾಕಿ: ${d}.` },
       }[l];
     }),
+  /** A reminder step escalated to the class teacher, the principal or the accounts office. */
+  escalation: (count: number, totalPaise: number, names: string[]) =>
+    all((l) => {
+      const t = rupees(totalPaise);
+      const who = names.join(', ') + (count > names.length ? '…' : '');
+      return {
+        en: { title: `Fees overdue: ${count} student(s)`, body: `${t} is overdue (${who}). Please follow up with the families.` },
+        hi: { title: `बकाया फ़ीस: ${count} विद्यार्थी`, body: `${t} बकाया है (${who})। कृपया परिवारों से संपर्क करें।` },
+        kn: { title: `ಬಾಕಿ ಶುಲ್ಕ: ${count} ವಿದ್ಯಾರ್ಥಿಗಳು`, body: `${t} ಬಾಕಿ ಇದೆ (${who}). ದಯವಿಟ್ಟು ಕುಟುಂಬಗಳನ್ನು ಸಂಪರ್ಕಿಸಿ.` },
+      }[l];
+    }),
 };

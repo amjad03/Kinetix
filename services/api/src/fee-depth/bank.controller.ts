@@ -13,6 +13,8 @@ import { acctBankLines, acctBankStatements, acctFunds } from '../db/schema-fee-d
 import { acctAccounts, acctVouchers, settlementBatches, tenants, users } from '../db/schema.js';
 import { autoMatch, parseStatementCsv, type BookEntry } from '../fees/fee-depth.logic.js';
 import { FEE_ROLES } from '../fees/fees.service.js';
+import { matchFeeCredits } from './bank-fees.js';
+import { CollectionService } from './collection.service.js';
 
 const ImportBody = z.object({ accountId: z.uuid(), fileName: z.string().trim().min(1).max(200), csv: z.string().min(10).max(5_000_000) });
 const MatchBody = z.object({ voucherId: z.uuid() });
@@ -30,6 +32,7 @@ export class BankController {
   constructor(
     private readonly db: DbService,
     private readonly clock: Clock,
+    private readonly collection: CollectionService,
   ) {}
 
   private async today(tx: Tx): Promise<string> {
@@ -70,8 +73,16 @@ export class BankController {
 
   /** Matches the account's open lines to its unmatched vouchers, then credits to gateway settlements. Returns how many matched. */
   private async match(tx: Tx, p: UserPrincipal, accountId: string): Promise<number> {
-    const open = await tx.select().from(acctBankLines).where(and(eq(acctBankLines.accountId, accountId), eq(acctBankLines.status, 'unmatched')));
-    if (!open.length) return 0;
+    const all = await tx.select().from(acctBankLines).where(and(eq(acctBankLines.accountId, accountId), eq(acctBankLines.status, 'unmatched')));
+    if (!all.length) return 0;
+    // Fees paid straight into the bank (challans, families' NEFT by UTR, credits quoting a fee reference) are
+    // receipted first; what is left is matched to the books.
+    const fees = await matchFeeCredits(tx, p, accountId, all, this.collection);
+    const open = all.filter((l) => l.status === 'unmatched');
+    if (!open.length) {
+      await this.recount(tx, accountId);
+      return fees.length;
+    }
     const from = open.reduce((m, l) => (l.txnDate < m ? l.txnDate : m), open[0].txnDate);
     const to = open.reduce((m, l) => (l.txnDate > m ? l.txnDate : m), open[0].txnDate);
     const pad = (d: string, n: number) => new Date(Date.parse(`${d}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
@@ -93,7 +104,7 @@ export class BankController {
       }
     }
     await this.recount(tx, accountId);
-    return pairs.length + settled;
+    return fees.length + pairs.length + settled;
   }
 
   private async recount(tx: Tx, accountId: string) {

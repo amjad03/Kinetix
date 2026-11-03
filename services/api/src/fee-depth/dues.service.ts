@@ -6,7 +6,11 @@ import { Clock, localParts } from '../common/time.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { audienceRules, messageCampaigns, messageTemplates } from '../db/schema-pathways.js';
 import { feeReminderRuns } from '../db/schema-fee-depth.js';
-import { feeInvoices, students, tenants, userRoles } from '../db/schema.js';
+import { feeInvoices, sections, students, tenants, userRoles } from '../db/schema.js';
+import { feeReminderSends } from '../db/schema-fee-flagship.js';
+import type { EscalationStep } from '../db/schema-fee-accounts.js';
+import { heldSql } from '../fee-flagship/reports.js';
+import { familyUserIds, sendFeeMessage } from '../fees/fee-messages.js';
 import { settingsOf } from '../fee-accounts/fee-accounts.service.js';
 import { reminderDue } from '../fees/fee-depth.logic.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
@@ -52,9 +56,18 @@ export class DuesService implements OnModuleInit {
       })
       .from(feeInvoices)
       .where(and(eq(feeInvoices.studentId, studentId), eq(feeInvoices.status, 'due')));
+    // A government scholarship still expected (SSP, NSP…) holds that much of the dues back from the block.
+    const held = (await this.held(tx, [studentId])).get(studentId) ?? 0;
+    const overdue = Math.max(0, d.overdue - held);
     const min = Math.round((s.duesBlock.minRupees ?? 0) * 100);
-    const over = d.overdue > 0 && d.overdue >= min;
-    return { duePaise: d.due, overduePaise: d.overdue, minPaise: min, hallTicket: !!s.duesBlock.hallTicket && over, results: !!s.duesBlock.results && over, tc: !!s.duesBlock.tc && over };
+    const over = overdue > 0 && overdue >= min;
+    return { duePaise: d.due, overduePaise: overdue, scholarshipHeldPaise: Math.min(held, d.overdue), minPaise: min, hallTicket: !!s.duesBlock.hallTicket && over, results: !!s.duesBlock.results && over, tc: !!s.duesBlock.tc && over };
+  }
+
+  /** What government scholarships still expected hold back, per student. */
+  async held(tx: Tx, studentIds?: string[]): Promise<Map<string, number>> {
+    const rows = await tx.execute<{ student_id: string; held: string }>(sql`select * from ${heldSql} h ${studentIds?.length ? sql`where h.student_id in (${sql.join(studentIds.map((i) => sql`${i}::uuid`), sql`, `)})` : sql``}`);
+    return new Map(rows.rows.map((r) => [r.student_id, Number(r.held)]));
   }
 
   /** Whether dues hold back this document for the student (for other offices to call before issuing it). */
@@ -71,8 +84,11 @@ export class DuesService implements OnModuleInit {
     const s = await settingsOf(tx, tenantId);
     const today = await this.today(tx);
     if (!p && !s.reminders.enabled) return { students: 0, app: 0, sms: 0, whatsapp: 0, skipped: ['The reminder schedule is off'] };
+    // A schedule of steps with escalations (Settings → reminders) replaces the simple days before and after.
+    if (!p && s.escalations.length) return this.escalate(tx, tenantId, s.escalations, today);
     const open = await tx.select({ studentId: feeInvoices.studentId, dueOn: feeInvoices.dueOn, balance: sql<number>`(${feeInvoices.amountPaise} - ${feeInvoices.paidPaise})::bigint`.mapWith(Number) }).from(feeInvoices).where(eq(feeInvoices.status, 'due'));
-    const chosen = open.filter((i) => (p ? i.dueOn < today : reminderDue(s.reminders, i.dueOn, today)));
+    const heldBy = await this.held(tx);
+    const chosen = open.filter((i) => (p ? i.dueOn < today : reminderDue(s.reminders, i.dueOn, today))).filter((i) => !(heldBy.get(i.studentId) && (heldBy.get(i.studentId) ?? 0) >= i.balance));
     const per = new Map<string, { balancePaise: number; dueOn: string }>();
     for (const i of chosen) {
       const cur = per.get(i.studentId) ?? { balancePaise: 0, dueOn: i.dueOn };
@@ -115,6 +131,75 @@ export class DuesService implements OnModuleInit {
     }
     await tx.insert(feeReminderRuns).values({ tenantId, runOn: today, kind: p ? 'manual' : 'scheduled', students: out.students, app: out.app, sms: out.sms, whatsapp: out.whatsapp, skipped: out.skipped, runBy: p?.userId ?? null });
     if (p) await auditUser(tx, p, 'fees.reminders_run', 'fee_reminder', undefined, out);
+    return out;
+  }
+
+  /**
+   * The reminder schedule with escalations. Each step is a number of days from the due date (negative before, 0 on
+   * the day, positive after) with who is told and how: the family (app, SMS, WhatsApp, e-mail), then the class
+   * teacher, the principal or the accounts office. For each open invoice only the latest step it has reached is sent,
+   * once (fee_reminder_sends), so a missed day catches up without repeating older steps. Dues a government
+   * scholarship still covers are left alone.
+   */
+  async escalate(tx: Tx, tenantId: string, steps: EscalationStep[], today: string) {
+    const open = await tx
+      .select({ id: feeInvoices.id, studentId: feeInvoices.studentId, title: feeInvoices.title, dueOn: feeInvoices.dueOn, balance: sql<number>`(${feeInvoices.amountPaise} - ${feeInvoices.paidPaise})::bigint`.mapWith(Number), sectionId: students.sectionId, student: students.fullName, classTeacher: sections.classTeacherId })
+      .from(feeInvoices)
+      .innerJoin(students, eq(students.id, feeInvoices.studentId))
+      .innerJoin(sections, eq(sections.id, students.sectionId))
+      .where(and(eq(feeInvoices.status, 'due'), sql`${feeInvoices.amountPaise} > ${feeInvoices.paidPaise}`));
+    const heldBy = await this.held(tx);
+    const sorted = [...steps].sort((a, b) => a.offsetDays - b.offsetDays);
+    const day = (d: string) => Date.parse(`${d}T00:00:00Z`) / 86_400_000;
+    const sent = new Set((await tx.select({ i: feeReminderSends.invoiceId, s: feeReminderSends.step }).from(feeReminderSends)).map((r) => `${r.i}|${r.s}`));
+    const principals = (await tx.selectDistinct({ id: userRoles.userId }).from(userRoles).where(eq(userRoles.role, 'principal'))).map((r) => r.id);
+    const accounts = (await tx.selectDistinct({ id: userRoles.userId }).from(userRoles).where(eq(userRoles.role, 'accountant'))).map((r) => r.id);
+    const out = { students: 0, app: 0, sms: 0, whatsapp: 0, email: 0, escalated: 0, skipped: [] as string[] };
+    const studentsTold = new Set<string>();
+    const staffDigest = new Map<string, { student: string; title: string; balance: number; days: number }[]>();
+    for (const inv of open) {
+      if ((heldBy.get(inv.studentId) ?? 0) >= inv.balance) continue;
+      const since = Math.round(day(today) - day(inv.dueOn));
+      const step = [...sorted].reverse().find((x) => since >= x.offsetDays && (x.minRupees ?? 0) * 100 <= inv.balance);
+      if (!step) continue;
+      const key = `d${step.offsetDays >= 0 ? (step.offsetDays === 0 ? '0' : `+${step.offsetDays}`) : step.offsetDays}`;
+      if (sent.has(`${inv.id}|${key}`)) continue;
+      sent.add(`${inv.id}|${key}`);
+      const record = (channel: string, audience: string) => tx.insert(feeReminderSends).values({ tenantId, invoiceId: inv.id, studentId: inv.studentId, step: key, channel, audience, sentOn: today, balancePaise: inv.balance }).onConflictDoNothing();
+      for (const aud of step.audience) {
+        if (aud === 'family') {
+          studentsTold.add(inv.studentId);
+          if (step.channels.includes('app')) {
+            await this.notifications.feeReminder(tx, { studentId: inv.studentId, balancePaise: inv.balance, dueOn: inv.dueOn, day: `${today}:${key}` });
+            await record('app', 'family');
+            out.app++;
+          }
+          const ids = await familyUserIds(tx, inv.studentId);
+          for (const ch of ['sms', 'whatsapp', 'email'] as const) {
+            if (!step.channels.includes(ch)) continue;
+            const r = await sendFeeMessage(tx, { tenantId, key: since < 0 ? 'fee_reminder' : since === 0 ? 'fee_due_today' : 'fee_overdue', channel: ch, userIds: ids, vars: { student: inv.student, amount: `₹${(inv.balance / 100).toLocaleString('en-IN')}`, dueOn: inv.dueOn, fee: inv.title }, title: `Fee reminder ${key}: ${inv.student}`, dedupe: `fee-reminder ${inv.id} ${key}`, createdBy: null, at: this.clock.now() });
+            if (r.ok) {
+              await record(ch, 'family');
+              out[ch]++;
+            } else if (!out.skipped.includes(r.error)) out.skipped.push(r.error);
+          }
+        } else {
+          const to = aud === 'class_teacher' ? (inv.classTeacher ? [inv.classTeacher] : []) : aud === 'principal' ? principals : accounts;
+          for (const u of to) staffDigest.set(u, [...(staffDigest.get(u) ?? []), { student: inv.student, title: inv.title, balance: inv.balance, days: since }]);
+          if (to.length) {
+            await record('app', aud);
+            out.escalated++;
+          }
+        }
+      }
+    }
+    // Staff get one digest each: the students overdue at their step.
+    for (const [userId, items] of staffDigest) {
+      const total = items.reduce((t, x) => t + x.balance, 0);
+      await this.notifications.notifyUsers(tx, [userId], { kind: 'task', text: feeTexts.escalation(items.length, total, items.slice(0, 3).map((x) => x.student)), data: { day: today, students: String(items.length) }, dedupeKey: `fee-escalation:${userId}:${today}` });
+    }
+    out.students = studentsTold.size;
+    await tx.insert(feeReminderRuns).values({ tenantId, runOn: today, kind: 'scheduled', students: out.students, app: out.app, sms: out.sms, whatsapp: out.whatsapp, skipped: out.skipped });
     return out;
   }
 

@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { and, eq, lte, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
-import { localParts } from '../common/time.js';
+import { Clock, localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
 import { feeInvoices, feePayments, guardians, sections, students, tenants } from '../db/schema.js';
 import { feeReceipts } from '../db/schema-fee-depth.js';
@@ -29,6 +29,7 @@ export class FeesService {
   constructor(
     private readonly notifications: NotificationsService,
     private readonly events: EventBus,
+    private readonly clock: Clock,
   ) {}
 
   isFeeStaff(p: UserPrincipal): boolean {
@@ -61,7 +62,7 @@ export class FeesService {
     if (payment.status === 'paid') return payment;
 
     const [tenant] = await tx.select({ timezone: tenants.timezone }).from(tenants);
-    const today = details.date ?? localParts(new Date(), tenant?.timezone ?? 'Asia/Kolkata').date;
+    const today = details.date ?? localParts(this.clock.now(), tenant?.timezone ?? 'Asia/Kolkata').date;
     const pieces = await allocatePayment(tx, payment, details.allocations);
     let receiptNo: string;
     let receiptId = payment.receiptId;
@@ -81,7 +82,7 @@ export class FeesService {
 
     const [paid] = await tx
       .update(feePayments)
-      .set({ status: 'paid', paidAt: new Date(), receiptNo, receiptId, providerPaymentId: details.providerPaymentId ?? payment.providerPaymentId })
+      .set({ status: 'paid', paidAt: this.clock.now(), receiptNo, receiptId, providerPaymentId: details.providerPaymentId ?? payment.providerPaymentId })
       .where(eq(feePayments.id, paymentId))
       .returning();
     const [invoice] = await tx

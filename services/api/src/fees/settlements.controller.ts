@@ -13,7 +13,7 @@ import { FEE_ROLES } from './fees.service.js';
 import { PAYMENTS_NOT_CONFIGURED, PaymentGateway } from './payment-gateway.service.js';
 import { type GatewaySettlement, type GatewaySettlementLine, rupeesToPaise } from './payment-provider.js';
 
-const Provider = z.enum(['razorpay', 'payu']);
+const Provider = z.enum(['razorpay', 'payu', 'cashfree', 'easebuzz', 'ccavenue']);
 const LineBody = z.object({
   kind: z.enum(['payment', 'refund']).default('payment'),
   providerPaymentId: z.string().trim().min(1).max(100),
@@ -32,27 +32,56 @@ const ImportBody = z
     csv: z.string().max(2_000_000).optional(),
   })
   .refine((b) => b.lines?.length || b.csv?.trim(), 'Give the settlement lines or the report file');
-const FetchBody = z.object({ day: Day });
+const FetchBody = z.object({ day: Day, feeAccountId: z.uuid().nullish() });
 const ResolveBody = z.object({ action: z.enum(['accept', 'link']), feePaymentId: z.uuid().optional(), note: z.string().trim().max(300).default('') });
 const GatewayRefundBody = z.object({ amountPaise: Paise.min(100), reason: z.string().trim().min(3).max(200) });
 
-/** Reads a settlement report: header row, then one payment or refund per row. */
+/** Splits one CSV line, keeping commas inside quotes ("1,250.00"). */
+export function csvCells(line: string): string[] {
+  const out: string[] = [];
+  let cur = '';
+  let q = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (q && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else q = !q;
+    } else if (ch === ',' && !q) {
+      out.push(cur.trim());
+      cur = '';
+    } else cur += ch;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+/**
+ * Reads a settlement report: header row, then one payment or refund per row. The columns of each gateway's own
+ * report are understood: Razorpay (entity_id, order_id, type, amount, fee, tax, credit), PayU (mihpayid, txnid,
+ * amount, service_fee, service_tax, net_amount), Cashfree (cf_payment_id/event_id, order_id, event_type,
+ * event_amount, service_charge, service_tax, event_settlement_amount), Easebuzz (easebuzz_id/easepayid, txnid,
+ * amount, service_charge, service_tax, settlement_amount) and CCAvenue (ccavenue_ref_no/reference_no, order_no,
+ * txn_type, amount, fees, tax, payable_amount).
+ */
 export function parseSettlementCsv(text: string): z.infer<typeof LineBody>[] {
-  const rows = text.split(/\r?\n/).map((r) => r.trim()).filter(Boolean).map((r) => r.split(',').map((c) => c.trim().replace(/^"|"$/g, '')));
+  const rows = text.split(/\r?\n/).map((r) => r.trim()).filter(Boolean).map(csvCells);
   if (rows.length < 2) throw new BadRequestException('The file has no rows');
   const head = rows[0].map((h) => h.toLowerCase().replace(/[^a-z]/g, ''));
   const col = (...names: string[]) => head.findIndex((h) => names.includes(h));
-  const iPay = col('paymentid', 'entityid', 'mihpayid', 'payuid');
-  const iAmt = col('amount');
+  const iPay = col('paymentid', 'entityid', 'mihpayid', 'payuid', 'cfpaymentid', 'eventid', 'easebuzzid', 'easepayid', 'ccavenuerefno', 'referenceno', 'trackingid');
+  const iAmt = col('amount', 'eventamount', 'transactionamount', 'txnamount');
   if (iPay < 0 || iAmt < 0) throw new BadRequestException('The file needs payment_id and amount columns');
-  const iOrder = col('orderid', 'txnid');
-  const iType = col('type', 'kind');
-  const iFee = col('fee', 'fees', 'servicefee');
-  const iNet = col('net', 'netamount');
+  const iOrder = col('orderid', 'txnid', 'orderno', 'merchantorderid');
+  const iType = col('type', 'kind', 'eventtype', 'txntype', 'transactiontype');
+  const iFee = col('fee', 'fees', 'servicefee', 'servicecharge', 'mdr');
+  const iTax = col('tax', 'servicetax', 'gst', 'gstonfee');
+  const iNet = col('net', 'netamount', 'eventsettlementamount', 'settlementamount', 'payableamount', 'credit');
   return rows.slice(1).map((r, n) => {
-    const amount = rupeesToPaise(r[iAmt]);
+    const amount = Math.abs(rupeesToPaise(r[iAmt]));
     if (!r[iPay] || !Number.isFinite(amount) || amount <= 0) throw new BadRequestException(`Row ${n + 2}: payment id and a positive amount are needed`);
-    const fee = iFee >= 0 && r[iFee] ? rupeesToPaise(r[iFee]) : 0;
+    const fee = (iFee >= 0 && r[iFee] ? rupeesToPaise(r[iFee]) : 0) + (iTax >= 0 && r[iTax] ? rupeesToPaise(r[iTax]) : 0);
     return {
       kind: iType >= 0 && /refund/i.test(r[iType]) ? ('refund' as const) : ('payment' as const),
       providerPaymentId: r[iPay],
@@ -87,7 +116,8 @@ export class SettlementsController {
   @Post('fetch')
   @Auth('user', FEE_ROLES)
   async fetch(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(FetchBody)) b: z.infer<typeof FetchBody>) {
-    const provider = await this.db.withTenant(p.tenantId, (tx) => this.gateway.forTenant(tx));
+    // The day's payout of the fee account's own gateway (or the institution's).
+    const provider = await this.db.withTenant(p.tenantId, async (tx) => (await this.gateway.forFeeAccount(tx, b.feeAccountId ?? null))?.provider ?? null);
     if (!provider || provider.name === 'demo') throw new ServiceUnavailableException(PAYMENTS_NOT_CONFIGURED);
     let got: GatewaySettlement | null;
     try {
@@ -97,7 +127,7 @@ export class SettlementsController {
     }
     if (!got) return { imported: false, message: 'The gateway reported no settlement for that day' };
     const lines: GatewaySettlementLine[] = got.lines;
-    return this.db.withTenant(p.tenantId, async (tx) => ({ imported: true, ...(await this.store(tx, p, { provider: provider.name as 'razorpay' | 'payu', source: 'api', reference: got.reference, settlementDate: got.settlementDate, lines })) }));
+    return this.db.withTenant(p.tenantId, async (tx) => ({ imported: true, ...(await this.store(tx, p, { provider: provider.name as z.infer<typeof Provider>, source: 'api', reference: got.reference, settlementDate: got.settlementDate, lines })) }));
   }
 
   @Get()
@@ -176,14 +206,15 @@ export class SettlementsController {
       if (!pay || pay.status !== 'paid' || pay.method !== 'online' || !pay.providerPaymentId) throw new NotFoundException('Paid online payment not found');
       const [done] = await tx.select({ t: sql<number>`coalesce(sum(${feeRefunds.amountPaise}), 0)::bigint` }).from(feeRefunds).where(eq(feeRefunds.paymentId, id));
       if (Number(done.t) + b.amountPaise > pay.amountPaise) throw new BadRequestException('That is more than was paid');
-      const provider = await this.gateway.forTenant(tx);
+      // Refunded through the account the payment was made with.
+      const provider = await this.gateway.forAccountId(tx, pay.gatewayAccountId);
       if (!provider || provider.name !== pay.provider) throw new ServiceUnavailableException(PAYMENTS_NOT_CONFIGURED);
-      return { provider, pay };
+      return { provider, pay, paid: Number(done.t) };
     });
     // The gateway call happens outside the transaction.
     let refundId: string;
     try {
-      ({ refundId } = await provider.refund({ providerPaymentId: pay.providerPaymentId!, amountPaise: b.amountPaise, refundRef: `rf_${id.slice(0, 8)}_${Date.now().toString(36)}` }));
+      ({ refundId } = await provider.refund({ providerPaymentId: pay.providerPaymentId!, providerOrderId: pay.providerOrderId, amountPaise: b.amountPaise, paidPaise: pay.amountPaise + pay.conveniencePaise, refundRef: `rf_${id.slice(0, 8)}_${Date.now().toString(36)}` }));
     } catch (e) {
       throw new BadGatewayException((e as Error).message.slice(0, 200));
     }
@@ -194,7 +225,7 @@ export class SettlementsController {
     });
   }
 
-  private async store(tx: Tx, p: UserPrincipal, b: { provider: 'razorpay' | 'payu'; source: string; reference: string; settlementDate: string; lines: (Omit<GatewaySettlementLine, 'netPaise' | 'providerOrderId'> & { providerOrderId?: string | null; netPaise?: number })[] }) {
+  private async store(tx: Tx, p: UserPrincipal, b: { provider: z.infer<typeof Provider>; source: string; reference: string; settlementDate: string; lines: (Omit<GatewaySettlementLine, 'netPaise' | 'providerOrderId'> & { providerOrderId?: string | null; netPaise?: number })[] }) {
     const [dupe] = await tx.select({ id: settlementBatches.id }).from(settlementBatches).where(and(eq(settlementBatches.provider, b.provider), eq(settlementBatches.reference, b.reference)));
     if (dupe) throw new BadRequestException('That settlement was already imported');
     const lines = b.lines.map((l) => ({ ...l, kind: l.kind ?? 'payment', feePaise: l.feePaise ?? 0, netPaise: l.netPaise ?? (l.kind === 'refund' ? -l.amountPaise : l.amountPaise - (l.feePaise ?? 0)) }));

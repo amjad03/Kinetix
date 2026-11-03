@@ -20,6 +20,6 @@ import { FeeSetupService } from './setup.service.js';
   imports: [FeesModule, NotificationsModule],
   providers: [FeeSetupService, CollectionService, DuesService, FeeRecords, AccountsRecords],
   controllers: [FeeSetupController, CollectionController, BankController],
-  exports: [DuesService, CollectionService],
+  exports: [DuesService, CollectionService, FeeSetupService],
 })
 export class FeeDepthModule {}
