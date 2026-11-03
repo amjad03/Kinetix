@@ -47,6 +47,21 @@ const RETURN_PAGE = (ok: boolean) =>
   `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Payment</title><style>body{font-family:system-ui,sans-serif;margin:0;display:grid;place-items:center;min-height:100vh;background:#f6f7f9;color:#1f2937}main{max-width:28rem;padding:2rem;text-align:center}</style></head><body><main><h1>${ok ? 'Thank you' : 'Payment not completed'}</h1><p>${ok ? 'Your payment has reached the institution. The receipt will appear in the app in a moment; you can close this window.' : 'The payment did not go through. No money was taken by the institution; you can close this window and try again.'}</p></main></body></html>`;
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
+
+/** The invoice list's cursor: the last row's (due date, roll number, id), base64url JSON. */
+type InvoiceCursor = { dueOn: string; rollNo: string; id: string };
+const CursorShape = z.object({ dueOn: Day, rollNo: z.string().max(64), id: z.uuid() });
+export const encodeInvoiceCursor = (c: InvoiceCursor) => Buffer.from(JSON.stringify([c.dueOn, c.rollNo, c.id])).toString('base64url');
+export function decodeInvoiceCursor(s: string): InvoiceCursor | null {
+  if (s.length > 300) return null;
+  try {
+    const [dueOn, rollNo, id] = JSON.parse(Buffer.from(s, 'base64url').toString('utf8')) as string[];
+    const r = CursorShape.safeParse({ dueOn, rollNo, id });
+    return r.success ? r.data : null;
+  } catch {
+    return null;
+  }
+}
 const Paise = z.number().int().min(100).max(100_000_000_00);
 
 const IssueBody = z.object({ sectionId: z.uuid(), title: z.string().trim().min(1).max(120), amountPaise: Paise, dueOn: Day });
@@ -111,12 +126,30 @@ export class FeesController {
 
   @Get('invoices')
   @Auth('user', FEE_ROLES)
-  list(@CurrentPrincipal() p: UserPrincipal, @Query('sectionId') sectionId?: string, @Query('status') status?: string) {
+  /**
+   * One page of invoices, oldest due first (then roll number), and the cursor of the next page (null on the last).
+   * Keyset paging on (due date, roll number, id), so a page costs the same however deep it is.
+   */
+  list(
+    @CurrentPrincipal() p: UserPrincipal,
+    @Query('sectionId') sectionId?: string,
+    @Query('studentId') studentId?: string,
+    @Query('status') status?: string,
+    @Query('dueBefore') dueBefore?: string,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
     if (sectionId && !z.uuid().safeParse(sectionId).success) throw new BadRequestException('Bad sectionId');
+    if (studentId && !z.uuid().safeParse(studentId).success) throw new BadRequestException('Bad studentId');
     const st = z.enum(['due', 'paid', 'cancelled']).optional().safeParse(status || undefined);
     if (!st.success) throw new BadRequestException('Bad status');
-    return this.db.withTenant(p.tenantId, (tx) =>
-      tx
+    if (dueBefore && !Day.safeParse(dueBefore).success) throw new BadRequestException('Bad dueBefore');
+    const size = z.coerce.number().int().min(1).max(500).default(100).safeParse(limit || undefined);
+    if (!size.success) throw new BadRequestException('Use a limit from 1 to 500');
+    const after = cursor ? decodeInvoiceCursor(cursor) : null;
+    if (cursor && !after) throw new BadRequestException('Bad cursor');
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const rows = await tx
         .select({
           id: feeInvoices.id,
           title: feeInvoices.title,
@@ -130,10 +163,22 @@ export class FeesController {
         .from(feeInvoices)
         .innerJoin(students, eq(students.id, feeInvoices.studentId))
         .innerJoin(sections, eq(sections.id, feeInvoices.sectionId))
-        .where(and(sectionId ? eq(feeInvoices.sectionId, sectionId) : undefined, st.data ? eq(feeInvoices.status, st.data) : undefined))
-        .orderBy(asc(feeInvoices.dueOn), ...naturalAsc(sections.displayName), asc(students.rollNo))
-        .limit(2000),
-    );
+        .where(
+          and(
+            sectionId ? eq(feeInvoices.sectionId, sectionId) : undefined,
+            studentId ? eq(feeInvoices.studentId, studentId) : undefined,
+            st.data ? eq(feeInvoices.status, st.data) : undefined,
+            dueBefore ? sql`${feeInvoices.dueOn} < ${dueBefore}::date` : undefined,
+            after ? sql`(${feeInvoices.dueOn}, ${students.rollNo}, ${feeInvoices.id}) > (${after.dueOn}::date, ${after.rollNo}, ${after.id}::uuid)` : undefined,
+          ),
+        )
+        .orderBy(asc(feeInvoices.dueOn), asc(students.rollNo), asc(feeInvoices.id))
+        .limit(size.data + 1);
+      const more = rows.length > size.data;
+      const page = more ? rows.slice(0, size.data) : rows;
+      const last = page.at(-1);
+      return { rows: page, nextCursor: more && last ? encodeInvoiceCursor({ dueOn: last.dueOn, rollNo: last.student.rollNo, id: last.id }) : null };
+    });
   }
 
   /** Totals per class for the accounts dashboard. */
@@ -275,13 +320,13 @@ export class FeesController {
   @Auth('user')
   async checkout(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(CheckoutBody)) body: z.infer<typeof CheckoutBody>) {
     await this.db.withTenant(p.tenantId, async (tx) => {
+      // Ownership first: someone else's invoice reads as not found, whatever the gateway setting.
+      const [mine] = await tx.select({ studentId: feeInvoices.studentId, feeAccountId: feeInvoices.feeAccountId }).from(feeInvoices).where(eq(feeInvoices.id, id));
+      if (!mine) throw new NotFoundException('Invoice not found');
+      await this.fees.assertCanSee(tx, p, mine.studentId);
+      await this.openInvoice(tx, id);
       // Fees go to the fee account's own gateway (else the institution's); without one, only the counter.
-      if (!(await this.gateway.availableName(tx))) {
-        const [inv] = await tx.select({ a: feeInvoices.feeAccountId }).from(feeInvoices).where(eq(feeInvoices.id, id));
-        if (!inv?.a || !(await this.gateway.availableName(tx, inv.a))) throw new ServiceUnavailableException(PAYMENTS_NOT_CONFIGURED);
-      }
-      const inv = await this.openInvoice(tx, id);
-      await this.fees.assertCanSee(tx, p, inv.studentId);
+      if (!(await this.gateway.availableName(tx)) && (!mine.feeAccountId || !(await this.gateway.availableName(tx, mine.feeAccountId)))) throw new ServiceUnavailableException(PAYMENTS_NOT_CONFIGURED);
     });
     return this.flow.startCheckout(p.tenantId, p.userId, id, { amountPaise: body.amountPaise, returnUrl: body.returnUrl });
   }

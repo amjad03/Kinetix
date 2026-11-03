@@ -5,7 +5,9 @@ import { InvoicesTable } from '@/components/fees/InvoicesTable';
 import { FeesNav } from '@/components/fees/FeesNav';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
+import { LinkButton } from '@/components/LinkButton';
 import { api, load, requireSection } from '@/lib/api';
+import { invoicePage } from '@/lib/fee-invoices';
 import { feeClasses } from '@/lib/fees';
 import { INVOICE_FILTERS, type InvoiceFilter } from '@/lib/invoices';
 import { schoolToday, TIMEZONE } from '@/lib/school';
@@ -18,21 +20,35 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default async function InvoicesPage({ searchParams }: { searchParams: Promise<{ class?: string; status?: string }> }) {
+const PAGE = 100;
+
+export default async function InvoicesPage({ searchParams }: { searchParams: Promise<{ class?: string; status?: string; cursor?: string }> }) {
   await requireSection('fees');
   const sp = await searchParams;
   const status: InvoiceFilter = (INVOICE_FILTERS as readonly string[]).includes(sp.status ?? '') ? (sp.status as InvoiceFilter) : 'due';
   const classId = sp.class && UUID.test(sp.class) ? sp.class : '';
   const today = schoolToday();
 
-  const q = new URLSearchParams();
-  if (classId) q.set('sectionId', classId);
-  if (status === 'overdue') q.set('status', 'due');
-  else if (status !== 'all') q.set('status', status);
-
-  const [invoices, summary] = await Promise.all([load(() => api<FeeInvoice[]>(`/v1/fees/invoices?${q}`)), load(() => api<FeeSummary>('/v1/fees/summary'))]);
+  // One page at a time (oldest due first); the cursor comes back from the API and is passed on as it is.
+  const cursor = sp.cursor && /^[A-Za-z0-9_-]{1,300}$/.test(sp.cursor) ? sp.cursor : undefined;
+  const [invoices, summary] = await Promise.all([
+    load(() =>
+      invoicePage<FeeInvoice>({
+        sectionId: classId || undefined,
+        status: status === 'overdue' ? 'due' : status === 'all' ? undefined : status,
+        dueBefore: status === 'overdue' ? today : undefined,
+        cursor,
+        limit: PAGE,
+      }),
+    ),
+    load(() => api<FeeSummary>('/v1/fees/summary')),
+  ]);
   const classes = await load(feeClasses);
-  const list = (invoices.data ?? []).filter((i) => status !== 'overdue' || i.dueOn < today);
+  const list = invoices.data?.rows ?? [];
+  const next = invoices.data?.nextCursor;
+  const keep = new URLSearchParams();
+  if (classId) keep.set('class', classId);
+  if (sp.status) keep.set('status', status);
   const filterClasses = (summary.data?.classes ?? []).map((c) => ({ id: c.sectionId, name: c.className }));
   const className = filterClasses.find((c) => c.id === classId)?.name;
   const { t } = await getI18n();
@@ -46,7 +62,21 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
       />
       <FeesNav value="invoices" />
       <InvoiceFilters status={status} classId={classId} classes={filterClasses} />
-      {invoices.error !== undefined ? <ErrorState message={invoices.error} /> : <InvoicesTable key={`${status}:${classId}`} invoices={list} today={today} timeZone={TIMEZONE} />}
+      {invoices.error !== undefined ? <ErrorState message={invoices.error} /> : <InvoicesTable key={`${status}:${classId}:${cursor ?? ''}`} invoices={list} today={today} timeZone={TIMEZONE} />}
+      {(cursor || next) && (
+        <nav className="mt-4 flex flex-wrap justify-end gap-2" aria-label={t('fees.invoices')} data-testid="invoice-pages">
+          {cursor && (
+            <LinkButton href={`/fees/invoices?${keep}`} variant="outlined">
+              {t('fees.firstPage')}
+            </LinkButton>
+          )}
+          {next && (
+            <LinkButton href={`/fees/invoices?${new URLSearchParams([...keep, ['cursor', next]])}`} variant="outlined">
+              {t('fees.nextPage')}
+            </LinkButton>
+          )}
+        </nav>
+      )}
     </>
   );
 }

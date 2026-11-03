@@ -4,6 +4,7 @@ import { EmptyState, ErrorState } from '@/components/States';
 import { Card } from '@/components/ui/Card';
 import { StatGrid, StatTile } from '@/components/ui/StatTile';
 import { api, load } from '@/lib/api';
+import { invoicesUpTo } from '@/lib/fee-invoices';
 import { canSee } from '@/lib/access';
 import { daysBetween } from '@/lib/dates';
 import { percentChange, type DashboardRollup } from '@/lib/dashboard';
@@ -27,7 +28,8 @@ export async function FinanceDashboard({ me, today }: { me: Me; today: string })
   const [sum, roll, inv, uns, exc] = await Promise.all([
     load(() => api<FeeSummary>('/v1/fees/summary')),
     load(() => api<DashboardRollup>('/v1/admin/dashboard')),
-    load(() => api<FeeInvoice[]>('/v1/fees/invoices?status=due')),
+    // Overdue invoices only (the follow-up list and defaulter counts); totals come from the summary.
+    load(() => invoicesUpTo<FeeInvoice>({ status: 'due', dueBefore: today }, 1000)),
     load(() => api<Unsettled[]>('/v1/fees/settlements/unsettled?olderThanDays=0')),
     load(() => api<unknown[]>('/v1/fees/settlements/exceptions')),
   ]);

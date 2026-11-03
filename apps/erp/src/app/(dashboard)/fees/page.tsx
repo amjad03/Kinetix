@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
 import { api, load, requireSection } from '@/lib/api';
+import { invoicesUpTo } from '@/lib/fee-invoices';
 import { formatRupees } from '@/lib/money';
 import { defaulters, lastMonths, receiptsFromVouchers, type Receipt } from '@/lib/roster';
 import { schoolToday, TIMEZONE } from '@/lib/school';
@@ -50,7 +51,7 @@ export default async function FeesPage() {
   const [summary, structure, due, receipts, batches, unsettled, exceptions] = await Promise.all([
     load(() => api<FeeSummary>('/v1/fees/summary')),
     load(() => api<Structure>('/v1/admin/structure')),
-    load(() => api<FeeInvoice[]>('/v1/fees/invoices?status=due')),
+    load(() => invoicesUpTo<FeeInvoice>({ status: 'due', dueBefore: today }, 1000)),
     load(() => recentReceipts(today, months)),
     load(() => api<SettlementBatchRow[]>('/v1/fees/settlements')),
     load(() => api<unknown[]>('/v1/fees/settlements/unsettled')),

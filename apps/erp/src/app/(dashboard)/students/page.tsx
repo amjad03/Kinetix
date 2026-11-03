@@ -5,6 +5,7 @@ import { EmptyState, ErrorState } from '@/components/States';
 import { StudentRecords, type StudentKitRow } from '@/components/students/StudentRecords';
 import { StudentsTabs } from '@/components/students/StudentsTabs';
 import { api, requireSection } from '@/lib/api';
+import { invoicesUpTo } from '@/lib/fee-invoices';
 import { canChangeLifecycle, canSee } from '@/lib/access';
 import { loadRecords } from '@/lib/records-server';
 import { feeStates } from '@/lib/roster';
@@ -37,7 +38,8 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
     const sections = [...new Set(page.map((r) => r.sectionId))].slice(0, 60);
     const [eligibility, invoices] = await Promise.all([
       showAttendance ? Promise.all(sections.map((id) => api<Eligibility>(`/v1/attendance/eligibility?sectionId=${id}`).catch(() => null))) : Promise.resolve([]),
-      showFees ? api<FeeInvoice[]>('/v1/fees/invoices').catch(() => null) : Promise.resolve(null),
+      // The classes on this page only, a bounded walk of each class's invoices.
+      showFees ? Promise.all(sections.map((id) => invoicesUpTo<FeeInvoice>({ sectionId: id }, 1000))).then((x) => x.flat()).catch(() => null) : Promise.resolve(null),
     ]);
     const attendance = new Map<string, number | null>();
     for (const e of eligibility) for (const s of e?.students ?? []) attendance.set(s.studentId, s.effectivePct ?? s.pct);

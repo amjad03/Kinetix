@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
+import { invoicesUpTo } from '@/lib/fee-invoices';
 import type { VaultVersion } from '@/lib/pathways-b';
 import type { ActionResult } from '@/lib/types';
 import type { CertificateKind, CertificateRequest, CertificateTemplate, VaultDocument } from '@/lib/hr-types';
@@ -53,7 +54,7 @@ export async function saveTemplate(id: string | null, t: TemplateInput): Promise
 /** Students who hold a fee invoice in the class: the roster the office roles can read. */
 export async function classStudents(sectionId: string): Promise<ActionResult<{ id: string; name: string }[]>> {
   if (!UUID.test(sectionId)) return bad();
-  const res = await act(() => api<{ student: { id: string; fullName: string; rollNo: string } }[]>(`/v1/fees/invoices?sectionId=${sectionId}`));
+  const res = await act(() => invoicesUpTo<{ student: { id: string; fullName: string; rollNo: string } }>({ sectionId }, 2000));
   if (!res.ok) return res;
   const seen = new Map(res.data.map((r) => [r.student.id, `${r.student.rollNo} · ${r.student.fullName}`]));
   return { ok: true, data: [...seen].map(([id, name]) => ({ id, name })).sort((a, b) => naturalCompare(a.name, b.name)) };

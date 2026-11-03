@@ -63,7 +63,22 @@ describe('fees and payments', () => {
     await http().get(`/v1/fees/students/${t.students[0].id}`).set(auth('outsider')).expect(404);
     await http().post('/v1/fees/invoices').set(auth('teacher')).send({ sectionId: t.section.id, title: 'x', amountPaise: 100, dueOn }).expect(403);
     const list = await http().get(`/v1/fees/invoices?sectionId=${t.section.id}`).set(auth('principal')).expect(200);
-    expect(list.body).toHaveLength(3);
+    expect(list.body.rows).toHaveLength(3);
+    expect(list.body.nextCursor).toBeNull();
+    // Keyset pages: two, then the last one, with nothing repeated or missed.
+    const first = (await http().get(`/v1/fees/invoices?sectionId=${t.section.id}&limit=2`).set(auth('principal')).expect(200)).body;
+    expect(first.rows).toHaveLength(2);
+    const second = (await http().get(`/v1/fees/invoices?sectionId=${t.section.id}&limit=2&cursor=${first.nextCursor}`).set(auth('principal')).expect(200)).body;
+    expect(second.nextCursor).toBeNull();
+    expect([...first.rows, ...second.rows].map((r: { id: string }) => r.id)).toEqual(list.body.rows.map((r: { id: string }) => r.id));
+    await http().get(`/v1/fees/invoices?cursor=not-a-cursor`).set(auth('principal')).expect(400);
+    await http().get(`/v1/fees/invoices?limit=5000`).set(auth('principal')).expect(400);
+  });
+
+  it('someone else’s invoice reads as not found at checkout', async () => {
+    const invoiceId = (await fees('parent', t.students[0].id)).invoices[0].id;
+    // Ownership is checked before the gateway setting (fees.controller checkout).
+    await http().post(`/v1/fees/invoices/${invoiceId}/checkout`).set(auth('outsider')).send({}).expect(404);
   });
 
   it('takes an online payment, verified by the gateway signature, with a numbered receipt', async () => {

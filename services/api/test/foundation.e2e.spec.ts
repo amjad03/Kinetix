@@ -222,7 +222,7 @@ describe('Phase 00 foundation', () => {
     it('is emitted by a fee payment', async () => {
       const dueOn = new Date(Date.now() + 7 * 86400_000).toISOString().slice(0, 10);
       await http().post('/v1/fees/invoices').set(as('principal')).send({ sectionId: t.section.id, title: 'Events fee', amountPaise: 10_000, dueOn }).expect(201);
-      const inv = (await http().get(`/v1/fees/invoices?sectionId=${t.section.id}`).set(as('principal')).expect(200)).body[0];
+      const inv = (await http().get(`/v1/fees/invoices?sectionId=${t.section.id}`).set(as('principal')).expect(200)).body.rows[0];
       const invoiceId = inv.id ?? inv.invoices?.[0]?.id;
       await http().post(`/v1/fees/invoices/${invoiceId}/payments`).set(as('principal')).send({ amountPaise: 10_000, method: 'cash' }).expect(201);
       const ev = await db.select().from(domainEvents).where(and(eq(domainEvents.tenantId, t.tenantId), eq(domainEvents.type, DomainEvents.FeePaid)));

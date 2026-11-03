@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
+import { invoicesUpTo } from '@/lib/fee-invoices';
 import type { Panel } from '@/lib/depth';
 import { opt, safe, STATE_TONES, stateWords } from '@/lib/depth-ui';
 
@@ -38,7 +39,7 @@ export default async function FeePlansPage() {
       api<{ name: string; mode: 'daily' | 'slab'; slabs: unknown[]; graceDays: number; flatPaise: number; perDayPaise: number; capPaise: number | null } | null>('/v1/fees/late-fee-rule'),
       api<Record<string, unknown>[]>('/v1/fees/late-fees'),
       api<{ studentId: string; name: string; rollNo: string; balancePaise: number }[]>('/v1/fees/credits'),
-      safe(api<Invoice[]>('/v1/fees/invoices?status=due'), []),
+      safe(invoicesUpTo<Invoice>({ status: 'due' }, 1000), []),
       safe(api<{ id: string; fullName: string; rollNo: string }[]>('/v1/students?status=active'), []),
     ]);
     return { plans, rule, lateFees, credits, invoices, students };

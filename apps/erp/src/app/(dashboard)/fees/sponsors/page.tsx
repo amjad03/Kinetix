@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
+import { invoicesUpTo } from '@/lib/fee-invoices';
 import type { SponsorInvoiceRow, SponsorOutstanding, SponsorRow } from '@/lib/payments-desk';
 import type { FeeInvoice } from '@/lib/types';
 
@@ -20,7 +21,7 @@ export default async function SponsorsPage() {
     load(() => api<SponsorRow[]>('/v1/fees/sponsors')),
     load(() => api<SponsorInvoiceRow[]>('/v1/fees/sponsor-invoices')),
     load(() => api<SponsorOutstanding>('/v1/fees/sponsor-invoices/outstanding')),
-    load(() => api<FeeInvoice[]>('/v1/fees/invoices')),
+    load(() => invoicesUpTo<FeeInvoice>({}, 2000)),
   ]);
   const failed = sponsors.error ?? invoices.error ?? outstanding.error;
   // Students the accounts office can pick: those who have a fee invoice, once each.
