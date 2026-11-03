@@ -12,6 +12,8 @@ import { settingsOf } from '../fee-accounts/fee-accounts.service.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { convenienceFee } from './fee-depth.logic.js';
 import { allocatePaid } from './fees-depth.logic.js';
+import { applicationPayments } from '../db/schema.js';
+import { ApplicationFeesService } from './application-fees.service.js';
 import { FeesService } from './fees.service.js';
 import { PAYMENTS_NOT_CONFIGURED, PaymentGateway } from './payment-gateway.service.js';
 import type { PaymentProvider, WebhookEvent } from './payment-provider.js';
@@ -48,6 +50,7 @@ export class GatewayFlow implements OnModuleInit {
     private readonly gateway: PaymentGateway,
     private readonly fees: FeesService,
     private readonly jobs: JobsService,
+    private readonly appFees: ApplicationFeesService,
     @Inject(ENV) env: Env,
   ) {
     this.publicUrl = env.API_PUBLIC_URL?.replace(/\/+$/, '');
@@ -221,7 +224,25 @@ export class GatewayFlow implements OnModuleInit {
       if (r.status === 'paid') paid++;
       if (r.status === 'failed') failed++;
     }
-    return { checked: ids.length, paid, failed, gaveUp };
+    // Application fees ordered through the same gateways, on the same rules.
+    const apps = await this.db.withTenant(tenantId, async (tx) => {
+      const s = await settingsOf(tx, tenantId);
+      const wait = new Date(Date.now() - (s.online.pollAfterMinutes ?? 15) * 60_000);
+      const old = new Date(Date.now() - PENDING_GIVE_UP_HOURS * 3600_000);
+      await tx.update(applicationPayments).set({ status: 'cancelled', statusCheckedAt: new Date() }).where(and(eq(applicationPayments.method, 'online'), eq(applicationPayments.status, 'created'), lt(applicationPayments.createdAt, old)));
+      return tx
+        .select({ id: applicationPayments.id })
+        .from(applicationPayments)
+        .where(and(eq(applicationPayments.method, 'online'), eq(applicationPayments.status, 'created'), lt(applicationPayments.createdAt, wait), lt(applicationPayments.statusChecks, MAX_CHECKS), sql`${applicationPayments.providerOrderId} is not null`))
+        .orderBy(asc(applicationPayments.createdAt))
+        .limit(100);
+    });
+    for (const a of apps) {
+      const r = await this.refreshApplication(tenantId, a.id);
+      if (r.status === 'paid') paid++;
+      if (r.status === 'failed') failed++;
+    }
+    return { checked: ids.length + apps.length, paid, failed, gaveUp };
   }
 
   /**
@@ -253,7 +274,12 @@ export class GatewayFlow implements OnModuleInit {
 
   private async apply(tx: Tx, accountId: string, e: WebhookEvent): Promise<{ outcome: string; paymentId?: string }> {
     const [pay] = await tx.select().from(feePayments).where(eq(feePayments.providerOrderId, e.orderId)).for('update');
-    if (!pay) return { outcome: 'unknown_order' };
+    // Not a tuition fee: it may be an admission application fee ordered through the same adapter.
+    if (!pay) {
+      // (The event row's payment link is to tuition-fee payments only; the application payment keeps the order id.)
+      const r = await this.appFees.applyGatewayEvent(tx, accountId, e);
+      return r ? { outcome: r.outcome } : { outcome: 'unknown_order' };
+    }
     // Signed by a different account than the order was made with: not this payment's notice.
     if (pay.gatewayAccountId && pay.gatewayAccountId !== accountId) return { outcome: 'wrong_account', paymentId: pay.id };
     if (e.kind === 'refund') return { outcome: 'refund_noted', paymentId: pay.id };
@@ -283,7 +309,17 @@ export class GatewayFlow implements OnModuleInit {
   async confirmByOrder(tenantId: string, orderId: string, providerPaymentId: string, signature: string, fields?: Record<string, string>): Promise<boolean> {
     return this.db.withTenant(tenantId, async (tx) => {
       const [pay] = await tx.select().from(feePayments).where(eq(feePayments.providerOrderId, orderId)).for('update');
-      if (!pay || pay.method !== 'online') return false;
+      if (!pay) {
+        // A browser checkout of an application fee comes back here too.
+        const [ap] = await tx.select().from(applicationPayments).where(eq(applicationPayments.providerOrderId, orderId)).for('update');
+        if (!ap) return false;
+        if (ap.status === 'paid') return true;
+        const provider = await this.gateway.forAccountId(tx, ap.gatewayAccountId);
+        if (!provider || !provider.verifyPayment(orderId, providerPaymentId, signature, fields)) return false;
+        await this.appFees.markPaid(tx, ap.id, { providerPaymentId });
+        return true;
+      }
+      if (pay.method !== 'online') return false;
       if (pay.status === 'paid') return true;
       const provider = await this.gateway.forAccountId(tx, pay.gatewayAccountId);
       if (!provider || !provider.verifyPayment(orderId, providerPaymentId, signature, fields)) return false;
@@ -293,9 +329,47 @@ export class GatewayFlow implements OnModuleInit {
     });
   }
 
+  /**
+   * Asks the gateway about a pending application-fee payment (the applicant came back from a hosted page, or the
+   * hourly poll) and credits it when the gateway says it is paid for the right amount.
+   */
+  async refreshApplication(tenantId: string, paymentId: string): Promise<{ status: 'paid' | 'pending' | 'failed' | 'cancelled'; receiptNo?: string | null }> {
+    const ctx = await this.db.withTenant(tenantId, async (tx) => {
+      const [pay] = await tx.select().from(applicationPayments).where(eq(applicationPayments.id, paymentId));
+      if (!pay || pay.method !== 'online') throw new NotFoundException('Payment not found');
+      return { pay, provider: pay.status === 'created' && pay.providerOrderId ? await this.gateway.forAccountId(tx, pay.gatewayAccountId) : null };
+    });
+    if (ctx.pay.status !== 'created') return { status: ctx.pay.status as 'paid', receiptNo: ctx.pay.receiptNo };
+    if (!ctx.provider || ctx.provider.name !== ctx.pay.provider) return { status: 'pending' };
+    let st;
+    try {
+      st = await ctx.provider.fetchStatus(ctx.pay.providerOrderId!, ctx.pay.amountPaise);
+    } catch (e) {
+      this.log.warn(`Status of application payment ${paymentId} at ${ctx.provider.name} failed: ${(e as Error).message.slice(0, 160)}`);
+      st = { status: 'pending' as const };
+    }
+    return this.db.withTenant(tenantId, async (tx) => {
+      const [pay] = await tx.select().from(applicationPayments).where(eq(applicationPayments.id, paymentId)).for('update');
+      if (pay.status !== 'created') return { status: pay.status as 'paid', receiptNo: pay.receiptNo };
+      if (st.status === 'paid' && (st.amountPaise == null || st.amountPaise === pay.amountPaise)) {
+        const paid = await this.appFees.markPaid(tx, pay.id, { providerPaymentId: st.providerPaymentId });
+        return { status: 'paid' as const, receiptNo: paid.receiptNo };
+      }
+      if (st.status === 'paid') this.log.error(`Gateway amount ${st.amountPaise} does not match application payment ${pay.id} (${pay.amountPaise})`);
+      await tx.update(applicationPayments).set({ statusCheckedAt: new Date(), statusChecks: pay.statusChecks + 1, ...(st.status === 'failed' ? { status: 'failed' as const } : {}) }).where(eq(applicationPayments.id, pay.id));
+      return { status: st.status === 'failed' ? ('failed' as const) : ('pending' as const) };
+    });
+  }
+
   /** The payment of an order (a return page that names only the order: Cashfree's return URL). */
   async paymentOfOrder(tenantId: string, orderId: string): Promise<string | null> {
     const [p] = await this.db.withTenant(tenantId, (tx) => tx.select({ id: feePayments.id }).from(feePayments).where(eq(feePayments.providerOrderId, orderId)));
+    return p?.id ?? null;
+  }
+
+  /** The application-fee payment of an order (Cashfree's return names only the order). */
+  async applicationPaymentOfOrder(tenantId: string, orderId: string): Promise<string | null> {
+    const [p] = await this.db.withTenant(tenantId, (tx) => tx.select({ id: applicationPayments.id }).from(applicationPayments).where(eq(applicationPayments.providerOrderId, orderId)));
     return p?.id ?? null;
   }
 

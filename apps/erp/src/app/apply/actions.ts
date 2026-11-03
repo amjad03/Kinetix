@@ -3,6 +3,7 @@
 import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
 import type { PublicApplication } from '@/lib/admissions';
+import type { PublicStatus } from '@/lib/admissions-pass';
 import type { ActionResult } from '@/lib/types';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -151,4 +152,10 @@ export async function onlineSave(slug: string, id: string, token: string, testId
 export async function onlineSubmit(slug: string, id: string, token: string, testId: string, answers: Record<string, number>): Promise<ActionResult<OnlineRun>> {
   if (!guard(slug, id, token) || !UUID.test(testId)) return bad();
   return act(() => api<OnlineRun>(`${base(slug)}/applications/${id}/online-tests/${testId}/submit`, { method: 'POST', body: { answers }, headers: { 'x-application-token': token }, anonymous: true }));
+}
+
+/** The public status page: application number and date of birth (a hidden field catches bots). */
+export async function lookupStatus(slug: string, input: { applicationNo: string; dateOfBirth: string; website?: string }): Promise<ActionResult<PublicStatus>> {
+  if (!SLUG.test(slug) || !/^\d{4}-\d{2}-\d{2}$/.test(input.dateOfBirth) || input.applicationNo.trim().length < 3 || input.applicationNo.length > 40) return bad();
+  return act(() => api<PublicStatus>(`${base(slug)}/status`, { method: 'POST', body: { applicationNo: input.applicationNo.trim(), dateOfBirth: input.dateOfBirth, ...(input.website ? { website: input.website } : {}) }, anonymous: true }));
 }

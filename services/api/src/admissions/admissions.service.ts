@@ -35,6 +35,7 @@ import { addDays, auditActor, type Actor } from './enquiries.service.js';
 import { accrueCommission } from './agents.service.js';
 import { INTERVIEW_SCORE_FIELD, interviewResults } from './interviews.service.js';
 import { naturalAsc } from '../common/natural-order.js';
+import { presetByKey, profileFailures } from './pass/eligibility-profile.js';
 
 export type Cycle = typeof admissionCycles.$inferSelect;
 export type Application = typeof applications.$inferSelect;
@@ -118,6 +119,9 @@ export class AdmissionsService {
     const [n] = await tx.select({ n: count() }).from(applications).where(eq(applications.cycleId, id));
     // The form and documents are what applicants already answered: they are fixed once someone applies.
     if (n.n > 0 && (patch.formFields !== undefined || patch.documents !== undefined)) throw new ConflictException('Applications have been received: the form and documents can no longer change');
+    // The university-profile preset is chosen on its own screen; an edit of the other rules keeps it.
+    const kept = (c.eligibility as { profilePreset?: string }).profilePreset;
+    if (patch.eligibility && kept && !(patch.eligibility as { profilePreset?: string }).profilePreset) patch = { ...patch, eligibility: { ...patch.eligibility, profilePreset: kept } };
     const next = { ...c, ...patch };
     const problems = configProblems(cycleConfig(next));
     if (problems.length) throw new BadRequestException(problems.join('; '));
@@ -339,8 +343,13 @@ export class AdmissionsService {
     const entrance = await this.entranceResults(tx, cycleId);
     const interviews = await interviewResults(tx, cycleId);
     const out = { eligible: 0, ineligible: 0, waiting: 0 };
+    // The university's own rule (qualifying exam, minimum with category relaxation, subjects, entrance test), when chosen.
+    const preset = (cfg.eligibility as { profilePreset?: string }).profilePreset;
+    const profile = preset ? presetByKey(preset) : undefined;
     for (const a of apps) {
       const failures = eligibilityFailures(rules, { dateOfBirth: a.dateOfBirth, answers: a.answers }, today);
+      if (profile) failures.push(...profileFailures(profile, { answers: a.answers, category: categoryOf(a), dateOfBirth: a.dateOfBirth, admissionType: a.admissionType }, rules.ageOn ?? today));
+      if (profile) await tx.update(applications).set({ eligibilityPreset: profile.key }).where(eq(applications.id, a.id));
       const gaps = await this.documentGaps(tx, a, cycle);
       const score = meritScore(cfg.meritRules, { ...a.answers, [ENTRANCE_SCORE_FIELD]: entrance.get(a.id)?.score ?? 0, [INTERVIEW_SCORE_FIELD]: interviews.get(a.id)?.score ?? 0 });
       await tx.update(applications).set({ meritScore: score, eligibilityNotes: [...failures, ...gaps], updatedAt: new Date() }).where(eq(applications.id, a.id));
@@ -429,12 +438,12 @@ export class AdmissionsService {
   // ---- enrolment ------------------------------------------------------------------------------------
 
   /** Turns an accepted application into an enrolled student: user, student, guardian and class. */
-  async enroll(tx: Tx, actor: Actor & { userId: string }, id: string, input: { sectionId?: string; rollNo?: string; activate: boolean; duplicateOverride?: string }) {
+  async enroll(tx: Tx, actor: Actor & { userId: string }, id: string, input: { sectionId?: string; rollNo?: string; activate: boolean; duplicateOverride?: string; checklistGoverns?: boolean }) {
     const a = await this.application(tx, id, true);
     if (a.status !== 'accepted') throw new BadRequestException(a.status === 'enrolled' ? 'This applicant is already enrolled' : 'Only an accepted offer can be enrolled');
     const cycle = await this.cycle(tx, a.cycleId);
     if ((await readSettings(tx, a.tenantId, 'admissions')).rules.admissionFeeBeforeEnrolment && !['none', 'paid', 'waived'].includes(a.feeStatus)) throw new BadRequestException('The application fee has not been paid');
-    const gaps = await this.documentGaps(tx, a, cycle);
+    const gaps = input.checklistGoverns ? [] : await this.documentGaps(tx, a, cycle);
     if (gaps.length) throw new BadRequestException(`Documents outstanding: ${gaps.join(', ')}`);
     // One person, one record: a likely duplicate stops enrolment until the office says why it is not.
     const duplicates = await findDuplicates(tx, a);

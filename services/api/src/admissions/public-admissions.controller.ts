@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, Headers, HttpCode, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Put, Res, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, ForbiddenException, Get, Headers, HttpCode, Ip, NotFoundException, Param, ParseUUIDPipe, Post, Put, Res, ServiceUnavailableException, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { documentsFor, NATIONALITIES, validateAnswers, type AdmissionDocumentSpec, type AdmissionFormField } from '@zynetix/shared';
@@ -15,6 +15,7 @@ import { applicationDrafts } from '../db/schema-sis.js';
 import { admissionCycles, applicationDocuments, applicationPayments, applications, enquiries, programs, tenants } from '../db/schema.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
 import { ApplicationFeesService } from '../fees/application-fees.service.js';
+import { GatewayFlow } from '../fees/gateway-flow.service.js';
 import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { AdmissionsService, cycleConfig, hashToken, newToken, type Application } from './admissions.service.js';
@@ -71,7 +72,7 @@ const ApplyBody = z.object({
   draftId: z.uuid().optional(),
   website: z.string().max(200).optional(),
 });
-const ConfirmBody = z.object({ paymentId: z.uuid(), providerPaymentId: z.string().min(1).max(100), signature: z.string().min(1).max(200) });
+const ConfirmBody = z.object({ paymentId: z.uuid(), providerPaymentId: z.string().min(1).max(100), signature: z.string().min(1).max(200), fields: z.record(z.string().max(40), z.string().max(500)).optional() });
 const LoginBody = z.object({ applicationNo: z.string().trim().min(3).max(40), token: z.string().min(10).max(200) });
 const AnswersBody = z.object({ answers: z.record(z.string(), z.number().int().min(0).max(9)).default({}) });
 const DeclineBody = z.object({ reason: z.string().trim().max(300).optional() });
@@ -95,6 +96,7 @@ export class PublicAdmissionsController {
     private readonly scans: UploadScanService,
     private readonly limiter: RateLimiter,
     private readonly engine: DocumentEngine,
+    private readonly flow: GatewayFlow,
   ) {}
 
   private async tenant(slug: string) {
@@ -321,21 +323,49 @@ export class PublicAdmissionsController {
       await this.mine(tx, id, token);
       return this.fees.prepareCheckout(tx, id);
     });
-    const order = await prep.provider.createOrder({ amountPaise: prep.amountPaise, receipt: `app_${id.slice(0, 8)}`, notes: { applicationId: id, tenantId: t.id } });
+    // Hosted checkouts (PayU, Easebuzz, CCAvenue, Cashfree) need the payer and the return and notice addresses up front.
+    const base = this.flow.publicBase;
+    const payer = { name: prep.app.guardianName, email: prep.app.guardianEmail ?? prep.app.email ?? '', phone: prep.app.guardianPhone };
+    const hostedReturn = base && ['payu', 'easebuzz', 'ccavenue', 'cashfree'].includes(prep.provider.name) ? `${base}/v1/fees/gateway-return/${prep.provider.name}/${prep.slug}` : undefined;
+    let order;
+    try {
+      order = await prep.provider.createOrder({ amountPaise: prep.amountPaise, receipt: `app_${id.slice(0, 8)}`, notes: { applicationId: id, tenantId: t.id }, payer, returnUrl: hostedReturn, notifyUrl: base ? `${base}/v1/fees/webhooks/${prep.provider.name}/${prep.slug}` : undefined });
+    } catch {
+      throw new ServiceUnavailableException('The payment gateway could not start the payment. Please try again in a few minutes.');
+    }
     return this.db.withTenant(t.id, async (tx) => {
-      const pay = await this.fees.recordOrder(tx, { tenantId: t.id, applicationId: id, amountPaise: prep.amountPaise, provider: prep.provider.name, orderId: order.orderId });
+      const checkout = { hosted: order.hosted ?? null, session: order.session ?? null, keyId: prep.provider.keyId };
+      const pay = await this.fees.recordOrder(tx, { tenantId: t.id, applicationId: id, amountPaise: prep.amountPaise, provider: prep.provider.name, orderId: order.orderId, accountId: prep.accountId, checkout });
+      await audit(tx, { tenantId: t.id, actorType: 'system', action: 'admissions.application.fee_checkout.v1', subjectType: 'application', subjectId: id, data: { paymentId: pay.id, provider: prep.provider.name, amountPaise: prep.amountPaise } });
       return {
         paymentId: pay.id,
         provider: prep.provider.name,
         keyId: prep.provider.keyId,
         orderId: order.orderId,
+        /** A hosted page (PayU, Easebuzz, CCAvenue) the browser posts to, or Cashfree's SDK session. */
+        hosted: order.hosted ?? null,
+        session: order.session ?? null,
         amountPaise: prep.amountPaise,
         currency: 'INR',
         name: prep.institution,
         description: prep.description,
-        prefill: { name: prep.app.guardianName, email: prep.app.guardianEmail ?? '', contact: prep.app.guardianPhone },
+        prefill: { name: payer.name, email: payer.email, contact: payer.phone },
       };
     });
+  }
+
+  /** After a hosted checkout: asks the gateway how the payment went and credits it if paid (the webhook may be late). */
+  @Post('applications/:id/fee/refresh')
+  @HttpCode(200)
+  async refreshFee(@Param('slug') slug: string, @Param('id', ParseUUIDPipe) id: string, @Ip() ip: string, @Headers('x-application-token') token?: string) {
+    await this.limiter.hit(`app-fee-refresh:${slug}:${ip}`, 30, 15 * 60_000);
+    const t = await this.tenant(slug);
+    const pending = await this.db.withTenant(t.id, async (tx) => {
+      await this.mine(tx, id, token);
+      return tx.select({ id: applicationPayments.id }).from(applicationPayments).where(and(eq(applicationPayments.applicationId, id), eq(applicationPayments.method, 'online'), eq(applicationPayments.status, 'created'))).orderBy(desc(applicationPayments.createdAt)).limit(3);
+    });
+    for (const p of pending) await this.flow.refreshApplication(t.id, p.id);
+    return this.view(slug, id, token);
   }
 
   @Post('applications/:id/fee/confirm')
@@ -344,7 +374,7 @@ export class PublicAdmissionsController {
     const t = await this.tenant(slug);
     await this.db.withTenant(t.id, async (tx) => {
       await this.mine(tx, id, token);
-      await this.fees.confirm(tx, id, body.paymentId, body.providerPaymentId, body.signature);
+      await this.fees.confirm(tx, id, body.paymentId, body.providerPaymentId, body.signature, body.fields);
     });
     return this.view(slug, id, token);
   }

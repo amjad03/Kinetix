@@ -2,15 +2,18 @@ import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundEx
 import { eq, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { localParts } from '../common/time.js';
+import { readSettings } from '../campus-ops/settings.js';
 import type { Tx } from '../db/db.service.js';
 import { admissionCycles, applicationPayments, applications, receiptCounters, tenants } from '../db/schema.js';
 import { financialYear } from './fees.service.js';
 import { PAYMENTS_NOT_CONFIGURED, PaymentGateway } from './payment-gateway.service.js';
+import type { WebhookEvent } from './payment-provider.js';
 
 /**
- * The admission application fee. It goes through the institution's own gateway account exactly like
- * a tuition fee (same provider, signature check, webhook and numbered receipt), but belongs to an
- * application, because the applicant is not a student yet and has no login.
+ * The admission application fee. It goes through the gateway adapter exactly like a tuition fee: the gateway account
+ * of the fee account admissions collect into (Settings → Admissions, else the institution's default), any of the five
+ * gateways, the same signature checks, each webhook event once, status polling and a numbered receipt. It belongs to
+ * an application, because the applicant is not a student yet and has no login.
  */
 @Injectable()
 export class ApplicationFeesService {
@@ -20,8 +23,11 @@ export class ApplicationFeesService {
 
   /** Starts an online payment for the application's fee. The gateway call is made by the caller's `createOrder`. */
   async prepareCheckout(tx: Tx, applicationId: string) {
-    const provider = await this.gateway.forTenant(tx);
-    if (!provider) throw new ServiceUnavailableException(PAYMENTS_NOT_CONFIGURED);
+    const [t] = await tx.select({ id: tenants.id }).from(tenants);
+    const account = (await readSettings(tx, t.id, 'admissions')).rules.applicationFeeAccountId;
+    const found = await this.gateway.forFeeAccount(tx, typeof account === 'string' && account ? account : null);
+    if (!found) throw new ServiceUnavailableException(PAYMENTS_NOT_CONFIGURED);
+    const provider = found.provider;
     const [row] = await tx
       .select({ app: applications, fee: admissionCycles.applicationFeePaise, cycleName: admissionCycles.name })
       .from(applications)
@@ -29,28 +35,51 @@ export class ApplicationFeesService {
       .where(eq(applications.id, applicationId));
     if (!row) throw new NotFoundException('Application not found');
     if (row.app.feeStatus !== 'pending') throw new BadRequestException(row.app.feeStatus === 'paid' ? 'The application fee is already paid' : 'No application fee is due');
-    const [tenant] = await tx.select({ name: tenants.name }).from(tenants);
-    return { provider, app: row.app, amountPaise: row.fee, description: `Application fee: ${row.cycleName}`, institution: tenant?.name ?? 'ZYNETIX' };
+    const [tenant] = await tx.select({ name: tenants.name, slug: tenants.slug }).from(tenants);
+    return { provider, accountId: found.accountId, slug: tenant?.slug ?? '', app: row.app, amountPaise: row.fee, description: `Application fee: ${row.cycleName}`, institution: tenant?.name ?? 'ZYNETIX' };
   }
 
-  async recordOrder(tx: Tx, a: { tenantId: string; applicationId: string; amountPaise: number; provider: string; orderId: string }) {
+  async recordOrder(tx: Tx, a: { tenantId: string; applicationId: string; amountPaise: number; provider: string; orderId: string; accountId?: string | null; checkout?: Record<string, unknown> }) {
     const [pay] = await tx
       .insert(applicationPayments)
-      .values({ tenantId: a.tenantId, applicationId: a.applicationId, amountPaise: a.amountPaise, method: 'online', status: 'created', provider: a.provider, providerOrderId: a.orderId })
+      .values({ tenantId: a.tenantId, applicationId: a.applicationId, amountPaise: a.amountPaise, method: 'online', status: 'created', provider: a.provider, providerOrderId: a.orderId, gatewayAccountId: a.accountId ?? null, checkout: a.checkout ?? null })
       .returning();
     return pay;
   }
 
   /** The checkout result reported by the applicant's browser; the gateway's signature proves it. */
-  async confirm(tx: Tx, applicationId: string, paymentId: string, providerPaymentId: string, signature: string) {
+  async confirm(tx: Tx, applicationId: string, paymentId: string, providerPaymentId: string, signature: string, fields?: Record<string, string>) {
     const [pay] = await tx.select().from(applicationPayments).where(eq(applicationPayments.id, paymentId));
     if (!pay || pay.applicationId !== applicationId || pay.method !== 'online') throw new NotFoundException('Payment not found');
     if (pay.status !== 'paid') {
-      const provider = await this.gateway.forTenant(tx);
-      if (!pay.providerOrderId || !provider || !provider.verifyPayment(pay.providerOrderId, providerPaymentId, signature)) throw new ForbiddenException('The payment could not be verified');
+      // Checked with the keys of the account the order was made with.
+      const provider = await this.gateway.forAccountId(tx, pay.gatewayAccountId);
+      if (!pay.providerOrderId || !provider || provider.name !== pay.provider || !provider.verifyPayment(pay.providerOrderId, providerPaymentId, signature, fields)) throw new ForbiddenException('The payment could not be verified');
       return this.markPaid(tx, paymentId, { providerPaymentId });
     }
     return pay;
+  }
+
+  /**
+   * A verified gateway event (any of the five gateways) whose order is not a tuition-fee payment: credited here when it
+   * is an application fee ordered with the account that signed it and the amount matches. Null: not an application fee.
+   */
+  async applyGatewayEvent(tx: Tx, accountId: string, e: WebhookEvent): Promise<{ outcome: string; paymentId?: string } | null> {
+    const [pay] = await tx.select().from(applicationPayments).where(eq(applicationPayments.providerOrderId, e.orderId)).for('update');
+    if (!pay) return null;
+    if (pay.gatewayAccountId && pay.gatewayAccountId !== accountId) return { outcome: 'wrong_account', paymentId: pay.id };
+    if (e.kind === 'refund') return { outcome: 'refund_noted', paymentId: pay.id };
+    if (e.status === 'failed') {
+      if (pay.status === 'created') await tx.update(applicationPayments).set({ status: 'failed', statusCheckedAt: new Date() }).where(eq(applicationPayments.id, pay.id));
+      return { outcome: pay.status === 'created' ? 'failed' : 'already_settled', paymentId: pay.id };
+    }
+    if (pay.status === 'paid') return { outcome: 'already_paid', paymentId: pay.id };
+    if (pay.amountPaise !== e.amountPaise) {
+      this.log.error(`Webhook amount ${e.amountPaise} does not match application payment ${pay.id} (${pay.amountPaise})`);
+      return { outcome: 'amount_mismatch', paymentId: pay.id };
+    }
+    await this.markPaid(tx, pay.id, { providerPaymentId: e.providerPaymentId });
+    return { outcome: 'credited', paymentId: pay.id };
   }
 
   /** The gateway's server-to-server notice. Returns whether the order was an application fee. */

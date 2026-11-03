@@ -30,6 +30,13 @@ export interface IndexFormula {
   bonusCap?: number;
   /** Component keys compared in order when two applicants have the same index mark; the older applicant wins the last tie. */
   tieBreak: string[];
+  /**
+   * Rank-based entrance tests (COMEDK UGET, the KEA's KCET rank, JEE Main CRL): the authority's rank is the merit order
+   * itself, lowest first. The index mark is then that rank and the components are ignored.
+   */
+  rankBy?: { key: string; label: string; max: number };
+  /** The entrance test this formula is built on (kcet, comedk, neet, jee_main, pgcet, kmat), for the forms and reports. */
+  exam?: string;
 }
 
 export const INDEX_PRESETS: Record<string, { label: string; formula: IndexFormula }> = {
@@ -83,6 +90,55 @@ export const INDEX_PRESETS: Record<string, { label: string; formula: IndexFormul
       tieBreak: ['entrance', 'degree_percent'],
     },
   },
+  kcet_engineering: {
+    label: 'KCET engineering (KEA): CET Physics, Chemistry, Mathematics out of 180 at 50% + PUC Physics, Chemistry, Mathematics out of 300 at 50%',
+    formula: {
+      preset: 'kcet_engineering',
+      exam: 'kcet',
+      components: [
+        { key: 'cet_pcm', label: 'KCET Physics + Chemistry + Mathematics', max: 180, weight: 50 },
+        { key: 'puc_pcm', label: 'PUC / 12th Physics + Chemistry + Mathematics', max: 300, weight: 50 },
+      ],
+      tieBreak: ['cet_pcm', 'cet_maths', 'cet_physics', 'puc_pcm'],
+    },
+  },
+  kcet_rank: {
+    label: 'KCET rank as allotted by KEA (lower rank first)',
+    formula: { preset: 'kcet_rank', exam: 'kcet', components: [], rankBy: { key: 'kcet_rank', label: 'KCET rank', max: 400000 }, tieBreak: [] },
+  },
+  comedk_rank: {
+    label: 'COMEDK UGET rank (lower rank first)',
+    formula: { preset: 'comedk_rank', exam: 'comedk', components: [], rankBy: { key: 'comedk_rank', label: 'COMEDK UGET rank', max: 200000 }, tieBreak: [] },
+  },
+  jee_main_rank: {
+    label: 'JEE Main common rank list (CRL) rank (lower rank first)',
+    formula: { preset: 'jee_main_rank', exam: 'jee_main', components: [], rankBy: { key: 'jee_crl_rank', label: 'JEE Main CRL rank', max: 1500000 }, tieBreak: [] },
+  },
+  neet_score: {
+    label: 'NEET (UG) score out of 720; ties by Biology, then Chemistry, then Physics (NTA)',
+    formula: {
+      preset: 'neet_score',
+      exam: 'neet',
+      components: [{ key: 'neet', label: 'NEET (UG) total', max: 720, weight: 720 }],
+      tieBreak: ['neet_biology', 'neet_chemistry', 'neet_physics'],
+    },
+  },
+  pgcet_mba: {
+    label: 'Karnataka PGCET (MBA / MCA) score out of 100; ties by the degree percentage',
+    formula: { preset: 'pgcet_mba', exam: 'pgcet', components: [{ key: 'pgcet', label: 'PGCET score', max: 100, weight: 100 }], tieBreak: ['degree_percent'] },
+  },
+  kmat_mba: {
+    label: 'KMAT score out of 100 at 70% + degree percentage at 30% (management quota)',
+    formula: {
+      preset: 'kmat_mba',
+      exam: 'kmat',
+      components: [
+        { key: 'kmat', label: 'KMAT score', max: 100, weight: 70 },
+        { key: 'degree_percent', label: 'Degree percentage', max: 100, weight: 30 },
+      ],
+      tieBreak: ['kmat', 'degree_percent'],
+    },
+  },
   simple: {
     label: 'Simple: one percentage out of 100',
     formula: { preset: 'simple', components: [{ key: 'percentage', label: 'Percentage', max: 100, weight: 100 }], tieBreak: ['percentage'] },
@@ -104,6 +160,11 @@ const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFi
 export function computeIndexMark(f: IndexFormula, marks: Record<string, unknown>): IndexResult {
   const parts: IndexResult['parts'] = [];
   const missing: string[] = [];
+  if (f.rankBy) {
+    const m = num(marks[f.rankBy.key]);
+    if (m === null || m < 1 || !Number.isInteger(m)) return { indexMark: 0, parts, bonus: 0, missing: [f.rankBy.key] };
+    return { indexMark: m, parts: [{ key: f.rankBy.key, scored: m, points: m }], bonus: 0, missing };
+  }
   let total = 0;
   for (const c of f.components) {
     const m = num(marks[c.key]);
@@ -136,7 +197,12 @@ export function formulaProblems(f: IndexFormula, marks?: Record<string, unknown>
   const out: string[] = [];
   const keys = f.components.map((c) => c.key);
   if (new Set(keys).size !== keys.length) out.push('A component appears twice');
-  if (!f.components.length && !f.bestOf) out.push('The formula has no components');
+  if (!f.components.length && !f.bestOf && !f.rankBy) out.push('The formula has no components');
+  if (f.rankBy && !(f.rankBy.max >= 1)) out.push(`${f.rankBy.label}: the largest rank must be at least 1`);
+  if (marks && f.rankBy) {
+    const m = marks[f.rankBy.key];
+    if (m !== undefined && m !== null && (num(m) === null || !Number.isInteger(m) || (m as number) < 1 || (m as number) > f.rankBy.max)) out.push(`${f.rankBy.label} must be a whole number from 1 to ${f.rankBy.max}`);
+  }
   for (const c of f.components) if (!(c.max > 0) || !(c.weight >= 0)) out.push(`${c.label}: maximum must be above zero`);
   if (marks) {
     for (const c of f.components) {

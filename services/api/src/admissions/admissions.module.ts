@@ -21,12 +21,22 @@ import { GrowthController } from './growth.controller.js';
 import { InterviewsService } from './interviews.service.js';
 import { OnlineTestService } from './online-test.service.js';
 import { PublicAdmissionsController } from './public-admissions.controller.js';
+import { FeeDepthModule } from '../fee-depth/fee-depth.module.js';
+import { BroadcastService } from './pass/broadcast.service.js';
+import { EnrolmentService } from './pass/enrolment.service.js';
+import { PassController, PublicStatusController } from './pass/pass.controller.js';
+import { AdmissionReturnsService } from './pass/returns.service.js';
+import { SeatsService } from './pass/seats.service.js';
 
 /** Admissions CRM: enquiries, cycles and applications, merit lists, offers and enrolment. */
 @Module({
-  imports: [FeesModule, StudentsModule],
-  controllers: [AdmissionsController, AdmissionsExtController, EntranceController, GrowthController, DepthController, LeadWebhookController, PublicAllotmentController, PublicAdmissionsController, PublicAdmissionsExtController, DeskController, PublicDraftsController],
+  imports: [FeesModule, FeeDepthModule, StudentsModule],
+  controllers: [AdmissionsController, AdmissionsExtController, EntranceController, GrowthController, DepthController, LeadWebhookController, PublicAllotmentController, PublicAdmissionsController, PublicAdmissionsExtController, DeskController, PublicDraftsController, PassController, PublicStatusController],
   providers: [
+    SeatsService,
+    EnrolmentService,
+    AdmissionReturnsService,
+    BroadcastService,
     AdmissionsService,
     EnquiriesService,
     EntranceService,
