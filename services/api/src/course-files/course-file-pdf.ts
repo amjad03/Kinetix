@@ -16,6 +16,14 @@ export interface CourseFileData {
   attainment: { code: string; direct: number | null; indirect: number | null; combined: number | null; target: number; met: boolean }[];
   whiteboards: { title: string; updatedOn: string; shared: boolean }[];
   recordings: { title: string; recordedOn: string; minutes: number }[];
+  /** Course details for the cover (credits, L-T-P, type, faculty). */
+  course?: { credits: number | null; ltp: string; type: string; faculty: string[] };
+  /** Course outcome statements. */
+  outcomes?: { code: string; statement: string }[];
+  /** The teaching diary: periods logged, how they went against the plan, and the latest entries. */
+  diary?: { logged: number; asPlanned: number; ahead: number; behind: number; unplanned: number; entries: { date: string; topics: string; delivery: string; againstPlan: string }[] };
+  /** The NBA course file checklist: each item present or missing. */
+  checklist?: { item: string; done: boolean }[];
 }
 
 const L = 40;
@@ -93,6 +101,27 @@ export function courseFilePdf(d: CourseFileData): Buffer {
     f.y += 15;
   }
 
+  if (d.course) {
+    for (const [k, v] of [
+      ['Credits', d.course.credits === null ? '-' : String(d.course.credits)],
+      ['L-T-P', d.course.ltp],
+      ['Course type', d.course.type],
+      ['Faculty', d.course.faculty.join(', ') || '-'],
+    ] as const) {
+      pdf.text(k, L, f.y, { size: 9.5, color: '#666666' }).text(v, L + 90, f.y, { size: 9.5, bold: true });
+      f.y += 15;
+    }
+  }
+  if (d.checklist?.length) {
+    const done = d.checklist.filter((c) => c.done).length;
+    f.heading(`Course file checklist (${done} of ${d.checklist.length})`);
+    for (const c of d.checklist) f.line(`${c.done ? '[x]' : '[ ]'} ${c.item}`, { color: c.done ? undefined : '#a33' });
+  }
+  if (d.outcomes?.length) {
+    f.heading('Course outcomes');
+    for (const o of d.outcomes) f.line(`${o.code}: ${o.statement}`);
+  }
+
   f.heading('1. Syllabus and coverage');
   const topics = d.syllabus.flatMap((c) => c.topics);
   const covered = topics.filter((t) => t.coveredOn).length;
@@ -106,6 +135,17 @@ export function courseFilePdf(d: CourseFileData): Buffer {
   f.heading('2. Lesson plans');
   if (d.lessonPlans.total === 0) f.none('No lesson plans were written.');
   else f.line(`${d.lessonPlans.total} plans (${d.lessonPlans.reviewed} reviewed), from ${d.lessonPlans.first} to ${d.lessonPlans.last}`);
+
+  if (d.diary) {
+    f.heading('2a. Teaching diary (work done)');
+    if (d.diary.logged === 0) f.none('No periods were logged in the teaching diary.');
+    else {
+      f.line(`${d.diary.logged} periods logged: ${d.diary.asPlanned} as planned, ${d.diary.ahead} ahead, ${d.diary.behind} behind, ${d.diary.unplanned} without a plan`, { bold: true });
+      const cols = [0, 70, 380, 450];
+      f.row(['Date', 'Topics taught', 'Delivery', 'Plan'], cols, { bold: true });
+      for (const e of d.diary.entries) f.row([e.date, e.topics, e.delivery, e.againstPlan], cols);
+    }
+  }
 
   f.heading('3. Timetable');
   if (d.timetable.length === 0) f.none('No periods are scheduled.');

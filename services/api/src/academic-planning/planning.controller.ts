@@ -10,7 +10,8 @@ import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { electiveBaskets, electiveBasketSubjects, facultyAllocations, periodStructures, studentBatches } from '../db/schema-academic-ops.js';
-import { academicSettings, departments, programs, sections, students, subjects, timetableSlots } from '../db/schema.js';
+import { academicSettings, academicTerms, academicYears, departments, programs, sections, students, subjects, timetableSlots } from '../db/schema.js';
+import { resolveAffiliation } from '../affiliation/resolve.js';
 import { addDays } from '../teacher/teacher.service.js';
 import { CalendarService } from '../timetable/calendar.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
@@ -221,8 +222,37 @@ export class AcademicPlanningController {
       const holidays = await this.calendar.holidays(tx, from, to);
       const orders = await this.calendar.dayOrders(tx, from, to);
       const swapDates = new Set(orders.list.filter((x) => x.programIds === null || (programId && x.programIds.includes(programId))).map((x) => x.date));
-      const months = workingDays(from, to, weekly, (d) => !!holidays.on(d, programId ?? null) || (!programId && !!holidays.forAll(d)), (d) => swapDates.has(d));
-      return { from, to, weekly, structure: structure ? { id: structure.id, name: structure.name } : null, months, total: months.reduce((n, m) => n + m.days, 0) };
+      const isHoliday = (d: string) => !!holidays.on(d, programId ?? null) || (!programId && !!holidays.forAll(d));
+      const months = workingDays(from, to, weekly, isHoliday, (d) => swapDates.has(d));
+      // The working-day minimum of the university or board the programme follows, and each term of the current year against it.
+      const aff = await resolveAffiliation(tx, programId ?? null);
+      const norm = aff?.rules.calendar ?? null;
+      const [year] = await tx.select().from(academicYears).where(eq(academicYears.isCurrent, true));
+      const terms = year ? (await tx.select().from(academicTerms).where(eq(academicTerms.academicYearId, year.id)).orderBy(asc(academicTerms.startsOn))).filter((t) => t.programIds === null || !programId || t.programIds.includes(programId)) : [];
+      const span = async (a: string, b: string) => {
+        const hs = await this.calendar.holidays(tx, a, b);
+        const os = await this.calendar.dayOrders(tx, a, b);
+        const sw = new Set(os.list.filter((x) => x.programIds === null || (programId && x.programIds.includes(programId))).map((x) => x.date));
+        return workingDays(a, b, weekly, (d) => !!hs.on(d, programId ?? null) || (!programId && !!hs.forAll(d)), (d) => sw.has(d)).reduce((n, m) => n + m.days, 0);
+      };
+      const termRows = [];
+      for (const t of terms) {
+        const days = await span(t.startsOn, t.endsOn);
+        const sofar = today >= t.startsOn ? await span(t.startsOn, today < t.endsOn ? today : t.endsOn) : 0;
+        termRows.push({ id: t.id, name: t.name, startsOn: t.startsOn, endsOn: t.endsOn, days, sofar, norm: norm?.minWorkingDaysPerTerm ?? null, short: norm?.minWorkingDaysPerTerm != null ? Math.max(0, norm.minWorkingDaysPerTerm - days) : null });
+      }
+      const yearDays = year ? await span(year.startsOn, year.endsOn) : null;
+      return {
+        from,
+        to,
+        weekly,
+        structure: structure ? { id: structure.id, name: structure.name } : null,
+        months,
+        total: months.reduce((n, m) => n + m.days, 0),
+        norm: norm ? { ...norm, profile: aff?.profile.shortName ?? aff?.profile.name ?? null, scheme: aff?.scheme.name ?? null } : null,
+        year: year ? { label: year.label, startsOn: year.startsOn, endsOn: year.endsOn, days: yearDays, norm: norm?.minWorkingDaysPerYear ?? null, short: norm?.minWorkingDaysPerYear != null && yearDays !== null ? Math.max(0, norm.minWorkingDaysPerYear - yearDays) : null } : null,
+        terms: termRows,
+      };
     });
   }
 
