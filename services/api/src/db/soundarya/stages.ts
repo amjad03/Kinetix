@@ -34,6 +34,7 @@ import { attendancePass } from './attendance-pass.js';
 import { gatewayBooksSamples } from './gateway-books.js';
 import { feeAccountsSamples } from './fee-accounts.js';
 import { feeFlagshipSamples } from './fee-flagship.js';
+import { libraryPass } from './library-pass.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -109,4 +110,6 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['fee accounts for the trust and the college, gateway, online rules, reminders, fee references, SSP scholarships, payment links and a duplicate flag', feeFlagshipSamples],
   // After the academics desk (its attendance settings) and the exams: QR scans, a face terminal, a published detention list.
   ['attendance: QR scans with anti-proxy checks, classroom face terminal, SMS templates, detention lists', attendancePass],
+  // After the library depth samples (barcodes, prices, e-resources) and the stock verification of last term.
+  ['library pass: cards, accession register, rules matrix, gate register, vendors and orders, serials, e-resources and usage, binding', libraryPass],
 ];
