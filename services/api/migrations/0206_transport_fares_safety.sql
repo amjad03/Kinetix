@@ -8,8 +8,7 @@ CREATE TABLE IF NOT EXISTS "transport_fare_slabs" (
   "to_km" numeric(7, 2) NOT NULL,
   "monthly_fee_paise" bigint NOT NULL,
   "note" text NOT NULL DEFAULT '',
-  "created_at" timestamp with time zone DEFAULT now() NOT NULL,
-  CONSTRAINT "transport_fare_slabs_band_ck" CHECK ("to_km" > "from_km" AND "from_km" >= 0 AND "monthly_fee_paise" >= 0)
+  "created_at" timestamp with time zone DEFAULT now() NOT NULL
 );--> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS "transport_fare_slabs_from_uq" ON "transport_fare_slabs" ("tenant_id", "from_km");--> statement-breakpoint
 ALTER TABLE "transport_stops" ADD COLUMN IF NOT EXISTS "distance_km" numeric(7, 2);--> statement-breakpoint

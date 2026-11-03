@@ -11,6 +11,9 @@ CREATE INDEX IF NOT EXISTS "transport_boardings_day_idx" ON "transport_boardings
 ALTER TABLE "transport_trips" ADD COLUMN IF NOT EXISTS "vehicle_id" uuid REFERENCES "transport_vehicles"("id") ON DELETE SET NULL;--> statement-breakpoint
 ALTER TABLE "transport_trips" ADD COLUMN IF NOT EXISTS "start_odometer_km" integer;--> statement-breakpoint
 ALTER TABLE "transport_trips" ADD COLUMN IF NOT EXISTS "end_odometer_km" integer;--> statement-breakpoint
+-- An SOS from the bus is an incident of its own kind.
+ALTER TABLE "transport_incidents" DROP CONSTRAINT IF EXISTS "transport_incident_ck";--> statement-breakpoint
+ALTER TABLE "transport_incidents" ADD CONSTRAINT "transport_incident_ck" CHECK ("kind" IN ('accident', 'breakdown', 'delay', 'behaviour', 'sos', 'other') AND "severity" IN ('low', 'medium', 'high') AND "status" IN ('open', 'resolved'));--> statement-breakpoint
 -- Older seeded trips used other words for the same states.
 UPDATE "transport_trips" SET "status" = 'ended' WHERE "status" = 'completed';--> statement-breakpoint
 UPDATE "transport_trip_events" SET "kind" = 'stop_reached' WHERE "kind" = 'arrived';--> statement-breakpoint
