@@ -75,6 +75,8 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: 'timetable',
     items: [
       { href: '/timetable', label: 'nav.timetable', section: 'timetable', icon: 'timetable' },
+      { href: '/timetable/studio', label: 'nav.timetableStudio', section: 'timetableStudio', icon: 'timetable' },
+      { href: '/teaching-diary', label: 'nav.teachingDiary', section: 'teachingDiary', icon: 'courseFiles' },
       { href: '/calendar', label: 'nav.calendar', section: 'calendar', icon: 'calendar' },
       { href: '/scheduling', label: 'nav.scheduling', section: 'scheduling', icon: 'timetable' },
       { href: '/timetable/setup', label: 'nav.timetableSetup', section: 'timetable', icon: 'settings' },

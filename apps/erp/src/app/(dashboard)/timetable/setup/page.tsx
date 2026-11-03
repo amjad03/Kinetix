@@ -3,6 +3,7 @@ import { Users } from 'lucide-react';
 import { FilterForm, SelectField } from '@/components/attendance-desk/kit';
 import { PlanningRecords, type PlanningEntity } from '@/components/academics/PlanningRecords';
 import { BatchesEditor, type BatchData } from '@/components/timetable/BatchesEditor';
+import { UnavailabilityRecords } from '@/components/timetable/UnavailabilityRecords';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
 import { LinkTabs, StatGrid, StatTile } from '@/components/ui';
@@ -15,9 +16,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getI18n()).t('nav.timetableSetup') };
 }
 
-const TABS = ['periods', 'special', 'days', 'batches'] as const;
+const TABS = ['periods', 'special', 'days', 'batches', 'unavailability'] as const;
 type Tab = (typeof TABS)[number];
-const ENTITY: Record<Exclude<Tab, 'batches'>, PlanningEntity> = { periods: 'period-structures', special: 'special-classes', days: 'working-days' };
+const ENTITY: Record<Exclude<Tab, 'batches' | 'unavailability'>, PlanningEntity> = { periods: 'period-structures', special: 'special-classes', days: 'working-days' };
 
 interface WorkingDays {
   from: string;
@@ -25,6 +26,10 @@ interface WorkingDays {
   total: number;
   structure: { id: string; name: string } | null;
   months: { month: string; days: number; holidays: number; swaps: number }[];
+  /** The university's or board's working-day minimum, and each term of the year against it. */
+  norm: { minWorkingDaysPerTerm: number | null; minWorkingDaysPerYear: number | null; source: string; profile: string | null } | null;
+  year: { label: string; days: number | null; norm: number | null; short: number | null } | null;
+  terms: { id: string; name: string; startsOn: string; endsOn: string; days: number; sofar: number; norm: number | null; short: number | null }[];
 }
 
 /**
@@ -73,6 +78,17 @@ export default async function TimetableSetupPage({ searchParams }: { searchParam
     );
   }
 
+  if (tab === 'unavailability') {
+    const list = await loadRecords('faculty-unavailability', sp);
+    return (
+      <>
+        {head}
+        <p className="mb-4 text-sm text-muted-foreground">{t('tts2.u.help')}</p>
+        {list.error !== undefined ? <ErrorState message={list.error} /> : <UnavailabilityRecords meta={list.data.meta} page={list.data.page} state={list.data.state} />}
+      </>
+    );
+  }
+
   const entity = ENTITY[tab];
   const [records, days] = await Promise.all([loadRecords(entity, sp), tab === 'days' ? load(() => api<WorkingDays>('/v1/academic-planning/working-days')) : Promise.resolve(null)]);
   return (
@@ -86,6 +102,20 @@ export default async function TimetableSetupPage({ searchParams }: { searchParam
               <StatTile key={m.month} label={fmt.month(`${m.month}-01`)} value={fmt.number(m.days)} caption={t('tts.monthCaption', { h: fmt.number(m.holidays), s: fmt.number(m.swaps) })} />
             ))}
           </StatGrid>
+          {(days.data.terms.length > 0 || days.data.norm) && (
+            <div className="mt-4">
+              <h2 className="mb-2 text-sm font-semibold">{t('tts2.norm.title')}</h2>
+              <p className="mb-3 text-sm text-muted-foreground">
+                {days.data.norm ? t('tts2.norm.rule', { profile: days.data.norm.profile ?? '', term: days.data.norm.minWorkingDaysPerTerm === null ? '—' : fmt.number(days.data.norm.minWorkingDaysPerTerm), year: days.data.norm.minWorkingDaysPerYear === null ? '—' : fmt.number(days.data.norm.minWorkingDaysPerYear) }) : t('tts2.norm.none')}
+              </p>
+              <StatGrid min={180}>
+                {days.data.terms.map((x) => (
+                  <StatTile key={x.id} label={x.name} value={fmt.number(x.days)} caption={x.short ? t('tts2.norm.short', { n: fmt.number(x.short) }) : x.norm !== null ? t('tts2.norm.met', { n: fmt.number(x.norm), sofar: fmt.number(x.sofar) }) : t('tts2.norm.sofar', { sofar: fmt.number(x.sofar) })} />
+                ))}
+                {days.data.year && <StatTile label={days.data.year.label} value={days.data.year.days === null ? '—' : fmt.number(days.data.year.days)} caption={days.data.year.short ? t('tts2.norm.short', { n: fmt.number(days.data.year.short) }) : days.data.year.norm !== null ? t('tts2.norm.yearMet', { n: fmt.number(days.data.year.norm) }) : ''} />}
+              </StatGrid>
+            </div>
+          )}
         </section>
       )}
       {records.error !== undefined ? <ErrorState message={records.error} /> : <PlanningRecords entity={entity} tab={tab} meta={records.data.meta} page={records.data.page} state={records.data.state} />}

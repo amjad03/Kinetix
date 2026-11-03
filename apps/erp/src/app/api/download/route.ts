@@ -218,6 +218,14 @@ export async function GET(req: NextRequest) {
     }
     FIXED[kind] = `/v1/academics/reports/${report}/export?${keep.toString()}`;
   }
+  // A printable week grid of a class, teacher or room: ?kind=tt-grid&version=<id|live>&by=class|teacher|room&id=<id>
+  if (kind === 'tt-grid') {
+    const sp = req.nextUrl.searchParams;
+    const version = sp.get('version') ?? 'live';
+    const by = sp.get('by') ?? 'class';
+    if ((version !== 'live' && !UUID.test(version)) || !/^(class|teacher|room)$/.test(by) || !UUID.test(id)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/timetable-studio/versions/${version}/pdf?by=${by}&id=${id}`;
+  }
   // A class's monthly attendance register: ?kind=att-register&id=<class>&month=2026-10&subjectId=&format=pdf|xlsx
   if (kind === 'att-register') {
     const sp = req.nextUrl.searchParams;

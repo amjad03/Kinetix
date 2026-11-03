@@ -3,7 +3,7 @@
 
 import type { RoleName } from './types';
 
-export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings' | 'accreditation' | 'facultyEvidence' | 'integrations' | 'earlyAlerts' | 'academics' | 'chat' | 'campusOps' | 'qualityHub' | 'procurement' | 'indents' | 'facilities';
+export type Section = 'dashboard' | 'school' | 'courses' | 'finance' | 'boards' | 'devices' | 'live' | 'fees' | 'syllabus' | 'ai' | 'library' | 'results' | 'timetable' | 'conversations' | 'department' | 'departments' | 'calendar' | 'settings' | 'import' | 'transport' | 'hostel' | 'canteen' | 'inventory' | 'assets' | 'admissions' | 'students' | 'exams' | 'obe' | 'hr' | 'payroll' | 'payslips' | 'documents' | 'topicVideos' | 'reports' | 'placements' | 'research' | 'grievances' | 'surveys' | 'tasks' | 'campusLife' | 'mentoring' | 'courseFiles' | 'academicAudit' | 'courseRegistration' | 'skills' | 'questionBank' | 'workflows' | 'evaluation' | 'evaluationDesk' | 'diary' | 'ptm' | 'earlyYears' | 'health' | 'audit' | 'connectors' | 'alumni' | 'dpdp' | 'delegations' | 'curriculum' | 'schoolMode' | 'university' | 'appraisal' | 'institutionSetup' | 'scheduling' | 'admissionsTools' | 'learningSupport' | 'assessmentTools' | 'projects' | 'careers' | 'comms' | 'governance' | 'billing' | 'aiAudit' | 'integrity' | 'trainings' | 'accreditation' | 'facultyEvidence' | 'integrations' | 'earlyAlerts' | 'academics' | 'chat' | 'campusOps' | 'qualityHub' | 'procurement' | 'indents' | 'facilities' | 'timetableStudio' | 'teachingDiary';
 /** Roles for each section. Matches the API's guards (services/api). */
 export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // The role dashboard at / (KPIs and pending tasks for the role); other desk roles keep their own desk as home.
@@ -178,6 +178,10 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // analytics semantic.ts STUDIO_ROLES (every role with a dataset in the report studio); each report then checks its own roles.
   // Teachers report in the Teacher App, so the ERP leaves them out.
   reports: ['principal', 'tenant_admin', 'hod', 'accountant', 'hr_manager', 'exam_controller', 'admissions_officer', 'librarian', 'hostel_warden', 'transport_manager', 'store_keeper', 'placement_officer'],
+  // timetable-studio/studio.controller.ts STUDIO_READ: leaders build and publish versions; heads of department see them
+  timetableStudio: ['principal', 'tenant_admin', 'hod'],
+  // teaching-log.controller.ts: heads of department and leaders review the diary and syllabus completion (teachers write it in the Teacher App and on the board)
+  teachingDiary: ['principal', 'tenant_admin', 'hod', 'exam_controller'],
 };
 
 /** Everyone who can use some part of the ERP. */
@@ -261,7 +265,9 @@ export function sectionOf(pathname: string): Section | null {
     case 'results':
       return 'results';
     case 'timetable':
-      return 'timetable';
+      return pathname.split('/')[2] === 'studio' ? 'timetableStudio' : 'timetable';
+    case 'teaching-diary':
+      return 'teachingDiary';
     case 'conversations':
       return 'conversations';
     case 'chat':

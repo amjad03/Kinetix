@@ -115,7 +115,7 @@ export function courseFilePdf(d: CourseFileData): Buffer {
   if (d.checklist?.length) {
     const done = d.checklist.filter((c) => c.done).length;
     f.heading(`Course file checklist (${done} of ${d.checklist.length})`);
-    for (const c of d.checklist) f.line(`${c.done ? '[x]' : '[ ]'} ${c.item}`, { color: c.done ? undefined : '#a33' });
+    for (const c of d.checklist) f.line(`${c.done ? '[x]' : '[ ]'} ${c.item}`, { color: c.done ? undefined : '#aa3333' });
   }
   if (d.outcomes?.length) {
     f.heading('Course outcomes');
