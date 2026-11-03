@@ -129,7 +129,14 @@ export async function hostelPass(c: Ctx): Promise<void> {
   await k.q("update hostel_deposits set status = 'refunded', damages_paise = $2, refunded_paise = $3, refunded_on = $4, note = 'Broken study chair' where allotment_id = $1", [leaver.allotmentId, damages, rupees(5000) - damages, vacatedOn]);
   const [credit] = await k.ins<{ id: string }>('student_credits', [{ studentId: leaver.studentId, amountPaise: net, kind: 'adjustment', note: `Hostel vacate settlement ${vacatedOn}`, createdBy: warden }]);
   await k.ins('hostel_settlements', [{ allotmentId: leaver.allotmentId, studentId: leaver.studentId, vacatedOn, monthlyFeePaise: fee, daysUsed: used, daysInMonth: dim, prorataRefundPaise: prorata, depositPaise: rupees(5000), damagesPaise: damages, duesPaise: dues, netRefundPaise: net, status: 'pending', ledgerPostedAt: at(addDays(vacatedOn, 1)), ledgerRef: `credit:${credit.id}`, createdBy: warden }], { returning: false });
+  await k.q('update mess_subscriptions set ended_on = $3 where tenant_id = $1 and student_id = $2 and ended_on is null', [T, leaver.studentId, vacatedOn]);
   const stay = residents.filter((x) => x.allotmentId !== leaver.allotmentId);
+
+  // The applications the residents were allotted on in July (merit, distance and category), for the reports.
+  const resCats = ['general', 'general', 'obc', 'general', 'sc', 'general', 'obc', 'ews', 'general', 'st', 'general', 'pwd'];
+  await k.ins('hostel_applications', residents.map((x, i) => ({ number: `HA-2026-R${String(i + 1).padStart(3, '0')}`, studentId: x.studentId, hostelId: x.gender === 'girls' ? girlsH.id : boysH.id, gender: x.gender === 'girls' ? 'female' : 'male', distanceKm: 40 + ((i * 37) % 380), meritScore: 60 + ((i * 13) % 38), category: resCats[i % resCats.length], status: 'allotted', priority: 100 + ((i * 17) % 80), allotmentId: x.allotmentId, decidedBy: warden, decidedAt: at('2026-07-25'), createdAt: at('2026-07-10'), createdBy: x.userId ?? warden })), { returning: false });
+  // Complaints were raised before they were resolved: open ones in the last days, resolved ones a week back.
+  await k.q("update hostel_complaints set created_at = coalesce(resolved_at - interval '2 days 4 hours', now() - interval '3 days') where tenant_id = $1", [T]);
 
   // ---- gate passes awaiting the family and the warden, the QR gate log, late entries -----------------------------
   await k.q("update module_settings set settings = jsonb_set(settings, '{rules}', (settings->'rules') || $2::jsonb) where tenant_id = $1 and module = 'hostel'", [T, JSON.stringify({ outpassNeedsParentApproval: true, lateEntryAlertParents: true, lateEntryEscalateAfter: 3, allotCategoryPoints: 'sc:20, st:20, obc:10, ews:10, pwd:25', allotNeedsUndertaking: false, cautionDepositPaise: rupees(5000) })]);

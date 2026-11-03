@@ -9,9 +9,10 @@ import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../../widgets/load_view.dart';
 import 'gate_pass_screen.dart';
+import 'hostel_life_screens.dart';
 
-/// Everything hostel: applying for a seat, the room, out-passes, mess leave, room change or vacate
-/// requests, and the monthly mess bills.
+/// Everything hostel: applying for a seat, the room, the gate QR, out-passes, complaints, the mess menu, mess leave,
+/// room change or vacate requests, the monthly mess bills and the anti-ragging helplines.
 class HostelScreen extends StatefulWidget {
   const HostelScreen({super.key, required this.api, required this.studentId, this.now});
 
@@ -160,6 +161,12 @@ class _HostelScreenState extends State<HostelScreen> {
             await GatePassScreen.open(context, widget.api, widget.studentId);
             await _load();
           }),
+          KxActionTile(key: const Key('hsGateQr'), icon: Icons.qr_code_2, label: l.hlGateQr, onTap: () async {
+            await GateQrScreen.open(context, widget.api, widget.studentId);
+            await _load();
+          }),
+          KxActionTile(key: const Key('hsComplaints'), icon: Icons.report_problem_outlined, label: l.hlComplaints, onTap: () => HostelComplaintsScreen.open(context, widget.api, widget.studentId)),
+          KxActionTile(key: const Key('hsMessMenu'), icon: Icons.restaurant_menu, label: l.hlMessMenu, onTap: () => MessMenuScreen.open(context, widget.api)),
           KxActionTile(key: const Key('hsMessLeave'), icon: Icons.no_meals_outlined, label: l.hsMessLeave, onTap: () => _sheet(_MessLeaveSheet(api: widget.api, studentId: widget.studentId, today: _today), l.hsMessLeaveSent)),
           KxActionTile(
             key: const Key('hsChangeRoom'),
@@ -198,6 +205,8 @@ class _HostelScreenState extends State<HostelScreen> {
             ),
           ),
       ],
+      const SizedBox(height: Kx.s12),
+      HostelSafetyCard(api: widget.api),
     ];
   }
 

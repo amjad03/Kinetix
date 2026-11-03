@@ -18,6 +18,7 @@ import 'campus_life.dart';
 import 'campus_services.dart';
 import 'forum.dart';
 import 'growth.dart';
+import 'hostel_life.dart';
 import 'learning.dart';
 import 'lms.dart';
 import 'campus_extras.dart';
@@ -195,6 +196,21 @@ abstract class StudentApi implements AnnouncementSource {
 
   /// The hostel bed and gate passes (`GET /v1/hostel/students/:id`).
   Future<HostelView> hostel(String studentId);
+
+  /// My gate QR, shown at the hostel gate (`GET /v1/hostel/students/:id/gate-qr`).
+  Future<GateQr> gateQr(String studentId);
+
+  /// Complaints about my room and the hostel, newest first (`GET /v1/hostel/complaints?studentId=`).
+  Future<List<HostelComplaint>> hostelComplaints(String studentId);
+
+  /// Tells the warden about a problem; it is about my own room (`POST /v1/hostel/complaints`).
+  Future<HostelComplaint> raiseHostelComplaint(String studentId, {required String category, required String description});
+
+  /// The week's mess menu (`GET /v1/hostel/mess/menu`).
+  Future<List<MenuMeal>> messMenu();
+
+  /// The anti-ragging helplines and the hostel's committees (`GET /v1/hostel/safety`).
+  Future<HostelSafety> hostelSafety();
 
   /// The canteen wallet and recent meals (`GET /v1/canteen/students/:id`).
   Future<WalletView> wallet(String studentId);
@@ -876,6 +892,23 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<HostelView> hostel(String studentId) async => HostelView.fromJson(await _send('GET', '/v1/hostel/students/$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<GateQr> gateQr(String studentId) async => GateQr.fromJson(await _send('GET', '/v1/hostel/students/$studentId/gate-qr') as Map<String, dynamic>);
+
+  @override
+  Future<List<HostelComplaint>> hostelComplaints(String studentId) async =>
+      [for (final c in await _send('GET', '/v1/hostel/complaints?studentId=$studentId') as List) HostelComplaint.fromJson((c as Map).cast<String, dynamic>())];
+
+  @override
+  Future<HostelComplaint> raiseHostelComplaint(String studentId, {required String category, required String description}) async =>
+      HostelComplaint.fromJson(await _send('POST', '/v1/hostel/complaints', body: {'studentId': studentId, 'category': category, 'description': description}) as Map<String, dynamic>);
+
+  @override
+  Future<List<MenuMeal>> messMenu() async => [for (final m in await _send('GET', '/v1/hostel/mess/menu') as List) MenuMeal.fromJson((m as Map).cast<String, dynamic>())];
+
+  @override
+  Future<HostelSafety> hostelSafety() async => HostelSafety.fromJson(await _send('GET', '/v1/hostel/safety') as Map<String, dynamic>);
 
   @override
   Future<GatePass> requestGatePass(String studentId, {required String reason, required String destination, required DateTime backAt}) async => GatePass.fromJson(

@@ -20,6 +20,7 @@ import '../core/campus_life.dart';
 import '../core/campus_services.dart';
 import '../core/forum.dart';
 import '../core/growth.dart';
+import '../core/hostel_life.dart';
 import '../core/learning.dart';
 import '../core/lms.dart';
 import '../core/campus_extras.dart';
@@ -1489,6 +1490,52 @@ class FakeStudentApi implements StudentApi {
     calls.add('hostel $studentId');
     if (hostelError != null) throw hostelError!;
     return hostelView;
+  }
+
+  @override
+  Future<GateQr> gateQr(String studentId) async {
+    calls.add('gateQr $studentId');
+    if (hostelError != null) throw hostelError!;
+    return const GateQr(code: 'HG1:demoGateToken0123456789');
+  }
+
+  List<HostelComplaint> complaints = [
+    HostelComplaint(id: 'hc1', category: 'maintenance', description: 'Ceiling fan makes a noise at night', status: 'resolved', resolution: 'Fan bearing replaced', createdAt: DateTime(2026, 9, 28, 20), resolvedAt: DateTime(2026, 9, 30, 11)),
+  ];
+
+  @override
+  Future<List<HostelComplaint>> hostelComplaints(String studentId) async {
+    calls.add('hostelComplaints $studentId');
+    if (hostelError != null) throw hostelError!;
+    return complaints;
+  }
+
+  @override
+  Future<HostelComplaint> raiseHostelComplaint(String studentId, {required String category, required String description}) async {
+    calls.add('raiseComplaint $category $description');
+    final c = HostelComplaint(id: 'hc${complaints.length + 1}', category: category, description: description, status: 'open', createdAt: DateTime(2026, 10, 5, 9));
+    complaints = [c, ...complaints];
+    return c;
+  }
+
+  List<MenuMeal> menu = const [
+    MenuMeal(dayOfWeek: 1, meal: 'breakfast', items: 'Idli, sambar, chutney'),
+    MenuMeal(dayOfWeek: 1, meal: 'lunch', items: 'Rice, sambar, beans palya, curd'),
+    MenuMeal(dayOfWeek: 1, meal: 'dinner', items: 'Chapati, dal, rice'),
+    MenuMeal(dayOfWeek: 2, meal: 'breakfast', items: 'Masala dosa, coconut chutney'),
+    MenuMeal(dayOfWeek: 2, meal: 'lunch', items: 'Bisi bele bath, boondi raita'),
+  ];
+
+  @override
+  Future<List<MenuMeal>> messMenu() async {
+    calls.add('messMenu');
+    return menu;
+  }
+
+  @override
+  Future<HostelSafety> hostelSafety() async {
+    calls.add('hostelSafety');
+    return const HostelSafety(nationalHelpline: '1800-180-5522', nationalEmail: 'helpline@antiragging.in', committees: [SafetyContact(purpose: 'anti_ragging', name: 'Anti-Ragging Committee', helpline: '+91 80 2839 4400')]);
   }
 
   @override

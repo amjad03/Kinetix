@@ -285,7 +285,7 @@ class NightMark {
 }
 
 class HostelView {
-  const HostelView({required this.resident, this.block, this.room, this.bed, this.passes = const [], this.nights = const []});
+  const HostelView({required this.resident, this.block, this.room, this.bed, this.passes = const [], this.nights = const [], this.gateLog = const [], this.outNow = false});
 
   factory HostelView.fromJson(Map<String, dynamic> j) {
     final bed = j['bed'] as Map?;
@@ -296,6 +296,8 @@ class HostelView {
       bed: bed?['bed'] as String?,
       passes: [for (final p in (j['passes'] as List? ?? const [])) GatePass.fromJson((p as Map).cast<String, dynamic>())],
       nights: [for (final n in (j['nights'] as List? ?? const [])) NightMark.fromJson((n as Map).cast<String, dynamic>())],
+      gateLog: [for (final g in (j['gateLog'] as List? ?? const [])) GateMove.fromJson((g as Map).cast<String, dynamic>())],
+      outNow: j['outNow'] == true,
     );
   }
 
@@ -305,6 +307,37 @@ class HostelView {
   final String? bed;
   final List<GatePass> passes;
   final List<NightMark> nights;
+
+  /// Every move through the hostel gate, newest first.
+  final List<GateMove> gateLog;
+
+  /// The last move was out.
+  final bool outNow;
+}
+
+/// One move through the hostel gate: out or in, by QR or entered by hand, late or on time.
+class GateMove {
+  const GateMove({required this.id, required this.direction, required this.at, this.method = 'qr', this.minutesLate = 0, this.withPass = false});
+
+  factory GateMove.fromJson(Map<String, dynamic> j) => GateMove(
+    id: '${j['id']}',
+    direction: '${j['direction']}',
+    at: DateTime.parse('${j['at']}').toLocal(),
+    method: '${j['method'] ?? 'qr'}',
+    minutesLate: (j['minutesLate'] as num? ?? 0).toInt(),
+    withPass: j['withPass'] == true,
+  );
+
+  final String id;
+
+  /// out or in.
+  final String direction;
+  final DateTime at;
+
+  /// qr or manual.
+  final String method;
+  final int minutesLate;
+  final bool withPass;
 }
 
 // ── Canteen wallet (GET /v1/canteen/students/:id, POST …/topup-checkout, POST /v1/canteen/topups/:id/confirm) ──

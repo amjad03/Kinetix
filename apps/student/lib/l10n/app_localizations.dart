@@ -63,8 +63,7 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('kn'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
 
   /// No description provided for @today.
   ///
@@ -9873,10 +9866,249 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name}\'s timetable'**
   String ttChildTimetable(String name);
+
+  /// No description provided for @hlGateQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Gate QR'**
+  String get hlGateQr;
+
+  /// No description provided for @hlGateQrHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this at the hostel gate as you go out and come in. Coming in after curfew is recorded as late and your family is told.'**
+  String get hlGateQrHelp;
+
+  /// No description provided for @hlYouAreOut.
+  ///
+  /// In en, this message translates to:
+  /// **'You are out'**
+  String get hlYouAreOut;
+
+  /// No description provided for @hlYouAreIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You are in the hostel'**
+  String get hlYouAreIn;
+
+  /// No description provided for @hlRecentMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent moves'**
+  String get hlRecentMoves;
+
+  /// No description provided for @hlNoMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'No moves through the gate yet.'**
+  String get hlNoMoves;
+
+  /// No description provided for @hlOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Out'**
+  String get hlOut;
+
+  /// No description provided for @hlIn.
+  ///
+  /// In en, this message translates to:
+  /// **'In'**
+  String get hlIn;
+
+  /// No description provided for @hlByHand.
+  ///
+  /// In en, this message translates to:
+  /// **'Entered by hand'**
+  String get hlByHand;
+
+  /// No description provided for @hlOnPass.
+  ///
+  /// In en, this message translates to:
+  /// **'On an out-pass'**
+  String get hlOnPass;
+
+  /// No description provided for @hlComplaints.
+  ///
+  /// In en, this message translates to:
+  /// **'Complaints'**
+  String get hlComplaints;
+
+  /// No description provided for @hlRaise.
+  ///
+  /// In en, this message translates to:
+  /// **'Raise a complaint'**
+  String get hlRaise;
+
+  /// No description provided for @hlNoComplaints.
+  ///
+  /// In en, this message translates to:
+  /// **'No complaints. Tell the warden here when something in your room needs fixing.'**
+  String get hlNoComplaints;
+
+  /// No description provided for @hlCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'What is it about?'**
+  String get hlCategory;
+
+  /// No description provided for @hlCatMaintenance.
+  ///
+  /// In en, this message translates to:
+  /// **'Repairs'**
+  String get hlCatMaintenance;
+
+  /// No description provided for @hlCatFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get hlCatFood;
+
+  /// No description provided for @hlCatCleanliness.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleanliness'**
+  String get hlCatCleanliness;
+
+  /// No description provided for @hlCatSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety'**
+  String get hlCatSafety;
+
+  /// No description provided for @hlCatOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get hlCatOther;
+
+  /// No description provided for @hlDescribe.
+  ///
+  /// In en, this message translates to:
+  /// **'What is wrong?'**
+  String get hlDescribe;
+
+  /// No description provided for @hlDescribeShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Say what is wrong, in a few words.'**
+  String get hlDescribeShort;
+
+  /// No description provided for @hlComplaintSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Complaint sent to the warden.'**
+  String get hlComplaintSent;
+
+  /// No description provided for @hlOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get hlOpen;
+
+  /// No description provided for @hlInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Being worked on'**
+  String get hlInProgress;
+
+  /// No description provided for @hlResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get hlResolved;
+
+  /// No description provided for @hlMessMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Mess menu'**
+  String get hlMessMenu;
+
+  /// No description provided for @hlToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get hlToday;
+
+  /// No description provided for @hlNoMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'The mess has not put up this week’s menu yet.'**
+  String get hlNoMenu;
+
+  /// No description provided for @hlBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get hlBreakfast;
+
+  /// No description provided for @hlLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get hlLunch;
+
+  /// No description provided for @hlSnacks.
+  ///
+  /// In en, this message translates to:
+  /// **'Snacks'**
+  String get hlSnacks;
+
+  /// No description provided for @hlDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get hlDinner;
+
+  /// No description provided for @hlSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety and helplines'**
+  String get hlSafety;
+
+  /// No description provided for @hlNationalHelpline.
+  ///
+  /// In en, this message translates to:
+  /// **'National anti-ragging helpline'**
+  String get hlNationalHelpline;
+
+  /// No description provided for @hlPurposeAntiRagging.
+  ///
+  /// In en, this message translates to:
+  /// **'Anti-ragging committee'**
+  String get hlPurposeAntiRagging;
+
+  /// No description provided for @hlPurposeSquad.
+  ///
+  /// In en, this message translates to:
+  /// **'Anti-ragging squad'**
+  String get hlPurposeSquad;
+
+  /// No description provided for @hlPurposeMess.
+  ///
+  /// In en, this message translates to:
+  /// **'Mess committee'**
+  String get hlPurposeMess;
+
+  /// No description provided for @hlPurposeDiscipline.
+  ///
+  /// In en, this message translates to:
+  /// **'Discipline committee'**
+  String get hlPurposeDiscipline;
+
+  /// No description provided for @hlCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get hlCall;
+
+  /// No description provided for @hlLateBy.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min late'**
+  String hlLateBy(int n);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -9885,8 +10117,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

@@ -322,8 +322,9 @@ export class HostelPassController {
       const from = `${startYear}-06-01`;
       const to = `${startYear + 1}-05-31`;
       const label = `${startYear}-${String((startYear + 1) % 100).padStart(2, '0')}`;
-      // The gender a resident is counted under: their hostel application, else their admission application.
-      const gender = sql.raw(`coalesce((select nullif(ha.gender, '') from hostel_applications ha where ha.student_id = a.student_id order by ha.created_at desc limit 1), (select ap.gender from students s2 join applications ap on ap.id = s2.application_id where s2.id = a.student_id), '')`);
+      // The gender a resident is counted under: their hostel application, else their admission application, else the
+      // block's (a boys' block houses men, a girls' block women; a mixed block leaves it unknown).
+      const gender = sql.raw(`coalesce((select nullif(ha.gender, '') from hostel_applications ha where ha.student_id = a.student_id order by ha.created_at desc limit 1), (select nullif(ap.gender, '') from students s2 join applications ap on ap.id = s2.application_id where s2.id = a.student_id), case k.gender when 'boys' then 'male' when 'girls' then 'female' end, '')`);
       const byType = await tx.execute<{ type: string; hostels: number; capacity: number; residing: number; male: number; female: number; other: number }>(sql`
         with h as (select h.id, case h.gender when 'boys' then 'Boys' when 'girls' then 'Girls' else 'Co-ed' end as type from hostels h),
         cap as (select k.hostel_id, count(b.id)::int as beds from hostel_blocks k join hostel_rooms r on r.block_id = k.id join hostel_beds b on b.room_id = r.id where r.status <> 'closed' group by k.hostel_id),
