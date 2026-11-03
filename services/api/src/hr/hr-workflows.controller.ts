@@ -33,7 +33,7 @@ const SettingsBody = z.object({
   }),
   loans: z.object({ maxInstallments: z.number().int().min(1).max(120), maxAdvancePaise: z.number().int().min(0), maxLoanPaise: z.number().int().min(0) }),
   /** Omitted: left as they are. */
-  reimbursementLimits: z.record(z.enum(['travel', 'conference', 'books', 'telephone', 'medical', 'fuel', 'other']), z.number().int().min(0).max(1_00_00_000_00)).optional(),
+  reimbursementLimits: z.partialRecord(z.enum(['travel', 'conference', 'books', 'telephone', 'medical', 'fuel', 'other']), z.number().int().min(0).max(1_00_00_000_00)).optional(),
   vacations: z
     .array(z.object({ name: z.string().trim().min(1).max(60), from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).refine((v) => v.to >= v.from, 'A vacation ends on or after it starts'))
     .max(12)
