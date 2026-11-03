@@ -71,7 +71,7 @@ const ENDPOINTS = [
   ['teacher homework', 'teacher', () => '/v1/teacher/homework'],
   ['teacher me', 'teacher', () => '/v1/me'],
   ['attendance classes', 'teacher', () => '/v1/attendance-desk/classes'],
-  ['attendance day', 'principal', () => `/v1/attendance-desk/day?date=${today}`],
+  ['attendance day', 'principal', () => `/v1/attendance-desk/day?sectionId=${sectionId}&date=${today}`],
   ['attendance dashboard', 'principal', () => '/v1/attendance-desk/dashboard'],
   ['attendance register', 'principal', () => `/v1/attendance-desk/register?sectionId=${sectionId}`],
   ['analytics kpis', 'principal', () => '/v1/analytics/kpis'],
