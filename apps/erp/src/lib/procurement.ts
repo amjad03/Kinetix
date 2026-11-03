@@ -45,6 +45,10 @@ export interface PoDetail {
   id: string;
   number: string;
   status: string;
+  /** The value before GST, the GST, and whether it is IGST (a vendor in another state). */
+  taxablePaise?: number | null;
+  taxPaise?: number;
+  interState?: boolean;
   approvalStatus: 'not_required' | 'pending' | 'approved' | 'rejected';
   purchaseMode: string;
   gemRef: string | null;

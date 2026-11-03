@@ -49,6 +49,11 @@ export function ItemRecords({ meta, page, state, extraParams, stores, items, dep
     { id: 'reorder', header: t('inv.reorderLevel'), sortKey: 'reorder', align: 'right', hideBelow: 'md', cell: (r) => fmt.number(n(r, 'reorderLevel')) },
     { id: 'reorderQty', header: t('ivd.reorderQty'), align: 'right', defaultHidden: true, cell: (r) => fmt.number(n(r, 'reorderQty')) },
     { id: 'lastPrice', header: t('ivd.lastPrice'), align: 'right', defaultHidden: true, cell: (r) => fmt.rupees(Math.round(n(r, 'lastPrice') * 100)) },
+    { id: 'hsn', header: t('ipass.c.hsn'), sortKey: 'hsn', hideBelow: 'lg', cell: (r) => s(r, 'hsnCode') },
+    { id: 'gst', header: t('ipass.c.gst'), align: 'right', hideBelow: 'lg', cell: (r) => `${Number(r.gstRatePct ?? 0)}%` },
+    { id: 'type', header: t('ipass.c.type'), defaultHidden: true, cell: (r) => t(`rk.o.inv-items.itemType.${s(r, 'itemType') as 'consumable'}`) },
+    { id: 'batch', header: t('ipass.c.batch'), defaultHidden: true, cell: (r) => (r.batchTracked ? t('ipass.yes') : t('ipass.no')) },
+    { id: 'value', header: t('ipass.c.stockValue'), align: 'right', hideBelow: 'md', cell: (r) => fmt.rupees(Math.round(n(r, 'stockValue') * 100)) },
   ];
   return (
     <>

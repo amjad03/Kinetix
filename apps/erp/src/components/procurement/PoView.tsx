@@ -159,6 +159,7 @@ export function PoView({ po, canStore, canApprove, me }: { po: PoDetail; canStor
         status={{ label: statusLabel(t, po.status), tone: statusTone(po.status) }}
         facts={[
           { label: t('ops.f.amount'), value: fmt.rupees(po.totalPaise) },
+          { label: po.interState ? t('ipass.c.igst') : `${t('ipass.c.cgst')} + ${t('ipass.c.sgst')}`, value: fmt.rupees(po.taxPaise ?? 0) },
           { label: t('ivd.purchaseMode'), value: t(`ivd.mode.${po.purchaseMode as 'direct'}`) },
           { label: t('inv.store'), value: po.store },
           { label: t('ivd.department'), value: po.department ?? '—' },
