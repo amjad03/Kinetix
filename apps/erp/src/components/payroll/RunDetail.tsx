@@ -59,6 +59,9 @@ export function RunDetail({ run, canApprove }: { run: PayrollRunDetail; canAppro
       {can.exports && (
         <div className="flex flex-row gap-2 flex-wrap mt-6">
           <Button variant="outlined" startIcon={<Download />} href={downloadUrl.bank(run.id)}>{t('pay.dl.bank')}</Button>
+          {(['sbi', 'canara', 'hdfc'] as const).map((b) => (
+            <Button key={b} variant="outlined" startIcon={<Download />} href={downloadUrl.bankFile(run.id, b)}>{t(`hp.dl.bank.${b}`)}</Button>
+          ))}
           {statutory.map((k) => (
             <Button key={k} variant="outlined" startIcon={<Download />} href={downloadUrl.statutory(run.id, k)}>{t((k === 'lwf' ? 'hk.dl.lwf' : `pay.dl.${k}`) as MessageKey)}</Button>
           ))}

@@ -1,7 +1,7 @@
 /**
  * Re-encrypts every value kept under SECRETS_ENCRYPTION_KEY with the current key: institutions' and fee accounts' payment gateway secrets,
- * connector settings, SSO client secrets, offline pairing signing keys, staff two-factor secrets, staff Aadhaar and bank
- * accounts, and the encrypted health and counselling fields (common/sensitive.ts; plain values from before encryption are
+ * connector settings, SSO client secrets, offline pairing signing keys, staff two-factor secrets, staff Aadhaar, bank
+ * accounts, PAN and UAN (hr/staff-ids.ts), and the encrypted health and counselling fields (common/sensitive.ts; plain values from before encryption are
  * sealed on the way). Rotation: set the new key with a higher SECRETS_ENCRYPTION_KEY_VERSION, keep the old one in
  * SECRETS_ENCRYPTION_OLD_KEYS ("1:<base64>"), deploy, run this, then remove the old key. Runs as the owner role
  * (DATABASE_URL) because it touches every institution. Safe to run again.
@@ -20,6 +20,10 @@ import { tenantSigningKeys } from './schema-assist.js';
 import { userMfa } from './schema-foundation.js';
 import { feeChallans } from './schema-fee-depth.js';
 import { resealNumber } from '../fee-depth/bank-numbers.js';
+import { resealStaffIds } from '../hr/staff-ids.js';
+import { debitAccountAad } from '../hr/bank-files.js';
+import { taxDeclarations } from './schema-hr3.js';
+import { landlordAad } from '../hr/tax-declarations.service.js';
 
 type Db = NodePgDatabase<typeof s>;
 
@@ -93,6 +97,25 @@ export async function rotateAll(db: Db, box: SecretBox): Promise<Record<string, 
       const changed = aadhaarEnc !== r.aadhaarEnc || bankAccountEnc !== r.bankAccountEnc;
       count('staff_profiles', changed);
       if (changed) await db.update(s.staffProfiles).set({ aadhaarEnc, bankAccountEnc }).where(eq(s.staffProfiles.userId, r.userId));
+    });
+  }
+
+  // Staff PAN and UAN (hr/staff-ids.ts): plain values from before migration 0198 are sealed on the way.
+  out.staff_identifiers = await resealStaffIds(db, box);
+  // The institution's salary debit account (hr/bank-files.ts) and landlords' PANs on investment declarations.
+  for (const r of await db.select({ tenantId: s.payrollSettings.tenantId, b: s.payrollSettings.bankFile }).from(s.payrollSettings)) {
+    if (!r.b?.debitAccountEnc) continue;
+    await row('payroll_settings', async () => {
+      const next = reseal(debitAccountAad(r.tenantId), r.b.debitAccountEnc, box);
+      count('payroll_settings', next !== r.b.debitAccountEnc);
+      if (next !== r.b.debitAccountEnc) await db.update(s.payrollSettings).set({ bankFile: { ...r.b, debitAccountEnc: next } }).where(eq(s.payrollSettings.tenantId, r.tenantId));
+    });
+  }
+  for (const r of await db.select({ id: taxDeclarations.id, tenantId: taxDeclarations.tenantId, enc: taxDeclarations.landlordPanEnc }).from(taxDeclarations).where(sql`${taxDeclarations.landlordPanEnc} is not null`)) {
+    await row('tax_declarations', async () => {
+      const next = reseal(landlordAad(r.tenantId, r.id), r.enc, box);
+      count('tax_declarations', next !== r.enc);
+      if (next !== r.enc) await db.update(taxDeclarations).set({ landlordPanEnc: next }).where(eq(taxDeclarations.id, r.id));
     });
   }
 

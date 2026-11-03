@@ -16,6 +16,7 @@ import { leaveSteps, linearSteps, runSteps, type ServiceBookEntry, type StaffLoa
 import type { Appraisal, AppraisalCategory, SeparationDetail, TrainingRecord } from '@/lib/hr-lifecycle';
 import type { JobApplicant, JobOpening, LeaveRequest, PayrollRunDetail, Payslip, StaffOverview, StaffProfile } from '@/lib/hr-types';
 import { formatRupees } from '@/lib/money';
+import { SettlementCard } from '@/components/payroll/PayPass';
 
 function useFmt() {
   const { t, locale } = useI18n();
@@ -581,6 +582,7 @@ export function ExitRecord({ s, activity }: { s: SeparationDetail; activity: Act
       secondary={<LinkButton href="/hr/exit">{t('hl.tab.exit')}</LinkButton>}
       overview={<Details items={[[t('hr.leave.reason'), s.reason], [t('hf.exit.settlementNote'), s.settlementNote ?? '–'], [t('hf.exit.relieved'), d(s.relievedOn)]]} />}
       related={[
+        ...(s.settlementLines?.length ? [{ value: 'settlement', label: t('hp.ff.title'), count: s.settlementLines.length, content: <SettlementCard separationId={s.id} saved={s.settlementLines} editable={false} /> }] : []),
         {
           value: 'clearance',
           label: t('hl.exit.clearance'),

@@ -232,3 +232,101 @@ class PayslipInfo {
   final List<PayslipLineInfo> earnings, deductions;
   final int grossPaise, deductionsPaise, netPaise;
 }
+
+/// A reimbursement claim against a bill (`/v1/hr/reimbursements`).
+class ClaimInfo {
+  const ClaimInfo({required this.id, required this.claimNo, required this.category, required this.spentOn, required this.amountPaise, this.approvedPaise, required this.description, required this.hasBill, required this.status, this.payMonth, this.decisionNote = ''});
+
+  factory ClaimInfo.fromJson(Map<String, dynamic> j) => ClaimInfo(
+    id: j['id'] as String,
+    claimNo: j['claimNo'] as String,
+    category: j['category'] as String,
+    spentOn: j['spentOn'] as String,
+    amountPaise: (j['amountPaise'] as num).toInt(),
+    approvedPaise: (j['approvedPaise'] as num?)?.toInt(),
+    description: j['description'] as String? ?? '',
+    hasBill: j['hasBill'] as bool? ?? false,
+    status: j['status'] as String,
+    payMonth: j['payMonth'] as String?,
+    decisionNote: j['decisionNote'] as String? ?? '',
+  );
+
+  final String id;
+  final String claimNo;
+  /// travel | conference | books | telephone | medical | fuel | other
+  final String category;
+  final String spentOn;
+  final int amountPaise;
+  final int? approvedPaise;
+  final String description;
+  final bool hasBill;
+  /// submitted | approved | paid | rejected | cancelled
+  final String status;
+  final String? payMonth;
+  final String decisionNote;
+}
+
+/// One investment on a declaration and its proof.
+class TaxItemInfo {
+  const TaxItemInfo({this.id, required this.section, required this.label, required this.declaredPaise, this.proofStatus = 'none', this.acceptedPaise});
+
+  factory TaxItemInfo.fromJson(Map<String, dynamic> j) => TaxItemInfo(
+    id: j['id'] as String?,
+    section: j['section'] as String,
+    label: j['label'] as String? ?? '',
+    declaredPaise: (j['declaredPaise'] as num).toInt(),
+    proofStatus: j['proofStatus'] as String? ?? 'none',
+    acceptedPaise: (j['acceptedPaise'] as num?)?.toInt(),
+  );
+
+  final String? id;
+  /// 80C | 80CCD1B | 80D | 80D_PARENTS | 80D_SENIOR_PARENTS | 80E | 80G | 80TTA | 24B
+  final String section;
+  final String label;
+  final int declaredPaise;
+  /// none | submitted | accepted | rejected
+  final String proofStatus;
+  final int? acceptedPaise;
+
+  Map<String, dynamic> toJson() => {'section': section, 'label': label, 'declaredPaise': declaredPaise};
+}
+
+/// The caller's investment declaration (Form 12BB) for a financial year (`/v1/hr/tax-declarations/me`).
+class TaxDeclarationInfo {
+  const TaxDeclarationInfo({required this.fy, required this.fyLabel, required this.regime, required this.status, required this.rentMonthlyPaise, required this.rentMonths, required this.items, required this.oldTaxPaise, required this.newTaxPaise, this.landlordPan, this.decisionNote = '', this.version = 0});
+
+  factory TaxDeclarationInfo.fromJson(Map<String, dynamic> j) {
+    final est = (j['estimate'] as Map<String, dynamic>?) ?? const {};
+    return TaxDeclarationInfo(
+      fy: (j['fy'] as num).toInt(),
+      fyLabel: j['fyLabel'] as String? ?? '',
+      regime: j['regime'] as String,
+      status: j['status'] as String,
+      rentMonthlyPaise: (j['rentMonthlyPaise'] as num?)?.toInt() ?? 0,
+      rentMonths: (j['rentMonths'] as num?)?.toInt() ?? 0,
+      items: [for (final i in (j['items'] as List? ?? const [])) TaxItemInfo.fromJson(i as Map<String, dynamic>)],
+      oldTaxPaise: (est['oldPaise'] as num?)?.toInt() ?? 0,
+      newTaxPaise: (est['newPaise'] as num?)?.toInt() ?? 0,
+      landlordPan: j['landlordPan'] as String?,
+      decisionNote: j['decisionNote'] as String? ?? '',
+      version: (j['version'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  final int fy;
+  final String fyLabel;
+  /// old | new
+  final String regime;
+  /// draft | submitted | approved | proofs_submitted | verified | rejected
+  final String status;
+  final int rentMonthlyPaise;
+  final int rentMonths;
+  final List<TaxItemInfo> items;
+  final int oldTaxPaise;
+  final int newTaxPaise;
+  final String? landlordPan;
+  final String decisionNote;
+  final int version;
+
+  bool get editable => status == 'draft' || status == 'rejected';
+}

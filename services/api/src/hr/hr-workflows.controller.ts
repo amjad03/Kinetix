@@ -32,11 +32,17 @@ const SettingsBody = z.object({
     lateMarksPerHalfDay: z.number().int().min(0).max(31).default(3),
   }),
   loans: z.object({ maxInstallments: z.number().int().min(1).max(120), maxAdvancePaise: z.number().int().min(0), maxLoanPaise: z.number().int().min(0) }),
+  /** Omitted: left as they are. */
+  reimbursementLimits: z.partialRecord(z.enum(['travel', 'conference', 'books', 'telephone', 'medical', 'fuel', 'other']), z.number().int().min(0).max(1_00_00_000_00)).optional(),
+  vacations: z
+    .array(z.object({ name: z.string().trim().min(1).max(60), from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).refine((v) => v.to >= v.from, 'A vacation ends on or after it starts'))
+    .max(12)
+    .optional(),
 });
 const LoanBody = z.object({ userId: z.uuid().optional(), kind: z.enum(['advance', 'loan']), amountPaise: z.number().int().min(100_00), installments: z.number().int().min(1).max(120), startMonth: Month, purpose: z.string().trim().min(3).max(300) });
 const DecideBody = z.object({ decision: z.enum(['approve', 'reject']), note: z.string().trim().max(500).default('') });
 const EncashBody = z.object({ userId: z.uuid().optional(), leaveTypeId: z.uuid(), days: z.number().min(0.5).max(365).multipleOf(0.5), payMonth: Month });
-const EntryBody = z.object({ kind: z.enum(['appointment', 'confirmation', 'promotion', 'increment', 'transfer', 'award', 'penalty', 'deputation', 'remark']), onDate: Day, title: z.string().trim().min(2).max(160), details: z.string().trim().max(2000).default(''), orderNo: z.string().trim().max(60).nullish() });
+const EntryBody = z.object({ kind: z.enum(['appointment', 'confirmation', 'promotion', 'increment', 'pay_fixation', 'transfer', 'award', 'penalty', 'deputation', 'remark']), onDate: Day, title: z.string().trim().min(2).max(160), details: z.string().trim().max(2000).default(''), orderNo: z.string().trim().max(60).nullish() });
 const RequisitionBody = z.object({
   title: z.string().trim().min(1).max(120),
   departmentId: z.uuid().nullable().optional(),

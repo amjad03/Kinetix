@@ -35,6 +35,7 @@ import '../work/research_screens.dart';
 import '../work/roster_surveys_clubs.dart';
 import '../work/tasks_screen.dart';
 import 'device_trust_tile.dart';
+import '../hr/tax_claims_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key, required this.state, this.teachingTiles = const [], this.title});
@@ -284,6 +285,14 @@ class ProfileTab extends StatelessWidget {
               subtitle: Text(l.loansBody),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => LoansScreen(api: state.api))),
+            ),
+            ListTile(
+              key: const Key('openTaxClaims'),
+              leading: const Icon(Icons.request_quote_outlined),
+              title: Text(l.taxClaimsTitle),
+              subtitle: Text(l.taxClaimsBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => TaxClaimsScreen(api: state.api))),
             ),
             ListTile(
               key: const Key('openEvidence'),

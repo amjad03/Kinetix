@@ -37,6 +37,8 @@ export const ADJ_KINDS = opts([
   ['bonus', 'Bonus'],
   ['encashment', 'Leave encashment'],
   ['recovery', 'Recovery'],
+  ['reimbursement', 'Reimbursement'],
+  ['guest_hours', 'Guest lectures (hours)'],
 ]);
 const DECISION = opts([
   ['pending', 'Waiting'],
@@ -241,7 +243,7 @@ export class PayrollRecords implements OnModuleInit {
       },
       fields: {
         userId: { label: 'Staff member', type: 'select', schema: z.uuid(), options: staffOptions, required: true, edit: false },
-        kind: { label: 'Kind', type: 'select', schema: sel(ADJ_KINDS.filter((k) => k.value !== 'encashment')), options: ADJ_KINDS.filter((k) => k.value !== 'encashment'), required: true, edit: false },
+        kind: { label: 'Kind', type: 'select', schema: sel(ADJ_KINDS.filter((k) => k.value !== 'encashment' && k.value !== 'reimbursement')), options: ADJ_KINDS.filter((k) => k.value !== 'encashment' && k.value !== 'reimbursement'), required: true, edit: false },
         payMonth: { label: 'Pay month', type: 'text', schema: Month, required: true, help: 'YYYY-MM', apply: (ctx, id, v) => this.pendingSet(ctx, id, { payMonth: String(v) }) },
         amountPaise: { label: 'Amount (₹)', type: 'number', schema: Rupees.refine((v) => v !== null && v > 0, 'Give an amount'), required: true, rowKey: 'amount', apply: (ctx, id, v) => this.pendingSet(ctx, id, { amountPaise: Number(v) }) },
         reason: { label: 'Reason', type: 'textarea', schema: z.string().trim().min(3, 'Give a reason').max(300), required: true, apply: (ctx, id, v) => this.pendingSet(ctx, id, { reason: String(v) }) },

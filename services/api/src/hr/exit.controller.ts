@@ -12,12 +12,25 @@ import { addDays } from './dates.js';
 import { hasAnyRole, HR_ROLES, isHr, STAFF_ROLES } from './hr.access.js';
 import { HrService } from './hr.service.js';
 import { experienceCertificatePdf, relievingLetterPdf } from './letters-pdf.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { texts } from '../notifications/texts.js';
+import { settlementNet, type SettlementLine } from './settlement.js';
+import { SettlementService } from './settlement.service.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
 const ResignBody = z.object({ userId: z.uuid().optional(), reason: z.string().trim().min(3).max(1000), resignedOn: Day.optional(), noticeDays: z.number().int().min(0).max(180).default(30), lastWorkingDay: Day.optional() });
 const AcceptBody = z.object({ lastWorkingDay: Day.optional() });
 const ClearBody = z.object({ status: z.enum(['pending', 'cleared']).default('cleared'), duesPaise: z.number().int().min(0).max(1_000_000_000).default(0), remarks: z.string().trim().max(500).nullable().optional() });
-const SettleBody = z.object({ settlementPaise: z.number().int().min(-1_000_000_000).max(1_000_000_000), note: z.string().trim().min(5).max(3000) });
+/**
+ * Without `settlementPaise` the settlement is worked out (hr/settlement.ts) and stored line by line, with any `extra`
+ * lines HR adds (a bonus owed, a damage recovery); with it, HR's own figure is kept as before.
+ */
+const SettleBody = z.object({
+  settlementPaise: z.number().int().min(-1_000_000_000).max(1_000_000_000).optional(),
+  note: z.string().trim().min(5).max(3000),
+  waiveNotice: z.boolean().default(false),
+  extra: z.array(z.object({ label: z.string().trim().min(2).max(120), kind: z.enum(['earning', 'recovery']), amountPaise: z.number().int().min(1).max(1_000_000_000) })).max(10).default([]),
+});
 
 /** The departments that must sign off, and which roles besides HR may do it. */
 const CLEARANCE: Record<string, RoleName[]> = {
@@ -37,6 +50,8 @@ export class ExitController {
   constructor(
     private readonly db: DbService,
     private readonly hr: HrService,
+    private readonly settlement: SettlementService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   private act = (p: UserPrincipal) => ({ tenantId: p.tenantId, actorType: 'user' as const, actorId: p.userId });
@@ -161,6 +176,13 @@ export class ExitController {
     });
   }
 
+  /** The worked full-and-final settlement (nothing is saved): each line with how it was worked out, and the net. */
+  @Get('separations/:id/settlement/compute')
+  @Auth('user', HR_ROLES)
+  computeSettlement(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Query('waiveNotice') waive?: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => this.settlement.compute(tx, p.tenantId, await this.load(tx, id), waive === '1' || waive === 'true'));
+  }
+
   /** The full-and-final settlement note and net amount (negative means the employee owes the institution). Needs every clearance. */
   @Put('separations/:id/settlement')
   @Auth('user', HR_ROLES)
@@ -171,8 +193,17 @@ export class ExitController {
       const cl = await tx.select().from(exitClearances).where(eq(exitClearances.separationId, id));
       const pending = cl.filter((c) => c.status !== 'cleared').map((c) => c.department);
       if (pending.length) throw new ConflictException(`Clearance pending from: ${pending.join(', ')}`);
-      await tx.update(separations).set({ status: 'settled', settlementPaise: b.settlementPaise, settlementNote: b.note, updatedAt: new Date() }).where(eq(separations.id, id));
-      await audit(tx, { ...this.act(p), action: 'hr.exit_settlement.v1', subjectType: 'separation', subjectId: id, data: { settlementPaise: b.settlementPaise } });
+      let net = b.settlementPaise ?? 0;
+      let lines: SettlementLine[] | null = null;
+      if (b.settlementPaise === undefined) {
+        const worked = await this.settlement.compute(tx, p.tenantId, s, b.waiveNotice);
+        lines = [...worked.lines, ...b.extra.map((x, k) => ({ code: `EXTRA${k + 1}`, label: x.label, kind: x.kind, amountPaise: x.amountPaise, basis: 'Added by HR' }))];
+        net = settlementNet(lines);
+        await this.settlement.closeOut(tx, s, lines);
+      }
+      await tx.update(separations).set({ status: 'settled', settlementPaise: net, settlementNote: b.note, settlementLines: lines, updatedAt: new Date() }).where(eq(separations.id, id));
+      await audit(tx, { ...this.act(p), action: 'hr.exit_settlement.v1', subjectType: 'separation', subjectId: id, before: { settlementPaise: s.settlementPaise }, after: { settlementPaise: net }, data: { lines: lines?.map((l) => ({ code: l.code, amountPaise: l.amountPaise })) ?? null, waiveNotice: b.waiveNotice } });
+      await this.notifications.notifyUsers(tx, [s.userId], { kind: 'payslip', text: texts.settlementReady({ netPaise: net }), data: { separationId: id }, dedupeKey: `settlement:${id}:${net}` });
       return this.detail(tx, id);
     });
   }

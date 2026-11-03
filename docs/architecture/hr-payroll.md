@@ -177,3 +177,20 @@ recycle bin, bulk actions, import and export, history and saved views. The entit
 `staff-transfers`, `delegations` and `payroll-runs`. The staff list adds the bulk actions
 increment and promote. In the ERP, `components/hr/HrList.tsx` renders all of them from
 `components/hr/hr-lists.tsx`. End-to-end tests: `test/hr-depth-kit.e2e.spec.ts`.
+
+## Production pass (migrations 0198–0199)
+
+- **Staff PAN and UAN** are sealed (`hr/staff-ids.ts`; columns `pan_enc`, `uan_enc`, last four in clear). Payslips no
+  longer store them; `exportRows` decrypts per export. `pnpm db:migrate` (built image) and `pnpm secrets:rotate` seal
+  values kept in clear and move sealed ones to the current key; the debit account and landlord PANs rotate too.
+- **Investment declarations** (`tax_declarations`, `tax_declaration_items`): approval and verification write
+  `tax_regime`, `tax_80c_paise` and `tax_other_deductions_paise` on the staff record, which `compute` already reads.
+- **Reimbursements** (`reimbursement_claims`) become approved `payroll_adjustments` of kind `reimbursement` with
+  `taxable` by category and `wage = false` (left out of ESI and PT gross in `computePayslip`).
+- **Pay matrix** (`pay_matrix_levels`, `pay_matrix_moves`; `staff_profiles.pay_basis`, `pay_level_id`, `pay_cell`,
+  `hra_class`, `hourly_rate_paise`): moves write a salary structure through `saveStructure`.
+- **Settlement** lines are stored on `separations.settlement_lines`; `settled-months.ts` keeps payroll from paying a
+  month the settlement paid.
+- **Bank files** (`bank-files.ts`) and the sealed debit account in `payroll_settings.bank_file`.
+- **Careers page**: `job_openings.published`, `eligibility`; public `CareersController` under `/v1/public` (per-IP
+  rate limit).

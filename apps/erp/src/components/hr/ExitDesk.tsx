@@ -1,7 +1,8 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { acceptResignation, recordResignation, relieveEmployee, saveSettlement, setClearance, withdrawResignation } from '@/app/(dashboard)/hr/talent-actions';
+import { acceptResignation, recordResignation, relieveEmployee, setClearance, withdrawResignation } from '@/app/(dashboard)/hr/talent-actions';
+import { SettlementCard } from '@/components/payroll/PayPass';
 import { SectionTitle } from '@/components/PageHeader';
 import { FormField, StatusPill, TextInput, type Tone, FormRow } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
@@ -18,7 +19,6 @@ function Case({ s, run, pending }: { s: SeparationDetail; run: (fn: () => Promis
   const money = (paise: number) => new Intl.NumberFormat(locale === 'en' ? 'en-IN' : locale, { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(paise / 100);
   const [lwd, setLwd] = useState(s.lastWorkingDay);
   const [dues, setDues] = useState<Record<string, string>>(Object.fromEntries(s.clearances.map((c) => [c.department, String(c.duesPaise / 100)])));
-  const [settle, setSettle] = useState({ amount: s.settlementPaise == null ? '' : String(s.settlementPaise / 100), note: s.settlementNote ?? '' });
   const allCleared = s.clearances.length > 0 && s.clearances.every((c) => c.status === 'cleared');
   return (
     <div className="rounded-[12px] border bg-card p-5" data-testid="exit-case">
@@ -79,22 +79,7 @@ function Case({ s, run, pending }: { s: SeparationDetail; run: (fn: () => Promis
 
       {(s.status === 'clearance' || s.status === 'settled') && allCleared && (
         <div className="mt-4">
-          <h6 className="text-sm leading-5 font-medium tracking-[0.1px] mb-2">
-            {t('hl.exit.settlement')}
-          </h6>
-          <div className="flex flex-col gap-3 max-w-[560px]">
-            <FormField label={t('hl.exit.settlementAmount')}>
-              <TextInput type="number" value={settle.amount} onChange={(e) => setSettle({ ...settle, amount: e.target.value })} />
-            </FormField>
-            <FormField label={t('hl.exit.settlementNote')}>
-              <TextInput multiline minRows={3} value={settle.note} onChange={(e) => setSettle({ ...settle, note: e.target.value })} />
-            </FormField>
-            <div>
-              <Button variant="contained" disabled={pending || settle.amount === '' || settle.note.trim().length < 5} onClick={() => run(() => saveSettlement(s.id, Number(settle.amount), settle.note))}>
-                {t('hl.exit.settle')}
-              </Button>
-            </div>
-          </div>
+          <SettlementCard separationId={s.id} saved={s.settlementLines ?? null} editable={s.status === 'clearance' || s.status === 'settled'} />
         </div>
       )}
 

@@ -3,6 +3,7 @@
 // number on screen and the list under it never disagree.
 import { sql, type SQL } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
+import { openStaffId } from '../hr/staff-ids.js';
 
 /** An academic year from 1 June to 31 May, for example 2025-26. `cal` is its first calendar year (publications are dated by calendar year). */
 export interface AcademicYear {
@@ -43,12 +44,15 @@ interface SourceDef {
   query: (y: AcademicYear) => SQL;
   /** How the figure comes from the rows: their count (default), the sum or the mean of a column, or a distinct count. */
   value?: { op: 'count' } | { op: 'sum' | 'avg' | 'median'; col: number; scale?: number } | { op: 'distinct'; col: number };
+  /** The cell holding a staff PAN as "<tenant>|<user>|<stored value>" (TEACHERS' `pan`), decrypted after the query. */
+  staffPan?: number;
 }
 
 /** Teachers in service at some point in the year: active staff holding a teacher or head of department role. */
 const TEACHERS = (y: AcademicYear) => sql`
   select distinct on (sp.user_id) sp.user_id, u.full_name, coalesce(d.name, '') as department, coalesce(dg.name, '') as designation, sp.employment_type,
-         sp.date_of_joining, sp.date_of_leaving, coalesce(nullif(sp.gender, ''), '') as gender, sp.pan
+         sp.date_of_joining, sp.date_of_leaving, coalesce(nullif(sp.gender, ''), '') as gender,
+         sp.tenant_id::text || '|' || sp.user_id::text || '|' || coalesce(sp.pan_enc, '') as pan
   from staff_profiles sp join users u on u.id = sp.user_id join user_roles ur on ur.user_id = sp.user_id and ur.role in ('teacher', 'hod')
   left join departments d on d.id = sp.department_id left join designations dg on dg.id = sp.designation_id
   where coalesce(sp.date_of_joining, ${y.to}::date) <= ${y.to}::date
@@ -108,7 +112,7 @@ export const SOURCES: Record<string, SourceDef> = {
   obe_po_met: { label: 'POs and PSOs that met the target', basis: 'Of those, the ones whose attainment met the target', columns: ['Programme', 'PO / PSO', 'Attainment', 'Target'], query: () => sql`select p.name, x.code, x.combined, x.target from (select distinct on (program_id, target_id) * from attainment_snapshots where scope = 'po' order by program_id, target_id, computed_at desc) x join programs p on p.id = x.program_id where x.met order by 1, 2` },
 
   // ---- teachers ----------------------------------------------------------------------------------------------------
-  teachers_fulltime: { label: 'Full-time teachers', basis: 'Teachers and heads of department in service in the year, other than visiting faculty', columns: ['Teacher', 'PAN', 'Department', 'Designation', 'Nature of appointment', 'Date of joining', 'Date of leaving'], query: (y) => sql`select full_name, coalesce(pan, ''), department, designation, employment_type, date_of_joining::text, date_of_leaving::text from (${TEACHERS(y)}) t where ${FULLTIME} order by department, full_name` },
+  teachers_fulltime: { label: 'Full-time teachers', basis: 'Teachers and heads of department in service in the year, other than visiting faculty', columns: ['Teacher', 'PAN', 'Department', 'Designation', 'Nature of appointment', 'Date of joining', 'Date of leaving'], staffPan: 1, query: (y) => sql`select full_name, coalesce(pan, ''), department, designation, employment_type, date_of_joining::text, date_of_leaving::text from (${TEACHERS(y)}) t where ${FULLTIME} order by department, full_name` },
   teachers_all: { label: 'Teachers including visiting faculty', basis: 'Teachers and heads of department in service in the year', columns: ['Teacher', 'Department', 'Designation', 'Nature of appointment', 'Gender', 'Date of joining'], query: (y) => sql`select full_name, department, designation, employment_type, gender, date_of_joining::text from (${TEACHERS(y)}) t order by department, full_name` },
   teachers_women: { label: 'Women full-time teachers', basis: 'Full-time teachers whose staff record gives the gender as female', columns: ['Teacher', 'Department'], query: (y) => sql`select full_name, department from (${TEACHERS(y)}) t where ${FULLTIME} and lower(t.gender) in ('f', 'female') order by 2, 1` },
   teachers_doctorate: { label: 'Full-time teachers with a doctorate', basis: 'Full-time teachers with a Ph.D., D.M., M.Ch. or D.N.B. recorded and awarded by the end of the year', columns: ['Teacher', 'Department', 'Qualification', 'Year of award', 'Awarding body'], query: (y) => sql`select distinct on (t.user_id) t.full_name, t.department, q.title, q.year, q.institution from (${TEACHERS(y)}) t join staff_qualifications q on q.user_id = t.user_id where ${FULLTIME} and ${DOCTORATE} and coalesce(q.year, ${y.cal + 1}) <= ${y.cal + 1} order by t.user_id, q.year` },
@@ -246,6 +250,13 @@ export class SourceCache {
       .transaction(async (sp) => ((await sp.execute(def.query(y))).rows as Record<string, unknown>[]).map((r) => Object.values(r).map((v) => (v === null || v === undefined ? null : typeof v === 'number' ? v : v instanceof Date ? v.toISOString().slice(0, 10) : String(v))) as Cell[]))
       .catch(() => null);
     if (rows === null) return { value: null, columns: def.columns, rows: [] };
+    if (def.staffPan !== undefined) {
+      const k = def.staffPan;
+      for (const r of rows) {
+        const [tenant, user, stored] = String(r[k] ?? '').split('|');
+        r[k] = (tenant && user ? openStaffId(tenant, user, 'pan', stored || null) : null) ?? '';
+      }
+    }
     return { value: sourceValue(def, rows), columns: def.columns, rows };
   }
 }

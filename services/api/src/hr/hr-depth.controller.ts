@@ -12,6 +12,7 @@ import { payrollAdjustments, payrollTaxProfile, staffQualifications, tdsChallans
 import { form16Pdf } from './form16-pdf.js';
 import { hasAnyRole, HR_ROLES, isHr, isPayrollStaff, PAYROLL_APPROVERS, PAYROLL_ROLES, STAFF_ROLES } from './hr.access.js';
 import { compositeScore, EVAL_CRITERIA, financialYearOf, fyMonths, loadBand, monthsBetween, overtimeAmount, quarterOf, RATER_KINDS, ratingAverage, slotHours, type KindSummary, type RaterKind } from './hr-depth.logic.js';
+import { openStaffId } from './staff-ids.js';
 
 const Month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a month like 2026-10');
 const FY = z.string().regex(/^\d{4}-\d{2}$/, 'Use a financial year like 2026-27');
@@ -24,7 +25,7 @@ const EvalBody = z.object({
   scores: z.record(z.enum(EVAL_CRITERIA), z.number().int().min(1).max(5)).refine((s) => Object.keys(s).length === EVAL_CRITERIA.length, 'Rate every question'),
   comment: z.string().trim().max(1000).default(''),
 });
-const AdjBody = z.object({ userId: z.uuid(), kind: z.enum(['overtime', 'arrear', 'bonus', 'recovery']), payMonth: Month, hours: z.number().min(0).max(300).nullish(), ratePaise: z.number().int().min(0).nullish(), amountPaise: z.number().int().min(1).nullish(), reason: z.string().trim().min(3).max(300) });
+const AdjBody = z.object({ userId: z.uuid(), kind: z.enum(['overtime', 'arrear', 'bonus', 'recovery', 'guest_hours']), payMonth: Month, hours: z.number().min(0).max(300).nullish(), ratePaise: z.number().int().min(0).nullish(), amountPaise: z.number().int().min(1).nullish(), reason: z.string().trim().min(3).max(300) });
 const TaxProfileBody = z.object({ tan: z.string().trim().toUpperCase().regex(/^[A-Z]{4}\d{5}[A-Z]$/, 'A TAN looks like BLRA12345B'), pan: z.string().trim().toUpperCase().regex(/^[A-Z]{5}\d{4}[A-Z]$/, 'A PAN looks like ABCDE1234F'), deductorName: z.string().trim().min(2).max(200), deductorAddress: z.string().trim().max(400).default(''), responsiblePerson: z.string().trim().max(120).default(''), responsibleDesignation: z.string().trim().max(120).default('') });
 const ChallanBody = z.object({ payMonth: Month, section: z.string().trim().max(10).default('192'), bsrCode: z.string().trim().regex(/^\d{7}$/, 'A BSR code has seven digits'), challanSerial: z.string().trim().min(1).max(20), depositedOn: Day, tdsPaise: z.number().int().min(1), interestPaise: z.number().int().min(0).default(0) });
 
@@ -265,6 +266,14 @@ export class HrDepthController {
           amount = overtimeAmount(e.total, b.hours);
         }
       }
+      if (b.kind === 'guest_hours') {
+        // Guest and visiting faculty: the hours taught at their hourly rate (or the rate given).
+        if (!b.hours) throw new BadRequestException('Give the hours taught');
+        const [prof] = await tx.select({ rate: staffProfiles.hourlyRatePaise }).from(staffProfiles).where(eq(staffProfiles.userId, b.userId));
+        const rate = b.ratePaise ?? prof?.rate ?? 0;
+        if (!rate) throw new ConflictException('Set the hourly rate on the staff record first');
+        amount = Math.round((b.hours * rate) / 100) * 100;
+      }
       if (amount <= 0) throw new BadRequestException('Give an amount');
       const [row] = await tx.insert(payrollAdjustments).values({ tenantId: p.tenantId, userId: b.userId, kind: b.kind, payMonth: b.payMonth, hours: b.hours ?? null, ratePaise: b.ratePaise ?? null, amountPaise: amount, reason: b.reason, createdBy: p.userId }).returning();
       await auditUser(tx, p, 'payroll.adjustment_added', 'payroll_adjustment', row.id, { kind: b.kind, amountPaise: amount });
@@ -375,8 +384,9 @@ export class HrDepthController {
     const pdf = await this.db.withTenant(p.tenantId, async (tx) => {
       const [profile] = await tx.select().from(payrollTaxProfile);
       if (!profile) throw new ConflictException('Record the institution\'s TAN and PAN first');
-      const [emp] = await tx.select({ name: users.fullName, code: staffProfiles.employeeCode, pan: staffProfiles.pan }).from(staffProfiles).innerJoin(users, eq(users.id, staffProfiles.userId)).where(eq(staffProfiles.userId, userId));
-      if (!emp) throw new NotFoundException('Staff member not found');
+      const [found] = await tx.select({ name: users.fullName, code: staffProfiles.employeeCode, tenantId: staffProfiles.tenantId, panEnc: staffProfiles.panEnc }).from(staffProfiles).innerJoin(users, eq(users.id, staffProfiles.userId)).where(eq(staffProfiles.userId, userId));
+      if (!found) throw new NotFoundException('Staff member not found');
+      const emp = { name: found.name, code: found.code, pan: openStaffId(found.tenantId, userId, 'pan', found.panEnc) };
       const months = fyMonths(year);
       const slips = await tx.select({ month: payrollRuns.month, gross: payslips.grossPaise, taxable: payslips.taxableGrossPaise, pt: payslips.ptPaise, pf: payslips.employeePfPaise, tds: payslips.tdsPaise }).from(payslips).innerJoin(payrollRuns, eq(payrollRuns.id, payslips.runId)).where(and(eq(payslips.userId, userId), eq(payrollRuns.status, 'locked'), inArray(payrollRuns.month, months))).orderBy(asc(payrollRuns.month));
       if (slips.length === 0) throw new NotFoundException('No locked payroll for this year');

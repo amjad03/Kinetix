@@ -4,6 +4,7 @@ import type { Tx } from '../db/db.service.js';
 import { academicYears, applications, departments, designations, guardians, healthProfiles, programs, sections, staffProfiles, students, users } from '../db/schema.js';
 import { indianMoney, rupeesInWords } from './engine/bindings.js';
 import { longDate } from './render.js';
+import { openStaffId } from '../hr/staff-ids.js';
 
 /**
  * The data blocks documents bind to (`student.*`, `staff.*`), read from the student and staff
@@ -62,7 +63,7 @@ export async function studentBlock(tx: Tx, studentId: string): Promise<DocData> 
 /** The `staff` block: employee code, designation, department, contacts and statutory numbers. */
 export async function staffBlock(tx: Tx, userId: string): Promise<DocData> {
   const [u] = await tx
-    .select({ id: users.id, name: users.fullName, phone: users.phone, email: users.email, code: staffProfiles.employeeCode, joined: staffProfiles.dateOfJoining, dob: staffProfiles.dateOfBirth, pan: staffProfiles.pan, uan: staffProfiles.uan, bank: staffProfiles.bankName, last4: staffProfiles.bankAccountLast4, designation: designations.name, department: departments.name })
+    .select({ id: users.id, name: users.fullName, phone: users.phone, email: users.email, code: staffProfiles.employeeCode, joined: staffProfiles.dateOfJoining, dob: staffProfiles.dateOfBirth, tenantId: staffProfiles.tenantId, panEnc: staffProfiles.panEnc, uanEnc: staffProfiles.uanEnc, bank: staffProfiles.bankName, last4: staffProfiles.bankAccountLast4, designation: designations.name, department: departments.name })
     .from(users)
     .leftJoin(staffProfiles, eq(staffProfiles.userId, users.id))
     .leftJoin(designations, eq(designations.id, staffProfiles.designationId))
@@ -86,8 +87,8 @@ export async function staffBlock(tx: Tx, userId: string): Promise<DocData> {
       emergencyPhone: '',
       address: '',
       validUntil: monthYear(year?.ends),
-      pan: u.pan ?? '',
-      uan: u.uan ?? '',
+      pan: (u.tenantId ? openStaffId(u.tenantId, u.id, 'pan', u.panEnc) : null) ?? '',
+      uan: (u.tenantId ? openStaffId(u.tenantId, u.id, 'uan', u.uanEnc) : null) ?? '',
       bankAccount: u.last4 ? `XXXXXX${u.last4}${u.bank ? ` (${u.bank})` : ''}` : '',
     },
   };

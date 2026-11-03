@@ -48,6 +48,10 @@ export const hrSettings = pgTable('hr_settings', {
   encashment: jsonb('encashment').$type<EncashmentRules>().notNull(),
   attendance: jsonb('attendance').$type<AttendanceRules>().notNull(),
   loans: jsonb('loans').$type<LoanRules>().notNull(),
+  /** Yearly reimbursement ceiling per claim category (paise); a category not listed has none. */
+  reimbursementLimits: jsonb('reimbursement_limits').$type<Record<string, number>>().notNull().default({}),
+  /** Declared vacation periods (summer, winter) of teaching staff: vacation leave falls inside them. */
+  vacations: jsonb('vacations').$type<{ name: string; from: string; to: string }[]>().notNull().default([]),
   updatedAt: ts('updated_at').notNull().defaultNow(),
 });
 

@@ -63,8 +63,7 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('kn'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
 
   /// App name (keep in English).
   ///
@@ -7689,10 +7682,411 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use classroom reader taps ({count})'**
   String useReaderTaps(int count);
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Tax and claims'**
+  String get taxClaimsTitle;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Investment declaration for TDS, and reimbursement claims'**
+  String get taxClaimsBody;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Declaration'**
+  String get taxDeclarationTab;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Claims'**
+  String get claimsTab;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Investment declaration, FY {fy}'**
+  String taxDeclarationFor(String fy);
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Tax for the year: {oldTax} (old regime) or {newTax} (new regime)'**
+  String taxEstimate(String oldTax, String newTax);
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'New regime'**
+  String get taxRegimeNew;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Old regime'**
+  String get taxRegimeOld;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Rent a month (₹)'**
+  String get taxRent;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Months'**
+  String get taxRentMonths;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Landlord\'s PAN'**
+  String get taxLandlordPan;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Needed when rent passes ₹1 lakh a year'**
+  String get taxLandlordPanHelp;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Section'**
+  String get taxSection;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'What it is'**
+  String get taxWhat;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (₹)'**
+  String get taxAmount;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Add an investment'**
+  String get taxAddItem;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get taxRemove;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Save draft'**
+  String get taxSaveDraft;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get taxSubmit;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Submit proofs'**
+  String get taxSubmitProofs;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Attach proof'**
+  String get taxAttachProof;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Declaration saved'**
+  String get taxSaved;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to HR for approval'**
+  String get taxSent;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Proofs sent to HR'**
+  String get taxProofsSent;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Proof attached'**
+  String get taxProofAttached;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Enter each amount in rupees'**
+  String get taxAmountError;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get taxStatusDraft;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval'**
+  String get taxStatusSubmitted;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Approved: attach proofs'**
+  String get taxStatusApproved;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Proofs waiting'**
+  String get taxStatusProofs;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get taxStatusVerified;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Sent back'**
+  String get taxStatusRejected;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'No proof yet'**
+  String get taxProofNone;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Proof attached'**
+  String get taxProofSubmitted;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Proof accepted'**
+  String get taxProofAccepted;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Proof not accepted'**
+  String get taxProofRejected;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'80C: LIC, PPF, ELSS, tuition fees, housing loan principal'**
+  String get taxSec80c;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'80CCD(1B): own NPS contribution'**
+  String get taxSec80ccd1b;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'80D: health insurance'**
+  String get taxSec80d;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'80D: parents\' health insurance'**
+  String get taxSec80dParents;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'80D: senior citizen parents'**
+  String get taxSec80dSenior;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'80E: education loan interest'**
+  String get taxSec80e;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'80G: donations'**
+  String get taxSec80g;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'80TTA: savings bank interest'**
+  String get taxSec80tta;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'24(b): housing loan interest'**
+  String get taxSec24b;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'New claim'**
+  String get claimNew;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'No claims yet. Claim travel, conference, book or phone bills here.'**
+  String get claimsEmpty;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get claimCategory;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Official travel, conferences, books and telephone are paid tax free; medical and fuel are taxable'**
+  String get claimTaxFreeHelp;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Bill date'**
+  String get claimBillDate;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'What the bill was for'**
+  String get claimWhat;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Attach the bill'**
+  String get claimAttachBill;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Send claim'**
+  String get claimSend;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Claim sent to HR'**
+  String get claimSent;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the amount and what the bill was for'**
+  String get claimFormError;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Official travel'**
+  String get claimCatTravel;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Conference or seminar'**
+  String get claimCatConference;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Books and journals'**
+  String get claimCatBooks;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Telephone and internet'**
+  String get claimCatTelephone;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Medical'**
+  String get claimCatMedical;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel'**
+  String get claimCatFuel;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get claimCatOther;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get claimStatusSubmitted;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get claimStatusApproved;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get claimStatusPaid;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get claimStatusRejected;
+
+  /// Tax and claims (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get claimStatusCancelled;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -7701,8 +8095,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

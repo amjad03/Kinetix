@@ -524,6 +524,27 @@ abstract class TeacherApi implements AnnouncementSource {
 
   /// Attaches the supporting document to a leave request (multipart `file`, `POST /v1/hr/leave/requests/:id/document`).
   Future<void> attachLeaveDocument(String requestId, ChatUpload file);
+
+  /// My reimbursement claims, newest first (`GET /v1/hr/reimbursements/me`).
+  Future<List<ClaimInfo>> myClaims();
+
+  /// Claims a bill (`POST /v1/hr/reimbursements`); the bill itself follows with [attachClaimBill].
+  Future<ClaimInfo> submitClaim({required String category, required String spentOn, required int amountPaise, required String description});
+
+  /// Attaches the bill to a waiting claim (multipart `file`).
+  Future<void> attachClaimBill(String claimId, ChatUpload file);
+
+  /// My investment declaration for this financial year: the year, and the declaration (null before the first save).
+  Future<(int, TaxDeclarationInfo?)> myTaxDeclaration();
+
+  /// Saves my declaration as a draft (`PUT /v1/hr/tax-declarations/me`).
+  Future<TaxDeclarationInfo> saveTaxDeclaration({required int fy, required String regime, required int rentMonthlyPaise, required int rentMonths, String? landlordPan, required List<TaxItemInfo> items, int? expectedVersion});
+
+  /// Submits the declaration for approval or, once approved, its proofs for verification.
+  Future<TaxDeclarationInfo> submitTaxDeclaration(int fy, {bool proofs = false});
+
+  /// Attaches the proof of one investment (multipart `file`).
+  Future<void> attachTaxProof(String itemId, ChatUpload file);
 }
 
 /// Lets the lesson player load recordings through a [TeacherApi].
@@ -1610,8 +1631,40 @@ class HttpTeacherApi implements TeacherApi {
   Future<List<Colleague>> colleagues() async => [for (final r in _list(await _send('GET', '/v1/delegations/colleagues'))) Colleague.fromJson(r)];
 
   @override
-  Future<void> attachLeaveDocument(String requestId, ChatUpload file) async {
-    final req = http.MultipartRequest('POST', Uri.parse('$baseUrl/v1/hr/leave/requests/$requestId/document'))
+  Future<List<ClaimInfo>> myClaims() async => [for (final e in await _send('GET', '/v1/hr/reimbursements/me') as List) ClaimInfo.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<ClaimInfo> submitClaim({required String category, required String spentOn, required int amountPaise, required String description}) async =>
+      ClaimInfo.fromJson(await _send('POST', '/v1/hr/reimbursements', body: {'category': category, 'spentOn': spentOn, 'amountPaise': amountPaise, 'description': description}) as Map<String, dynamic>);
+
+  @override
+  Future<void> attachClaimBill(String claimId, ChatUpload file) => _attachFile('/v1/hr/reimbursements/$claimId/bill', file);
+
+  @override
+  Future<(int, TaxDeclarationInfo?)> myTaxDeclaration() async {
+    final j = await _send('GET', '/v1/hr/tax-declarations/me') as Map<String, dynamic>;
+    final d = j['declaration'];
+    return ((j['fy'] as num).toInt(), d == null ? null : TaxDeclarationInfo.fromJson(d as Map<String, dynamic>));
+  }
+
+  @override
+  Future<TaxDeclarationInfo> saveTaxDeclaration({required int fy, required String regime, required int rentMonthlyPaise, required int rentMonths, String? landlordPan, required List<TaxItemInfo> items, int? expectedVersion}) async => TaxDeclarationInfo.fromJson(
+    await _send('PUT', '/v1/hr/tax-declarations/me', body: {'fy': fy, 'regime': regime, 'rentMonthlyPaise': rentMonthlyPaise, 'rentMonths': rentMonths, 'landlordPan': landlordPan, 'items': [for (final i in items) i.toJson()], 'expectedVersion': ?expectedVersion}) as Map<String, dynamic>,
+  );
+
+  @override
+  Future<TaxDeclarationInfo> submitTaxDeclaration(int fy, {bool proofs = false}) async =>
+      TaxDeclarationInfo.fromJson(await _send('POST', '/v1/hr/tax-declarations/me/${proofs ? 'submit-proofs' : 'submit'}', body: {'fy': fy}) as Map<String, dynamic>);
+
+  @override
+  Future<void> attachTaxProof(String itemId, ChatUpload file) => _attachFile('/v1/hr/tax-declarations/items/$itemId/proof', file);
+
+  @override
+  Future<void> attachLeaveDocument(String requestId, ChatUpload file) => _attachFile('/v1/hr/leave/requests/$requestId/document', file);
+
+  /// Posts one file as multipart `file` to an API path.
+  Future<void> _attachFile(String path, ChatUpload file) async {
+    final req = http.MultipartRequest('POST', Uri.parse('$baseUrl$path'))
       ..files.add(http.MultipartFile.fromBytes('file', file.bytes, filename: file.name));
     req.headers['accept'] = 'application/json';
     if (token != null) req.headers['authorization'] = 'Bearer $token';

@@ -14,6 +14,7 @@ import { lopDays } from './lop.js';
 import { dayFromPunches, DEFAULT_ATTENDANCE_RULES, fullRules, lateLop, type FullAttendanceRules } from './attendance-rules.js';
 import { hrModuleSettings } from './hr-settings.js';
 import { KARNATAKA_PT } from './payroll-math.js';
+import { openStaffId } from './staff-ids.js';
 
 export const DEFAULT_LEDGERS = {
   salaryExpense: 'Salaries & Wages',
@@ -141,8 +142,8 @@ export class HrService {
       dateOfLeaving: p?.dateOfLeaving ?? null,
       gender: (p?.gender as StaffProfile['gender']) ?? null,
       dateOfBirth: p?.dateOfBirth ?? null,
-      pan: p?.pan ?? null,
-      uan: p?.uan ?? null,
+      pan: p ? openStaffId(p.tenantId, p.userId, 'pan', p.panEnc) : null,
+      uan: p ? openStaffId(p.tenantId, p.userId, 'uan', p.uanEnc) : null,
       esiNumber: p?.esiNumber ?? null,
       taxRegime: (p?.taxRegime as StaffProfile['taxRegime']) ?? 'new',
       tax80cPaise: p?.tax80cPaise ?? 0,

@@ -27,8 +27,11 @@ export interface LeaveRule {
   halfDayAllowed: boolean;
 }
 
-/** Leave kinds that never draw on a balance (duty and special leave are granted case by case; unpaid has none). */
-export const UNLIMITED_KINDS = ['duty', 'special', 'unpaid'];
+/**
+ * Leave kinds that never draw on a balance (duty and special leave are granted case by case; unpaid has none;
+ * vacation is bounded by the declared vacation periods instead).
+ */
+export const UNLIMITED_KINDS = ['duty', 'special', 'unpaid', 'vacation'];
 
 /**
  * Why a request breaks its type's rules, or null. `days` is what it takes; `noticeDays` is how far ahead of
@@ -39,5 +42,16 @@ export function leaveRuleProblem(t: LeaveRule, r: { days: number; halfDay: boole
   if (r.halfDay && !t.halfDayAllowed) return 'This leave cannot be taken as a half day';
   if (t.maxPerRequest !== null && r.days > t.maxPerRequest) return `At most ${t.maxPerRequest} days can be taken at a time`;
   if (!r.onBehalf && t.minNoticeDays > 0 && r.noticeDays < t.minNoticeDays) return `Apply at least ${t.minNoticeDays} days ahead`;
+  return null;
+}
+
+/**
+ * Vacation leave is taken only inside a declared vacation period (summer, winter) and only by teaching staff;
+ * a request reaching outside every period is refused. Null when the request is fine.
+ */
+export function vacationProblem(periods: { name: string; from: string; to: string }[], r: { fromDate: string; toDate: string; staffCategory: string | null }): string | null {
+  if (r.staffCategory && r.staffCategory !== 'teaching') return 'Vacation leave is for teaching staff';
+  if (!periods.length) return 'No vacation period is declared yet (HR settings)';
+  if (!periods.some((v) => v.from <= r.fromDate && r.toDate <= v.to)) return `Vacation leave falls inside a declared vacation: ${periods.map((v) => `${v.name} ${v.from} to ${v.to}`).join('; ')}`;
   return null;
 }

@@ -16,6 +16,7 @@ import { questionBank, studentAccounts, surveys } from './outcomes.js';
 import { obeAttainment, obeStructure } from './obe-showcase.js';
 import { academicAudit, cbcs, courseFiles, evaluation, semesterEndSession } from './quality.js';
 import { hrWorkflows, payroll, recruitment, staffAttendanceAndLeave } from './hr.js';
+import { hrPass } from './hr-pass.js';
 import { assistSamples } from './assist.js';
 import { gapClose } from './gap-close.js';
 import { campusOpsDepth } from './campus-ops-depth.js';
@@ -58,6 +59,7 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['admissions growth: agents, commissions, interviews, online entrance test', admissionsGrowth],
   ['admissions pass: seat matrix and counselling, KEA allotments, checklists, provisional admission, enrolment, broadcasts', admissionsPass],
   ['HR lifecycle: appraisal, training, offers, onboarding, exit', hrLifecycle],
+  ['HR pass: staff PAN/UAN, pay matrix, declarations, claims, bank file, careers, settlement', hrPass],
   ['student accounts', studentAccounts],
   ['outcome-based education: statements, COs, approvals, CO-PO matrices, question papers and question-wise marks', obeStructure],
   ['feedback surveys', surveys],

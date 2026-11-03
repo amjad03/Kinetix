@@ -22,12 +22,21 @@ import { PayrollRecords } from './payroll.records.js';
 import { HrMoreRecords } from './hr-more.records.js';
 import { HiringController } from './hiring.controller.js';
 import { TalentController } from './talent.controller.js';
+import { CareersController } from './careers.controller.js';
+import { HrPassRecords } from './hr-pass.records.js';
+import { PayMatrixController } from './pay-matrix.controller.js';
+import { PayMatrixService } from './pay-matrix.service.js';
+import { ReimbursementsController } from './reimbursements.controller.js';
+import { ReimbursementsService } from './reimbursements.service.js';
+import { SettlementService } from './settlement.service.js';
+import { TaxDeclarationsController } from './tax-declarations.controller.js';
+import { TaxDeclarationsService } from './tax-declarations.service.js';
 
 /** HR records, staff attendance, leave, recruitment, appraisal, onboarding, exit and payroll (docs/architecture/hr-payroll.md). */
 @Module({
   imports: [DelegationModule, ImportModule],
-  controllers: [HrController, LeaveController, RecruitmentController, TalentController, ExitController, PayrollController, StaffChangesController, HrDepthController, HrWorkflowsController, HrReportsController, HrMasterController, HiringController],
-  providers: [HrService, LeaveService, PayrollService, StaffRecords, StaffDepthRecords, LeaveRecords, RecruitmentRecords, PayrollRecords, HrMoreRecords],
+  controllers: [HrController, LeaveController, RecruitmentController, TalentController, ExitController, PayrollController, StaffChangesController, HrDepthController, HrWorkflowsController, HrReportsController, HrMasterController, HiringController, TaxDeclarationsController, ReimbursementsController, PayMatrixController, CareersController],
+  providers: [HrService, LeaveService, PayrollService, StaffRecords, StaffDepthRecords, LeaveRecords, RecruitmentRecords, PayrollRecords, HrMoreRecords, TaxDeclarationsService, ReimbursementsService, PayMatrixService, SettlementService, HrPassRecords],
   exports: [HrService, PayrollService],
 })
 export class HrModule {}

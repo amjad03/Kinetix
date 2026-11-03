@@ -231,7 +231,7 @@ export interface PayslipInput {
   staff: { regime: TaxRegime; pfEnabled: boolean; esiEnabled: boolean; ptEnabled: boolean; tax80cPaise: number; taxOtherDeductionsPaise: number };
   ytd: { grossTaxablePaise: number; ptPaise: number; employeePfPaise: number; tdsPaise: number };
   /** Approved overtime, arrears and bonuses (added in full, not prorated) and recoveries (taken as deductions). */
-  extras?: { code: string; name: string; amountPaise: number; taxable: boolean; recovery?: boolean }[];
+  extras?: { code: string; name: string; amountPaise: number; taxable: boolean; recovery?: boolean; /** False: not wages for ESI and PT (reimbursements). */ wage?: boolean }[];
   /** Labour Welfare Fund due this month (Karnataka: December), when the staff member is covered. */
   lwf?: { employeePaise: number; employerPaise: number } | null;
   /**
@@ -277,11 +277,13 @@ export function computePayslip(i: PayslipInput): ComputedPayslip {
   const taxableGross = earnings.filter((_, k) => (k < earnLines.length ? earnLines[k].taxable : extraEarn[k - earnLines.length].taxable)).reduce((s, e) => s + e.amountPaise, 0);
   const pfWage = earnings.filter((_, k) => k < earnLines.length && earnLines[k].pfWage).reduce((s, e) => s + e.amountPaise, 0);
 
+  // Reimbursements against bills are paid but are not wages: ESI and professional tax look at the rest.
+  const wageGross = gross - extraEarn.filter((x) => x.wage === false).reduce((n, x) => n + x.amountPaise, 0);
   const pf = i.staff.pfEnabled ? providentFund(pfWage, i.pf) : { employee: 0, eps: 0, epf: 0 };
-  const e = i.staff.esiEnabled ? esi(gross, i.esiLimitPaise) : { employee: 0, employer: 0 };
+  const e = i.staff.esiEnabled ? esi(wageGross, i.esiLimitPaise) : { employee: 0, employer: 0 };
   const month = Number(i.month.slice(5, 7));
   const supp = i.supplementary ?? null;
-  const pt = i.staff.ptEnabled && !supp ? professionalTax(gross, month, i.ptSlabs) : 0;
+  const pt = i.staff.ptEnabled && !supp ? professionalTax(wageGross, month, i.ptSlabs) : 0;
   const lwf = i.lwf && !supp ? i.lwf : { employeePaise: 0, employerPaise: 0 };
   const tds = supp
     ? supplementaryTds(i.staff.regime, {
