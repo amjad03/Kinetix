@@ -53,7 +53,7 @@ export interface Unplaced {
   label: string;
   sectionId: string | null;
   missing: number;
-  reason: 'teacher_unavailable' | 'teacher_load' | 'no_room' | 'class_full' | 'no_consecutive' | 'subject_daily_limit' | 'no_teacher';
+  reason: 'teacher_unavailable' | 'teacher_busy' | 'teacher_load' | 'no_room' | 'class_full' | 'no_consecutive' | 'subject_daily_limit' | 'no_teacher';
 }
 
 export interface WorkloadRow {

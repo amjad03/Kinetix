@@ -40,7 +40,9 @@ export async function academicsPass(c: Ctx): Promise<void> {
   const bcom = c.sections.filter((s) => s.prog === 'BCM' && s.term === 3);
   const sec = bcom[0];
   if (!sec) return;
-  for (const s of sec.subjects) await k.q('update subjects set lecture_hours = $2, tutorial_hours = $3 where id = $1 and lecture_hours = 0', [s.id, Math.max(2, Math.round(s.credits)), s.credits >= 4 ? 1 : 0]);
+  for (const s of sec.subjects) await k.q('update subjects set lecture_hours = $2 where id = $1 and lecture_hours = 0', [s.id, Math.max(2, Math.round(s.credits))]);
+  // The open electives and skill courses offered to every programme (CBCS stage) are taught in their own slots.
+  await k.q("update subjects set course_type = case when code like 'SK-%' then 'skill' else 'open_elective' end where tenant_id = $1 and code ~ '^(OE|SK)-' and course_type = 'core'", [c.tenantId]);
   const commerce = c.teachers.filter((t) => t.dept === 'Commerce');
   const lab = await k.one<{ id: string }>('subjects', { programId: sec.programId, term: 3, code: 'BCM3-L1', name: 'Tally Prime and GST lab', courseType: 'lab', credits: 2, practicalHours: 2, departmentId: c.departments['Commerce'] ?? null, sortOrder: 90 });
   const oe = await k.ins<{ id: string; name: string }>('subjects', [
@@ -61,7 +63,10 @@ export async function academicsPass(c: Ctx): Promise<void> {
   allocs.push({ academicYearId: c.years.cur, sectionId: sec.id, subjectId: lab.id, teacherId: labTeachers[0].id, role: 'lab', batch: 'B1', hoursPerWeek: 2, fromDate: c.semStart });
   allocs.push({ academicYearId: c.years.cur, sectionId: sec.id, subjectId: lab.id, teacherId: labTeachers[1].id, role: 'lab', batch: 'B2', hoursPerWeek: 2, fromDate: c.semStart });
   for (const s of bcom.slice(1)) allocs.push({ academicYearId: c.years.cur, sectionId: s.id, subjectId: lab.id, teacherId: labTeachers[0].id, role: 'lab', hoursPerWeek: 2, fromDate: c.semStart });
-  oe.forEach((s, i) => allocs.push({ academicYearId: c.years.cur, sectionId: sec.id, subjectId: s.id, teacherId: (commerce[4 + i] ?? c.teachers[5 + i]).id, role: 'primary', hoursPerWeek: 2, fromDate: c.semStart }));
+  // The electives go to the teachers with the lightest timetables, so they can meet alongside the class's other periods.
+  const loads = await k.q<{ id: string; n: number }>('select u.id, count(ts.id)::int as n from users u left join timetable_slots ts on ts.teacher_id = u.id and ts.archived_at is null where u.id = any($1::uuid[]) group by u.id order by n, u.id', [c.teachers.map((t) => t.id)]);
+  const light = loads.map((x) => x.id).filter((id) => !labTeachers.some((t) => t.id === id));
+  oe.forEach((s, i) => allocs.push({ academicYearId: c.years.cur, sectionId: sec.id, subjectId: s.id, teacherId: light[i] ?? c.teachers[5 + i].id, role: 'primary', hoursPerWeek: 2, fromDate: c.semStart }));
   await k.ins('faculty_allocations', allocs, { returning: false });
 
   // 5. Weekly unavailability: a research afternoon, a day at the university, a course until December.
@@ -92,6 +97,7 @@ export async function academicsPass(c: Ctx): Promise<void> {
   const term3 = c.sections.filter((s) => s.term === 3);
   const hod = c.byEmail['hod.commerce'];
   const rows: Record<string, unknown>[] = [];
+  const coverage: { sectionId: string; topicId: string; coveredOn: string; coveredBy: string }[] = [];
   for (const s of term3) {
     const slots = await k.q<{ id: string; subjectId: string; teacherId: string; dayOfWeek: number; startsAt: string; endsAt: string }>(
       "select id, subject_id, teacher_id, day_of_week, to_char(starts_at,'HH24:MI') as starts_at, to_char(ends_at,'HH24:MI') as ends_at from timetable_slots where tenant_id = $1 and section_id = $2 and archived_at is null",
@@ -100,22 +106,23 @@ export async function academicsPass(c: Ctx): Promise<void> {
     const held = new Set((await k.q<{ key: string }>("select distinct timetable_slot_id::text || '|' || date::text as key from attendance_records where tenant_id = $1 and section_id = $2 and timetable_slot_id is not null", [c.tenantId, s.id])).map((x) => x.key));
     const plans = new Map((await k.q<{ key: string; topicIds: string[] }>("select timetable_slot_id::text || '|' || date::text as key, topic_ids from lesson_plans where tenant_id = $1 and section_id = $2", [c.tenantId, s.id])).map((x) => [x.key, x.topicIds]));
     for (const sub of s.subjects) {
-      const covered = await k.q<{ topicId: string; coveredOn: string }>(
-        "select tc.topic_id, tc.covered_on::text as covered_on from topic_coverage tc join topics t on t.id = tc.topic_id join chapters ch on ch.id = t.chapter_id join subjects sb on sb.course_id = ch.course_id where tc.section_id = $1 and sb.id = $2 order by tc.covered_on, ch.position, t.position",
-        [s.id, sub.id],
-      );
-      const titles = covered.length ? new Map((await k.q<{ id: string; title: string }>('select id, title from topics where id = any($1::uuid[])', [covered.map((x) => x.topicId)])).map((t) => [t.id, t.title])) : new Map<string, string>();
+      // The syllabus in order; the diary works through about two thirds of it by now, one topic every period or two.
+      const syllabus = await k.q<{ id: string; title: string }>('select t.id, t.title from topics t join chapters ch on ch.id = t.chapter_id join subjects sb on sb.course_id = ch.course_id where sb.id = $1 order by ch.position, t.position', [sub.id]);
+      const titles = new Map(syllabus.map((t) => [t.id, t.title]));
       const meetings = c.workingDays.flatMap((d) => slots.filter((x) => x.subjectId === sub.id && x.dayOfWeek === weekday(d)).map((x) => ({ slot: x, date: d }))).filter((m) => held.has(`${m.slot.id}|${m.date}`));
-      // Topics go to the first meeting on or after the day they were taught; the rest are practice, revision or tests.
-      const queue = [...covered];
+      const target = Math.round(syllabus.length * (0.55 + r.next() * 0.25));
+      let next = 0;
       const recentCut = c.workingDays[Math.max(0, c.workingDays.length - 3)] ?? c.today;
       for (const [i, m] of meetings.entries()) {
         // A few recent periods are left for the teacher to log (the pending list); one in twelve older ones too.
         if ((m.date >= recentCut && r.chance(0.5)) || r.chance(1 / 12)) continue;
         const topics: string[] = [];
-        while (queue.length && queue[0].coveredOn <= m.date && topics.length < 2) topics.push(queue.shift()!.topicId);
+        const due = Math.floor(((i + 1) * target) / Math.max(1, meetings.length));
+        while (next < due && topics.length < 2) topics.push(syllabus[next++].id);
+        for (const t of topics) coverage.push({ sectionId: s.id, topicId: t, coveredOn: m.date, coveredBy: m.slot.teacherId });
         const plan = plans.get(`${m.slot.id}|${m.date}`) ?? null;
-        const verdict = againstPlan(plan, topics);
+        // Without a plan the teacher says how it went; about one period in ten fell behind what they meant to cover.
+        const verdict = (plan === null || plan.length === 0) && r.chance(0.08) ? 'behind' : againstPlan(plan, topics);
         const delivery = topics.length ? DELIVERIES[i % DELIVERIES.length] : i % 5 === 0 ? 'test' : 'revision';
         const summary = topics.length ? `${topics.map((t) => titles.get(t) ?? '').filter(Boolean).join('; ')}: explained with worked examples from the textbook and two problems on the board.` : delivery === 'test' ? 'Ten-minute class test on the last unit, then discussion of answers.' : 'Revision of the previous unit and solving university question paper problems.';
         const reviewed = m.date < addDays(c.today, -7) && sub.dept === 'Commerce' && hod && r.chance(0.7);
@@ -141,4 +148,12 @@ export async function academicsPass(c: Ctx): Promise<void> {
     }
   }
   await k.ins('teaching_logs', rows, { returning: false });
+  // What the diary taught counts as covered (a topic marked earlier keeps its date).
+  for (let i = 0; i < coverage.length; i += 2000) {
+    const chunk = coverage.slice(i, i + 2000);
+    await k.q(
+      'insert into topic_coverage (tenant_id, section_id, topic_id, covered_on, covered_by) select $1, x.s, x.t, x.d, x.b from unnest($2::uuid[], $3::uuid[], $4::date[], $5::uuid[]) as x(s, t, d, b) on conflict do nothing',
+      [c.tenantId, chunk.map((x) => x.sectionId), chunk.map((x) => x.topicId), chunk.map((x) => x.coveredOn), chunk.map((x) => x.coveredBy)],
+    );
+  }
 }

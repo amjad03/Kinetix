@@ -108,7 +108,7 @@ export interface Placement {
   endsAt: string;
 }
 
-export type UnplacedReason = 'teacher_unavailable' | 'teacher_load' | 'no_room' | 'class_full' | 'no_consecutive' | 'subject_daily_limit';
+export type UnplacedReason = 'teacher_unavailable' | 'teacher_busy' | 'teacher_load' | 'no_room' | 'class_full' | 'no_consecutive' | 'subject_daily_limit';
 
 export interface Unplaced {
   lessonKey: string;
@@ -249,7 +249,7 @@ export function solve(input: SolverInput): SolverResult {
 
   const teacherOk = (t: string, d: number, idx: number[]): UnplacedReason | null => {
     const lim = teachers.get(t);
-    if (idx.some((i) => !grid.teacherFree(t, d, i))) return idx.some((i) => unavailableAt(t, d, i)) ? 'teacher_unavailable' : 'class_full';
+    if (idx.some((i) => !grid.teacherFree(t, d, i))) return idx.some((i) => unavailableAt(t, d, i)) ? 'teacher_unavailable' : 'teacher_busy';
     if (!lim) return null;
     if ((grid.teacherWeek.get(t) ?? 0) + idx.length > lim.maxPerWeek) return 'teacher_load';
     if ((grid.teacherDay.get(`${t}|${d}`) ?? 0) + idx.length > lim.maxPerDay) return 'teacher_load';

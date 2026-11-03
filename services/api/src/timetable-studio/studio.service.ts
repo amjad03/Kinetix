@@ -205,7 +205,10 @@ export class StudioService {
         const alloc = allocs.filter((a) => a.sectionId === sec.id && a.subjectId === subj.id);
         const theoryTeacher = alloc.find((a) => a.role === 'primary')?.teacherId ?? alloc.find((a) => a.role !== 'lab')?.teacherId ?? liveTeacher.get(`${sec.id}|${subj.id}`) ?? anyTeacher.get(subj.id);
         const isLabCourse = subj.courseType === 'lab';
-        const lecture = isLabCourse ? 0 : subj.lectureHours || (subj.practicalHours || subj.tutorialHours ? 0 : rule?.minPerWeek || 3);
+        // A core course without contact hours gets its frequency rule (or three a week); an elective, skill or audit course
+        // outside a basket with no hours is not timetabled (it is taught elsewhere or online).
+        const timetabledByDefault = ['core', 'project', 'ability'].includes(subj.courseType) || !!rule;
+        const lecture = isLabCourse ? 0 : subj.lectureHours || (subj.practicalHours || subj.tutorialHours || !timetabledByDefault ? 0 : rule?.minPerWeek || 3);
         const practical = isLabCourse ? subj.practicalHours || subj.lectureHours || labLen : subj.practicalHours;
         const maxPerDay = rule?.maxPerDay ?? (lecture > bell.days.length ? 2 : 1);
         if ((lecture || subj.tutorialHours) && !theoryTeacher) noTeacher.push(`${subj.name} (${sec.displayName})`);
