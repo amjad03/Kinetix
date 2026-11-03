@@ -1118,5 +1118,13 @@
   "ttSpecial": "ಹೆಚ್ಚುವರಿ ತರಗತಿ",
   "ttChildTimetable": "{name} ಅವರ ವೇಳಾಪಟ್ಟಿ",
   "timetable": "ವೇಳಾಪಟ್ಟಿ",
-  "timetableSubtitle": "ವಾರದ ತರಗತಿಗಳು"
+  "timetableSubtitle": "ವಾರದ ತರಗತಿಗಳು",
+  "gateInOut": "ವಸತಿ ನಿಲಯದಿಂದ ಹೊರಹೋಗುವಿಕೆ ಮತ್ತು ಒಳಬರುವಿಕೆ",
+  "gateNoMoves": "ಇನ್ನೂ ವಸತಿ ನಿಲಯದ ಗೇಟ್ ಮೂಲಕ ಯಾವುದೇ ಚಲನೆ ಇಲ್ಲ.",
+  "gateWentOut": "ಹೊರಗೆ ಹೋದರು",
+  "gateCameIn": "ಒಳಗೆ ಬಂದರು",
+  "gateOnPass": "ಹೊರಹೋಗುವ ಪಾಸ್‌ನಲ್ಲಿ",
+  "gateOutSince": "{name} {day}, {time} ರಿಂದ ವಸತಿ ನಿಲಯದಿಂದ ಹೊರಗಿದ್ದಾರೆ",
+  "gateInSince": "{name} {day}, {time} ರಿಂದ ವಸತಿ ನಿಲಯದಲ್ಲಿದ್ದಾರೆ",
+  "gateLate": "{n} ನಿಮಿಷ ತಡ"
 }

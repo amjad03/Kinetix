@@ -2659,5 +2659,16 @@
   "ttChildTimetable": "{name}'s timetable",
   "@ttChildTimetable": {"placeholders": {"name": {"type": "String"}}},
   "timetable": "Timetable",
-  "timetableSubtitle": "Classes for the week"
+  "timetableSubtitle": "Classes for the week",
+  "gateInOut": "In and out of the hostel",
+  "gateNoMoves": "No moves through the hostel gate yet.",
+  "gateWentOut": "Went out",
+  "gateCameIn": "Came in",
+  "gateOnPass": "On an out-pass",
+  "gateOutSince": "{name} is out of the hostel since {day}, {time}",
+  "@gateOutSince": {"placeholders": {"name": {"type": "String"}, "day": {"type": "String"}, "time": {"type": "String"}}},
+  "gateInSince": "{name} is in the hostel since {day}, {time}",
+  "@gateInSince": {"placeholders": {"name": {"type": "String"}, "day": {"type": "String"}, "time": {"type": "String"}}},
+  "gateLate": "{n} min late",
+  "@gateLate": {"placeholders": {"n": {"type": "int"}}}
 }

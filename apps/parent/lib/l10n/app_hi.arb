@@ -1118,5 +1118,13 @@
   "ttSpecial": "अतिरिक्त कक्षा",
   "ttChildTimetable": "{name} की समय-सारिणी",
   "timetable": "समय-सारिणी",
-  "timetableSubtitle": "सप्ताह की कक्षाएँ"
+  "timetableSubtitle": "सप्ताह की कक्षाएँ",
+  "gateInOut": "छात्रावास से आना-जाना",
+  "gateNoMoves": "अभी छात्रावास के गेट से कोई आवाजाही नहीं।",
+  "gateWentOut": "बाहर गए",
+  "gateCameIn": "अंदर आए",
+  "gateOnPass": "बाहर-पास पर",
+  "gateOutSince": "{name} {day}, {time} से छात्रावास से बाहर हैं",
+  "gateInSince": "{name} {day}, {time} से छात्रावास में हैं",
+  "gateLate": "{n} मिनट देर"
 }

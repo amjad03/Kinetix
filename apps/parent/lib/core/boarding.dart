@@ -51,8 +51,35 @@ class CanteenDish {
   final bool available;
 }
 
+/// One move through the hostel gate (by the child's QR or entered by hand): when, which way, and minutes late.
+class GateMove {
+  const GateMove({required this.id, required this.direction, required this.at, this.method = 'qr', this.minutesLate = 0, this.withPass = false});
+
+  factory GateMove.fromJson(Map<String, dynamic> j) => GateMove(
+    id: '${j['id']}',
+    direction: '${j['direction']}',
+    at: DateTime.parse('${j['at']}').toLocal(),
+    method: '${j['method'] ?? 'qr'}',
+    minutesLate: (j['minutesLate'] as num? ?? 0).toInt(),
+    withPass: j['withPass'] == true,
+  );
+
+  final String id;
+
+  /// out or in.
+  final String direction;
+  final DateTime at;
+
+  /// qr or manual.
+  final String method;
+  final int minutesLate;
+  final bool withPass;
+
+  bool get out => direction == 'out';
+}
+
 class BoardingView {
-  const BoardingView({required this.resident, this.block, this.room, this.bed, this.nights = const [], this.passes = const [], this.sickbay = const []});
+  const BoardingView({required this.resident, this.block, this.room, this.bed, this.nights = const [], this.passes = const [], this.sickbay = const [], this.gateLog = const [], this.outNow = false});
 
   factory BoardingView.fromJson(Map<String, dynamic> j) {
     final bed = (j['bed'] as Map?)?.cast<String, dynamic>();
@@ -64,8 +91,16 @@ class BoardingView {
       nights: [for (final n in (j['nights'] as List? ?? const [])) NightMark.fromJson((n as Map).cast<String, dynamic>())],
       passes: [for (final p in (j['passes'] as List? ?? const [])) OutPass.fromJson((p as Map).cast<String, dynamic>())],
       sickbay: [for (final s in (j['sickbay'] as List? ?? const [])) SickbayStay.fromJson((s as Map).cast<String, dynamic>())],
+      gateLog: [for (final g in (j['gateLog'] as List? ?? const [])) GateMove.fromJson((g as Map).cast<String, dynamic>())],
+      outNow: j['outNow'] == true,
     );
   }
+
+  /// Every move through the hostel gate, newest first.
+  final List<GateMove> gateLog;
+
+  /// The child's last move was out of the hostel.
+  final bool outNow;
 
   final List<OutPass> passes;
   final bool resident;

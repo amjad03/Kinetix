@@ -259,6 +259,12 @@ class _BoardingScreenState extends State<BoardingScreen> {
                 ],
                 if (b != null && b.resident) ...[
                   const SizedBox(height: Kx.s16),
+                  Text(l.gateInOut, style: context.text.titleMedium),
+                  const SizedBox(height: Kx.s8),
+                  _GateCard(view: b, name: widget.child.firstName),
+                ],
+                if (b != null && b.resident) ...[
+                  const SizedBox(height: Kx.s16),
                   Row(
                     children: [
                       Expanded(child: Text(l.outPasses, style: context.text.titleMedium)),
@@ -473,6 +479,53 @@ class _AmountDialogState extends State<_AmountDialog> {
         TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
         FilledButton(key: const Key('walletAmountOk'), onPressed: _submit, child: Text(l.addMoney)),
       ],
+    );
+  }
+}
+
+/// Whether the child is in or out of the hostel now, and the last moves through the gate (late ones marked).
+class _GateCard extends StatelessWidget {
+  const _GateCard({required this.view, required this.name});
+
+  final BoardingView view;
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final c = context.colors;
+    final moves = view.gateLog.take(10).toList();
+    final last = view.gateLog.firstOrNull;
+    return KxCard(
+      key: const Key('gateCard'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(view.outNow ? Icons.directions_walk : Icons.home_outlined, color: view.outNow ? c.tertiary : c.primary),
+              const SizedBox(width: Kx.s8),
+              Expanded(
+                child: Text(
+                  last == null ? l.gateNoMoves : view.outNow ? l.gateOutSince(name, context.fmt.messageDay(last.at, DateTime.now()), context.fmt.time(last.at)) : l.gateInSince(name, context.fmt.messageDay(last.at, DateTime.now()), context.fmt.time(last.at)),
+                  key: const Key('gateNow'),
+                  style: context.text.bodyLarge,
+                ),
+              ),
+            ],
+          ),
+          if (moves.isNotEmpty) const SizedBox(height: Kx.s8),
+          for (final m in moves)
+            ListTile(
+              key: Key('gate-${m.id}'),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(m.out ? Icons.logout : Icons.login, color: m.minutesLate > 0 ? c.error : null),
+              title: Text('${m.out ? l.gateWentOut : l.gateCameIn} · ${context.fmt.messageDay(m.at, DateTime.now())} ${context.fmt.time(m.at)}'),
+              subtitle: (m.withPass || m.minutesLate > 0) ? Text([if (m.withPass) l.gateOnPass, if (m.minutesLate > 0) l.gateLate(m.minutesLate)].join(' · ')) : null,
+            ),
+        ],
+      ),
     );
   }
 }

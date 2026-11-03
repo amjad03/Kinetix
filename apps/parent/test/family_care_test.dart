@@ -115,6 +115,48 @@ void main() {
       await tester.scrollUntilVisible(find.byKey(const Key('pass-gp9')), 200);
       expect(find.text('Waiting for you'), findsOneWidget);
     });
+
+    test('reads the gate log and whether the child is out', () {
+      final v = BoardingView.fromJson({
+        'resident': true,
+        'bed': {'block': 'Block A', 'room': '101', 'bed': 'B1'},
+        'outNow': true,
+        'gateLog': [
+          {'id': 'g2', 'direction': 'out', 'at': '2026-10-08T11:40:00.000Z', 'method': 'qr', 'minutesLate': 0, 'withPass': true},
+          {'id': 'g1', 'direction': 'in', 'at': '2026-10-07T16:10:00.000Z', 'method': 'manual', 'minutesLate': 40, 'withPass': false},
+        ],
+      });
+      expect(v.outNow, isTrue);
+      expect(v.gateLog.map((g) => (g.out, g.minutesLate, g.withPass, g.method)), [(true, 0, true, 'qr'), (false, 40, false, 'manual')]);
+    });
+
+    testWidgets('the hostel page shows the child out now and a late return, in English and Hindi', (tester) async {
+      phone(tester);
+      final api = FakeParentApi();
+      api.boardingView = BoardingView(
+        resident: true,
+        block: 'Block A',
+        room: '101',
+        bed: 'B1',
+        outNow: true,
+        gateLog: [
+          GateMove(id: 'g2', direction: 'out', at: DateTime(2026, 10, 8, 17, 10), withPass: true),
+          GateMove(id: 'g1', direction: 'in', at: DateTime(2026, 10, 7, 21, 40), minutesLate: 40),
+        ],
+      );
+      await tester.pumpWidget(host(BoardingScreen(api: api, child: api.aarav)));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.byKey(const Key('gateCard')), 200);
+      expect(find.textContaining('Aarav is out of the hostel since'), findsOneWidget);
+      expect(find.text('On an out-pass'), findsOneWidget);
+      expect(find.text('40 min late'), findsOneWidget);
+
+      await tester.pumpWidget(host(BoardingScreen(api: api, child: api.aarav), language: 'hi'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.byKey(const Key('gateCard')), 200);
+      expect(find.text('40 मिनट देर'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('Sick bay', () {
