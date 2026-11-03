@@ -213,6 +213,11 @@ const EnvSchema = z.object({
     .string()
     .optional()
     .transform((v) => (v ?? '').split(',').map((r) => r.trim()).filter(Boolean)),
+  /**
+   * Error tracking: unexpected errors (500s, unhandled rejections) are POSTed here as JSON with ids and stack only
+   * (observability/error-reporter.ts), e.g. a Sentry/GlitchTip relay in India. Unset: logged only.
+   */
+  ERROR_WEBHOOK_URL: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()),
   /** Swagger UI at /docs. Off with DEPLOYMENT=production unless set to true. */
   API_DOCS: z.stringbool().optional(),
   /** Scheduled reports are emailed by POSTing JSON to this relay (SES/Postmark lambda, n8n…); unset: only logged. */

@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { HttpException, Logger } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 import { RateLimiter } from './common/rate-limiter.js';
+import { ErrorReporter, ReportingFilter } from './observability/error-reporter.js';
 import { HttpAdapterHost } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ErrorCodeFilter } from './common/error-codes.js';
@@ -35,8 +36,14 @@ export function configureApp(app: NestExpressApplication): void {
   app.useBodyParser('raw', { type: ['text/csv', 'application/csv', 'application/vnd.ms-excel'], limit: '6mb' });
   serveModels(app, env);
   // Every error carries a stable `code` the apps can translate.
-  app.useGlobalFilters(new ErrorCodeFilter(app.get(HttpAdapterHost).httpAdapter));
+  // Unexpected errors are reported (ERROR_WEBHOOK_URL) before Nest answers 500; the catch-all filter goes first.
+  const adapter = app.get(HttpAdapterHost).httpAdapter;
+  app.useGlobalFilters(new ReportingFilter(errorReporter(env), adapter), new ErrorCodeFilter(adapter));
 }
+
+let reporter: ErrorReporter | undefined;
+/** One reporter per process (main.ts also hooks it to unhandled rejections). */
+export const errorReporter = (env: Env): ErrorReporter => (reporter ??= new ErrorReporter(env.ERROR_WEBHOOK_URL, env.OTEL_SERVICE_NAME));
 
 /** Pages the API serves to be framed or to run their own scripts: LMS launches, SCORM packages, simulations, shared notes, Swagger. */
 const OWN_PAGE = /^\/(v1\/(lti|scorm|content\/sims|class-notes|auth\/sso)|docs|assets)(\/|$)/;
