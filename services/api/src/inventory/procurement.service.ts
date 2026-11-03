@@ -336,7 +336,7 @@ export class ProcurementService {
     const [done] = await tx.update(invPurchaseOrders).set(set).where(eq(invPurchaseOrders.id, id)).returning();
     await tx.insert(invApprovals).values({ tenantId: p.tenantId, poId: id, step: po.amendmentNo > 0 ? `amendment_${po.amendmentNo}` : 'order', decision: d.approve ? 'approved' : 'rejected', note: d.note ?? null, decidedBy: p.userId });
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: d.approve ? 'inventory.po_approved' : 'inventory.po_rejected', subjectType: 'inv_purchase_order', subjectId: id, before: { status: po.status, approvalStatus: po.approvalStatus }, after: { status: done.status, approvalStatus: done.approvalStatus }, data: { note: d.note } });
-    await this.notifications.notifyUsers(tx, [maker], { kind: 'task', text: { title: `Purchase order ${po.number} ${d.approve ? 'approved' : 'rejected'}`, body: d.note?.trim() || (d.approve ? 'It can be sent to the vendor and received.' : '') }, data: { poId: id, number: po.number }, dedupeKey: `inv-po-decided:${id}:${po.amendmentNo}` });
+    await this.notifications.notifyUsers(tx, maker ? [maker] : [], { kind: 'task', text: { title: `Purchase order ${po.number} ${d.approve ? 'approved' : 'rejected'}`, body: d.note?.trim() || (d.approve ? 'It can be sent to the vendor and received.' : '') }, data: { poId: id, number: po.number }, dedupeKey: `inv-po-decided:${id}:${po.amendmentNo}` });
     if (d.approve) await this.bus.emit(tx, p.tenantId, { type: DomainEvents.PurchaseOrderApproved, aggregateType: 'inv_purchase_order', aggregateId: id, payload: { number: po.number, totalPaise: done.totalPaise, vendorId: po.vendorId, amendmentNo: po.amendmentNo }, actorId: p.userId });
     return done;
   }

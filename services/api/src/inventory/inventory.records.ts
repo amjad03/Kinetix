@@ -16,7 +16,9 @@ import { Rupees, rupeesCell } from '../records/money.js';
 import { AssetsService } from './assets.service.js';
 import { APPROVER_ROLES, STAFF_ROLES, STORE_ROLES } from './inventory.controller.js';
 import { ProcurementService } from './procurement.service.js';
-import { ensureCategory } from './stock.js';
+import { applyStockMove, ensureCategory } from './stock.js';
+import { GST_RATES, gstinProblem, hsnProblem, isGstRate } from './stores.logic.js';
+import { invIssueSlips, invWriteOffs } from '../db/schema-procurement.js';
 
 /**
  * Stores, buying and assets as record kit entities (docs/requirements/RECORD_DEPTH_KIT.md): items, stores, categories,
@@ -30,7 +32,12 @@ const opt = (pairs: [string, string][]): FieldOption[] => pairs.map(([value, lab
 const inList = (list: FieldOption[]) => (v: string) => list.some((o) => o.value === v);
 
 export const UNITS = opt([['nos', 'Numbers'], ['kg', 'Kilogram'], ['g', 'Gram'], ['litre', 'Litre'], ['ml', 'Millilitre'], ['metre', 'Metre'], ['box', 'Box'], ['pack', 'Pack'], ['ream', 'Ream'], ['set', 'Set'], ['pair', 'Pair'], ['dozen', 'Dozen'], ['roll', 'Roll'], ['bottle', 'Bottle']]);
-const STORE_KINDS = opt([['central', 'Central store'], ['department', 'Department store'], ['lab', 'Lab store']]);
+const STORE_KINDS = opt([['central', 'Central store'], ['department', 'Department store'], ['lab', 'Lab store'], ['mess', 'Hostel mess store'], ['hostel', 'Hostel store']]);
+const ITEM_TYPES = opt([['consumable', 'Consumable'], ['chemical', 'Lab chemical'], ['provision', 'Mess provision'], ['spare', 'Spare part'], ['durable', 'Durable (goes to the asset register)']]);
+const VALUATIONS = opt([['weighted_average', 'Weighted average'], ['fifo', 'FIFO']]);
+const GST = opt(GST_RATES.map((r) => [String(r), `${r}%`] as [string, string]));
+const WO_STATUS = opt([['proposed', 'Waiting for approval'], ['approved', 'Written off'], ['rejected', 'Rejected']]);
+const WO_KIND = opt([['expired', 'Expired'], ['damaged', 'Damaged'], ['obsolete', 'Obsolete'], ['lost', 'Lost'], ['shortage', 'Shortage']]);
 const ACTIVE = opt([['yes', 'Active'], ['no', 'Inactive']]);
 const REQ_STATUS = opt([['submitted', 'Waiting for approval'], ['approved', 'Approved'], ['rejected', 'Rejected'], ['ordered', 'Ordered']]);
 const BUDGET = opt([['within', 'Within budget'], ['exceeded', 'Over budget'], ['override', 'Approved over budget'], ['no_budget', 'No budget set']]);
@@ -82,7 +89,7 @@ export class InventoryRecords implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    for (const e of [this.items(), this.stores(), this.categories(), this.vendors(), this.rateContracts(), this.requisitions(), this.orders(), this.invoices(), this.gate(), this.verifications(), this.assets(), this.amc(), this.condemnations()]) this.registry.register(e);
+    for (const e of [this.items(), this.stores(), this.categories(), this.vendors(), this.rateContracts(), this.requisitions(), this.orders(), this.invoices(), this.gate(), this.verifications(), this.assets(), this.amc(), this.condemnations(), this.issueSlips(), this.writeOffs()]) this.registry.register(e);
   }
 
   // ---- items --------------------------------------------------------------------------------------
@@ -97,14 +104,16 @@ export class InventoryRecords implements OnModuleInit {
       roles: { read: STORE_ROLES, write: STORE_ROLES },
       label: (r) => `${r.sku} ${r.name}`,
       list: {
-        select: { id: invItems.id, sku: invItems.sku, name: invItems.name, category: invItems.category, unit: invItems.unit, reorderLevel: invItems.reorderLevel, reorderQty: invItems.reorderQty, description: invItems.description, active: invItems.active, lastPrice: sql<number>`(${invItems.lastPricePaise} / 100.0)::float8`, onHand, low: sql<boolean>`${invItems.active} and ${invItems.reorderLevel} > 0 and ${onHand} <= ${invItems.reorderLevel}` },
+        select: { id: invItems.id, sku: invItems.sku, name: invItems.name, category: invItems.category, unit: invItems.unit, reorderLevel: invItems.reorderLevel, reorderQty: invItems.reorderQty, description: invItems.description, active: invItems.active, lastPrice: sql<number>`(${invItems.lastPricePaise} / 100.0)::float8`, onHand, low: sql<boolean>`${invItems.active} and ${invItems.reorderLevel} > 0 and ${onHand} <= ${invItems.reorderLevel}`, hsnCode: invItems.hsnCode, gstRatePct: sql<string>`${invItems.gstRatePct}::text`, itemType: invItems.itemType, batchTracked: invItems.batchTracked, valuation: invItems.valuation, shelfLifeDays: invItems.shelfLifeDays, stockValue: sql<number>`(coalesce((select sum(s.value_paise) from inv_stock s where s.item_id = "inv_items"."id"), 0) / 100.0)::float8` },
         search: [invItems.sku, invItems.name, invItems.category],
         filters: {
           category: { label: 'Category', options: categoryOptions, where: (v) => sql`lower(${invItems.category}) = ${lc(v)}` },
           stock: { label: 'Stock', options: opt([['low', 'At or below reorder level'], ['out', 'Out of stock']]), where: (v) => (v === 'low' ? sql`${invItems.reorderLevel} > 0 and ${onHand} <= ${invItems.reorderLevel}` : v === 'out' ? sql`${onHand} = 0` : undefined) },
           active: { label: 'Status', options: ACTIVE, where: (v) => (v === 'yes' ? eq(invItems.active, true) : v === 'no' ? eq(invItems.active, false) : undefined) },
+          type: { label: 'Type', options: ITEM_TYPES, where: (v) => (inList(ITEM_TYPES)(v) ? eq(invItems.itemType, v) : undefined) },
+          batch: { label: 'Batches', options: opt([['yes', 'Kept by batch'], ['no', 'Not by batch']]), where: (v) => (v === 'yes' ? eq(invItems.batchTracked, true) : v === 'no' ? eq(invItems.batchTracked, false) : undefined) },
         },
-        sorts: { sku: invItems.sku, name: invItems.name, category: invItems.category, onHand, reorder: invItems.reorderLevel },
+        sorts: { sku: invItems.sku, name: invItems.name, category: invItems.category, onHand, reorder: invItems.reorderLevel, hsn: invItems.hsnCode },
         defaultSort: { id: 'name', dir: 'asc' },
       },
       fields: {
@@ -115,6 +124,12 @@ export class InventoryRecords implements OnModuleInit {
         reorderLevel: { label: 'Reorder level', type: 'number', schema: Int(0, 1_000_000), column: invItems.reorderLevel, bulk: true, help: 'Raise an indent when stock falls to this' },
         reorderQty: { label: 'Reorder quantity', type: 'number', schema: Int(0, 1_000_000), column: invItems.reorderQty, bulk: true },
         description: { label: 'Description', type: 'textarea', schema: z.string().trim().max(500), column: invItems.description },
+        itemType: { label: 'Type', type: 'select', schema: z.enum(ITEM_TYPES.map((o) => o.value) as [string, ...string[]]), column: invItems.itemType, options: ITEM_TYPES, bulk: true, help: 'Durables received on an order are registered as assets' },
+        hsnCode: { label: 'HSN code', type: 'text', schema: z.union([z.string().trim().refine((v) => !hsnProblem(v), 'An HSN code has 4, 6 or 8 digits'), z.literal('')]).nullable().transform((v) => v || null), column: invItems.hsnCode, bulk: true },
+        gstRatePct: { label: 'GST rate', type: 'select', schema: z.coerce.number().refine(isGstRate, 'Not a GST rate'), column: invItems.gstRatePct, options: GST, bulk: true, help: 'Charged on orders; CGST and SGST within the state, IGST between states' },
+        batchTracked: { label: 'Kept by batch with expiry', type: 'boolean', schema: z.boolean(), column: invItems.batchTracked, bulk: true, help: 'Lab chemicals and mess provisions: batch number at receipt, earliest expiry issued first' },
+        shelfLifeDays: { label: 'Shelf life (days)', type: 'number', schema: z.number().int().min(1).max(3650).nullable(), column: invItems.shelfLifeDays, help: 'Expiry from the manufacture date when a batch has none' },
+        valuation: { label: 'Valuation', type: 'select', schema: z.enum(['weighted_average', 'fifo']), column: invItems.valuation, options: VALUATIONS, bulk: true },
         active: { label: 'Active', type: 'boolean', schema: z.boolean(), column: invItems.active, bulk: true, create: false },
       },
       duplicate: async (ctx, row) => ({ sku: await copyName(ctx.tx, invItems, invItems.sku, String(row.sku), undefined, (n) => (n === 1 ? '-COPY' : `-COPY${n}`)), name: `${row.name} (copy)` }),
@@ -123,7 +138,13 @@ export class InventoryRecords implements OnModuleInit {
         { key: 'name', header: 'Item' },
         { key: 'category', header: 'Category' },
         { key: 'unit', header: 'Unit' },
+        { key: 'itemType', header: 'Type', value: (r) => ITEM_TYPES.find((o) => o.value === r.itemType)?.label ?? String(r.itemType) },
+        { key: 'hsnCode', header: 'HSN' },
+        { key: 'gstRatePct', header: 'GST %' },
+        { key: 'batchTracked', header: 'By batch', value: (r) => (r.batchTracked ? 'Yes' : 'No') },
+        { key: 'valuation', header: 'Valuation' },
         { key: 'onHand', header: 'On hand' },
+        { key: 'stockValue', header: 'Stock value (₹)' },
         { key: 'reorderLevel', header: 'Reorder level' },
         { key: 'reorderQty', header: 'Reorder quantity' },
         { key: 'lastPrice', header: 'Last price (₹)' },
@@ -138,6 +159,10 @@ export class InventoryRecords implements OnModuleInit {
           { key: 'reorder_level', header: 'Reorder level', example: '10' },
           { key: 'reorder_qty', header: 'Reorder quantity', example: '50' },
           { key: 'description', header: 'Description' },
+          { key: 'item_type', header: 'Type', help: ITEM_TYPES.map((o) => o.value).join(', '), options: ITEM_TYPES.map((o) => o.value), example: 'consumable' },
+          { key: 'hsn', header: 'HSN code', example: '4802' },
+          { key: 'gst_rate', header: 'GST rate (%)', options: GST_RATES.map(String), example: '18' },
+          { key: 'batch_tracked', header: 'Kept by batch', help: 'yes or no', options: ['yes', 'no'] },
         ],
         key: ['sku'],
         exists: async (ctx, r) => !!(await ctx.tx.select({ id: invItems.id }).from(invItems).where(sql`lower(${invItems.sku}) = ${lc(r.get('sku'))}`).limit(1))[0],
@@ -148,7 +173,13 @@ export class InventoryRecords implements OnModuleInit {
             if (!UNITS.some((u) => u.value === unit)) fail('Unknown unit', unit);
             const category = r.get('category') || 'general';
             await ensureCategory(tx, ctx.p.tenantId, category);
-            const values = { name: required(r, 'name'), category, unit, reorderLevel: r.get('reorder_level') ? int(r.get('reorder_level'), 0, 1_000_000) : 0, reorderQty: r.get('reorder_qty') ? int(r.get('reorder_qty'), 0, 1_000_000) : 0, description: r.get('description') };
+            const itemType = r.get('item_type') || 'consumable';
+            if (!inList(ITEM_TYPES)(itemType)) fail('Unknown item type', itemType);
+            const hsn = r.get('hsn') || null;
+            if (hsn && hsnProblem(hsn)) fail('An HSN code has 4, 6 or 8 digits', hsn);
+            const gst = r.get('gst_rate') ? Number(r.get('gst_rate')) : 0;
+            if (!isGstRate(gst)) fail('Not a GST rate', r.get('gst_rate'));
+            const values = { name: required(r, 'name'), category, unit, reorderLevel: r.get('reorder_level') ? int(r.get('reorder_level'), 0, 1_000_000) : 0, reorderQty: r.get('reorder_qty') ? int(r.get('reorder_qty'), 0, 1_000_000) : 0, description: r.get('description'), itemType, hsnCode: hsn, gstRatePct: gst, batchTracked: lc(r.get('batch_tracked')) === 'yes' };
             const [found] = await tx.select().from(invItems).where(sql`lower(${invItems.sku}) = ${lc(sku)}`).limit(1);
             if (!found) {
               await tx.insert(invItems).values({ tenantId: ctx.p.tenantId, sku, ...values });
@@ -161,7 +192,7 @@ export class InventoryRecords implements OnModuleInit {
       },
       create: async (ctx, v) => {
         await ensureCategory(ctx.tx, ctx.p.tenantId, String(v.category));
-        const [row] = await ctx.tx.insert(invItems).values({ tenantId: ctx.p.tenantId, sku: String(v.sku), name: String(v.name), category: String(v.category), unit: String(v.unit), reorderLevel: Number(v.reorderLevel ?? 0), reorderQty: Number(v.reorderQty ?? 0), description: String(v.description ?? '') }).returning({ id: invItems.id });
+        const [row] = await ctx.tx.insert(invItems).values({ tenantId: ctx.p.tenantId, sku: String(v.sku), name: String(v.name), category: String(v.category), unit: String(v.unit), reorderLevel: Number(v.reorderLevel ?? 0), reorderQty: Number(v.reorderQty ?? 0), description: String(v.description ?? ''), itemType: String(v.itemType ?? 'consumable'), hsnCode: (v.hsnCode as string | null) ?? null, gstRatePct: Number(v.gstRatePct ?? 0), batchTracked: v.batchTracked === true, shelfLifeDays: (v.shelfLifeDays as number | null) ?? null, valuation: String(v.valuation ?? 'weighted_average') }).returning({ id: invItems.id });
         return row.id;
       },
     };
@@ -192,7 +223,7 @@ export class InventoryRecords implements OnModuleInit {
       },
       fields: {
         name: { label: 'Name', type: 'text', schema: Text(80), column: invStores.name, required: true },
-        kind: { label: 'Kind', type: 'select', schema: z.enum(['central', 'department', 'lab']), column: invStores.kind, options: STORE_KINDS, required: true, bulk: true },
+        kind: { label: 'Kind', type: 'select', schema: z.enum(STORE_KINDS.map((o) => o.value) as [string, ...string[]]), column: invStores.kind, options: STORE_KINDS, required: true, bulk: true },
         location: { label: 'Location', type: 'text', schema: z.string().trim().max(120), column: invStores.location },
         departmentId: { label: 'Department', type: 'select', schema: OptionalRef, column: invStores.departmentId, options: departmentOptions, bulk: true, help: 'For a department or lab store' },
         custodianUserId: { label: 'Custodian', type: 'select', schema: OptionalRef, column: invStores.custodianUserId, options: staffOptions, bulk: true },
@@ -210,7 +241,7 @@ export class InventoryRecords implements OnModuleInit {
       import: {
         columns: [
           { key: 'name', header: 'Store', required: true, example: 'Physics lab store' },
-          { key: 'kind', header: 'Kind', help: 'central, department or lab', example: 'lab', options: ['central', 'department', 'lab'] },
+          { key: 'kind', header: 'Kind', help: STORE_KINDS.map((o) => o.value).join(', '), example: 'lab', options: STORE_KINDS.map((o) => o.value) },
           { key: 'location', header: 'Location', example: 'Block B, first floor' },
           { key: 'department', header: 'Department', options: async (ctx) => (await departmentOptions(ctx)).map((o) => o.label) },
         ],
@@ -220,7 +251,7 @@ export class InventoryRecords implements OnModuleInit {
           eachRow(ctx.tx, rows, async (tx, r) => {
             const name = required(r, 'name');
             const kind = r.get('kind') || 'central';
-            if (!inList(STORE_KINDS)(kind)) fail('Kind is central, department or lab', kind);
+            if (!inList(STORE_KINDS)(kind)) fail(`Kind is one of ${STORE_KINDS.map((o) => o.value).join(', ')}`, kind);
             const departmentId = await lookup({ ...ctx, tx }, departmentOptions, r.get('department'), 'department');
             const [found] = await tx.select().from(invStores).where(sql`lower(${invStores.name}) = ${lc(name)}`).limit(1);
             if (!found) {
@@ -293,10 +324,11 @@ export class InventoryRecords implements OnModuleInit {
       roles: { read: ACCOUNTS, write: STORE_ROLES },
       label: (r) => String(r.name),
       list: {
-        select: { id: invVendors.id, name: invVendors.name, gstin: invVendors.gstin, pan: invVendors.pan, contactPerson: invVendors.contactPerson, phone: invVendors.phone, email: invVendors.email, address: invVendors.address, active: invVendors.active, blacklisted: invVendors.blacklisted, blacklistReason: invVendors.blacklistReason, score, orders, ordered },
+        select: { id: invVendors.id, name: invVendors.name, gstin: invVendors.gstin, pan: invVendors.pan, stateCode: invVendors.stateCode, gstRegistration: invVendors.gstRegistration, msmeUdyamNo: invVendors.msmeUdyamNo, msmeCategory: invVendors.msmeCategory, paymentTermsDays: invVendors.paymentTermsDays, contactPerson: invVendors.contactPerson, phone: invVendors.phone, email: invVendors.email, address: invVendors.address, active: invVendors.active, blacklisted: invVendors.blacklisted, blacklistReason: invVendors.blacklistReason, score, orders, ordered },
         search: [invVendors.name, invVendors.gstin, invVendors.contactPerson, invVendors.phone, invVendors.email],
         filters: {
           state: { label: 'Status', options: opt([['active', 'Active'], ['blacklisted', 'Blacklisted'], ['inactive', 'Inactive']]), where: (v) => (v === 'active' ? and(eq(invVendors.active, true), eq(invVendors.blacklisted, false)) : v === 'blacklisted' ? eq(invVendors.blacklisted, true) : v === 'inactive' ? eq(invVendors.active, false) : undefined) },
+          msme: { label: 'MSME', options: opt([['micro', 'Micro'], ['small', 'Small'], ['medium', 'Medium'], ['none', 'Not MSME']]), where: (v) => (v === 'none' ? sql`${invVendors.msmeCategory} is null` : ['micro', 'small', 'medium'].includes(v) ? eq(invVendors.msmeCategory, v) : undefined) },
           rating: { label: 'Rating', options: opt([['good', '4 and above'], ['poor', 'Below 3'], ['unrated', 'Not rated']]), where: (v) => (v === 'good' ? sql`${score} >= 4` : v === 'poor' ? sql`${score} < 3` : v === 'unrated' ? sql`${score} is null` : undefined) },
         },
         sorts: { name: invVendors.name, rating: score, orders, ordered },
@@ -304,13 +336,26 @@ export class InventoryRecords implements OnModuleInit {
       },
       fields: {
         name: { label: 'Name', type: 'text', schema: Text(120), column: invVendors.name, required: true },
-        gstin: { label: 'GSTIN', type: 'text', schema: z.union([z.string().trim().regex(/^[0-9]{2}[A-Z0-9]{13}$/, 'A GSTIN has 15 characters, e.g. 29ABCDE1234F1Z5'), z.literal('')]).nullable().transform((v) => v || null), column: invVendors.gstin },
+        gstin: { label: 'GSTIN', type: 'text', schema: z.union([z.string().trim().toUpperCase().refine((v) => !gstinProblem(v), (v) => ({ message: gstinProblem(v) ?? '' })), z.literal('')]).nullable().transform((v) => v || null), column: invVendors.gstin, help: 'Checked with its check character; the state decides CGST and SGST or IGST' },
         pan: { label: 'PAN', type: 'text', schema: z.union([z.string().trim().regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, 'A PAN looks like ABCDE1234F'), z.literal('')]).nullable().transform((v) => v || null), column: invVendors.pan },
         contactPerson: { label: 'Contact person', type: 'text', schema: z.string().trim().max(120), column: invVendors.contactPerson },
         phone: { label: 'Phone', type: 'phone', schema: z.string().trim().max(20), column: invVendors.phone },
         email: { label: 'Email', type: 'email', schema: Email, column: invVendors.email },
         address: { label: 'Address', type: 'textarea', schema: z.string().trim().max(300), column: invVendors.address },
+        msmeCategory: { label: 'MSME category', type: 'select', schema: z.union([z.enum(['micro', 'small', 'medium']), z.literal('')]).nullable().transform((v) => v || null), column: invVendors.msmeCategory, options: opt([['micro', 'Micro'], ['small', 'Small'], ['medium', 'Medium']]), help: 'Micro and small enterprises are paid within 45 days (MSMED Act)' },
+        msmeUdyamNo: { label: 'Udyam registration', type: 'text', schema: z.union([z.string().trim().toUpperCase().regex(/^UDYAM-[A-Z]{2}-\d{2}-\d{7}$/, 'An Udyam number looks like UDYAM-KA-03-0012345'), z.literal('')]).nullable().transform((v) => v || null), column: invVendors.msmeUdyamNo },
+        paymentTermsDays: { label: 'Credit days', type: 'number', schema: z.number().int().min(0).max(365).nullable(), column: invVendors.paymentTermsDays },
         active: { label: 'Active', type: 'boolean', schema: z.boolean(), column: invVendors.active, create: false, bulk: true },
+      },
+      // The GSTIN's PAN must be the vendor's PAN; its first two digits are the GST state, and a vendor without one is unregistered.
+      check: async (ctx, id) => {
+        const [v] = await ctx.tx.select().from(invVendors).where(eq(invVendors.id, id));
+        const g = v.gstin ? gstinProblem(v.gstin, v.pan) : null;
+        if (g) throw new BadRequestException(g);
+        if (v.msmeCategory && !v.msmeUdyamNo) throw new BadRequestException('Give the Udyam registration number of an MSME vendor');
+        const state = v.gstin ? v.gstin.slice(0, 2) : null;
+        const reg = v.gstin ? (v.gstRegistration === 'unregistered' ? 'regular' : v.gstRegistration) : 'unregistered';
+        if (state !== v.stateCode || reg !== v.gstRegistration) await ctx.tx.update(invVendors).set({ stateCode: state, gstRegistration: reg }).where(eq(invVendors.id, id));
       },
       actions: {
         reinstate: {
@@ -328,6 +373,9 @@ export class InventoryRecords implements OnModuleInit {
         { key: 'name', header: 'Vendor' },
         { key: 'gstin', header: 'GSTIN' },
         { key: 'pan', header: 'PAN' },
+        { key: 'stateCode', header: 'GST state' },
+        { key: 'msmeCategory', header: 'MSME' },
+        { key: 'msmeUdyamNo', header: 'Udyam no.' },
         { key: 'contactPerson', header: 'Contact' },
         { key: 'phone', header: 'Phone' },
         { key: 'email', header: 'Email' },
@@ -339,7 +387,7 @@ export class InventoryRecords implements OnModuleInit {
       import: {
         columns: [
           { key: 'name', header: 'Vendor', required: true, help: 'Rows are matched on the name', example: 'Sri Lakshmi Stationers' },
-          { key: 'gstin', header: 'GSTIN', example: '29ABCDE1234F1Z5' },
+          { key: 'gstin', header: 'GSTIN', example: '27AAPFU0939F1ZV' },
           { key: 'pan', header: 'PAN' },
           { key: 'contact_person', header: 'Contact person' },
           { key: 'phone', header: 'Phone', example: '+919845012345' },
@@ -352,8 +400,10 @@ export class InventoryRecords implements OnModuleInit {
           eachRow(ctx.tx, rows, async (tx, r) => {
             const name = required(r, 'name');
             const gstin = r.get('gstin').toUpperCase() || null;
-            if (gstin && !/^[0-9]{2}[A-Z0-9]{13}$/.test(gstin)) fail('A GSTIN has 15 characters', gstin);
-            const values = { gstin, pan: r.get('pan').toUpperCase() || null, contactPerson: r.get('contact_person'), phone: r.get('phone'), email: r.get('email').toLowerCase() || null, address: r.get('address') };
+            const pan = r.get('pan').toUpperCase() || null;
+            const gp = gstin ? gstinProblem(gstin, pan) : null;
+            if (gp) fail(gp, gstin);
+            const values = { gstin, stateCode: gstin ? gstin.slice(0, 2) : null, gstRegistration: gstin ? 'regular' : 'unregistered', pan, contactPerson: r.get('contact_person'), phone: r.get('phone'), email: r.get('email').toLowerCase() || null, address: r.get('address') };
             const [found] = await tx.select().from(invVendors).where(sql`lower(${invVendors.name}) = ${lc(name)}`).limit(1);
             if (!found) {
               await tx.insert(invVendors).values({ tenantId: ctx.p.tenantId, name, ...values });
@@ -982,6 +1032,95 @@ export class InventoryRecords implements OnModuleInit {
         { key: 'disposalMode', header: 'Disposed by' },
         { key: 'realised', header: 'Realised (₹)' },
         { key: 'writtenOffOn', header: 'Written off on' },
+      ],
+    };
+  }
+
+  // ---- issue slips and write-offs (the stores pass) -------------------------------------------------------------------
+
+  private issueSlips(): RecordEntity {
+    return {
+      key: 'inv-issue-slips',
+      module: 'inventory',
+      table: invIssueSlips,
+      subjectType: 'inv_issue_slip',
+      roles: { read: ACCOUNTS, write: STORE_ROLES },
+      label: (r) => String(r.number),
+      list: {
+        select: { id: invIssueSlips.id, number: invIssueSlips.number, createdAt: invIssueSlips.createdAt, storeName: invStores.name, departmentName: departments.name, issuedTo: invIssueSlips.issuedTo, receivedBy: invIssueSlips.receivedBy, purpose: invIssueSlips.purpose, lines: invIssueSlips.lines, value: sql<number>`(${invIssueSlips.valuePaise} / 100.0)::float8`, requisitionNumber: invRequisitions.number },
+        joins: (q) => q.innerJoin(invStores, eq(invStores.id, invIssueSlips.storeId)).leftJoin(departments, eq(departments.id, invIssueSlips.departmentId)).leftJoin(invRequisitions, eq(invRequisitions.id, invIssueSlips.requisitionId)),
+        search: [invIssueSlips.number, invIssueSlips.issuedTo, invIssueSlips.purpose, departments.name],
+        filters: {
+          store: { label: 'Store', options: storeOptions, where: (v) => uuidEq(invIssueSlips.storeId, v) },
+          department: { label: 'Department', options: departmentOptions, where: (v) => uuidEq(invIssueSlips.departmentId, v) },
+        },
+        sorts: { number: invIssueSlips.number, date: invIssueSlips.createdAt, value: invIssueSlips.valuePaise },
+        defaultSort: { id: 'date', dir: 'desc' },
+      },
+      // A slip's stock has left: it is reversed by a return, not deleted.
+      remove: { guard: async () => 'An issue slip cannot be deleted; take the goods back with a return' },
+      columns: [
+        { key: 'number', header: 'Slip' },
+        { key: 'createdAt', header: 'Date', value: (r) => (r.createdAt instanceof Date ? r.createdAt.toISOString().slice(0, 10) : String(r.createdAt ?? '').slice(0, 10)) },
+        { key: 'storeName', header: 'Store' },
+        { key: 'departmentName', header: 'Department' },
+        { key: 'issuedTo', header: 'Issued to' },
+        { key: 'receivedBy', header: 'Received by' },
+        { key: 'requisitionNumber', header: 'Indent' },
+        { key: 'purpose', header: 'Purpose' },
+        { key: 'lines', header: 'Items' },
+        { key: 'value', header: 'Value (₹)' },
+      ],
+    };
+  }
+
+  private writeOffs(): RecordEntity {
+    const proposer = alias(users, 'wo_proposer');
+    const decide = (approve: boolean) => async (ctx: KitCtx, id: string) => {
+      const [w] = await ctx.tx.select().from(invWriteOffs).where(eq(invWriteOffs.id, id)).for('update');
+      if (!w || w.status !== 'proposed') throw new ConflictException('This write-off is not waiting for a decision');
+      if (w.proposedBy === ctx.p.userId) throw new ConflictException('You cannot decide a write-off you proposed');
+      let value = 0;
+      if (approve) value = (await applyStockMove(ctx.tx, ctx.p, { storeId: w.storeId, itemId: w.itemId, delta: -w.qty, qty: w.qty, kind: 'write_off', note: `${w.number}: ${w.reason}`, refType: 'inv_write_off', refId: w.id, fromBatch: w.batchNo, includeExpired: true, today: await this.proc.today(ctx.tx) })).valuePaise;
+      else throw new BadRequestException('Reject a write-off from its own screen, with the reason');
+      await ctx.tx.update(invWriteOffs).set({ status: 'approved', valuePaise: value, decidedBy: ctx.p.userId, decidedAt: new Date() }).where(eq(invWriteOffs.id, id));
+      await audit(ctx.tx, { tenantId: ctx.p.tenantId, actorType: 'user', actorId: ctx.p.userId, action: 'inventory.write_off_approved', subjectType: 'inv_write_off', subjectId: id, before: { status: 'proposed' }, after: { status: 'approved' }, data: { valuePaise: value } });
+    };
+    return {
+      key: 'inv-write-offs',
+      module: 'inventory',
+      table: invWriteOffs,
+      subjectType: 'inv_write_off',
+      roles: { read: ACCOUNTS, write: STORE_ROLES },
+      label: (r) => String(r.number),
+      list: {
+        select: { id: invWriteOffs.id, number: invWriteOffs.number, createdAt: invWriteOffs.createdAt, storeName: invStores.name, sku: invItems.sku, itemName: invItems.name, unit: invItems.unit, batchNo: invWriteOffs.batchNo, qty: invWriteOffs.qty, kind: invWriteOffs.kind, reason: invWriteOffs.reason, disposalMode: invWriteOffs.disposalMode, status: invWriteOffs.status, value: sql<number>`(${invWriteOffs.valuePaise} / 100.0)::float8`, realised: sql<number>`(${invWriteOffs.realisedPaise} / 100.0)::float8`, proposerName: proposer.fullName, decisionNote: invWriteOffs.decisionNote },
+        joins: (q) => q.innerJoin(invStores, eq(invStores.id, invWriteOffs.storeId)).innerJoin(invItems, eq(invItems.id, invWriteOffs.itemId)).leftJoin(proposer, eq(proposer.id, invWriteOffs.proposedBy)),
+        search: [invWriteOffs.number, invItems.name, invItems.sku, invWriteOffs.reason, invWriteOffs.batchNo],
+        filters: {
+          status: { label: 'Status', options: WO_STATUS, where: (v) => (inList(WO_STATUS)(v) ? eq(invWriteOffs.status, v) : undefined) },
+          kind: { label: 'Why', options: WO_KIND, where: (v) => (inList(WO_KIND)(v) ? eq(invWriteOffs.kind, v) : undefined) },
+          store: { label: 'Store', options: storeOptions, where: (v) => uuidEq(invWriteOffs.storeId, v) },
+        },
+        sorts: { number: invWriteOffs.number, date: invWriteOffs.createdAt, item: invItems.name, value: invWriteOffs.valuePaise },
+        defaultSort: { id: 'date', dir: 'desc' },
+      },
+      remove: { guard: async (ctx, id) => ((await ctx.tx.select({ s: invWriteOffs.status }).from(invWriteOffs).where(eq(invWriteOffs.id, id)))[0]?.s === 'approved' ? 'A write-off that has taken stock out cannot be deleted' : null) },
+      actions: { approve: { label: 'Approve', roles: APPROVER_ROLES, apply: decide(true) } },
+      columns: [
+        { key: 'number', header: 'Write-off' },
+        { key: 'createdAt', header: 'Proposed', value: (r) => (r.createdAt instanceof Date ? r.createdAt.toISOString().slice(0, 10) : String(r.createdAt ?? '').slice(0, 10)) },
+        { key: 'storeName', header: 'Store' },
+        { key: 'sku', header: 'SKU' },
+        { key: 'itemName', header: 'Item' },
+        { key: 'batchNo', header: 'Batch' },
+        { key: 'qty', header: 'Quantity' },
+        { key: 'kind', header: 'Why', value: (r) => WO_KIND.find((o) => o.value === r.kind)?.label ?? String(r.kind) },
+        { key: 'reason', header: 'Reason' },
+        { key: 'disposalMode', header: 'Disposal' },
+        { key: 'value', header: 'Value (₹)' },
+        { key: 'proposerName', header: 'Proposed by' },
+        { key: 'status', header: 'Status', value: (r) => WO_STATUS.find((o) => o.value === r.status)?.label ?? String(r.status) },
       ],
     };
   }

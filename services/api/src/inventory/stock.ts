@@ -116,7 +116,8 @@ export async function applyStockMove(tx: Tx, p: Pick<UserPrincipal, 'tenantId' |
   await tx.update(invStock).set({ qty: row.qty + m.delta, valuePaise: row.valuePaise - value }).where(eq(invStock.id, row.id));
   await auditMove(tx, p, m, -value);
   const after = before + m.delta;
-  if (item.active && item.reorderLevel > 0 && before > item.reorderLevel && after <= item.reorderLevel && (await readSettings(tx, p.tenantId, 'inventory')).rules.reorderAlerts !== false) {
+  // A transfer between stores does not change what the institution holds: no alert for it.
+  if (m.kind !== 'transfer_out' && item.active && item.reorderLevel > 0 && before > item.reorderLevel && after <= item.reorderLevel && (await readSettings(tx, p.tenantId, 'inventory')).rules.reorderAlerts !== false) {
     // Written like EventBus.emit (the outbox row in this transaction); the alerts consumer tells the store.
     await tx.insert(domainEvents).values({ tenantId: p.tenantId, type: DomainEvents.StockReorderLevel, aggregateType: 'inv_item', aggregateId: item.id, payload: { itemId: item.id, sku: item.sku, name: item.name, unit: item.unit, onHand: after, reorderLevel: item.reorderLevel, reorderQty: item.reorderQty }, actorId: p.userId });
   }

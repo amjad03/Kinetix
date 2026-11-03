@@ -93,7 +93,7 @@ describe('procurement depth: RFQ, transfers, returns, fixed-asset GL', () => {
   });
 
   it('posts depreciation and a disposal as journals that the GL export carries', async () => {
-    const a = (await http().post('/v1/assets').set(as('keeper')).send({ name: 'Projector', purchasedOn: '2024-06-01', costPaise: 100_000_00, usefulLifeYears: 5 }).expect(201)).body;
+    const a = (await http().post('/v1/assets').set(as('keeper')).send({ name: 'Projector', purchasedOn: '2024-04-01', costPaise: 100_000_00, usefulLifeYears: 5 }).expect(201)).body;
     await http().post('/v1/assets/gl/depreciation').set(as('keeper')).send({ fiscalYear: '2026' }).expect(400);
     expect((await http().post('/v1/assets/gl/depreciation').set(as('keeper')).send({ fiscalYear: '2024-25' }).expect(200)).body).toMatchObject({ posted: 1, totalPaise: 20_000_00 });
     expect((await http().post('/v1/assets/gl/depreciation').set(as('keeper')).send({ fiscalYear: '2024-25' }).expect(200)).body.posted).toBe(0); // rerun is a no-op

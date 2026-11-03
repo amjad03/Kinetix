@@ -282,13 +282,13 @@ describe('transport, hostel, canteen, inventory and assets', () => {
       expect((await http().get('/v1/inventory/items?low=true').set(as('store_keeper')).expect(200)).body[0]).toMatchObject({ sku: 'CH-01', onHand: 7, low: true });
       await http().post('/v1/inventory/stock/issue').set(as('store_keeper')).send({ storeId, itemId, qty: 8, issuedTo: 'x' }).expect(409);
       await http().post('/v1/inventory/stock/out').set(as('store_keeper')).send({ storeId, itemId, qty: 1 }).expect(400);
-      await http().post('/v1/inventory/stock/out').set(as('store_keeper')).send({ storeId, itemId, qty: 1, note: 'Damaged' }).expect(201);
+      await http().post('/v1/inventory/stock/out').set(as('principal')).send({ storeId, itemId, qty: 1, note: 'Damaged' }).expect(201);
       expect((await http().get('/v1/inventory/stock/moves?itemId=' + itemId).set(as('store_keeper')).expect(200)).body).toHaveLength(3);
       await http().post('/v1/inventory/stock/in').set(as('teacher')).send({ storeId, itemId, qty: 1 }).expect(403);
     });
 
     it('requisition, approval (not by the requester), PO, partial receipts, invoice match', async () => {
-      vendorId = (await http().post('/v1/inventory/vendors').set(as('store_keeper')).send({ name: 'Stationers Ltd', gstin: '29ABCDE1234F1Z5' }).expect(201)).body.id;
+      vendorId = (await http().post('/v1/inventory/vendors').set(as('store_keeper')).send({ name: 'Stationers Ltd', gstin: '29ABCDE1234F1ZW' }).expect(201)).body.id;
       reqId = (await http().post('/v1/inventory/requisitions').set(as('teacher')).send({ reason: 'Term supplies', lines: [{ itemId, qty: 100 }] }).expect(201)).body.id;
       expect((await http().get('/v1/inventory/requisitions').set(as('teacher')).expect(200)).body).toHaveLength(1);
       const po = { requisitionId: reqId, vendorId, storeId, lines: [{ itemId, qty: 100, unitPricePaise: 20_00 }] };

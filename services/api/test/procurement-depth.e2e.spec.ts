@@ -29,7 +29,8 @@ describe('procurement, stores, assets and facilities depth', () => {
   const put = (who: string, url: string, body: object = {}) => http().put(url).set(as(who)).send(body);
   const patch = (who: string, url: string, body: object = {}) => http().patch(url).set(as(who)).send(body);
   const login = async (slug: string, email: string) => (await http().post('/v1/auth/login').send({ tenant: slug, login: email, password: 'pw' }).expect(201)).body.accessToken as string;
-  const today = new Date().toISOString().slice(0, 10);
+  // The institution's day (IST), not the UTC date: late at night UTC is already tomorrow in India.
+  const today = new Date(Date.now() + 5.5 * 3_600_000).toISOString().slice(0, 10);
   const monday = nextMondayIst('09:00').toISOString().slice(0, 10);
 
   async function addUser(name: string, role: (typeof s.roleName.enumValues)[number]) {
@@ -70,7 +71,7 @@ describe('procurement, stores, assets and facilities depth', () => {
     ids.store = (await post('keeper', '/v1/records/inv-stores', { name: 'Central store', kind: 'central' }).expect(201)).body.id;
     ids.lab = (await post('keeper', '/v1/records/inv-stores', { name: 'Physics lab store', kind: 'lab', departmentId: ids.dept }).expect(201)).body.id;
     await post('keeper', '/v1/records/inv-vendors', { name: 'Bad GSTIN', gstin: '1234' }).expect(400);
-    ids.v1 = (await post('keeper', '/v1/records/inv-vendors', { name: 'Lakshmi Stationers', gstin: '29ABCDE1234F1Z5', contactPerson: 'Ravi', phone: '+919845012345' }).expect(201)).body.id;
+    ids.v1 = (await post('keeper', '/v1/records/inv-vendors', { name: 'Lakshmi Stationers', gstin: '29ABCDE1234F1ZW', contactPerson: 'Ravi', phone: '+919845012345' }).expect(201)).body.id;
     ids.v2 = (await post('keeper', '/v1/records/inv-vendors', { name: 'Cheap Paper Co' }).expect(201)).body.id;
     await put('keeper', `/v1/inventory/categories/${ids.cat}/vendors`, { vendorIds: [ids.v1] }).expect(200);
     expect((await get('keeper', '/v1/records/inv-categories').expect(200)).body.rows[0]).toMatchObject({ name: 'Stationery', items: 1, vendors: 1, vendorNames: 'Lakshmi Stationers' });
