@@ -1,4 +1,6 @@
-import { BadRequestException, Body, Controller, Get, Injectable, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Injectable, NotFoundException, OnModuleInit, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
+import { JobsService, type Job } from '../jobs/jobs.service.js';
+import { feeAccounts } from '../db/schema-fee-flagship.js';
 import { and, asc, desc, eq, inArray, ne } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
@@ -24,10 +26,33 @@ const TIMEOUT_MS = 8000;
 
 type LogRow = typeof tallySyncLog.$inferSelect;
 
+export const TALLY_RETRY_JOB = 'tally.retry';
+/** Minutes before a failed push is tried again on its own: doubling from 2, at most a day. */
+export const retryAfterMinutes = (attempts: number) => Math.min(1440, 2 ** Math.max(1, attempts));
+
 /** Builds and sends the XML for ledgers and vouchers; the log row records every try. */
 @Injectable()
-export class TallySync {
-  constructor(private readonly db: DbService) {}
+export class TallySync implements OnModuleInit {
+  constructor(
+    private readonly db: DbService,
+    private readonly jobs: JobsService,
+  ) {}
+
+  /** Every hour: failed and pending pushes whose wait is over are sent again (when live sync is on). */
+  onModuleInit(): void {
+    this.jobs.registerHourly(TALLY_RETRY_JOB, async (job: Job) => {
+      const [cfg] = await this.db.withTenant(job.tenantId, (tx) => tx.select().from(tallySettings));
+      if (!cfg?.enabled) return;
+      await this.db.withTenant(job.tenantId, (tx) => this.queueMissing(tx, job.tenantId));
+      await this.run(job.tenantId, undefined, { auto: true });
+    });
+  }
+
+  /** The Tally company a voucher goes to: its fee account's own company, else the institution's. */
+  async companyFor(tx: Tx, voucherId: string, fallback: string): Promise<string> {
+    const [r] = await tx.select({ c: feeAccounts.tallyCompany }).from(acctVouchers).innerJoin(feeAccounts, eq(feeAccounts.fundId, acctVouchers.fundId)).where(eq(acctVouchers.id, voucherId)).limit(1);
+    return r?.c?.trim() || fallback;
+  }
 
   /** The ledger name and Tally group of every account (mapped, or the account's own name and a sensible group). */
   async ledgerNames(tx: Tx) {
@@ -55,6 +80,12 @@ export class TallySync {
     return { type: v.voucherType, number: v.number, date: v.voucherDate, narration: v.narration, lines: lines.map((l) => ({ ledger: names.get(l.accountId) ?? '', debitPaise: l.debitPaise, creditPaise: l.creditPaise })) };
   }
 
+  /** The ledger masters a voucher uses, as XML for one company. */
+  async ledgersOf(tx: Tx, voucherId: string, company: string): Promise<string[]> {
+    const used = new Set((await tx.select({ a: acctVoucherLines.accountId }).from(acctVoucherLines).where(eq(acctVoucherLines.voucherId, voucherId))).map((r) => r.a));
+    return (await this.ledgerNames(tx)).filter((l) => used.has(l.account.id)).map((l) => ledgerXml(company, l));
+  }
+
   /** The XML for one log row, or null when its subject is gone (a voided voucher). */
   async xmlFor(tx: Tx, company: string, row: LogRow): Promise<string | null> {
     if (row.kind === 'ledger') {
@@ -65,8 +96,11 @@ export class TallySync {
     return v ? voucherXml(company, v) : null;
   }
 
-  /** Sends pending and failed rows (ledgers before vouchers) to the configured Tally. */
-  async run(tenantId: string, only?: string[]): Promise<{ sent: number; failed: number; skipped: number }> {
+  /**
+   * Sends pending and failed rows (ledgers before vouchers) to the configured Tally. A voucher of a fee account with
+   * its own Tally company goes there (its ledgers first). The automatic retry skips rows still waiting.
+   */
+  async run(tenantId: string, only?: string[], o: { auto?: boolean } = {}): Promise<{ sent: number; failed: number; skipped: number }> {
     const { cfg, rows } = await this.db.withTenant(tenantId, async (tx) => {
       const [cfg] = await tx.select().from(tallySettings);
       const rows = cfg ? await tx.select().from(tallySyncLog).where(and(inArray(tallySyncLog.status, ['pending', 'failed']), ...(only ? [inArray(tallySyncLog.id, only)] : []))).orderBy(asc(tallySyncLog.kind), asc(tallySyncLog.createdAt)) : [];
@@ -77,12 +111,23 @@ export class TallySync {
     let sent = 0;
     let failed = 0;
     let skipped = 0;
+    const post = async (xml: string) => {
+      const res = await fetch(`http://${cfg.host}:${cfg.port}`, { method: 'POST', headers: { 'content-type': 'text/xml; charset=utf-8' }, body: xml, signal: AbortSignal.timeout(TIMEOUT_MS) });
+      return res.ok ? readAnswer(await res.text()) : ({ ok: false as const, message: `Tally answered ${res.status}` } as const);
+    };
+    const now = Date.now();
     for (const row of rows) {
-      if (row.attempts >= MAX_ATTEMPTS && !only) {
+      if ((row.attempts >= MAX_ATTEMPTS && !only) || (o.auto && row.nextAttemptAt && row.nextAttemptAt.getTime() > now)) {
         skipped++;
         continue;
       }
-      const xml = await this.db.withTenant(tenantId, (tx) => this.xmlFor(tx, cfg.company, row));
+      const { xml, company, ledgers } = await this.db.withTenant(tenantId, async (tx) => {
+        const company = row.kind === 'voucher' ? await this.companyFor(tx, row.refId, cfg.company) : cfg.company;
+        const xml = await this.xmlFor(tx, company, row);
+        // A fee account's own company gets the voucher's ledgers first (Tally answers "already exists" when it has them).
+        const ledgers = company !== cfg.company && row.kind === 'voucher' ? await this.ledgersOf(tx, row.refId, company) : [];
+        return { xml, company, ledgers };
+      });
       let status: 'sent' | 'failed' = 'sent';
       let error: string | null = null;
       if (xml === null) {
@@ -90,18 +135,22 @@ export class TallySync {
         error = 'Nothing to send any more';
       } else {
         try {
-          const res = await fetch(`http://${cfg.host}:${cfg.port}`, { method: 'POST', headers: { 'content-type': 'text/xml; charset=utf-8' }, body: xml, signal: AbortSignal.timeout(TIMEOUT_MS) });
-          const answer = res.ok ? readAnswer(await res.text()) : { ok: false as const, message: `Tally answered ${res.status}` };
+          for (const l of ledgers) {
+            const a = await post(l);
+            if (!a.ok) throw new Error(`Ledger: ${a.message}`);
+          }
+          const answer = await post(xml);
           if (!answer.ok) {
             status = 'failed';
             error = answer.message;
           }
         } catch (e) {
           status = 'failed';
-          error = `Could not reach Tally at ${cfg.host}:${cfg.port} (${(e as Error).message.slice(0, 100)})`;
+          error = /^Ledger: /.test((e as Error).message) ? (e as Error).message : `Could not reach Tally at ${cfg.host}:${cfg.port} (${(e as Error).message.slice(0, 100)})`;
         }
       }
-      await this.db.withTenant(tenantId, (tx) => tx.update(tallySyncLog).set({ status, lastError: error, attempts: row.attempts + 1, requestXml: xml, updatedAt: new Date() }).where(eq(tallySyncLog.id, row.id)));
+      const nextAttemptAt = status === 'failed' ? new Date(now + retryAfterMinutes(row.attempts + 1) * 60_000) : null;
+      await this.db.withTenant(tenantId, (tx) => tx.update(tallySyncLog).set({ status, lastError: error, attempts: row.attempts + 1, requestXml: xml, company, nextAttemptAt, updatedAt: new Date() }).where(eq(tallySyncLog.id, row.id)));
       if (status === 'sent') sent++;
       else failed++;
     }
