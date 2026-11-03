@@ -4,7 +4,7 @@
 // Kept apart from schema.ts, which they reference.
 import { sql } from 'drizzle-orm';
 import { bigint, boolean, check, date, index, integer, jsonb, pgTable, smallint, text, time, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
-import { assets, departments, invGoodsReceipts, invInvoices, invItems, invPurchaseOrders, invRequisitions, invReturns, invStores, invVendors, rooms, tenants, users } from './schema.js';
+import { assets, departments, invGoodsReceipts, invInvoices, invItems, invPurchaseOrders, invRequisitions, invReturns, invStockMoves, invStores, invVendors, rooms, tenants, users } from './schema.js';
 
 const id = () => uuid('id').primaryKey().default(sql`gen_random_uuid()`);
 const tenantId = () => uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' });
@@ -119,6 +119,8 @@ export const invDebitNotes = pgTable(
     invoiceId: uuid('invoice_id').references(() => invInvoices.id, { onDelete: 'set null' }),
     createdBy: by('created_by'),
     createdAt: createdAt(),
+    /** The purchase-return journal in the books (migration 0209). */
+    voucherId: uuid('voucher_id'),
   },
   (t) => [uniqueIndex('inv_debit_notes_number_uq').on(t.tenantId, t.number), index('inv_debit_notes_po_idx').on(t.poId)],
 );
@@ -293,4 +295,80 @@ export const maintenanceTickets = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex('maintenance_tickets_number_uq').on(t.tenantId, t.number), index('maintenance_tickets_status_idx').on(t.tenantId, t.status, t.dueAt)],
+);
+
+// ---- stores pass (migration 0208): cost layers with batches, issue slips, stock write-offs -----------------------------
+
+/**
+ * A cost layer: one receipt of an item into a store (a batch, with its expiry when the item is batch-tracked) and how
+ * much of it is left. Stock leaves the earliest-expiring layer first; FIFO values it at the layer's cost.
+ */
+export const invStockLayers = pgTable(
+  'inv_stock_layers',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    storeId: uuid('store_id').notNull().references(() => invStores.id),
+    itemId: uuid('item_id').notNull().references(() => invItems.id),
+    batchNo: text('batch_no').notNull().default(''),
+    mfgOn: date('mfg_on'),
+    expiryOn: date('expiry_on'),
+    receivedOn: date('received_on').notNull(),
+    qtyIn: integer('qty_in').notNull(),
+    qtyLeft: integer('qty_left').notNull(),
+    unitCostPaise: paise('unit_cost_paise').notNull(),
+    sourceMoveId: uuid('source_move_id').references(() => invStockMoves.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('inv_stock_layers_open_idx').on(t.storeId, t.itemId, t.expiryOn).where(sql`qty_left > 0`), check('inv_stock_layers_qty_ck', sql`qty_left >= 0 and qty_left <= qty_in`)],
+);
+
+/** A numbered issue slip: several items handed from a store to a department or person in one go. */
+export const invIssueSlips = pgTable(
+  'inv_issue_slips',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    number: text('number').notNull(),
+    storeId: uuid('store_id').notNull().references(() => invStores.id),
+    departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
+    issuedTo: text('issued_to').notNull(),
+    receivedBy: text('received_by').notNull().default(''),
+    requisitionId: uuid('requisition_id').references(() => invRequisitions.id, { onDelete: 'set null' }),
+    purpose: text('purpose').notNull().default(''),
+    valuePaise: paise('value_paise').notNull().default(0),
+    lines: integer('lines').notNull().default(0),
+    createdBy: by('created_by'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('inv_issue_slips_number_uq').on(t.tenantId, t.number), index('inv_issue_slips_dept_idx').on(t.tenantId, t.departmentId, t.createdAt)],
+);
+
+/** Stock to be written off (expired, damaged, obsolete, lost): proposed by the store, approved before stock leaves. */
+export const invWriteOffs = pgTable(
+  'inv_write_offs',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    number: text('number').notNull(),
+    storeId: uuid('store_id').notNull().references(() => invStores.id),
+    itemId: uuid('item_id').notNull().references(() => invItems.id),
+    batchNo: text('batch_no'),
+    qty: integer('qty').notNull(),
+    reason: text('reason').notNull(),
+    /** expired | damaged | obsolete | lost | shortage */
+    kind: text('kind').notNull(),
+    /** scrap | auction | destroy | return_to_vendor | none */
+    disposalMode: text('disposal_mode').notNull().default('scrap'),
+    realisedPaise: paise('realised_paise').notNull().default(0),
+    /** proposed | approved | rejected */
+    status: text('status').notNull().default('proposed'),
+    valuePaise: paise('value_paise').notNull().default(0),
+    proposedBy: by('proposed_by'),
+    decidedBy: by('decided_by'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    decisionNote: text('decision_note'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('inv_write_offs_number_uq').on(t.tenantId, t.number)],
 );

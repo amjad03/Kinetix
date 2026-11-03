@@ -10,6 +10,10 @@ import { disposalLines } from '../finance/gl.js';
 import { assetAllocations, assetGlPostings, assets, departments, invPurchaseOrders, invVendors, rooms } from '../db/schema.js';
 import { assetCondemnations, assetTransfers } from '../db/schema-procurement.js';
 import { fiscalYearOf } from './procurement.logic.js';
+import { booksOn, postDisposal } from './purchase-books.js';
+import { itBlockFor } from './stores.logic.js';
+import { DomainEvents } from '../events/events.js';
+import { domainEvents } from '../db/schema-foundation.js';
 
 export interface AssetInput {
   name: string;
@@ -30,6 +34,11 @@ export interface AssetInput {
   model?: string | null;
   serialNo?: string | null;
   warrantyUntil?: string | null;
+  putToUseOn?: string | null;
+  itBlock?: string | null;
+  labEquipment?: boolean;
+  calibrationDueOn?: string | null;
+  custodianUserId?: string | null;
 }
 
 /** The asset register's shared writes: registering, transfers, and condemnation through to the write-off. */
@@ -56,7 +65,7 @@ export class AssetsService {
     const tag = await nextNumber(tx, p.tenantId, 'AST');
     const [a] = await tx
       .insert(assets)
-      .values({ tenantId: p.tenantId, tag, name: b.name, category: b.category, location: b.location, purchasedOn: b.purchasedOn, costPaise: b.costPaise, salvagePaise: b.salvagePaise, usefulLifeYears: b.usefulLifeYears, method: b.method, wdvRatePct: b.wdvRatePct ?? null, departmentId: b.departmentId ?? null, roomId: b.roomId ?? null, vendorId: b.vendorId ?? null, poId: b.poId ?? null, invoiceNo: b.invoiceNo ?? null, make: b.make ?? null, model: b.model ?? null, serialNo: b.serialNo ?? null, warrantyUntil: b.warrantyUntil ?? null })
+      .values({ tenantId: p.tenantId, tag, name: b.name, category: b.category, location: b.location, purchasedOn: b.purchasedOn, costPaise: b.costPaise, salvagePaise: b.salvagePaise, usefulLifeYears: b.usefulLifeYears, method: b.method, wdvRatePct: b.wdvRatePct ?? null, departmentId: b.departmentId ?? null, roomId: b.roomId ?? null, vendorId: b.vendorId ?? null, poId: b.poId ?? null, invoiceNo: b.invoiceNo ?? null, make: b.make ?? null, model: b.model ?? null, serialNo: b.serialNo ?? null, warrantyUntil: b.warrantyUntil ?? null, putToUseOn: b.putToUseOn ?? b.purchasedOn, itBlock: b.itBlock ?? itBlockFor(b.category), labEquipment: b.labEquipment ?? false, calibrationDueOn: b.calibrationDueOn ?? null, custodianUserId: b.custodianUserId ?? null })
       .returning();
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.registered', subjectType: 'asset', subjectId: a.id, data: { tag } });
     return a;
@@ -87,8 +96,13 @@ export class AssetsService {
     await tx.update(assetAllocations).set({ returnedOn: b.disposedOn }).where(and(eq(assetAllocations.assetId, id), isNull(assetAllocations.returnedOn)));
     const [done] = await tx.update(assets).set({ status: 'disposed', disposedOn: b.disposedOn, disposalPaise: b.disposalPaise }).where(eq(assets.id, id)).returning();
     const [acc] = await tx.select({ n: sql<number>`coalesce(sum((${assetGlPostings.lines}->0->>'debitPaise')::bigint), 0)::float8` }).from(assetGlPostings).where(and(eq(assetGlPostings.assetId, id), eq(assetGlPostings.kind, 'depreciation')));
-    await tx.insert(assetGlPostings).values({ tenantId: p.tenantId, assetId: id, kind: 'disposal', fiscalYear: fiscalYearOf(b.disposedOn), postedOn: b.disposedOn, voucherNo: `DSP-${a.tag}`, narration: `Disposal of ${a.name} (${a.tag})`, lines: disposalLines(a.costPaise, acc.n, b.disposalPaise), postedBy: p.userId });
-    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.disposed', subjectType: 'asset', subjectId: id, data: b });
+    const [gl] = await tx.insert(assetGlPostings).values({ tenantId: p.tenantId, assetId: id, kind: 'disposal', fiscalYear: fiscalYearOf(b.disposedOn), postedOn: b.disposedOn, voucherNo: `DSP-${a.tag}`, narration: `Disposal of ${a.name} (${a.tag})`, lines: disposalLines(a.costPaise, acc.n, b.disposalPaise), postedBy: p.userId }).returning({ id: assetGlPostings.id });
+    if (await booksOn(tx, p.tenantId)) {
+      const v = await postDisposal(tx, p, { assetId: id, tag: a.tag, name: a.name, date: b.disposedOn, costPaise: a.costPaise, accumulatedPaise: acc.n, proceedsPaise: b.disposalPaise });
+      await tx.update(assetGlPostings).set({ voucherId: v.id }).where(eq(assetGlPostings.id, gl.id));
+    }
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.disposed', subjectType: 'asset', subjectId: id, before: { status: a.status }, after: { status: 'disposed' }, data: b });
+    await tx.insert(domainEvents).values({ tenantId: p.tenantId, type: DomainEvents.AssetDisposed, aggregateType: 'asset', aggregateId: id, payload: { tag: a.tag, costPaise: a.costPaise, proceedsPaise: b.disposalPaise, accumulatedPaise: acc.n }, actorId: p.userId });
     return done;
   }
 

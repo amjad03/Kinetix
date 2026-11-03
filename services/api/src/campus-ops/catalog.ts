@@ -34,7 +34,7 @@ export const NUMBERING: Record<OpsModule, string[]> = {
   hostel: ['HAP'],
   transport: [],
   canteen: [],
-  inventory: ['TRF', 'RTN', 'SV', 'GE'],
+  inventory: ['TRF', 'RTN', 'SV', 'GE', 'ISS', 'WO'],
   assets: ['AST', 'CND', 'MT', 'FB'],
   procurement: ['REQ', 'RFQ', 'PO', 'GRN', 'DN', 'PV'],
 };
@@ -101,20 +101,27 @@ export const DEFAULTS: Record<OpsModule, ModuleDefaults> = {
     defaults: { lowBalancePaise: 5000 },
   },
   inventory: {
-    rules: { allowNegativeStock: false, reorderAlerts: true, issueNeedsRequisition: false },
+    // Write-offs (scrap, expiry, loss) wait for an approver; batches expiring within expiryAlertDays are flagged.
+    rules: { allowNegativeStock: false, reorderAlerts: true, issueNeedsRequisition: false, writeOffNeedsApproval: true, expiryAlertDays: 30 },
     templates: { issueSlip: 'Issued {qty} {unit} of {item} to {to} from {store}.' },
     defaults: { unit: 'nos', category: 'general' },
   },
   assets: {
     // Maintenance tickets fall due this many hours after they are raised, by priority; bookings of halls wait for approval when bookingNeedsApproval is on.
-    rules: { depreciationMethod: 'slm', capitaliseAbovePaise: 500000, amcReminderDays: 30, maintenanceEveryMonths: 6, slaUrgentHours: 4, slaHighHours: 24, slaNormalHours: 72, slaLowHours: 168, bookingNeedsApproval: true },
+    // Durable items received on an order are registered as assets (registerFromReceipt); purchases at or above
+    // capitaliseAbovePaise a unit go to fixed assets in the books. Depreciation is posted under the Companies Act
+    // (pro-rata by days in use); the Income-tax Act block statement is a report.
+    rules: { depreciationMethod: 'slm', capitaliseAbovePaise: 500000, amcReminderDays: 30, maintenanceEveryMonths: 6, slaUrgentHours: 4, slaHighHours: 24, slaNormalHours: 72, slaLowHours: 168, bookingNeedsApproval: true, registerFromReceipt: true },
     templates: { assetTag: '{tag} · {name} · {location}' },
     defaults: { usefulLifeYears: 5, salvagePct: 5 },
   },
   procurement: {
     // Up to quotesRequiredAbovePaise an order may go direct to one vendor; above it quotations, a rate contract or GeM;
     // above tenderAbovePaise a tender or GeM. Orders above approvalAbovePaise (0 = every order) wait for an approver.
-    rules: { quotesRequiredAbovePaise: 2500000, minQuotes: 3, invoiceTolerancePaise: 100, approvalAbovePaise: 5000000, tenderAbovePaise: 50000000, indentBudgetCheck: true },
+    // GST: CGST and SGST when the vendor's GSTIN is in institutionStateCode, IGST otherwise; gstInputCredit off (an
+    // exempt educational supply) puts the GST into the cost of stock and assets. Matched invoices post a purchase
+    // journal and payments a payment voucher to the books (postToBooks).
+    rules: { quotesRequiredAbovePaise: 2500000, minQuotes: 3, invoiceTolerancePaise: 100, approvalAbovePaise: 5000000, tenderAbovePaise: 50000000, indentBudgetCheck: true, institutionStateCode: '29', gstInputCredit: false, postToBooks: true },
     templates: { purchaseOrderTerms: 'Delivery within {days} days. Payment 30 days from a matched invoice.' },
     defaults: { paymentTermsDays: 30, deliveryDays: 15 },
   },
@@ -480,7 +487,7 @@ export const REPORTS: Record<string, ReportDef> = {
     module: 'inventory',
     columns: [['at', 'Date'], ['store', 'Store'], ['item', 'Item'], ['kind', 'Movement'], ['qty', 'Quantity'], ['note', 'Note']],
     sql: `select to_char(m.created_at, 'YYYY-MM-DD') as at, st.name as store, i.name as item, m.kind, m.delta as qty, coalesce(m.note, '') as note
-          from inv_stock_moves m join inv_items i on i.id = m.item_id join inv_stores st on st.id = m.store_id where m.created_at::date between ${D} and ${T} and $3::text is null order by m.created_at desc limit 3000`,
+          from inv_stock_moves m join inv_items i on i.id = m.item_id join inv_stores st on st.id = m.store_id where (m.created_at at time zone 'Asia/Kolkata')::date between ${D} and ${T} and $3::text is null order by m.created_at desc limit 3000`,
     filters: ['from', 'to'],
   },
   'assets.register': {
@@ -518,11 +525,11 @@ export const REPORTS: Record<string, ReportDef> = {
     module: 'inventory',
     columns: [['store', 'Store'], ['sku', 'SKU'], ['item', 'Item'], ['unit', 'Unit'], ['opening', 'Opening'], ['received', 'Received'], ['issued', 'Issued and used'], ['closing', 'Closing'], ['value', 'Closing value (₹)']],
     sql: `select st.name as store, i.sku, i.name as item, i.unit,
-            coalesce(sum(m.delta) filter (where m.created_at::date < ${D}), 0)::int as opening,
-            coalesce(sum(m.delta) filter (where m.delta > 0 and m.created_at::date between ${D} and ${T}), 0)::int as received,
-            coalesce(-sum(m.delta) filter (where m.delta < 0 and m.created_at::date between ${D} and ${T}), 0)::int as issued,
-            coalesce(sum(m.delta) filter (where m.created_at::date <= ${T}), 0)::int as closing,
-            round(coalesce(sum(m.delta) filter (where m.created_at::date <= ${T}), 0) * max(i.last_price_paise) / 100.0, 2) as value
+            coalesce(sum(m.delta) filter (where (m.created_at at time zone 'Asia/Kolkata')::date < ${D}), 0)::int as opening,
+            coalesce(sum(m.delta) filter (where m.delta > 0 and (m.created_at at time zone 'Asia/Kolkata')::date between ${D} and ${T}), 0)::int as received,
+            coalesce(-sum(m.delta) filter (where m.delta < 0 and (m.created_at at time zone 'Asia/Kolkata')::date between ${D} and ${T}), 0)::int as issued,
+            coalesce(sum(m.delta) filter (where (m.created_at at time zone 'Asia/Kolkata')::date <= ${T}), 0)::int as closing,
+            round(coalesce(sum(m.value_paise) filter (where (m.created_at at time zone 'Asia/Kolkata')::date <= ${T}), 0) / 100.0, 2) as value
           from inv_stock_moves m join inv_items i on i.id = m.item_id join inv_stores st on st.id = m.store_id where $3::text is null group by st.name, i.id order by st.name, i.name`,
     filters: ['from', 'to'],
   },
@@ -537,9 +544,9 @@ export const REPORTS: Record<string, ReportDef> = {
   'inventory.consumption': {
     module: 'inventory',
     columns: [['department', 'Department'], ['sku', 'SKU'], ['item', 'Item'], ['qty', 'Quantity'], ['unit', 'Unit'], ['value', 'Value (₹)']],
-    sql: `select coalesce(d.name, m.issued_to, '') as department, i.sku, i.name as item, (-sum(m.delta))::int as qty, i.unit, round(-sum(m.delta) * max(i.last_price_paise) / 100.0, 2) as value
+    sql: `select coalesce(d.name, m.issued_to, '') as department, i.sku, i.name as item, (-sum(m.delta))::int as qty, i.unit, round(-sum(m.value_paise) / 100.0, 2) as value
           from inv_stock_moves m join inv_items i on i.id = m.item_id left join departments d on d.id = m.department_id
-          where m.kind = 'issue' and m.created_at::date between ${D} and ${T} and $3::text is null group by 1, i.id order by 1, i.name`,
+          where m.kind = 'issue' and (m.created_at at time zone 'Asia/Kolkata')::date between ${D} and ${T} and $3::text is null group by 1, i.id order by 1, i.name`,
     filters: ['from', 'to'],
   },
   'inventory.verification': {

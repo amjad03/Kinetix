@@ -4122,7 +4122,7 @@ export const TENANT_TABLES = [
   'attendance_qr_scans', 'attendance_device_bindings', 'attendance_detention_lists', 'attendance_detention_entries',
   // Procurement, assets and facilities depth (migrations 0171, 0172).
   'inv_categories', 'inv_approved_vendors', 'inv_vendor_ratings', 'inv_rate_contracts', 'inv_approvals', 'inv_po_amendments', 'inv_debit_notes',
-  'inv_stock_verifications', 'inv_stock_verification_lines', 'inv_gate_entries', 'asset_transfers', 'asset_condemnations', 'facility_bookings', 'maintenance_tickets',
+  'inv_stock_verifications', 'inv_stock_verification_lines', 'inv_gate_entries', 'inv_stock_layers', 'inv_issue_slips', 'inv_write_offs', 'asset_transfers', 'asset_condemnations', 'facility_bookings', 'maintenance_tickets',
   // Placements depth (migration 0173).
   'placement_company_contacts', 'placement_optins', 'interview_slots', 'placement_trainings', 'placement_training_sessions', 'placement_training_attendance',
   'placement_training_scores', 'student_progressions', 'alumni_job_posts', 'placement_feedback',
@@ -4568,6 +4568,16 @@ export const invItems = pgTable(
     /** The unit price of the latest purchase order line, for indent estimates. */
     lastPricePaise: bigint('last_price_paise', { mode: 'number' }).notNull().default(0),
     createdAt: createdAt(),
+    /** HSN code and GST rate (migration 0208); the type decides the ledger (durables go to the asset register). */
+    hsnCode: text('hsn_code'),
+    gstRatePct: numeric('gst_rate_pct', { precision: 5, scale: 2, mode: 'number' }).notNull().default(0),
+    /** consumable, chemical, provision, spare or durable */
+    itemType: text('item_type').notNull().default('consumable'),
+    /** Received and issued by batch with an expiry date (lab chemicals, mess provisions). */
+    batchTracked: boolean('batch_tracked').notNull().default(false),
+    shelfLifeDays: integer('shelf_life_days'),
+    /** fifo or weighted_average */
+    valuation: text('valuation').notNull().default('weighted_average'),
   },
   (t) => [uniqueIndex('inv_items_sku_uq').on(t.tenantId, t.sku)],
 );
@@ -4581,6 +4591,8 @@ export const invStock = pgTable(
     storeId: uuid('store_id').notNull().references(() => invStores.id),
     itemId: uuid('item_id').notNull().references(() => invItems.id),
     qty: integer('qty').notNull().default(0),
+    /** What the quantity is worth at its cost (migration 0208). */
+    valuePaise: bigint('value_paise', { mode: 'number' }).notNull().default(0),
   },
   (t) => [uniqueIndex('inv_stock_uq').on(t.storeId, t.itemId)],
 );
@@ -4602,6 +4614,11 @@ export const invStockMoves = pgTable(
     note: text('note').notNull().default(''),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
+    /** The move's cost: per unit, and in all (signed like the quantity), and the batch it came from (migration 0208). */
+    unitCostPaise: bigint('unit_cost_paise', { mode: 'number' }),
+    valuePaise: bigint('value_paise', { mode: 'number' }).notNull().default(0),
+    batchNo: text('batch_no'),
+    expiryOn: date('expiry_on'),
   },
   (t) => [index('inv_stock_moves_item_idx').on(t.itemId, t.createdAt)],
 );
@@ -4624,6 +4641,14 @@ export const invVendors = pgTable(
     blacklistReason: text('blacklist_reason'),
     blacklistedAt: timestamp('blacklisted_at', { withTimezone: true }),
     createdAt: createdAt(),
+    /** GST state (from the GSTIN), registration type, MSME (Udyam) registration and agreed credit days (migration 0209). */
+    stateCode: text('state_code'),
+    /** regular, composition or unregistered */
+    gstRegistration: text('gst_registration').notNull().default('regular'),
+    msmeUdyamNo: text('msme_udyam_no'),
+    /** micro, small or medium */
+    msmeCategory: text('msme_category'),
+    paymentTermsDays: integer('payment_terms_days'),
   },
   (t) => [uniqueIndex('inv_vendors_name_uq').on(t.tenantId, t.name)],
 );
@@ -4695,6 +4720,10 @@ export const invPurchaseOrders = pgTable(
     deliveryBy: date('delivery_by'),
     terms: text('terms').notNull().default(''),
     cancelReason: text('cancel_reason'),
+    /** The value before GST, the GST, and whether the supply is between states (IGST) (migration 0209). */
+    taxablePaise: bigint('taxable_paise', { mode: 'number' }),
+    taxPaise: bigint('tax_paise', { mode: 'number' }).notNull().default(0),
+    interState: boolean('inter_state').notNull().default(false),
   },
   (t) => [uniqueIndex('inv_po_number_uq').on(t.tenantId, t.number)],
 );
@@ -4707,6 +4736,9 @@ export const invPoLines = pgTable('inv_po_lines', {
   qty: integer('qty').notNull(),
   unitPricePaise: integer('unit_price_paise').notNull(),
   receivedQty: integer('received_qty').notNull().default(0),
+  /** The line's GST rate and GST on the ordered quantity (migration 0209). */
+  gstRatePct: numeric('gst_rate_pct', { precision: 5, scale: 2, mode: 'number' }).notNull().default(0),
+  taxPaise: bigint('tax_paise', { mode: 'number' }).notNull().default(0),
 });
 
 export const invGoodsReceipts = pgTable('inv_goods_receipts', {
@@ -4721,6 +4753,10 @@ export const invGoodsReceipts = pgTable('inv_goods_receipts', {
   number: text('number'),
   /** The vendor's delivery challan. */
   challanNo: text('challan_no'),
+  /** Who inspected the goods, what they found, and the day of receipt (migration 0208). */
+  inspectedBy: uuid('inspected_by').references(() => users.id, { onDelete: 'set null' }),
+  inspectionNote: text('inspection_note').notNull().default(''),
+  receivedOn: date('received_on'),
 }, (t) => [uniqueIndex('inv_grn_key_uq').on(t.tenantId, t.idempotencyKey)]);
 
 export const invGoodsReceiptLines = pgTable('inv_goods_receipt_lines', {
@@ -4732,6 +4768,10 @@ export const invGoodsReceiptLines = pgTable('inv_goods_receipt_lines', {
   /** Delivered but refused at inspection: not taken into stock, and debited to the vendor. */
   rejectedQty: integer('rejected_qty').notNull().default(0),
   rejectReason: text('reject_reason'),
+  /** The batch received, with its manufacture and expiry dates (migration 0208). */
+  batchNo: text('batch_no'),
+  mfgOn: date('mfg_on'),
+  expiryOn: date('expiry_on'),
 });
 
 /** A vendor's invoice, matched to the PO and what was actually received (three-way match). */
@@ -4757,6 +4797,14 @@ export const invInvoices = pgTable(
     paymentMode: text('payment_mode'),
     paymentRef: text('payment_ref'),
     debitPaise: bigint('debit_paise', { mode: 'number' }).notNull().default(0),
+    /** The GST on the invoice, the day it falls due, and the purchase journal and payment voucher in the books (migration 0209). */
+    taxablePaise: bigint('taxable_paise', { mode: 'number' }),
+    cgstPaise: bigint('cgst_paise', { mode: 'number' }).notNull().default(0),
+    sgstPaise: bigint('sgst_paise', { mode: 'number' }).notNull().default(0),
+    igstPaise: bigint('igst_paise', { mode: 'number' }).notNull().default(0),
+    dueOn: date('due_on'),
+    journalVoucherId: uuid('journal_voucher_id'),
+    paymentVoucherId: uuid('payment_voucher_id'),
   },
   (t) => [uniqueIndex('inv_invoices_vendor_no_uq').on(t.tenantId, t.vendorId, t.invoiceNo)],
 );
@@ -4795,6 +4843,14 @@ export const assets = pgTable(
     invoiceNo: text('invoice_no'),
     make: text('make'),
     model: text('model'),
+    /** Depreciation starts the day it is put to use; its Income-tax block; laboratory register entries (migration 0209). */
+    putToUseOn: date('put_to_use_on'),
+    itBlock: text('it_block'),
+    labEquipment: boolean('lab_equipment').notNull().default(false),
+    working: boolean('working').notNull().default(true),
+    calibrationDueOn: date('calibration_due_on'),
+    custodianUserId: uuid('custodian_user_id').references(() => users.id, { onDelete: 'set null' }),
+    grnId: uuid('grn_id'),
   },
   (t) => [uniqueIndex('assets_tag_uq').on(t.tenantId, t.tag)],
 );
@@ -5565,6 +5621,9 @@ export const invQuotes = pgTable(
     note: text('note').notNull().default(''),
     totalPaise: bigint('total_paise', { mode: 'number' }).notNull(),
     createdAt: createdAt(),
+    /** The quote before GST and its GST: quotations are compared on the total with GST (migration 0209). */
+    taxablePaise: bigint('taxable_paise', { mode: 'number' }),
+    taxPaise: bigint('tax_paise', { mode: 'number' }).notNull().default(0),
   },
   (t) => [uniqueIndex('inv_quote_vendor_uq').on(t.rfqId, t.vendorId)],
 );
@@ -5575,6 +5634,7 @@ export const invQuoteLines = pgTable('inv_quote_lines', {
   quoteId: uuid('quote_id').notNull().references(() => invQuotes.id, { onDelete: 'cascade' }),
   itemId: uuid('item_id').notNull().references(() => invItems.id),
   unitPricePaise: bigint('unit_price_paise', { mode: 'number' }).notNull(),
+  gstRatePct: numeric('gst_rate_pct', { precision: 5, scale: 2, mode: 'number' }).notNull().default(0),
 });
 
 export const invTransfers = pgTable('inv_transfers', {
@@ -5623,6 +5683,8 @@ export const assetGlPostings = pgTable(
     lines: jsonb('lines').$type<{ ledger: string; debitPaise: number; creditPaise: number }[]>().notNull(),
     postedBy: uuid('posted_by').notNull().references(() => users.id),
     createdAt: createdAt(),
+    /** The voucher in the books this posting made (migration 0209). */
+    voucherId: uuid('voucher_id'),
   },
   (t) => [uniqueIndex('asset_gl_uq').on(t.assetId, t.kind, t.fiscalYear)],
 );

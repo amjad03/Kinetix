@@ -7,7 +7,7 @@ import type { UserPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { qrSvg } from '../common/qr.js';
 import { assetTagsPdf } from '../documents/pdfs.js';
-import { bookValueAfter, Day, depreciationSchedule, Paise } from '../common/ops.js';
+import { Day, depreciationSchedule, Paise } from '../common/ops.js';
 import { depreciationLines } from '../finance/gl.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
@@ -16,6 +16,8 @@ import { assetAllocations, assetGlPostings, assetMaintenance, assets, department
 import { assetCondemnations, assetTransfers } from '../db/schema-procurement.js';
 import { AssetsService } from './assets.service.js';
 import { APPROVER_ROLES, STORE_ROLES } from './inventory.controller.js';
+import { booksOn, postDepreciationJournal } from './purchase-books.js';
+import { companiesActSchedule, IT_BLOCKS } from './stores.logic.js';
 
 const AssetBody = z
   .object({
@@ -37,13 +39,18 @@ const AssetBody = z
     model: z.string().trim().max(80).nullish(),
     serialNo: z.string().trim().max(80).nullish(),
     warrantyUntil: Day.nullish(),
+    putToUseOn: Day.nullish(),
+    itBlock: z.enum(Object.keys(IT_BLOCKS) as [string, ...string[]]).nullish(),
+    labEquipment: z.boolean().default(false),
+    calibrationDueOn: Day.nullish(),
+    custodianUserId: z.uuid().nullish(),
   })
+  .refine((a) => !a.putToUseOn || a.putToUseOn >= a.purchasedOn, { message: 'It cannot be put to use before it was bought', path: ['putToUseOn'] })
   .refine((a) => a.salvagePaise < a.costPaise, { message: 'Salvage value must be below cost', path: ['salvagePaise'] })
   .refine((a) => a.method !== 'wdv' || a.wdvRatePct != null, { message: 'Give the written-down rate', path: ['wdvRatePct'] });
 const AllocateBody = z.object({ assignedTo: z.string().trim().min(1).max(120), userId: z.uuid().optional(), allocatedOn: Day.optional() });
 const MaintBody = z.object({ kind: z.enum(['service', 'repair', 'inspection']), description: z.string().trim().max(300).default(''), costPaise: Paise.default(0), doneOn: Day, nextDueOn: Day.optional(), ongoing: z.boolean().default(false) });
 const FyBody = z.object({ fiscalYear: z.string().regex(/^\d{4}-\d{2}$/, 'Use a financial year like 2026-27') });
-const fiscalYearOf = (day: string) => { const y = Number(day.slice(0, 4)) - (Number(day.slice(5, 7)) < 4 ? 1 : 0); return `${y}-${String((y + 1) % 100).padStart(2, '0')}`; };
 const DisposeBody = z.object({ disposedOn: Day, disposalPaise: Paise.default(0) });
 const TransferBody = z.object({ toLocation: z.string().trim().max(120).optional(), toRoomId: z.uuid().nullish(), toDepartmentId: z.uuid().nullish(), reason: z.string().trim().min(3).max(300), on: Day.optional() });
 const CondemnBody = z.object({ reason: z.string().trim().min(3).max(500), condition: z.string().trim().max(300).default('') });
@@ -156,8 +163,9 @@ export class AssetsController {
   }
 
   /**
-   * Posts a financial year's depreciation journals (one per asset, dated 31 March) for the GL
-   * export: the register's schedule year for that year, none in the year of disposal. Safe to rerun.
+   * Posts a financial year's depreciation under the Companies Act (Schedule II: pro-rata by the days the asset was in
+   * use, from the day it was put to use), one GL entry per asset dated 31 March, and one journal in the books for the
+   * run. None in the year of disposal (the disposal journal clears what was charged). Safe to rerun.
    */
   @Post('gl/depreciation')
   @HttpCode(200)
@@ -170,15 +178,21 @@ export class AssetsController {
       const rows = await tx.select().from(assets).where(and(sql`${assets.purchasedOn} <= ${end}::date`, sql`(${assets.disposedOn} is null or ${assets.disposedOn} > ${end}::date)`)).orderBy(asc(assets.tag));
       let posted = 0;
       let totalPaise = 0;
+      const ids: string[] = [];
       for (const a of rows) {
-        const k = start - Number(fiscalYearOf(a.purchasedOn).slice(0, 4)) + 1;
-        const paise = depreciationSchedule(a)[k - 1]?.depreciationPaise ?? 0;
+        const year = companiesActSchedule({ ...a, putToUseOn: a.putToUseOn ?? a.purchasedOn, disposedOn: null }, b.fiscalYear).find((y) => y.fiscalYear === b.fiscalYear);
+        const paise = year?.depreciationPaise ?? 0;
         if (paise <= 0) continue;
         const done = await tx.insert(assetGlPostings).values({ tenantId: p.tenantId, assetId: a.id, kind: 'depreciation', fiscalYear: b.fiscalYear, postedOn: end, voucherNo: `DEP-${a.tag}-${b.fiscalYear}`, narration: `Depreciation ${b.fiscalYear} on ${a.name} (${a.tag})`, lines: depreciationLines(paise), postedBy: p.userId }).onConflictDoNothing().returning({ id: assetGlPostings.id });
-        if (done.length) { posted++; totalPaise += paise; }
+        if (done.length) { posted++; totalPaise += paise; ids.push(done[0].id); }
       }
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.depreciation_posted', subjectType: 'asset', data: { fiscalYear: b.fiscalYear, posted, totalPaise } });
-      return { fiscalYear: b.fiscalYear, posted, totalPaise };
+      let voucherId: string | null = null;
+      if (posted && (await booksOn(tx, p.tenantId))) {
+        voucherId = (await postDepreciationJournal(tx, p, { fiscalYear: b.fiscalYear, date: end, totalPaise, runId: ids[0], count: posted })).id;
+        await tx.update(assetGlPostings).set({ voucherId }).where(inArray(assetGlPostings.id, ids));
+      }
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'assets.depreciation_posted', subjectType: 'asset', data: { fiscalYear: b.fiscalYear, posted, totalPaise, voucherId } });
+      return { fiscalYear: b.fiscalYear, posted, totalPaise, voucherId };
     });
   }
 
@@ -258,13 +272,15 @@ export class AssetsController {
     return { ...a, qr: `zynetix://asset/${a.tag}` };
   }
 
+  /** Book value today: cost less Companies Act depreciation to the end of the last financial year closed, and pro-rata this year. */
   private bookValue(a: typeof assets.$inferSelect, today: string): number {
-    const end = a.disposedOn && a.disposedOn < today ? a.disposedOn : today;
-    const years = Math.max(0, Math.floor((Date.parse(`${end}T00:00:00Z`) - Date.parse(`${a.purchasedOn}T00:00:00Z`)) / (365.25 * 86400_000)));
-    return bookValueAfter(a, years);
+    if (a.status === 'disposed') return 0;
+    const s = companiesActSchedule({ ...a, putToUseOn: a.putToUseOn ?? a.purchasedOn, disposedOn: today }, '2999-00');
+    return s.length ? s[s.length - 1].closingPaise : a.costPaise;
   }
 
   private async detail(tx: Tx, id: string) {
+    const fyNow = (d: string) => { const y = Number(d.slice(0, 4)) - (Number(d.slice(5, 7)) < 4 ? 1 : 0); return `${y}-${String((y + 1) % 100).padStart(2, '0')}`; };
     const [a] = await tx.select().from(assets).where(eq(assets.id, id));
     if (!a) throw new NotFoundException('Asset not found');
     const [allocations, maintenance, transfers, condemnations] = await Promise.all([
@@ -274,7 +290,8 @@ export class AssetsController {
       tx.select().from(assetCondemnations).where(eq(assetCondemnations.assetId, id)).orderBy(desc(assetCondemnations.createdAt)),
     ]);
     const [names] = await tx.select({ room: rooms.name, department: departments.name, vendor: invVendors.name, po: invPurchaseOrders.number }).from(assets).leftJoin(rooms, eq(rooms.id, assets.roomId)).leftJoin(departments, eq(departments.id, assets.departmentId)).leftJoin(invVendors, eq(invVendors.id, assets.vendorId)).leftJoin(invPurchaseOrders, eq(invPurchaseOrders.id, assets.poId)).where(eq(assets.id, id));
-    return { ...this.view(a), ...names, qrSvg: qrSvg(`zynetix://asset/${a.tag}`), allocations, maintenance, transfers, condemnations, depreciation: depreciationSchedule(a), bookValuePaise: this.bookValue(a, await this.today(tx)) };
+    const today = await this.today(tx);
+    return { ...this.view(a), ...names, qrSvg: qrSvg(`zynetix://asset/${a.tag}`), allocations, maintenance, transfers, condemnations, depreciation: depreciationSchedule(a), companiesAct: companiesActSchedule({ ...a, putToUseOn: a.putToUseOn ?? a.purchasedOn }, fyNow(today)), bookValuePaise: this.bookValue(a, today) };
   }
 
   private async lock(tx: Tx, id: string) {

@@ -50,6 +50,12 @@ export const DomainEvents = {
   // Library: a no-dues clearance (for a transfer certificate or exit) and a fine put on the fee account.
   LibraryClearanceIssued: 'library.clearance_issued',
   LibraryFineCharged: 'library.fine_charged',
+  // Stores and purchase: an item at its reorder level, an indent decided, an order approved, a vendor invoice in the books, an asset disposed of.
+  StockReorderLevel: 'inventory.reorder_level_reached',
+  IndentDecided: 'procurement.indent_decided',
+  PurchaseOrderApproved: 'procurement.po_approved',
+  PurchaseInvoicePosted: 'procurement.invoice_posted',
+  AssetDisposed: 'assets.disposed',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

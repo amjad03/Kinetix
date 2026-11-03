@@ -5,7 +5,7 @@ import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { Day, nextNumber, Paise } from '../common/ops.js';
-import { Clock } from '../common/time.js';
+import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { assetMaintenance, assets, devices, rooms } from '../db/schema.js';
@@ -28,8 +28,9 @@ export class AssetsDepthController {
     private readonly clock: Clock,
   ) {}
 
+  /** Today in the institution's time zone (not UTC: between midnight and 05:30 IST the UTC date is yesterday). */
   private today() {
-    return this.clock.now().toISOString().slice(0, 10);
+    return localParts(this.clock.now(), 'Asia/Kolkata').date;
   }
 
   private amcState(endsOn: string, status: string, days = 60): 'cancelled' | 'expired' | 'expiring' | 'active' {

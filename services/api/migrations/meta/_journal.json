@@ -1352,6 +1352,20 @@
       "when": 1791506067000,
       "tag": "0205_hostel_mess_diet",
       "breakpoints": true
+    },
+    {
+      "idx": 193,
+      "version": "7",
+      "when": 1791506081000,
+      "tag": "0208_inventory_valuation_batches",
+      "breakpoints": true
+    },
+    {
+      "idx": 194,
+      "version": "7",
+      "when": 1791506082000,
+      "tag": "0209_purchase_gst_books_assets",
+      "breakpoints": true
     }
   ]
 }

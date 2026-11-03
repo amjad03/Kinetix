@@ -9,7 +9,11 @@ import { readSettings } from '../campus-ops/settings.js';
 import type { Tx } from '../db/db.service.js';
 import { budgets, costExpenses, departments, invItems, invPoLines, invPurchaseOrders, invRequisitionLines, invRequisitions, invStores, invVendors, users } from '../db/schema.js';
 import { invApprovals, invApprovedVendors, invCategories, invPoAmendments, invRateContracts } from '../db/schema-procurement.js';
+import { DomainEvents, EventBus } from '../events/events.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { userRoles } from '../db/schema.js';
 import { budgetCheck, fiscalRange, fiscalYearOf, indentSteps, purchaseModeProblem, type PurchaseMode } from './procurement.logic.js';
+import { gstSplit, isGstRate, isInterState } from './stores.logic.js';
 import { assertActiveItems } from './stock.js';
 
 export const APPROVERS: readonly string[] = ['tenant_admin', 'principal'];
@@ -32,8 +36,11 @@ export interface PoInput {
   tenderRef?: string | null;
   deliveryBy?: string | null;
   terms?: string;
-  lines: { itemId: string; qty: number; unitPricePaise: number }[];
+  lines: { itemId: string; qty: number; unitPricePaise: number; gstRatePct?: number }[];
 }
+
+/** An order line with its GST. */
+export interface PricedLine { itemId: string; qty: number; unitPricePaise: number; gstRatePct: number; taxPaise: number }
 
 /**
  * The buying chain shared by the inventory endpoints and the record kit: indents with a department, an estimate and a
@@ -42,7 +49,34 @@ export interface PoInput {
  */
 @Injectable()
 export class ProcurementService {
-  constructor(private readonly clock: Clock) {}
+  constructor(
+    private readonly clock: Clock,
+    private readonly notifications: NotificationsService,
+    private readonly bus: EventBus,
+  ) {}
+
+  /** Users holding any of these roles in the institution (for notices to the store or the approvers). */
+  async usersWithRoles(tx: Tx, roles: string[]): Promise<string[]> {
+    const rows = await tx.selectDistinct({ id: userRoles.userId }).from(userRoles).where(inArray(userRoles.role, roles as (typeof userRoles.role.enumValues)[number][]));
+    return rows.map((r) => r.id);
+  }
+
+  /** Whether the vendor supplies from another state (IGST) given the institution's GST state in the settings. */
+  async interState(tx: Tx, tenantId: string, vendor: { stateCode: string | null; gstin: string | null }) {
+    const own = String((await readSettings(tx, tenantId, 'procurement')).rules.institutionStateCode ?? '29');
+    return isInterState(vendor.stateCode ?? vendor.gstin?.slice(0, 2) ?? null, own);
+  }
+
+  /** Each line's GST: the rate given on the line, else the item master's; tax on the line's value. */
+  async priceLines(tx: Tx, lines: { itemId: string; qty: number; unitPricePaise: number; gstRatePct?: number }[], interState: boolean): Promise<PricedLine[]> {
+    const ids = [...new Set(lines.map((l) => l.itemId))];
+    const items = ids.length ? await tx.select({ id: invItems.id, gst: invItems.gstRatePct }).from(invItems).where(inArray(invItems.id, ids)) : [];
+    return lines.map((l) => {
+      const rate = l.gstRatePct ?? Number(items.find((i) => i.id === l.itemId)?.gst ?? 0);
+      if (!isGstRate(rate)) throw new BadRequestException(`${rate}% is not a GST rate`);
+      return { itemId: l.itemId, qty: l.qty, unitPricePaise: l.unitPricePaise, gstRatePct: rate, taxPaise: gstSplit(l.qty * l.unitPricePaise, rate, interState).taxPaise };
+    });
+  }
 
   today(tx: Tx) {
     return tenantToday(tx, this.clock);
@@ -99,6 +133,8 @@ export class ProcurementService {
     const [r] = await tx.insert(invRequisitions).values({ tenantId: p.tenantId, number, requestedBy: p.userId, reason: b.reason, departmentId: b.departmentId ?? null, neededBy: b.neededBy ?? null, estimatedPaise, budgetStatus, step }).returning();
     await tx.insert(invRequisitionLines).values(b.lines.map((l, i) => ({ tenantId: p.tenantId, requisitionId: r.id, itemId: l.itemId, qty: l.qty, estUnitPaise: est[i] })));
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'inventory.requisition_raised', subjectType: 'inv_requisition', subjectId: r.id, data: { number, estimatedPaise } });
+    const deciders = step === 'hod' && head ? [head] : (await this.usersWithRoles(tx, [...APPROVERS])).filter((u) => u !== p.userId);
+    await this.notifications.notifyUsers(tx, deciders, { kind: 'task', text: { title: `Indent ${number} waits for your approval`, body: `${b.reason || 'Indent'} · estimate ₹${(estimatedPaise / 100).toLocaleString('en-IN')}` }, data: { requisitionId: r.id, number }, dedupeKey: `inv-indent:${r.id}:${step}` });
     return r;
   }
 
@@ -150,6 +186,13 @@ export class ProcurementService {
       after: { status, step: next },
       data: { step, ...(override && { budgetOverride: true }) },
     });
+    if (next) {
+      const principals = (await this.usersWithRoles(tx, [...APPROVERS])).filter((u) => u !== r.requestedBy);
+      await this.notifications.notifyUsers(tx, principals, { kind: 'task', text: { title: `Indent ${r.number} waits for your approval`, body: `Forwarded by the head of department · estimate ₹${(r.estimatedPaise / 100).toLocaleString('en-IN')}` }, data: { requisitionId: id, number: r.number }, dedupeKey: `inv-indent:${id}:principal` });
+    } else {
+      await this.notifications.notifyUsers(tx, [r.requestedBy], { kind: 'task', text: { title: `Indent ${r.number} ${status}`, body: d.note?.trim() || (status === 'approved' ? 'The store will order or issue the items.' : '') }, data: { requisitionId: id, number: r.number, status }, dedupeKey: `inv-indent-decided:${id}` });
+      await this.bus.emit(tx, p.tenantId, { type: DomainEvents.IndentDecided, aggregateType: 'inv_requisition', aggregateId: id, payload: { number: r.number, status, estimatedPaise: r.estimatedPaise, departmentId: r.departmentId }, actorId: p.userId });
+    }
     return done;
   }
 
@@ -201,10 +244,14 @@ export class ProcurementService {
       if (!a) throw new BadRequestException('A line is not on the requisition');
       if (l.qty > a.qty) throw new BadRequestException('A line asks for more than the requisition approved');
     }
-    await this.assertVendorFor(tx, b.vendorId, b.lines.map((l) => l.itemId));
+    const vendor = await this.assertVendorFor(tx, b.vendorId, b.lines.map((l) => l.itemId));
     const [store] = await tx.select({ id: invStores.id }).from(invStores).where(eq(invStores.id, b.storeId));
     if (!store) throw new BadRequestException('Vendor or store not found');
-    const total = b.lines.reduce((t, l) => t + l.qty * l.unitPricePaise, 0);
+    const inter = await this.interState(tx, p.tenantId, vendor);
+    const priced = await this.priceLines(tx, b.lines, inter);
+    const taxable = priced.reduce((t, l) => t + l.qty * l.unitPricePaise, 0);
+    const tax = priced.reduce((t, l) => t + l.taxPaise, 0);
+    const total = taxable + tax;
     const mode: PurchaseMode = b.purchaseMode ?? (opts.fromQuote ? 'quotation' : 'direct');
     const rules = (await readSettings(tx, p.tenantId, 'procurement')).rules;
     const problem = purchaseModeProblem(mode, total, { directPurchaseUptoPaise: Number(rules.quotesRequiredAbovePaise), tenderAbovePaise: Number(rules.tenderAbovePaise ?? 0) }, { gemRef: b.gemRef, tenderRef: b.tenderRef });
@@ -223,6 +270,9 @@ export class ProcurementService {
         storeId: b.storeId,
         departmentId: b.departmentId ?? req.departmentId ?? null,
         totalPaise: total,
+        taxablePaise: taxable,
+        taxPaise: tax,
+        interState: inter,
         createdBy: p.userId,
         purchaseMode: mode,
         gemRef: b.gemRef ?? null,
@@ -233,10 +283,14 @@ export class ProcurementService {
         approvalStatus: pending ? 'pending' : 'not_required',
       })
       .returning();
-    await tx.insert(invPoLines).values(b.lines.map((l) => ({ tenantId: p.tenantId, poId: po.id, ...l })));
+    await tx.insert(invPoLines).values(priced.map((l) => ({ tenantId: p.tenantId, poId: po.id, ...l })));
     for (const l of b.lines) await tx.update(invItems).set({ lastPricePaise: l.unitPricePaise }).where(eq(invItems.id, l.itemId));
     await tx.update(invRequisitions).set({ status: 'ordered' }).where(eq(invRequisitions.id, req.id));
-    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'inventory.po_issued', subjectType: 'inv_purchase_order', subjectId: po.id, data: { number, totalPaise: total, purchaseMode: mode, pendingApproval: pending } });
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'inventory.po_issued', subjectType: 'inv_purchase_order', subjectId: po.id, data: { number, totalPaise: total, taxPaise: tax, purchaseMode: mode, pendingApproval: pending } });
+    if (pending) {
+      const approvers = (await this.usersWithRoles(tx, [...APPROVERS])).filter((u) => u !== p.userId);
+      await this.notifications.notifyUsers(tx, approvers, { kind: 'task', text: { title: `Purchase order ${number} waits for approval`, body: `${vendor.name} · ₹${(total / 100).toLocaleString('en-IN')}` }, data: { poId: po.id, number }, dedupeKey: `inv-po:${po.id}:0` });
+    }
     return po;
   }
 
@@ -268,10 +322,12 @@ export class ProcurementService {
       const now = await tx.select().from(invPoLines).where(eq(invPoLines.poId, id));
       for (const l of now) {
         const was = before.lines.find((x) => x.id === l.id);
-        if (was) await tx.update(invPoLines).set({ qty: was.qty, unitPricePaise: was.unitPricePaise }).where(eq(invPoLines.id, l.id));
+        if (was) await tx.update(invPoLines).set({ qty: was.qty, unitPricePaise: was.unitPricePaise, taxPaise: gstSplit(was.qty * was.unitPricePaise, Number(l.gstRatePct), po.interState).taxPaise }).where(eq(invPoLines.id, l.id));
         else if (l.receivedQty === 0) await tx.delete(invPoLines).where(eq(invPoLines.id, l.id));
       }
-      set = { approvalStatus: 'approved', totalPaise: before.totalPaise, deliveryBy: before.deliveryBy, terms: before.terms, amendmentNo: po.amendmentNo - 1, status: await this.receiptStatus(tx, id) };
+      const restored = await tx.select().from(invPoLines).where(eq(invPoLines.poId, id));
+      const restoredTax = restored.reduce((s, l) => s + l.taxPaise, 0);
+      set = { approvalStatus: 'approved', taxPaise: restoredTax, taxablePaise: before.totalPaise - restoredTax, totalPaise: before.totalPaise, deliveryBy: before.deliveryBy, terms: before.terms, amendmentNo: po.amendmentNo - 1, status: await this.receiptStatus(tx, id) };
       await tx.delete(invPoAmendments).where(eq(invPoAmendments.id, lastAmend.id));
     } else {
       set = { approvalStatus: 'rejected', status: 'cancelled', cancelReason: d.note ?? null };
@@ -280,6 +336,8 @@ export class ProcurementService {
     const [done] = await tx.update(invPurchaseOrders).set(set).where(eq(invPurchaseOrders.id, id)).returning();
     await tx.insert(invApprovals).values({ tenantId: p.tenantId, poId: id, step: po.amendmentNo > 0 ? `amendment_${po.amendmentNo}` : 'order', decision: d.approve ? 'approved' : 'rejected', note: d.note ?? null, decidedBy: p.userId });
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: d.approve ? 'inventory.po_approved' : 'inventory.po_rejected', subjectType: 'inv_purchase_order', subjectId: id, before: { status: po.status, approvalStatus: po.approvalStatus }, after: { status: done.status, approvalStatus: done.approvalStatus }, data: { note: d.note } });
+    await this.notifications.notifyUsers(tx, [maker], { kind: 'task', text: { title: `Purchase order ${po.number} ${d.approve ? 'approved' : 'rejected'}`, body: d.note?.trim() || (d.approve ? 'It can be sent to the vendor and received.' : '') }, data: { poId: id, number: po.number }, dedupeKey: `inv-po-decided:${id}:${po.amendmentNo}` });
+    if (d.approve) await this.bus.emit(tx, p.tenantId, { type: DomainEvents.PurchaseOrderApproved, aggregateType: 'inv_purchase_order', aggregateId: id, payload: { number: po.number, totalPaise: done.totalPaise, vendorId: po.vendorId, amendmentNo: po.amendmentNo }, actorId: p.userId });
     return done;
   }
 
@@ -303,18 +361,26 @@ export class ProcurementService {
         if (!l) throw new BadRequestException('A line is not on this order');
         if (l.itemId !== nl.itemId) throw new BadRequestException('A line cannot change its item');
         if (nl.qty < l.receivedQty) throw new BadRequestException(`A line cannot go below the ${l.receivedQty} already received`);
-        await tx.update(invPoLines).set({ qty: nl.qty, unitPricePaise: nl.unitPricePaise }).where(eq(invPoLines.id, l.id));
-      } else await tx.insert(invPoLines).values({ tenantId: p.tenantId, poId: id, itemId: nl.itemId, qty: nl.qty, unitPricePaise: nl.unitPricePaise });
+        const [pl] = await this.priceLines(tx, [{ ...nl, gstRatePct: Number(l.gstRatePct) }], po.interState);
+        await tx.update(invPoLines).set({ qty: nl.qty, unitPricePaise: nl.unitPricePaise, taxPaise: pl.taxPaise }).where(eq(invPoLines.id, l.id));
+      } else {
+        const [pl] = await this.priceLines(tx, [nl], po.interState);
+        await tx.insert(invPoLines).values({ tenantId: p.tenantId, poId: id, ...pl });
+      }
     }
     const keep = b.lines.map((l) => l.poLineId).filter((x): x is string => !!x);
     const drop = lines.filter((l) => !keep.includes(l.id)).map((l) => l.id);
     if (drop.length) await tx.delete(invPoLines).where(and(eq(invPoLines.poId, id), inArray(invPoLines.id, drop)));
     const after = await tx.select().from(invPoLines).where(eq(invPoLines.poId, id));
-    const total = after.reduce((s, l) => s + l.qty * l.unitPricePaise, 0);
+    const taxable = after.reduce((s, l) => s + l.qty * l.unitPricePaise, 0);
+    const tax = after.reduce((s, l) => s + l.taxPaise, 0);
+    const total = taxable + tax;
     const amendmentNo = po.amendmentNo + 1;
-    await tx.update(invPurchaseOrders).set({ totalPaise: total, deliveryBy: b.deliveryBy === undefined ? po.deliveryBy : b.deliveryBy, terms: b.terms ?? po.terms, amendmentNo, approvalStatus: 'pending', status: 'pending_approval' }).where(eq(invPurchaseOrders.id, id));
+    await tx.update(invPurchaseOrders).set({ totalPaise: total, taxablePaise: taxable, taxPaise: tax, deliveryBy: b.deliveryBy === undefined ? po.deliveryBy : b.deliveryBy, terms: b.terms ?? po.terms, amendmentNo, approvalStatus: 'pending', status: 'pending_approval' }).where(eq(invPurchaseOrders.id, id));
     await tx.insert(invPoAmendments).values({ tenantId: p.tenantId, poId: id, amendmentNo, reason: b.reason, before, after: { totalPaise: total, deliveryBy: b.deliveryBy ?? po.deliveryBy, terms: b.terms ?? po.terms, lines: after.map((l) => ({ id: l.id, itemId: l.itemId, qty: l.qty, unitPricePaise: l.unitPricePaise })) }, amendedBy: p.userId });
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'inventory.po_amended', subjectType: 'inv_purchase_order', subjectId: id, before: { totalPaise: po.totalPaise }, after: { totalPaise: total }, data: { amendmentNo, reason: b.reason } });
+    const approvers = (await this.usersWithRoles(tx, [...APPROVERS])).filter((u) => u !== p.userId);
+    await this.notifications.notifyUsers(tx, approvers, { kind: 'task', text: { title: `Amendment ${amendmentNo} of ${po.number} waits for approval`, body: b.reason }, data: { poId: id, number: po.number }, dedupeKey: `inv-po:${id}:${amendmentNo}` });
     const [row] = await tx.select().from(invPurchaseOrders).where(eq(invPurchaseOrders.id, id));
     return row;
   }

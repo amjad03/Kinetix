@@ -198,11 +198,11 @@ export class ProcurementDepthController {
     const t = Day.safeParse(to);
     return this.db.withTenant(p.tenantId, (tx) =>
       tx
-        .select({ department: sql<string>`coalesce(${departments.name}, ${invStockMoves.issuedTo}, '')`, itemId: invItems.id, item: invItems.name, unit: invItems.unit, qty: sql<number>`(-sum(${invStockMoves.delta}))::int`, valuePaise: sql<number>`(-sum(${invStockMoves.delta}) * max(${invItems.lastPricePaise}))::bigint`.mapWith(Number) })
+        .select({ department: sql<string>`coalesce(${departments.name}, ${invStockMoves.issuedTo}, '')`, itemId: invItems.id, item: invItems.name, unit: invItems.unit, qty: sql<number>`(-sum(${invStockMoves.delta}))::int`, valuePaise: sql<number>`(-sum(${invStockMoves.valuePaise}))::bigint`.mapWith(Number) })
         .from(invStockMoves)
         .innerJoin(invItems, eq(invItems.id, invStockMoves.itemId))
         .leftJoin(departments, eq(departments.id, invStockMoves.departmentId))
-        .where(and(eq(invStockMoves.kind, 'issue'), f.success ? sql`${invStockMoves.createdAt}::date >= ${f.data}::date` : undefined, t.success ? sql`${invStockMoves.createdAt}::date <= ${t.data}::date` : undefined))
+        .where(and(eq(invStockMoves.kind, 'issue'), f.success ? sql`(${invStockMoves.createdAt} at time zone 'Asia/Kolkata')::date >= ${f.data}::date` : undefined, t.success ? sql`(${invStockMoves.createdAt} at time zone 'Asia/Kolkata')::date <= ${t.data}::date` : undefined))
         .groupBy(sql`1`, invItems.id)
         .orderBy(sql`1`, asc(invItems.name)),
     );
@@ -300,7 +300,7 @@ export class ProcurementDepthController {
           // Moves since the verification began stay: the difference counted is applied to today's stock.
           const delta = l.countedQty! - l.bookQty;
           if (delta === 0 || !cur) continue;
-          await applyStockMove(tx, p, { storeId: v.storeId, itemId: l.itemId, delta, kind: 'verify_adjust', qty: Math.abs(delta), note: `${v.number}: ${l.remark || 'physical verification'}`, refType: 'inv_stock_verification', refId: id });
+          await applyStockMove(tx, p, { storeId: v.storeId, itemId: l.itemId, delta, kind: 'verify_adjust', qty: Math.abs(delta), note: `${v.number}: ${l.remark || 'physical verification'}`, refType: 'inv_stock_verification', refId: id, includeExpired: true, today: await this.proc.today(tx) });
           adjusted++;
         }
       }
