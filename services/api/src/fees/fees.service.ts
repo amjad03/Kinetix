@@ -14,6 +14,7 @@ import { accrues, syncAccruals } from './accruals.js';
 import { nextReceiptNo, postPayment, prefixFor } from './receipts.js';
 import { accountOfInvoice } from './fee-accounts-core.js';
 import { flagDuplicate } from './duplicates.js';
+import { feeSummaryChanged } from './summary-cache.js';
 
 export const FEE_ROLES: RoleName[] = ['tenant_admin', 'principal', 'accountant'];
 
@@ -62,6 +63,7 @@ export class FeesService {
     const [payment] = await tx.select().from(feePayments).where(eq(feePayments.id, paymentId)).for('update');
     if (!payment) throw new NotFoundException('Payment not found');
     if (payment.status === 'paid') return payment;
+    feeSummaryChanged(payment.tenantId);
 
     const [tenant] = await tx.select({ timezone: tenants.timezone }).from(tenants);
     const today = details.date ?? localParts(this.clock.now(), tenant?.timezone ?? 'Asia/Kolkata').date;

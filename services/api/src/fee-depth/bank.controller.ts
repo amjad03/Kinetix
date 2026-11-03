@@ -14,6 +14,7 @@ import { acctAccounts, acctVouchers, settlementBatches, tenants, users } from '.
 import { autoMatch, parseStatementCsv, type BookEntry } from '../fees/fee-depth.logic.js';
 import { FEE_ROLES } from '../fees/fees.service.js';
 import { matchFeeCredits } from './bank-fees.js';
+import { maskedSql, maskOf } from './bank-numbers.js';
 import { CollectionService } from './collection.service.js';
 
 const ImportBody = z.object({ accountId: z.uuid(), fileName: z.string().trim().min(1).max(200), csv: z.string().min(10).max(5_000_000) });
@@ -53,7 +54,7 @@ export class BankController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await ensureChart(tx, p.tenantId);
       return tx
-        .select({ id: acctAccounts.id, code: acctAccounts.code, name: acctAccounts.name, bankName: acctAccounts.bankName, accountNo: acctAccounts.accountNo, ifsc: acctAccounts.ifsc, unmatched: sql<number>`(select count(*)::int from acct_bank_lines l where l.account_id = ${acctAccounts.id} and l.status = 'unmatched')`, lastStatement: sql<string | null>`(select max(to_date)::text from acct_bank_statements s where s.account_id = ${acctAccounts.id})` })
+        .select({ id: acctAccounts.id, code: acctAccounts.code, name: acctAccounts.name, bankName: acctAccounts.bankName, accountNo: maskedSql(acctAccounts.accountNo), ifsc: acctAccounts.ifsc, unmatched: sql<number>`(select count(*)::int from acct_bank_lines l where l.account_id = ${acctAccounts.id} and l.status = 'unmatched')`, lastStatement: sql<string | null>`(select max(to_date)::text from acct_bank_statements s where s.account_id = ${acctAccounts.id})` })
         .from(acctAccounts)
         .where(and(eq(acctAccounts.isCashBank, true), eq(acctAccounts.active, true)))
         .orderBy(asc(acctAccounts.sortOrder), asc(acctAccounts.code));
@@ -293,7 +294,7 @@ export class BankController {
       const sum = (r: { amountPaise: number }[]) => r.reduce((s, x) => s + x.amountPaise, 0);
       const bankComputed = booksPaise - sum(depositsNotCredited) + sum(paymentsNotPresented) + bankOnly.reduce((s, x) => s + x.creditPaise - x.debitPaise, 0);
       const [last] = await tx.select({ balance: acctBankLines.balancePaise }).from(acctBankLines).where(and(eq(acctBankLines.accountId, accountId), sql`${acctBankLines.txnDate} <= ${on}::date`, sql`${acctBankLines.balancePaise} is not null`)).orderBy(desc(acctBankLines.txnDate), desc(acctBankLines.createdAt)).limit(1);
-      return { account: { id: a.id, code: a.code, name: a.name, bankName: a.bankName, accountNo: a.accountNo }, asOn: on, booksPaise, depositsNotCredited, paymentsNotPresented, bankOnly, bankComputedPaise: bankComputed, bankStatementPaise: last?.balance ?? null, differencePaise: last?.balance != null ? last.balance - bankComputed : null };
+      return { account: { id: a.id, code: a.code, name: a.name, bankName: a.bankName, accountNo: maskOf(a.accountNo) }, asOn: on, booksPaise, depositsNotCredited, paymentsNotPresented, bankOnly, bankComputedPaise: bankComputed, bankStatementPaise: last?.balance ?? null, differencePaise: last?.balance != null ? last.balance - bankComputed : null };
     });
   }
 

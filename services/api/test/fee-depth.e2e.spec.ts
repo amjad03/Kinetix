@@ -323,6 +323,11 @@ describe('fees and accounts depth', () => {
     expect(ch.number).toMatch(/^CHL\/2026-27\/\d{5}$/);
     const print = ok(await get('acc', `/v1/fee-collect/challans/${ch.id}`), 200);
     expect(print.lines.length).toBeGreaterThan(0);
+    // The account number is encrypted at rest and bound to this challan; the printed challan carries it in full.
+    expect(print.challan.bankAccount).toBe('0412101099999');
+    const [stored] = (await owner.query('select bank_account from fee_challans where id = $1', [ch.id])).rows;
+    expect(stored.bank_account).toMatch(/^••••9999\|v\d+\./);
+    expect(stored.bank_account).not.toContain('0412101099999');
     const csv = `Challan No,Amount,Date,Bank Ref\r\n${ch.number},${ch.amountPaise / 100},21/10/2026,CNRB998877\r\nCHL/2026-27/99999,100,21/10/2026,X\r\n`;
     const rec = ok(await post('acc', '/v1/fee-collect/challans/reconcile', { csv }), 200);
     expect(rec).toMatchObject({ receipted: 1, failed: 1 });
@@ -383,6 +388,13 @@ describe('fees and accounts depth', () => {
     const accts = ok(await get('acc', '/v1/accounts-depth/bank-accounts'), 200) as { id: string; code: string }[];
     const bank = accts.find((a) => a.code === '1010')!;
     ok(await patch('acc', `/v1/records/acct-ledgers/${bank.id}`, { bankName: 'Canara Bank', accountNo: '0412101012345', ifsc: 'CNRB0000412' }), 200);
+    // Stored encrypted; lists show the last four, and sending those back keeps the number.
+    const sealed = (await owner.query('select account_no from acct_accounts where id = $1', [bank.id])).rows[0].account_no as string;
+    expect(sealed).toMatch(/^••••2345\|v\d+\./);
+    expect(sealed).not.toContain('0412101012345');
+    expect((ok(await get('acc', '/v1/accounts-depth/bank-accounts'), 200) as { id: string; accountNo: string }[]).find((a) => a.id === bank.id)!.accountNo).toBe('••••2345');
+    ok(await patch('acc', `/v1/records/acct-ledgers/${bank.id}`, { accountNo: '••••2345' }), 200);
+    expect((await owner.query('select account_no from acct_accounts where id = $1', [bank.id])).rows[0].account_no).toBe(sealed);
     const vouchers = (await owner.query("select v.id, v.number, v.voucher_date::text as d, sum(l.debit_paise)::int as dr from acct_vouchers v join acct_voucher_lines l on l.voucher_id = v.id where l.account_id = $1 and v.voided_at is null group by v.id having sum(l.debit_paise) > 0 order by v.voucher_date limit 1", [bank.id])).rows;
     const v = vouchers[0];
     const day = v.d.split('-').reverse().join('/');

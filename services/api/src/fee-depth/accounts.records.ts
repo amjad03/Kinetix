@@ -1,4 +1,5 @@
 import { ConflictException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { and, asc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { assertFyOpen } from '../books/books.service.js';
@@ -12,6 +13,7 @@ import { RecordRegistry, type FieldOption, type KitCtx, type RecordEntity } from
 import { copyName, OptionalText, Text, uuidEq } from '../records/helpers.js';
 import { eachRow } from '../records/import.js';
 import { never, opts, rowOf, rupeeField, rupeesOf } from './kit.js';
+import { isMaskedNumber, maskedSql, sealNumber } from './bank-numbers.js';
 
 const W = FEE_ROLES;
 const GROUPS = ['asset', 'liability', 'equity', 'income', 'expense'];
@@ -38,7 +40,7 @@ export function ledgersEntity(): RecordEntity {
     roles: { read: W, write: W },
     label: (r) => `${r.code} ${r.name}`,
     list: {
-      select: { id: acctAccounts.id, code: acctAccounts.code, name: acctAccounts.name, groupType: acctAccounts.groupType, isCashBank: acctAccounts.isCashBank, openingRupees: rupeesOf(acctAccounts.openingPaise), bankName: acctAccounts.bankName, accountNo: acctAccounts.accountNo, ifsc: acctAccounts.ifsc, active: acctAccounts.active, sortOrder: acctAccounts.sortOrder, entries, balancePaise: balance },
+      select: { id: acctAccounts.id, code: acctAccounts.code, name: acctAccounts.name, groupType: acctAccounts.groupType, isCashBank: acctAccounts.isCashBank, openingRupees: rupeesOf(acctAccounts.openingPaise), bankName: acctAccounts.bankName, accountNo: maskedSql(acctAccounts.accountNo), ifsc: acctAccounts.ifsc, active: acctAccounts.active, sortOrder: acctAccounts.sortOrder, entries, balancePaise: balance },
       search: [acctAccounts.code, acctAccounts.name, acctAccounts.bankName],
       filters: {
         group: { label: 'Group', options: opts(GROUPS), where: (v) => (GROUPS.includes(v) ? eq(acctAccounts.groupType, v) : undefined) },
@@ -55,7 +57,18 @@ export function ledgersEntity(): RecordEntity {
       isCashBank: { label: 'Cash or bank ledger', type: 'boolean', schema: z.boolean(), column: acctAccounts.isCashBank, edit: false },
       openingRupees: rupeeField('Opening balance (₹, debit positive)', acctAccounts, acctAccounts.openingPaise, 'openingRupees', { schema: z.coerce.number().min(-10_000_000_00).max(10_000_000_00), help: 'Opening balances across the chart must add up to nothing' }),
       bankName: { label: 'Bank', type: 'text', schema: OptionalText(80), column: acctAccounts.bankName },
-      accountNo: { label: 'Account number', type: 'text', schema: OptionalText(30), column: acctAccounts.accountNo },
+      // Kept encrypted (fee-depth/bank-numbers.ts); the form shows the last four, and sending those back changes nothing.
+      accountNo: {
+        label: 'Account number',
+        type: 'text',
+        schema: OptionalText(30),
+        help: 'Stored encrypted; only the last four digits are shown',
+        apply: async (ctx, id, value) => {
+          const v = typeof value === 'string' ? value : null;
+          if (v && isMaskedNumber(v)) return;
+          await ctx.tx.update(acctAccounts).set({ accountNo: v ? sealNumber(ctx.p.tenantId, 'acct_account', id, v) : null }).where(eq(acctAccounts.id, id));
+        },
+      },
       ifsc: { label: 'IFSC', type: 'text', schema: z.union([z.string().trim().toUpperCase().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, 'Use an IFSC like SBIN0001234'), z.literal('')]).nullable().transform((v) => v || null), column: acctAccounts.ifsc },
       active: { label: 'Active', type: 'boolean', schema: z.boolean(), column: acctAccounts.active, bulk: true, create: false },
     },
@@ -93,14 +106,17 @@ export function ledgersEntity(): RecordEntity {
           if (!GROUPS.includes(group)) fail('Choose one of the listed values', group);
           const ifsc = r.get('ifsc').toUpperCase();
           if (ifsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) fail('Use an IFSC like SBIN0001234', ifsc);
-          const values = { name: required(r, 'name'), bankName: r.get('bank') || null, accountNo: r.get('account_no') || null, ifsc: ifsc || null };
+          const accountNo = r.get('account_no') || null;
+          if (accountNo && isMaskedNumber(accountNo)) fail('Give the full account number (or leave it empty to keep the one stored)', code);
+          const values = { name: required(r, 'name'), bankName: r.get('bank') || null, ifsc: ifsc || null };
           const [found] = await tx.select().from(acctAccounts).where(eq(acctAccounts.code, code));
           if (!found) {
-            await tx.insert(acctAccounts).values({ tenantId: ctx.p.tenantId, code, groupType: group, isCashBank: ['yes', 'y', 'true', '1'].includes(lc(r.get('cash_bank'))), sortOrder: 1_000_000, ...values });
+            const id = randomUUID();
+            await tx.insert(acctAccounts).values({ id, tenantId: ctx.p.tenantId, code, groupType: group, isCashBank: ['yes', 'y', 'true', '1'].includes(lc(r.get('cash_bank'))), sortOrder: 1_000_000, ...values, accountNo: accountNo ? sealNumber(ctx.p.tenantId, 'acct_account', id, accountNo) : null });
             return outcome(true, false, [code]);
           }
           if (found.groupType !== group) fail('A ledger’s group cannot change; add a new ledger', code);
-          await tx.update(acctAccounts).set(values).where(eq(acctAccounts.id, found.id));
+          await tx.update(acctAccounts).set({ ...values, ...(accountNo ? { accountNo: sealNumber(ctx.p.tenantId, 'acct_account', found.id, accountNo) } : {}) }).where(eq(acctAccounts.id, found.id));
           return outcome(false, true, [code]);
         }),
     },

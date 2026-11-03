@@ -40,6 +40,7 @@ import { convenienceFee } from './fee-depth.logic.js';
 import type { PaymentProvider } from './payment-provider.js';
 import { naturalAsc } from '../common/natural-order.js';
 import { GatewayFlow } from './gateway-flow.service.js';
+import { cachedFeeSummary, feeSummaryChanged } from './summary-cache.js';
 import { accrues, syncAccruals } from './accruals.js';
 import { ensureLines, feeToday, findHead, headsOf } from './fee-lines.js';
 
@@ -119,6 +120,7 @@ export class FeesController {
         }
       }
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'fees.issued', subjectType: 'fee_batch', subjectId: batchId, data: { ...body, students: roster.length } });
+      feeSummaryChanged(p.tenantId);
       await this.notifications.feeIssued(tx, { batchId, title: body.title, amountPaise: body.amountPaise, dueOn: body.dueOn, studentIds: roster.map((s) => s.id) });
       return { batchId, invoices: roster.length };
     });
@@ -185,7 +187,8 @@ export class FeesController {
   @Get('summary')
   @Auth('user', FEE_ROLES)
   summary(@CurrentPrincipal() p: UserPrincipal) {
-    return this.db.withTenant(p.tenantId, (tx) => feeSummary(tx));
+    // The same figures for everyone in the institution (after the role check): reused briefly, recomputed after a change.
+    return cachedFeeSummary(p.tenantId, () => this.db.withTenant(p.tenantId, (tx) => feeSummary(tx)));
   }
 
   /** Paid receipts of the last few months (newest first): the monthly collection chart and recent receipts. */
@@ -249,6 +252,7 @@ export class FeesController {
       // On the accrual basis what was booked for it is reversed.
       await syncAccruals(tx, { tenantId: p.tenantId, userId: p.userId }, id, await feeToday(tx), { note: 'Invoice cancelled' });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'fees.cancelled', subjectType: 'fee_invoice', subjectId: id });
+      feeSummaryChanged(p.tenantId);
       return { id, status: 'cancelled' };
     });
   }

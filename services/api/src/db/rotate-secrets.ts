@@ -18,6 +18,8 @@ import * as s from './schema.js';
 import { gatewayAad } from '../fees/payment-gateway.service.js';
 import { tenantSigningKeys } from './schema-assist.js';
 import { userMfa } from './schema-foundation.js';
+import { feeChallans } from './schema-fee-depth.js';
+import { resealNumber } from '../fee-depth/bank-numbers.js';
 
 type Db = NodePgDatabase<typeof s>;
 
@@ -91,6 +93,22 @@ export async function rotateAll(db: Db, box: SecretBox): Promise<Record<string, 
       const changed = aadhaarEnc !== r.aadhaarEnc || bankAccountEnc !== r.bankAccountEnc;
       count('staff_profiles', changed);
       if (changed) await db.update(s.staffProfiles).set({ aadhaarEnc, bankAccountEnc }).where(eq(s.staffProfiles.userId, r.userId));
+    });
+  }
+
+  // Bank account numbers of the fee and accounts desk (fee-depth/bank-numbers.ts): plain ones are sealed on the way.
+  for (const r of await db.select({ id: s.acctAccounts.id, tenantId: s.acctAccounts.tenantId, accountNo: s.acctAccounts.accountNo }).from(s.acctAccounts).where(sql`${s.acctAccounts.accountNo} is not null and ${s.acctAccounts.accountNo} <> ''`)) {
+    await row('acct_accounts', async () => {
+      const next = resealNumber(r.tenantId, 'acct_account', r.id, r.accountNo, box);
+      count('acct_accounts', next !== r.accountNo);
+      if (next !== r.accountNo) await db.update(s.acctAccounts).set({ accountNo: next }).where(eq(s.acctAccounts.id, r.id));
+    });
+  }
+  for (const r of await db.select({ id: feeChallans.id, tenantId: feeChallans.tenantId, bankAccount: feeChallans.bankAccount }).from(feeChallans).where(sql`${feeChallans.bankAccount} <> ''`)) {
+    await row('fee_challans', async () => {
+      const next = resealNumber(r.tenantId, 'fee_challan', r.id, r.bankAccount, box) ?? '';
+      count('fee_challans', next !== r.bankAccount);
+      if (next !== r.bankAccount) await db.update(feeChallans).set({ bankAccount: next }).where(eq(feeChallans.id, r.id));
     });
   }
 

@@ -1,6 +1,8 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res, StreamableFile } from '@nestjs/common';
 import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import type { Response } from 'express';
+import { randomUUID } from 'node:crypto';
+import { openNumber, sealNumber } from './bank-numbers.js';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
@@ -296,9 +298,14 @@ export class CollectionController {
       const valid = new Date(`${today}T00:00:00Z`);
       valid.setUTCDate(valid.getUTCDate() + b.validDays);
       const number = await nextNumber(tx, p.tenantId, 'challan', today);
-      const [row] = await tx.insert(feeChallans).values({ tenantId: p.tenantId, number, studentId: b.studentId, invoiceIds: invs.map((i) => i.id), amountPaise: amount, bankName: b.bankName, bankAccount: b.bankAccount, validUntil: valid.toISOString().slice(0, 10), createdBy: p.userId }).returning();
+      // The account number is stored encrypted (bank-numbers.ts), bound to this challan.
+      const id = randomUUID();
+      const [row] = await tx
+        .insert(feeChallans)
+        .values({ id, tenantId: p.tenantId, number, studentId: b.studentId, invoiceIds: invs.map((i) => i.id), amountPaise: amount, bankName: b.bankName, bankAccount: sealNumber(p.tenantId, 'fee_challan', id, b.bankAccount) ?? '', validUntil: valid.toISOString().slice(0, 10), createdBy: p.userId })
+        .returning();
       await auditUser(tx, p, 'fee_challan.issued', 'fee_challan', row.id, { number, amountPaise: amount });
-      return row;
+      return { ...row, bankAccount: b.bankAccount };
     });
   }
 
@@ -314,7 +321,8 @@ export class CollectionController {
       const invs = c.invoiceIds.length ? await tx.select({ id: feeInvoices.id, title: feeInvoices.title, invoiceNo: feeInvoices.invoiceNo }).from(feeInvoices).where(inArray(feeInvoices.id, c.invoiceIds)) : [];
       const [t] = await tx.select({ name: tenants.name }).from(tenants);
       const [r] = c.receiptId ? await tx.select({ receiptNo: feeReceipts.receiptNo }).from(feeReceipts).where(eq(feeReceipts.id, c.receiptId)) : [];
-      return { challan: c, institution: t?.name ?? '', student: st, invoices: invs, lines, inWords: rupeesInWords(c.amountPaise), receiptNo: r?.receiptNo ?? null };
+      // The printed challan carries the full account number the family deposits into.
+      return { challan: { ...c, bankAccount: openNumber(p.tenantId, 'fee_challan', c.id, c.bankAccount) ?? '' }, institution: t?.name ?? '', student: st, invoices: invs, lines, inWords: rupeesInWords(c.amountPaise), receiptNo: r?.receiptNo ?? null };
     });
   }
 
