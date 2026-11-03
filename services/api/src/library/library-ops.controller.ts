@@ -1,11 +1,15 @@
 import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, HttpException, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res, ServiceUnavailableException, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { and, asc, desc, eq, ilike, inArray, isNull, or, sql } from 'drizzle-orm';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
-import { auditUser } from '../common/audit.js';
+import { audit, auditUser } from '../common/audit.js';
+import { DomainEvents, EventBus } from '../events/events.js';
+import { libraryOverdueNotices } from '../db/schema-library.js';
+import { LibraryNotices } from './notices.js';
 import { qual } from '../common/lht-kit.js';
 import { nextNumber } from '../common/ops.js';
 import { assertCanSeeStudent } from '../common/student-access.js';
@@ -19,11 +23,13 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { addCopies, ensureStudentMember, findCopy, findMember, issueCopy, memberStanding, returnLoan, syncCopies, tenantToday } from './circulation.js';
 import { IsbnLookup } from './isbn-lookup.js';
 import { LIBRARY_ROLES } from './library.controller.js';
-import { callNumber, marcToBook, normaliseIsbn, parseMarc, writeIso2709 } from './marc.js';
+import { callNumber, marcItems, marcToBook, normaliseIsbn, parseMarc, writeIso2709 } from './marc.js';
 
 const Codes = z.array(z.string().trim().min(1).max(60)).min(1).max(30);
-const IssueBody = z.object({ memberCode: z.string().trim().min(1).max(60), copyCodes: Codes, dueOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), bookBank: z.boolean().default(false), branchId: z.uuid().optional() });
-const ReturnBody = z.object({ copyCodes: Codes, branchId: z.uuid().optional() });
+const Via = z.enum(['desk', 'kiosk']).default('desk');
+const IssueBody = z.object({ memberCode: z.string().trim().min(1).max(60), copyCodes: Codes, dueOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), bookBank: z.boolean().default(false), branchId: z.uuid().optional(), via: Via });
+const ReturnBody = z.object({ copyCodes: Codes, branchId: z.uuid().optional(), via: Via });
+const StaffClearBody = z.object({ remarks: z.string().trim().max(300).default('') });
 const DropBody = z.object({ codes: Codes, droppedAt: z.iso.datetime().optional(), branchId: z.uuid().optional() });
 const SelfBody = z.object({ copyCode: z.string().trim().min(1).max(60) });
 const AlertBody = z.object({ topics: z.string().trim().max(300).default('') });
@@ -33,6 +39,20 @@ const ClearBody = z.object({ purpose: z.string().trim().min(2).max(80).default('
 const SwipeBody = z.object({ memberCode: z.string().trim().min(1).max(60), branchId: z.uuid().optional(), purpose: z.enum(['reading', 'borrow', 'reference', 'eresources', 'other']).default('reading') });
 const EnrolBody = z.object({ sectionId: z.uuid().optional(), categoryId: z.uuid().optional() });
 const READERS = ['student', 'guardian', 'teacher', 'hod', 'principal', 'tenant_admin', 'librarian'] as const;
+/** The OPAC's search and facet choices (anything else in the query is ignored; wrong values are refused). */
+const OpacQuery = z.object({
+  q: z.string().trim().max(200).default(''),
+  field: z.enum(['any', 'title', 'author', 'subject', 'isbn']).default('any'),
+  subject: z.string().trim().max(200).optional(),
+  material: z.string().trim().max(40).optional(),
+  language: z.string().trim().max(40).optional(),
+  author: z.string().trim().max(200).optional(),
+  decade: z.coerce.number().int().min(1400).max(2100).optional(),
+  branch: z.uuid().optional(),
+  available: z.enum(['true', 'false']).optional(),
+  sort: z.enum(['title', 'author', 'year', 'newest']).default('title'),
+  page: z.coerce.number().int().min(1).max(500).catch(1).default(1),
+});
 
 /** A reason a code could not be handled, for a desk report row. */
 const why = (e: unknown) => (e instanceof HttpException ? String((e.getResponse() as { message?: unknown }).message ?? e.message) : (e as Error).message);
@@ -49,6 +69,8 @@ export class LibraryOpsController {
     private readonly clock: Clock,
     private readonly notifications: NotificationsService,
     private readonly isbn: IsbnLookup,
+    private readonly notices: LibraryNotices,
+    private readonly events: EventBus,
   ) {}
 
   // ---- the desk -----------------------------------------------------------------------------------------------
@@ -93,11 +115,11 @@ export class LibraryOpsController {
   issue(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(IssueBody)) b: z.infer<typeof IssueBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const member = await findMember(tx, p.tenantId, b.memberCode);
-      if (b.bookBank) await this.assertBookBank(tx, member.categoryId);
+      if (b.bookBank && b.via !== 'kiosk') await this.assertBookBank(tx, member.categoryId);
       const results = [];
       for (const code of b.copyCodes) {
         try {
-          const loan = await tx.transaction(async (sp) => issueCopy(sp, p, this.clock.now(), this.notifications, { member, copy: await findCopy(sp, code), dueOn: b.dueOn, bookBank: b.bookBank, branchId: b.branchId }));
+          const loan = await tx.transaction(async (sp) => issueCopy(sp, p, this.clock.now(), this.notifications, { member, copy: await findCopy(sp, code), dueOn: b.via === 'kiosk' ? undefined : b.dueOn, bookBank: b.via === 'kiosk' ? false : b.bookBank, branchId: b.branchId, via: b.via }));
           results.push({ code, ok: true, loanId: loan.id, dueOn: loan.dueOn });
         } catch (e) {
           results.push({ code, ok: false, message: why(e) });
@@ -112,7 +134,7 @@ export class LibraryOpsController {
   @HttpCode(200)
   @Auth('user', LIBRARY_ROLES)
   giveBack(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(ReturnBody)) b: z.infer<typeof ReturnBody>) {
-    return this.db.withTenant(p.tenantId, (tx) => this.returnCodes(tx, p, b.copyCodes, { branchId: b.branchId, via: 'desk' }));
+    return this.db.withTenant(p.tenantId, (tx) => this.returnCodes(tx, p, b.copyCodes, { branchId: b.branchId, via: b.via }));
   }
 
   /** The overnight drop box: books found in it are returned as of the time they were dropped (default: now). */
@@ -123,7 +145,7 @@ export class LibraryOpsController {
     return this.db.withTenant(p.tenantId, (tx) => this.returnCodes(tx, p, b.codes, { branchId: b.branchId, via: 'dropbox', at: b.droppedAt ? new Date(b.droppedAt) : undefined }));
   }
 
-  private async returnCodes(tx: Tx, p: UserPrincipal, codes: string[], o: { branchId?: string; via: 'desk' | 'dropbox'; at?: Date }) {
+  private async returnCodes(tx: Tx, p: UserPrincipal, codes: string[], o: { branchId?: string; via: 'desk' | 'dropbox' | 'kiosk'; at?: Date }) {
     const results = [];
     for (const code of codes) {
       try {
@@ -131,9 +153,9 @@ export class LibraryOpsController {
           const copy = await findCopy(sp, code);
           const [loan] = await sp.select({ id: libraryLoans.id }).from(libraryLoans).where(and(eq(libraryLoans.copyId, copy.id), isNull(libraryLoans.returnedAt)));
           if (!loan) throw new ConflictException('This copy is not out on loan');
-          const l = await returnLoan(sp, p, this.clock.now(), loan.id, { branchId: o.branchId ?? null, via: o.via, at: o.at });
+          const l = await returnLoan(sp, p, this.clock.now(), loan.id, { branchId: o.branchId ?? null, via: o.via, at: o.at, notify: this.notifications });
           const [c] = await sp.select({ status: libraryCopies.status }).from(libraryCopies).where(eq(libraryCopies.id, copy.id));
-          return { loanId: l.id, finePaise: l.finePaise, inTransit: c.status === 'in_transit' };
+          return { loanId: l.id, finePaise: l.finePaise, fineDays: l.fineDays, inTransit: c.status === 'in_transit' };
         });
         results.push({ code, ok: true, ...done });
       } catch (e) {
@@ -167,20 +189,53 @@ export class LibraryOpsController {
   /** The online catalogue for every reader: search by title, author, subject or ISBN, with copies on the shelf per branch. */
   @Get('opac')
   @Auth('user')
-  opac(@CurrentPrincipal() p: UserPrincipal, @Query('q') q = '', @Query('available') available?: string, @Query('page') pageText = '1') {
-    const page = Math.max(1, Math.min(500, Number(pageText) || 1));
-    const words = q.trim().split(/\s+/).filter(Boolean).slice(0, 6).map((w) => `%${w.replace(/[\\%_]/g, (c) => `\\${c}`)}%`);
+  opac(@CurrentPrincipal() p: UserPrincipal, @Query() raw: Record<string, string | undefined>) {
+    const parsed = OpacQuery.safeParse(raw);
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; '));
+    const f = parsed.data;
+    const page = f.page;
+    const words = f.q.split(/\s+/).filter(Boolean).slice(0, 6).map((w) => `%${w.replace(/[\\%_]/g, (c) => `\\${c}`)}%`);
     return this.db.withTenant(p.tenantId, async (tx) => {
       const shelf = sql<number>`(select count(*)::int from library_copies c where c.book_id = ${qual(libraryBooks.id)} and c.status = 'available')`;
-      const where = and(eq(libraryBooks.status, 'active'), ...words.map((w) => or(ilike(libraryBooks.title, w), ilike(libraryBooks.author, w), ilike(libraryBooks.subject, w), ilike(libraryBooks.keywords, w), ilike(libraryBooks.isbn, w), ilike(libraryBooks.callNo, w))), available === 'true' ? sql`${shelf} > 0` : undefined);
+      const field = (w: string) =>
+        f.field === 'title' ? ilike(libraryBooks.title, w) : f.field === 'author' ? ilike(libraryBooks.author, w) : f.field === 'subject' ? or(ilike(libraryBooks.subject, w), ilike(libraryBooks.keywords, w)) : f.field === 'isbn' ? ilike(libraryBooks.isbn, w) : or(ilike(libraryBooks.title, w), ilike(libraryBooks.author, w), ilike(libraryBooks.subject, w), ilike(libraryBooks.keywords, w), ilike(libraryBooks.isbn, w), ilike(libraryBooks.callNo, w), ilike(libraryBooks.publisher, w));
+      // The search, then each facet's own choice: a facet's counts leave its own choice out, so other values stay visible.
+      const base = [eq(libraryBooks.status, 'active'), ...words.map(field)];
+      const chosen = {
+        subject: f.subject ? eq(libraryBooks.subject, f.subject) : undefined,
+        material: f.material ? eq(libraryBooks.material, f.material) : undefined,
+        language: f.language ? eq(libraryBooks.language, f.language) : undefined,
+        author: f.author ? eq(libraryBooks.author, f.author) : undefined,
+        decade: f.decade ? sql`(${libraryBooks.pubYear} / 10) * 10 = ${f.decade}` : undefined,
+        branch: f.branch ? sql`exists (select 1 from library_copies c where c.book_id = ${qual(libraryBooks.id)} and c.at_branch_id = ${f.branch}::uuid and c.status in ('available', 'on_loan', 'in_transit'))` : undefined,
+        available: f.available === 'true' ? sql`${shelf} > 0` : undefined,
+      };
+      const except = (k?: keyof typeof chosen) => and(...base, ...Object.entries(chosen).filter(([key]) => key !== k).map(([, v]) => v));
+      const where = except();
       const [{ total }] = await tx.select({ total: sql<number>`count(*)::int` }).from(libraryBooks).where(where);
+      const order = f.sort === 'newest' ? [desc(libraryBooks.createdAt)] : f.sort === 'year' ? [sql`${libraryBooks.pubYear} desc nulls last`, asc(libraryBooks.title)] : f.sort === 'author' ? [asc(libraryBooks.author), asc(libraryBooks.title)] : [asc(libraryBooks.title)];
       const rows = await tx
-        .select({ id: libraryBooks.id, title: libraryBooks.title, author: libraryBooks.author, isbn: libraryBooks.isbn, callNo: libraryBooks.callNo, subject: libraryBooks.subject, publisher: libraryBooks.publisher, pubYear: libraryBooks.pubYear, edition: libraryBooks.edition, copies: libraryBooks.copies, available: shelf })
+        .select({ id: libraryBooks.id, title: libraryBooks.title, author: libraryBooks.author, isbn: libraryBooks.isbn, callNo: libraryBooks.callNo, subject: libraryBooks.subject, publisher: libraryBooks.publisher, pubYear: libraryBooks.pubYear, edition: libraryBooks.edition, material: libraryBooks.material, language: libraryBooks.language, copies: libraryBooks.copies, available: shelf })
         .from(libraryBooks)
         .where(where)
-        .orderBy(asc(libraryBooks.title))
+        .orderBy(...order)
         .limit(20)
         .offset((page - 1) * 20);
+      const facet = async (k: 'subject' | 'material' | 'language' | 'author', col: AnyPgColumn) =>
+        (await tx.select({ value: col, count: sql<number>`count(*)::int` }).from(libraryBooks).where(and(except(k), sql`${col} <> ''`)).groupBy(col).orderBy(sql`count(*) desc`, asc(col)).limit(12)).map((r) => ({ value: r.value, count: r.count }));
+      const decades = (await tx.select({ value: sql<number>`(${libraryBooks.pubYear} / 10) * 10`, count: sql<number>`count(*)::int` }).from(libraryBooks).where(and(except('decade'), sql`${libraryBooks.pubYear} is not null`)).groupBy(sql`1`).orderBy(sql`1 desc`).limit(12)).map((r) => ({ value: String(r.value), count: r.count }));
+      const branches = (
+        await tx
+          .select({ value: libraryBranches.id, label: libraryBranches.name, count: sql<number>`count(distinct ${libraryBooks.id})::int` })
+          .from(libraryBooks)
+          .innerJoin(libraryCopies, and(eq(libraryCopies.bookId, libraryBooks.id), sql`${libraryCopies.status} in ('available', 'on_loan', 'in_transit')`))
+          .innerJoin(libraryBranches, eq(libraryBranches.id, libraryCopies.atBranchId))
+          .where(except('branch'))
+          .groupBy(libraryBranches.id, libraryBranches.name)
+          .orderBy(asc(libraryBranches.name))
+      ).map((r) => ({ value: r.value, label: r.label, count: r.count }));
+      const [{ n: availableNow }] = await tx.select({ n: sql<number>`count(*)::int` }).from(libraryBooks).where(and(except('available'), sql`${shelf} > 0`));
+      const facets = { subject: await facet('subject', libraryBooks.subject), material: await facet('material', libraryBooks.material), language: await facet('language', libraryBooks.language), author: await facet('author', libraryBooks.author), decade: decades, branch: branches, availableNow };
       const ids = rows.map((r) => r.id);
       const byBranch = ids.length
         ? await tx
@@ -190,7 +245,7 @@ export class LibraryOpsController {
             .where(and(inArray(libraryCopies.bookId, ids), sql`${libraryCopies.status} in ('available', 'on_loan', 'in_transit')`))
             .groupBy(libraryCopies.bookId, libraryBranches.name)
         : [];
-      return { total, page, rows: rows.map((r) => ({ ...r, branches: byBranch.filter((b) => b.bookId === r.id).map(({ branch, available: a, copies }) => ({ branch, available: a, copies })), reservable: r.available === 0 && r.copies > 0 })) };
+      return { total, page, facets, rows: rows.map((r) => ({ ...r, branches: byBranch.filter((b) => b.bookId === r.id).map(({ branch, available: a, copies }) => ({ branch, available: a, copies })), reservable: r.available === 0 && r.copies > 0 })) };
     });
   }
 
@@ -296,7 +351,7 @@ export class LibraryOpsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const isbns = books.map((b) => b.isbn).filter(Boolean);
       const have = new Set(isbns.length ? (await tx.select({ isbn: libraryBooks.isbn }).from(libraryBooks).where(inArray(libraryBooks.isbn, isbns))).map((r) => r.isbn) : []);
-      return { records: books.length, books: books.slice(0, 300).map((b) => ({ ...b, inCatalogue: !!b.isbn && have.has(b.isbn), valid: b.title.length > 0 })) };
+      return { records: books.length, books: books.slice(0, 300).map(({ items, ...b }) => ({ ...b, holdings: items.length, inCatalogue: !!b.isbn && have.has(b.isbn), valid: b.title.length > 0 })) };
     });
   }
 
@@ -323,7 +378,15 @@ export class LibraryOpsController {
           continue;
         }
         const [row] = await tx.insert(libraryBooks).values({ tenantId: p.tenantId, title: b.title.slice(0, 300), author: b.author.slice(0, 200), isbn: b.isbn || null, publisher: b.publisher, edition: b.edition, pubYear: b.pubYear, ddc: b.ddc, callNo: b.callNo || null, subject: b.subject, keywords: b.keywords.slice(0, 500), pages: b.pages, language: b.language, copies: 0 }).returning({ id: libraryBooks.id });
-        if (copies > 0) await addCopies(tx, p.tenantId, row.id, copies, { branchId: branch, acquiredOn: today });
+        // Koha's holdings (952) come in as copies with their own barcodes; otherwise `copies` new copies each.
+        const holdings = (b.items ?? []).filter((it) => it.barcode);
+        if (holdings.length) {
+          for (const it of holdings) {
+            const [made] = await addCopies(tx, p.tenantId, row.id, 1, { branchId: branch, acquiredOn: today, pricePaise: it.pricePaise, shelf: it.shelf });
+            const [taken] = await tx.select({ id: libraryCopies.id }).from(libraryCopies).where(sql`lower(${libraryCopies.barcode}) = ${it.barcode.toLowerCase()} and ${libraryCopies.id} <> ${made.id}`).limit(1);
+            if (!taken) await tx.update(libraryCopies).set({ barcode: it.barcode }).where(eq(libraryCopies.id, made.id));
+          }
+        } else if (copies > 0) await addCopies(tx, p.tenantId, row.id, copies, { branchId: branch, acquiredOn: today });
         created++;
       }
       await auditUser(tx, p, 'library.marc_imported', 'library_book', undefined, { records: books.length, created, skipped, copies });
@@ -335,14 +398,24 @@ export class LibraryOpsController {
     if (!file?.buffer?.length) throw new BadRequestException('Choose a MARC21 file (.mrc or .xml)');
     const records = parseMarc(file.buffer);
     if (!records.length) throw new BadRequestException('No MARC21 records were found in this file');
-    return records.slice(0, 5000).map(marcToBook);
+    return records.slice(0, 5000).map((r) => ({ ...marcToBook(r), items: marcItems(r) }));
   }
 
   /** The catalogue as a MARC21 exchange file, for Koha and union catalogues. */
   @Get('marc/export')
   @Auth('user', LIBRARY_ROLES)
   async exportMarc(@CurrentPrincipal() p: UserPrincipal, @Res() res: Response) {
-    const books = await this.db.withTenant(p.tenantId, (tx) => tx.select().from(libraryBooks).where(eq(libraryBooks.status, 'active')).orderBy(asc(libraryBooks.title)).limit(50_000));
+    const { books, items } = await this.db.withTenant(p.tenantId, async (tx) => {
+      const books = await tx.select().from(libraryBooks).where(eq(libraryBooks.status, 'active')).orderBy(asc(libraryBooks.title)).limit(50_000);
+      // Holdings as Koha's 952 item fields: home and current branch, shelf, call number, barcode, price, material.
+      const items = await tx
+        .select({ bookId: libraryCopies.bookId, accessionNo: libraryCopies.accessionNo, barcode: libraryCopies.barcode, shelf: libraryCopies.shelf, price: libraryCopies.pricePaise, status: libraryCopies.status, home: sql<string>`coalesce((select code from library_branches b where b.id = ${qual(libraryCopies.branchId)}), '')`, at: sql<string>`coalesce((select code from library_branches b where b.id = ${qual(libraryCopies.atBranchId)}), '')` })
+        .from(libraryCopies)
+        .where(sql`${libraryCopies.status} not in ('withdrawn', 'lost')`);
+      return { books, items };
+    });
+    const byBook = new Map<string, typeof items>();
+    for (const it of items) byBook.set(it.bookId, [...(byBook.get(it.bookId) ?? []), it]);
     const parts = books.map((b) =>
       writeIso2709(
         [
@@ -355,7 +428,9 @@ export class LibraryOpsController {
           b.edition ? { tag: '250', value: `$a ${b.edition}` } : null,
           b.publisher || b.pubYear ? { tag: '264', value: `${b.publisher ? `$b ${b.publisher}` : ''} ${b.pubYear ? `$c ${b.pubYear}` : ''}`.trim() } : null,
           b.pages ? { tag: '300', value: `$a ${b.pages} p.` } : null,
+          b.classScheme !== 'ddc' && b.classNumber ? { tag: '084', value: `$a ${b.classNumber} $2 ${b.classScheme === 'cc' ? 'colon' : b.classScheme}` } : null,
           ...b.keywords.split(',').map((k) => k.trim()).filter(Boolean).slice(0, 10).map((k) => ({ tag: '650', value: `$a ${k}` })),
+          ...(byBook.get(b.id) ?? []).map((c) => ({ tag: '952', value: [c.home && `$a ${c.home}`, c.at && `$b ${c.at}`, c.shelf && `$c ${c.shelf}`, b.callNo && `$o ${b.callNo}`, `$p ${c.barcode ?? c.accessionNo}`, `$i ${c.accessionNo}`, c.price ? `$g ${(c.price / 100).toFixed(2)}` : '', `$y ${b.material.toUpperCase()}`, c.status === 'damaged' ? '$4 1' : ''].filter(Boolean).join(' ') })),
         ].filter((f): f is { tag: string; value: string } => !!f),
       ),
     );
@@ -403,7 +478,7 @@ export class LibraryOpsController {
     const [ill] = await tx.select({ n: sql<number>`count(*)::int` }).from(libraryIll).where(and(eq(libraryIll.memberId, member.id), eq(libraryIll.status, 'in_hand')));
     const depositHeld = member.depositPaise > 0 && !member.depositRefundedOn ? member.depositPaise : 0;
     const [last] = await tx.select().from(libraryClearances).where(eq(libraryClearances.memberId, member.id)).orderBy(desc(libraryClearances.createdAt)).limit(1);
-    return { member: { id: member.id, cardNo: member.cardNo, fullName: member.fullName }, booksOut: s.out, overdue: s.overdue, unpaidPaise: s.unpaidPaise, interLibraryOut: ill.n, depositHeldPaise: depositHeld, clear: s.out === 0 && s.unpaidPaise === 0 && ill.n === 0, lastClearance: last ?? null };
+    return { member: { id: member.id, cardNo: member.cardNo, fullName: member.fullName }, booksOut: s.out, overdue: s.overdue, unpaidPaise: s.unpaidPaise, feesPendingPaise: s.feesPendingPaise, interLibraryOut: ill.n, depositHeldPaise: depositHeld, clear: s.out === 0 && s.unpaidPaise === 0 && s.feesPendingPaise === 0 && ill.n === 0, lastClearance: last ?? null };
   }
 
   /** Records the library's no-dues clearance (refused while anything is owed); the card is closed. */
@@ -412,11 +487,130 @@ export class LibraryOpsController {
   clear(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string, @Body(new ZodBody(ClearBody)) b: z.infer<typeof ClearBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const d = await this.dues(tx, p.tenantId, studentId);
-      if (!d.clear) throw new ConflictException(`Not clear: ${[d.booksOut && `${d.booksOut} books out`, d.unpaidPaise && `fines of ₹${(d.unpaidPaise / 100).toFixed(2)}`, d.interLibraryOut && 'an inter-library loan'].filter(Boolean).join(', ')}`);
+      if (!d.clear) throw new ConflictException(`Not clear: ${[d.booksOut && `${d.booksOut} books out`, d.unpaidPaise && `fines of ₹${(d.unpaidPaise / 100).toFixed(2)}`, d.feesPendingPaise && `fines of ₹${(d.feesPendingPaise / 100).toFixed(2)} on the fee account not yet paid`, d.interLibraryOut && 'an inter-library loan'].filter(Boolean).join(', ')}`);
       const [row] = await tx.insert(libraryClearances).values({ tenantId: p.tenantId, memberId: d.member.id, purpose: b.purpose, note: b.note, issuedBy: p.userId }).returning();
       await tx.update(libraryMembers).set({ status: 'left' }).where(eq(libraryMembers.id, d.member.id));
       await auditUser(tx, p, 'library_clearance.created', 'library_clearance', row.id, { studentId, purpose: b.purpose, depositHeldPaise: d.depositHeldPaise });
+      await this.events.emit(tx, p.tenantId, { type: DomainEvents.LibraryClearanceIssued, aggregateType: 'student', aggregateId: studentId, payload: { clearanceId: row.id, purpose: b.purpose }, actorId: p.userId });
       return { ...row, depositHeldPaise: d.depositHeldPaise };
+    });
+  }
+
+  // ---- exits: students leaving (transfer certificate) and staff leaving (exit clearance) ---------------------------------
+
+  /**
+   * Who is leaving and what they owe the library: transfer-certificate requests not yet decided, students who left
+   * with books or fines outstanding, and staff exits at clearance with the library's part pending or done.
+   */
+  @Get('exits')
+  @Auth('user', LIBRARY_ROLES)
+  exits(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const today = await tenantToday(tx, this.clock.now());
+      const tc = (
+        await tx.execute<{ request_id: string | null; number: string; student_id: string; full_name: string; roll_no: string; status: string; at_library: boolean }>(sql`
+          select * from (
+            select r.id as request_id, r.number, s.id as student_id, s.full_name, s.roll_no, s.status::text as status,
+              exists (select 1 from jsonb_array_elements(r.steps) x where x->>'key' = 'library' and x->>'state' = 'current') as at_library, r.created_at as at
+            from academic_requests r join students s on s.id = r.student_id
+            where r.kind = 'withdrawal' and r.status = 'pending'
+            union all
+            select null, '', s.id, s.full_name, s.roll_no, s.status::text, false, s.updated_at
+            from students s
+            where s.status in ('transferred', 'dropped')
+              and not exists (select 1 from academic_requests r where r.student_id = s.id and r.kind = 'withdrawal' and r.status = 'pending')
+              and exists (select 1 from library_loans l where l.student_id = s.id and (l.returned_at is null or (l.fine_paid_at is null and l.fine_invoice_title is null and l.fine_paise > l.fine_waived_paise)))
+          ) x order by at desc limit 200`)
+      ).rows;
+      const leaving = [];
+      for (const r of tc) {
+        const d = await this.dues(tx, p.tenantId, r.student_id);
+        leaving.push({ requestId: r.request_id, number: r.number, studentId: r.student_id, fullName: r.full_name, rollNo: r.roll_no, status: r.status, atLibraryStep: r.at_library, ...d });
+      }
+      const staff = (
+        await tx.execute<{ separation_id: string; user_id: string; full_name: string; last_working_day: string; clearance: string }>(sql`
+          select sp.id as separation_id, sp.user_id, u.full_name, sp.last_working_day::text, c.status as clearance
+          from separations sp join users u on u.id = sp.user_id join exit_clearances c on c.separation_id = sp.id and c.department = 'Library'
+          where sp.status = 'clearance' order by sp.last_working_day limit 200`)
+      ).rows;
+      const staffOut = [];
+      for (const r of staff) {
+        const [m] = await tx.select().from(libraryMembers).where(eq(libraryMembers.userId, r.user_id));
+        const st = m ? await memberStanding(tx, m, today) : { out: 0, overdue: 0, unpaidPaise: 0, feesPendingPaise: 0 };
+        staffOut.push({ separationId: r.separation_id, userId: r.user_id, fullName: r.full_name, lastWorkingDay: r.last_working_day, clearance: r.clearance, cardNo: m?.cardNo ?? null, booksOut: st.out, overdue: st.overdue, unpaidPaise: st.unpaidPaise, clear: st.out === 0 });
+      }
+      return { students: leaving, staff: staffOut };
+    });
+  }
+
+  /**
+   * Signs off the library's part of a staff exit: refused while books are out; unpaid fines go to the full and final
+   * settlement as the library's dues (and stop counting as owed at the desk).
+   */
+  @Post('exits/staff/:separationId/clear')
+  @HttpCode(200)
+  @Auth('user', LIBRARY_ROLES)
+  clearStaff(@CurrentPrincipal() p: UserPrincipal, @Param('separationId', ParseUUIDPipe) id: string, @Body(new ZodBody(StaffClearBody)) b: z.infer<typeof StaffClearBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [sep] = (await tx.execute<{ id: string; user_id: string; status: string }>(sql`select id, user_id, status from separations where id = ${id}::uuid for update`)).rows;
+      if (!sep) throw new NotFoundException('Exit not found');
+      if (sep.status !== 'clearance') throw new ConflictException('This exit is not at clearance');
+      if (sep.user_id === p.userId) throw new ForbiddenException('You cannot clear your own exit');
+      const [m] = await tx.select().from(libraryMembers).where(eq(libraryMembers.userId, sep.user_id));
+      const st = m ? await memberStanding(tx, m, await tenantToday(tx, this.clock.now())) : null;
+      if (st && st.out > 0) throw new ConflictException(`${st.out} books are still out; take them back first`);
+      const dues = st?.unpaidPaise ?? 0;
+      if (m && dues > 0) await tx.update(libraryLoans).set({ fineInvoiceTitle: `Exit settlement ${id.slice(0, 8)}` }).where(and(eq(libraryLoans.memberId, m.id), isNull(libraryLoans.finePaidAt), isNull(libraryLoans.fineInvoiceTitle), sql`${libraryLoans.finePaise} > ${libraryLoans.fineWaivedPaise}`));
+      const remarks = [b.remarks, dues > 0 ? `Library fines of ₹${(dues / 100).toFixed(2)} to recover in the settlement` : 'No library dues'].filter(Boolean).join('. ');
+      const done = await tx.execute(sql`update exit_clearances set status = 'cleared', dues_paise = ${dues}, remarks = ${remarks}, cleared_by = ${p.userId}::uuid, cleared_at = now() where separation_id = ${id}::uuid and department = 'Library'`);
+      if (!done.rowCount) throw new NotFoundException('This exit has no library clearance');
+      if (m) {
+        await tx.update(libraryMembers).set({ status: 'left' }).where(eq(libraryMembers.id, m.id));
+        await tx.insert(libraryClearances).values({ tenantId: p.tenantId, memberId: m.id, purpose: 'staff exit', note: remarks, issuedBy: p.userId });
+      }
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'hr.exit_clearance.v1', subjectType: 'separation', subjectId: id, data: { department: 'Library', status: 'cleared', duesPaise: dues, by: 'library' } });
+      return { duesPaise: dues, remarks };
+    });
+  }
+
+  // ---- overdue notices -------------------------------------------------------------------------------------------------
+
+  /** Sends today's due-soon reminders and overdue notices now (the daily job does the same each day). */
+  @Post('overdue-notices/run')
+  @HttpCode(200)
+  @Auth('user', LIBRARY_ROLES)
+  runNotices(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => this.notices.run(tx, p.tenantId, p));
+  }
+
+  /** The notices sent, newest first: who, which book, which step, on which channels. */
+  @Get('overdue-notices')
+  @Auth('user', LIBRARY_ROLES)
+  noticeLog(@CurrentPrincipal() p: UserPrincipal, @Query('page') pageText = '1') {
+    const page = Math.max(1, Math.min(1000, Number(pageText) || 1));
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [{ total }] = await tx.select({ total: sql<number>`count(*)::int` }).from(libraryOverdueNotices);
+      const rows = await tx
+        .select({
+          id: libraryOverdueNotices.id,
+          loanId: libraryOverdueNotices.loanId,
+          step: libraryOverdueNotices.step,
+          daysOverdue: libraryOverdueNotices.daysOverdue,
+          channels: libraryOverdueNotices.channels,
+          recipients: libraryOverdueNotices.recipients,
+          sentAt: libraryOverdueNotices.sentAt,
+          title: libraryBooks.title,
+          dueOn: libraryLoans.dueOn,
+          returnedAt: libraryLoans.returnedAt,
+          borrower: sql<string>`coalesce((select full_name from library_members m where m.id = ${libraryLoans.memberId}), (select full_name from students st where st.id = ${libraryLoans.studentId}), '')`,
+        })
+        .from(libraryOverdueNotices)
+        .innerJoin(libraryLoans, eq(libraryLoans.id, libraryOverdueNotices.loanId))
+        .innerJoin(libraryBooks, eq(libraryBooks.id, libraryLoans.bookId))
+        .orderBy(desc(libraryOverdueNotices.sentAt))
+        .limit(50)
+        .offset((page - 1) * 50);
+      return { total, page, rows };
     });
   }
 

@@ -40,7 +40,7 @@ describe('campus operations depth: module settings, record views, reports, libra
     const a = (await http().post('/v1/library/books').set(as('principal')).send({ title: 'Cost Accounting', copies: 3, barcode: 'LB-1' }).expect(201)).body;
     const loan = (await http().post('/v1/library/loans').set(as('principal')).send({ bookId: a.id, studentId: t.students[0].id }).expect(201)).body;
     expect(loan.dueOn).toBe('2026-10-19');
-    await http().post('/v1/library/loans').set(as('principal')).send({ bookId: a.id, studentId: t.students[0].id }).expect(400);
+    await http().post('/v1/library/loans').set(as('principal')).send({ bookId: a.id, studentId: t.students[0].id }).expect(409); // over the per-student limit (a conflict, as at the copy desk)
 
     // Numbering: procurement series with a financial-year prefix, moved forward to 42.
     await http().put('/v1/module-settings/procurement').set(as('principal')).send({ numbering: { REQ: { prefix: 'IND/{FY}/', pad: 5, next: 42 } } }).expect(200);
@@ -148,7 +148,8 @@ describe('campus operations depth: module settings, record views, reports, libra
     const closed = (await http().post(`/v1/library/stock-checks/${check.id}/close`).set(as('principal')).expect(200)).body;
     // Cost Accounting: 3 copies, 1 on loan, none scanned → 2 short. Business Law: 2 copies, 1 scanned → 1 short.
     expect(closed.summary).toMatchObject({ expected: 4, found: 1, missingTitles: 2 });
-    expect(closed.summary.missing.find((m: { bookId: string }) => m.bookId === b.id)).toMatchObject({ short: 1 });
+    // The register is by copy now: one of Business Law's two copies is missing, named by its accession number.
+    expect(closed.summary.missing.filter((m: { bookId: string }) => m.bookId === b.id)).toEqual([expect.objectContaining({ accessionNo: expect.stringMatching(/^ACC-/) })]);
     await http().post(`/v1/library/stock-checks/${check.id}/scan`).set(as('principal')).send({ code: '9781234567897' }).expect(409);
     const rec = (await http().get(`/v1/ops-records/stock-check/${check.id}`).set(as('principal')).expect(200)).body;
     expect(rec.activity.map((a: { action: string }) => a.action)).toEqual(['library.stock_check.closed', 'library.stock_check.started']);

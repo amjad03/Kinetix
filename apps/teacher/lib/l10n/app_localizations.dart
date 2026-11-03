@@ -8234,6 +8234,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Field visit'**
   String get delivery_field_visit;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get libTitle;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Search the catalogue, renew and reserve books'**
+  String get libBody;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get libTabSearch;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'My books'**
+  String get libTabMine;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Title, author, subject or ISBN'**
+  String get libSearchHint;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'On the shelf'**
+  String get libOnShelf;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'On the shelf ({count})'**
+  String libOnShelfN(int count);
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'{year}s'**
+  String libDecade(String year);
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get libFacetSubject;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get libFacetLanguage;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get libFacetDecade;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Material'**
+  String get libFacetMaterial;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get libFacetAuthor;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Search by title, author or subject, then narrow by subject or language.'**
+  String get libSearchPrompt;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'No titles match.'**
+  String get libNoMatch;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'{count} titles'**
+  String libResults(int count);
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'{available} of {copies} on the shelf'**
+  String libAvailable(int available, int copies);
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'All copies are out'**
+  String get libAllOut;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'In the queue'**
+  String get libInQueue;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Reserve'**
+  String get libReserve;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Reserved. The library tells you when a copy is back.'**
+  String get libReserved;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'More titles'**
+  String get libMore;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Library card {card}'**
+  String libCardNo(String card);
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days a loan · {books} books at a time'**
+  String libRules(int days, int books);
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Books out ({count})'**
+  String libOut(int count);
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'You have no books out.'**
+  String get libNothingOut;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String libDue(String date);
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Was due {date} · fine so far {fine}'**
+  String libOverdue(String date, String fine);
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Renew'**
+  String get libRenew;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Renewed for another loan period'**
+  String get libRenewed;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'My reservations'**
+  String get libMyReservations;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for you at the desk'**
+  String get libReady;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'In the queue for a copy'**
+  String get libWaiting;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get libCancel;
+
+  /// Library (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Reservation cancelled'**
+  String get libCancelled;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -5649,4 +5649,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String hlLateBy(int n) {
     return '$n मिनट देर';
   }
+
+  @override
+  String get libFacetSubject => 'विषय';
+
+  @override
+  String get libFacetLanguage => 'भाषा';
+
+  @override
+  String get libFacetDecade => 'प्रकाशन';
+
+  @override
+  String libDecade(String year) {
+    return '$year का दशक';
+  }
 }

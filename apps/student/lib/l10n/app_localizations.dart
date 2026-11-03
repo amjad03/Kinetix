@@ -10106,6 +10106,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{n} min late'**
   String hlLateBy(int n);
+
+  /// Library catalogue facets.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get libFacetSubject;
+
+  /// Library catalogue facets.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get libFacetLanguage;
+
+  /// Library catalogue facets.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get libFacetDecade;
+
+  /// Library catalogue facets.
+  ///
+  /// In en, this message translates to:
+  /// **'{year}s'**
+  String libDecade(String year);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

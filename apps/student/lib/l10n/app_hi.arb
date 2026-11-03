@@ -1668,5 +1668,9 @@
   "hlPurposeMess": "मेस समिति",
   "hlPurposeDiscipline": "अनुशासन समिति",
   "hlCall": "फ़ोन करें",
-  "hlLateBy": "{n} मिनट देर"
+  "hlLateBy": "{n} मिनट देर",
+  "libFacetSubject": "विषय",
+  "libFacetLanguage": "भाषा",
+  "libFacetDecade": "प्रकाशन",
+  "libDecade": "{year} का दशक"
 }

@@ -4521,4 +4521,127 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get delivery_field_visit => 'क्षेत्र भ्रमण';
+
+  @override
+  String get libTitle => 'पुस्तकालय';
+
+  @override
+  String get libBody => 'सूची खोजें, पुस्तकों का नवीनीकरण और आरक्षण करें';
+
+  @override
+  String get libTabSearch => 'खोजें';
+
+  @override
+  String get libTabMine => 'मेरी पुस्तकें';
+
+  @override
+  String get libSearchHint => 'शीर्षक, लेखक, विषय या ISBN';
+
+  @override
+  String get libOnShelf => 'शेल्फ़ पर';
+
+  @override
+  String libOnShelfN(int count) {
+    return 'शेल्फ़ पर ($count)';
+  }
+
+  @override
+  String libDecade(String year) {
+    return '$year का दशक';
+  }
+
+  @override
+  String get libFacetSubject => 'विषय';
+
+  @override
+  String get libFacetLanguage => 'भाषा';
+
+  @override
+  String get libFacetDecade => 'प्रकाशन';
+
+  @override
+  String get libFacetMaterial => 'सामग्री';
+
+  @override
+  String get libFacetAuthor => 'लेखक';
+
+  @override
+  String get libSearchPrompt => 'शीर्षक, लेखक या विषय से खोजें, फिर विषय या भाषा से छाँटें।';
+
+  @override
+  String get libNoMatch => 'कोई शीर्षक मेल नहीं खाता।';
+
+  @override
+  String libResults(int count) {
+    return '$count शीर्षक';
+  }
+
+  @override
+  String libAvailable(int available, int copies) {
+    return '$copies में से $available शेल्फ़ पर';
+  }
+
+  @override
+  String get libAllOut => 'सभी प्रतियाँ बाहर हैं';
+
+  @override
+  String get libInQueue => 'कतार में';
+
+  @override
+  String get libReserve => 'आरक्षित करें';
+
+  @override
+  String get libReserved => 'आरक्षित। प्रति लौटने पर पुस्तकालय आपको बताएगा।';
+
+  @override
+  String get libMore => 'और शीर्षक';
+
+  @override
+  String libCardNo(String card) {
+    return 'पुस्तकालय कार्ड $card';
+  }
+
+  @override
+  String libRules(int days, int books) {
+    return 'प्रति ऋण $days दिन · एक बार में $books पुस्तकें';
+  }
+
+  @override
+  String libOut(int count) {
+    return 'बाहर पुस्तकें ($count)';
+  }
+
+  @override
+  String get libNothingOut => 'आपके पास कोई पुस्तक बाहर नहीं है।';
+
+  @override
+  String libDue(String date) {
+    return 'देय $date';
+  }
+
+  @override
+  String libOverdue(String date, String fine) {
+    return '$date को देय थी · अब तक जुर्माना $fine';
+  }
+
+  @override
+  String get libRenew => 'नवीनीकरण';
+
+  @override
+  String get libRenewed => 'एक और ऋण अवधि के लिए नवीनीकृत';
+
+  @override
+  String get libMyReservations => 'मेरे आरक्षण';
+
+  @override
+  String get libReady => 'डेस्क पर आपकी प्रतीक्षा में';
+
+  @override
+  String get libWaiting => 'प्रति के लिए कतार में';
+
+  @override
+  String get libCancel => 'रद्द करें';
+
+  @override
+  String get libCancelled => 'आरक्षण रद्द';
 }

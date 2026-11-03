@@ -144,10 +144,60 @@ export function marcToBook(rec: MarcRecord): MarcBook {
   };
 }
 
+/** The holdings of a record as Koha exports them (952: $p barcode, $c shelf, $g price, $o call number). */
+export function marcItems(rec: MarcRecord): { barcode: string; shelf: string; pricePaise: number; callNo: string }[] {
+  return (rec['952'] ?? []).map((v) => {
+    const f = subfields(v);
+    const price = Number((f.g?.[0] ?? '').replace(/[^0-9.]/g, ''));
+    return { barcode: (f.p?.[0] ?? '').slice(0, 60), shelf: (f.c?.[0] ?? '').slice(0, 40), pricePaise: Number.isFinite(price) ? Math.round(price * 100) : 0, callNo: f.o?.[0] ?? '' };
+  });
+}
+
 /** A shelf mark from the DDC number and the first three letters of the author's surname ("657.95 GUP"). */
 export function callNumber(ddc: string, author: string): string {
+  return [ddc.trim(), authorMark(author)].filter(Boolean).join(' ');
+}
+
+/** The first three letters of the author's surname, in capitals (the book number under DDC, UDC and LCC). */
+export function authorMark(author: string): string {
   const surname = (author.includes(',') ? author.split(',')[0] : (author.trim().split(/\s+/).pop() ?? '')).replace(/[^A-Za-z]/g, '');
-  return [ddc.trim(), surname.slice(0, 3).toUpperCase()].filter(Boolean).join(' ');
+  return surname.slice(0, 3).toUpperCase();
+}
+
+/**
+ * The Colon Classification year of publication used in the book number: the century letter (K 1700s, L 1800s, M 1900s,
+ * N 2000s, P 2100s) followed by the last two digits of the year, so 1998 is M98 and 2019 is N19.
+ */
+export function ccYear(year: number | null | undefined): string {
+  if (!year || year < 1700 || year > 2199) return '';
+  const letter = 'KLMNP'[Math.floor(year / 100) - 17];
+  return `${letter}${String(year % 100).padStart(2, '0')}`;
+}
+
+export type ClassScheme = 'ddc' | 'cc' | 'udc' | 'lcc';
+export const CLASS_SCHEMES: ClassScheme[] = ['ddc', 'cc', 'udc', 'lcc'];
+
+/**
+ * The call number of a title in its classification scheme: class number then book number. Under Colon Classification
+ * the book number is the language number (if not the library's favoured language), the year code and the copy's
+ * volume, e.g. "O111,3M8 N19"; under DDC, UDC and LCC it is the author mark, e.g. "657.95 MAH". A book number given by
+ * the cataloguer is used as it is.
+ */
+export function callNumberFor(scheme: string, classNumber: string, o: { author?: string; year?: number | null; bookNumber?: string } = {}): string {
+  const cls = classNumber.trim();
+  const book = o.bookNumber?.trim() || (scheme === 'cc' ? ccYear(o.year) : authorMark(o.author ?? ''));
+  return [cls, book].filter(Boolean).join(' ');
+}
+
+/** Whether a class number looks right for its scheme (DDC: three digits and decimals; CC: a main class letter first). */
+export function classNumberProblem(scheme: string, classNumber: string): string | null {
+  const c = classNumber.trim();
+  if (!c) return null;
+  if (scheme === 'ddc' && !/^\d{3}(\.\d+)?$/.test(c)) return 'A DDC number is three digits, with decimals after a point (for example 657.95)';
+  if (scheme === 'cc' && !/^[A-Z∆Δ1-9][A-Za-z0-9.,:;'&()"\- ]*$/.test(c)) return 'A Colon Classification number starts with its main class (for example O111,3M8 or L:4)';
+  if (scheme === 'udc' && !/^\d[\d.:+/()=\-"' ]*$/.test(c)) return 'A UDC number starts with a digit (for example 657.1:004)';
+  if (scheme === 'lcc' && !/^[A-Z]{1,3}\d/.test(c)) return 'An LCC number starts with one to three capital letters and a number (for example HF5635)';
+  return null;
 }
 
 /** An ISBN-13 from an ISBN-10 or ISBN-13 (spaces and hyphens allowed), or null when the check digit is wrong. */

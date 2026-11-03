@@ -4748,5 +4748,199 @@
   "delivery_revision": "Revision",
   "delivery_test": "Test",
   "delivery_online": "Online",
-  "delivery_field_visit": "Field visit"
+  "delivery_field_visit": "Field visit",
+  "libTitle": "Library",
+  "@libTitle": {
+    "description": "Library (Profile → Work)."
+  },
+  "libBody": "Search the catalogue, renew and reserve books",
+  "@libBody": {
+    "description": "Library (Profile → Work)."
+  },
+  "libTabSearch": "Search",
+  "@libTabSearch": {
+    "description": "Library (Profile → Work)."
+  },
+  "libTabMine": "My books",
+  "@libTabMine": {
+    "description": "Library (Profile → Work)."
+  },
+  "libSearchHint": "Title, author, subject or ISBN",
+  "@libSearchHint": {
+    "description": "Library (Profile → Work)."
+  },
+  "libOnShelf": "On the shelf",
+  "@libOnShelf": {
+    "description": "Library (Profile → Work)."
+  },
+  "libOnShelfN": "On the shelf ({count})",
+  "@libOnShelfN": {
+    "description": "Library (Profile → Work).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libDecade": "{year}s",
+  "@libDecade": {
+    "description": "Library (Profile → Work).",
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "libFacetSubject": "Subject",
+  "@libFacetSubject": {
+    "description": "Library (Profile → Work)."
+  },
+  "libFacetLanguage": "Language",
+  "@libFacetLanguage": {
+    "description": "Library (Profile → Work)."
+  },
+  "libFacetDecade": "Published",
+  "@libFacetDecade": {
+    "description": "Library (Profile → Work)."
+  },
+  "libFacetMaterial": "Material",
+  "@libFacetMaterial": {
+    "description": "Library (Profile → Work)."
+  },
+  "libFacetAuthor": "Author",
+  "@libFacetAuthor": {
+    "description": "Library (Profile → Work)."
+  },
+  "libSearchPrompt": "Search by title, author or subject, then narrow by subject or language.",
+  "@libSearchPrompt": {
+    "description": "Library (Profile → Work)."
+  },
+  "libNoMatch": "No titles match.",
+  "@libNoMatch": {
+    "description": "Library (Profile → Work)."
+  },
+  "libResults": "{count} titles",
+  "@libResults": {
+    "description": "Library (Profile → Work).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libAvailable": "{available} of {copies} on the shelf",
+  "@libAvailable": {
+    "description": "Library (Profile → Work).",
+    "placeholders": {
+      "available": {
+        "type": "int"
+      },
+      "copies": {
+        "type": "int"
+      }
+    }
+  },
+  "libAllOut": "All copies are out",
+  "@libAllOut": {
+    "description": "Library (Profile → Work)."
+  },
+  "libInQueue": "In the queue",
+  "@libInQueue": {
+    "description": "Library (Profile → Work)."
+  },
+  "libReserve": "Reserve",
+  "@libReserve": {
+    "description": "Library (Profile → Work)."
+  },
+  "libReserved": "Reserved. The library tells you when a copy is back.",
+  "@libReserved": {
+    "description": "Library (Profile → Work)."
+  },
+  "libMore": "More titles",
+  "@libMore": {
+    "description": "Library (Profile → Work)."
+  },
+  "libCardNo": "Library card {card}",
+  "@libCardNo": {
+    "description": "Library (Profile → Work).",
+    "placeholders": {
+      "card": {
+        "type": "String"
+      }
+    }
+  },
+  "libRules": "{days} days a loan · {books} books at a time",
+  "@libRules": {
+    "description": "Library (Profile → Work).",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "books": {
+        "type": "int"
+      }
+    }
+  },
+  "libOut": "Books out ({count})",
+  "@libOut": {
+    "description": "Library (Profile → Work).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libNothingOut": "You have no books out.",
+  "@libNothingOut": {
+    "description": "Library (Profile → Work)."
+  },
+  "libDue": "Due {date}",
+  "@libDue": {
+    "description": "Library (Profile → Work).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "libOverdue": "Was due {date} · fine so far {fine}",
+  "@libOverdue": {
+    "description": "Library (Profile → Work).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "fine": {
+        "type": "String"
+      }
+    }
+  },
+  "libRenew": "Renew",
+  "@libRenew": {
+    "description": "Library (Profile → Work)."
+  },
+  "libRenewed": "Renewed for another loan period",
+  "@libRenewed": {
+    "description": "Library (Profile → Work)."
+  },
+  "libMyReservations": "My reservations",
+  "@libMyReservations": {
+    "description": "Library (Profile → Work)."
+  },
+  "libReady": "Waiting for you at the desk",
+  "@libReady": {
+    "description": "Library (Profile → Work)."
+  },
+  "libWaiting": "In the queue for a copy",
+  "@libWaiting": {
+    "description": "Library (Profile → Work)."
+  },
+  "libCancel": "Cancel",
+  "@libCancel": {
+    "description": "Library (Profile → Work)."
+  },
+  "libCancelled": "Reservation cancelled",
+  "@libCancelled": {
+    "description": "Library (Profile → Work)."
+  }
 }

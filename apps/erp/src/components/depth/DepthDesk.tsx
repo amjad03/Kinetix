@@ -211,7 +211,9 @@ function FormView({ spec, pending, onSend, setNotice }: { spec: FormSpec; pendin
       return;
     }
     onSend(spec.method ?? 'POST', fillPath(spec.path, values), built.body, (data) => {
-      if (spec.result) setShown(spec.result.filter((r) => data[r.key] !== undefined && data[r.key] !== null).map((r) => ({ label: r.label, value: typeof data[r.key] === 'number' ? fmt.number(data[r.key] as number, { maximumFractionDigits: 2 }) : String(data[r.key]) })));
+      // A result key may name a nested field ("byStep.first").
+      const at = (k: string): unknown => k.split('.').reduce<unknown>((v, part) => (v && typeof v === 'object' ? (v as Record<string, unknown>)[part] : undefined), data);
+      if (spec.result) setShown(spec.result.filter((r) => at(r.key) !== undefined && at(r.key) !== null).map((r) => ({ label: r.label, value: typeof at(r.key) === 'number' ? fmt.number(at(r.key) as number, { maximumFractionDigits: 2 }) : String(at(r.key)) })));
       else setNotice(t('dx.saved'));
       if (!spec.result || data.preview !== true) setValues(initialValues(spec.fields));
     });

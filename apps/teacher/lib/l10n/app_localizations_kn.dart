@@ -4532,4 +4532,127 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get delivery_field_visit => 'ಕ್ಷೇತ್ರ ಭೇಟಿ';
+
+  @override
+  String get libTitle => 'ಗ್ರಂಥಾಲಯ';
+
+  @override
+  String get libBody => 'ಪಟ್ಟಿ ಹುಡುಕಿ, ಪುಸ್ತಕಗಳನ್ನು ನವೀಕರಿಸಿ ಮತ್ತು ಕಾಯ್ದಿರಿಸಿ';
+
+  @override
+  String get libTabSearch => 'ಹುಡುಕಿ';
+
+  @override
+  String get libTabMine => 'ನನ್ನ ಪುಸ್ತಕಗಳು';
+
+  @override
+  String get libSearchHint => 'ಶೀರ್ಷಿಕೆ, ಲೇಖಕ, ವಿಷಯ ಅಥವಾ ISBN';
+
+  @override
+  String get libOnShelf => 'ಕಪಾಟಿನಲ್ಲಿ';
+
+  @override
+  String libOnShelfN(int count) {
+    return 'ಕಪಾಟಿನಲ್ಲಿ ($count)';
+  }
+
+  @override
+  String libDecade(String year) {
+    return '$year ರ ದಶಕ';
+  }
+
+  @override
+  String get libFacetSubject => 'ವಿಷಯ';
+
+  @override
+  String get libFacetLanguage => 'ಭಾಷೆ';
+
+  @override
+  String get libFacetDecade => 'ಪ್ರಕಟಣೆ';
+
+  @override
+  String get libFacetMaterial => 'ಸಾಮಗ್ರಿ';
+
+  @override
+  String get libFacetAuthor => 'ಲೇಖಕ';
+
+  @override
+  String get libSearchPrompt => 'ಶೀರ್ಷಿಕೆ, ಲೇಖಕ ಅಥವಾ ವಿಷಯದಿಂದ ಹುಡುಕಿ, ನಂತರ ವಿಷಯ ಅಥವಾ ಭಾಷೆಯಿಂದ ಸೀಮಿತಗೊಳಿಸಿ.';
+
+  @override
+  String get libNoMatch => 'ಯಾವುದೇ ಶೀರ್ಷಿಕೆ ಹೊಂದುವುದಿಲ್ಲ.';
+
+  @override
+  String libResults(int count) {
+    return '$count ಶೀರ್ಷಿಕೆಗಳು';
+  }
+
+  @override
+  String libAvailable(int available, int copies) {
+    return '$copies ರಲ್ಲಿ $available ಕಪಾಟಿನಲ್ಲಿ';
+  }
+
+  @override
+  String get libAllOut => 'ಎಲ್ಲಾ ಪ್ರತಿಗಳು ಹೊರಗಿವೆ';
+
+  @override
+  String get libInQueue => 'ಸರದಿಯಲ್ಲಿ';
+
+  @override
+  String get libReserve => 'ಕಾಯ್ದಿರಿಸಿ';
+
+  @override
+  String get libReserved => 'ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ. ಪ್ರತಿ ಹಿಂತಿರುಗಿದಾಗ ಗ್ರಂಥಾಲಯ ತಿಳಿಸುತ್ತದೆ.';
+
+  @override
+  String get libMore => 'ಇನ್ನಷ್ಟು ಶೀರ್ಷಿಕೆಗಳು';
+
+  @override
+  String libCardNo(String card) {
+    return 'ಗ್ರಂಥಾಲಯ ಕಾರ್ಡ್ $card';
+  }
+
+  @override
+  String libRules(int days, int books) {
+    return 'ಎರವಲಿಗೆ $days ದಿನ · ಒಮ್ಮೆಗೆ $books ಪುಸ್ತಕಗಳು';
+  }
+
+  @override
+  String libOut(int count) {
+    return 'ಹೊರಗಿರುವ ಪುಸ್ತಕಗಳು ($count)';
+  }
+
+  @override
+  String get libNothingOut => 'ನಿಮ್ಮ ಬಳಿ ಯಾವುದೇ ಪುಸ್ತಕ ಇಲ್ಲ.';
+
+  @override
+  String libDue(String date) {
+    return 'ಗಡುವು $date';
+  }
+
+  @override
+  String libOverdue(String date, String fine) {
+    return '$date ರಂದು ಗಡುವು ಇತ್ತು · ಈವರೆಗಿನ ದಂಡ $fine';
+  }
+
+  @override
+  String get libRenew => 'ನವೀಕರಿಸಿ';
+
+  @override
+  String get libRenewed => 'ಇನ್ನೊಂದು ಎರವಲು ಅವಧಿಗೆ ನವೀಕರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get libMyReservations => 'ನನ್ನ ಕಾಯ್ದಿರಿಸುವಿಕೆಗಳು';
+
+  @override
+  String get libReady => 'ಡೆಸ್ಕ್‌ನಲ್ಲಿ ನಿಮಗಾಗಿ ಕಾಯುತ್ತಿದೆ';
+
+  @override
+  String get libWaiting => 'ಪ್ರತಿಗಾಗಿ ಸರದಿಯಲ್ಲಿ';
+
+  @override
+  String get libCancel => 'ರದ್ದುಮಾಡಿ';
+
+  @override
+  String get libCancelled => 'ಕಾಯ್ದಿರಿಸುವಿಕೆ ರದ್ದಾಗಿದೆ';
 }

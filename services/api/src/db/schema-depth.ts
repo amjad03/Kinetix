@@ -374,8 +374,13 @@ export const libraryReservations = pgTable(
     id: id(),
     tenantId: tenantId(),
     bookId: uuid('book_id').notNull().references(() => libraryBooks.id, { onDelete: 'cascade' }),
-    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    /** The student who reserved (null for a staff or external member, who has `memberId` only). */
+    studentId: uuid('student_id').references(() => students.id, { onDelete: 'cascade' }),
+    /** The member's card (library_members; migration 0202). */
+    memberId: uuid('member_id'),
     status: text('status').notNull().default('waiting'), // waiting | ready | fulfilled | cancelled | expired
+    /** When the member was told the copy is waiting for them. */
+    notifiedAt: timestamp('notified_at', { withTimezone: true }),
     readyAt: timestamp('ready_at', { withTimezone: true }),
     expiresAt: timestamp('expires_at', { withTimezone: true }),
     loanId: uuid('loan_id').references(() => libraryLoans.id, { onDelete: 'set null' }),
@@ -394,6 +399,19 @@ export const libraryEresources = pgTable('library_eresources', {
   licenceUntil: date('licence_until'),
   seats: integer('seats'),
   status: text('status').notNull().default('active'), // active | retired
+  // Consortium, access and cost (migration 0203).
+  /** publisher | delnet | nlist | eshodhsindhu | shodhganga | ndl | swayam | open | other */
+  provider: text('provider').notNull().default('publisher'),
+  /** ip (campus IP range) | remote (login from anywhere) | both | open */
+  accessMode: text('access_mode').notNull().default('ip'),
+  ipRanges: text('ip_ranges').notNull().default(''),
+  /** How readers get in from home: the remote-access or proxy address and the login they use. */
+  remoteAccess: text('remote_access').notNull().default(''),
+  subjects: text('subjects').notNull().default(''),
+  costPaise: bigint('cost_paise', { mode: 'number' }).notNull().default(0),
+  subscriptionFrom: date('subscription_from'),
+  budgetId: uuid('budget_id'),
+  vendorId: uuid('vendor_id'),
   createdBy: by('created_by'),
   createdAt: createdAt(),
 });

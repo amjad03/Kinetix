@@ -15,7 +15,8 @@ import { addDays } from '../teacher/teacher.service.js';
 import { libraryReservations } from '../db/schema-depth.js';
 import { copiesHeld } from './reservations.js';
 import { libraryCopies } from '../db/schema-lht.js';
-import { addCopies, ensureStudentMember, pickCopy, returnLoan } from './circulation.js';
+import { addCopies, ensureStudentMember, issueCopy, pickCopy, returnLoan } from './circulation.js';
+import { openDaysLateSql } from './fines.js';
 import { naturalAsc } from '../common/natural-order.js';
 
 export const LIBRARY_ROLES: RoleName[] = ['librarian', 'tenant_admin', 'principal'];
@@ -77,33 +78,21 @@ export class LibraryController {
     });
   }
 
-  /** Lend a book to a student. */
+  /** Lend a book to a student: a copy on the shelf is picked and issued under the student's rules. */
   @Post('loans')
   @Auth('user', LIBRARY_ROLES)
   issue(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(IssueBody)) body: z.infer<typeof IssueBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [book] = await tx.select().from(libraryBooks).where(eq(libraryBooks.id, body.bookId)).for('update');
       if (!book) throw new NotFoundException('Book not found');
-      const [student] = await tx.select({ id: students.id, fullName: students.fullName }).from(students).where(eq(students.id, body.studentId));
+      const [student] = await tx.select({ id: students.id }).from(students).where(eq(students.id, body.studentId));
       if (!student) throw new NotFoundException('Student not found');
-      const [{ out }] = await tx.select({ out: sql<number>`count(*)::int` }).from(libraryLoans).where(and(eq(libraryLoans.bookId, book.id), isNull(libraryLoans.returnedAt)));
-      const held = await copiesHeld(tx, book.id, student.id);
-      if (out >= book.copies) throw new BadRequestException('Every copy of this book is out on loan');
-      if (out + held >= book.copies) throw new BadRequestException('The remaining copies are held for students who reserved this book');
-      const rules = (await readSettings(tx, p.tenantId, 'library')).rules;
-      const [{ mine }] = await tx.select({ mine: sql<number>`count(*)::int` }).from(libraryLoans).where(and(eq(libraryLoans.studentId, student.id), isNull(libraryLoans.returnedAt)));
-      if (mine >= Number(rules.maxBooksPerStudent)) throw new BadRequestException(`A student can borrow ${String(rules.maxBooksPerStudent)} books at a time`);
-      const today = await this.today(tx);
-      const dueOn = body.dueOn ?? addDays(today, Number(rules.loanDays));
-      if (dueOn < today) throw new BadRequestException('The due date has already passed');
       const member = await ensureStudentMember(tx, p.tenantId, student.id);
       const copy = await pickCopy(tx, book.id);
-      const [loan] = await tx.insert(libraryLoans).values({ tenantId: p.tenantId, bookId: book.id, studentId: student.id, memberId: member.id, copyId: copy?.id ?? null, dueOn, issuedBy: p.userId }).returning();
-      if (copy) await tx.update(libraryCopies).set({ status: 'on_loan' }).where(eq(libraryCopies.id, copy.id));
-      await tx.update(libraryReservations).set({ status: 'fulfilled', loanId: loan.id }).where(and(eq(libraryReservations.bookId, book.id), eq(libraryReservations.studentId, student.id), sql`${libraryReservations.status} in ('waiting', 'ready')`));
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'library.issued', subjectType: 'library_loan', subjectId: loan.id });
-      await this.notifications.libraryIssued(tx, { loanId: loan.id, studentId: student.id, studentName: student.fullName, title: book.title, dueOn });
-      return loan;
+      if (!copy) throw new BadRequestException('Every copy of this book is out on loan');
+      const today = await this.today(tx);
+      if (body.dueOn && body.dueOn < today) throw new BadRequestException('The due date has already passed');
+      return issueCopy(tx, p, this.clock.now(), this.notifications, { member, copy, dueOn: body.dueOn });
     });
   }
 
@@ -116,7 +105,7 @@ export class LibraryController {
       const [loan] = await tx.select().from(libraryLoans).where(eq(libraryLoans.id, id)).for('update');
       if (!loan) throw new NotFoundException('Loan not found');
       if (loan.returnedAt) return loan;
-      return returnLoan(tx, p, this.clock.now(), id);
+      return returnLoan(tx, p, this.clock.now(), id, { notify: this.notifications });
     });
   }
 
@@ -126,7 +115,7 @@ export class LibraryController {
   loans(@CurrentPrincipal() p: UserPrincipal, @Query('overdue') overdue?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const today = await this.today(tx);
-      return this.loanRows(tx, today, await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay'))
+      return this.loanRows(tx, today, await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay'), (await readSettings(tx, p.tenantId, 'library')).rules)
         .where(and(isNull(libraryLoans.returnedAt), overdue === 'true' ? lt(libraryLoans.dueOn, today) : undefined))
         .orderBy(asc(libraryLoans.dueOn))
         .limit(500);
@@ -156,7 +145,7 @@ export class LibraryController {
   @Auth('user', LIBRARY_ROLES)
   fines(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) =>
-      this.loanRows(tx, await this.today(tx), await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay'))
+      this.loanRows(tx, await this.today(tx), await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay'), (await readSettings(tx, p.tenantId, 'library')).rules)
         .where(and(sql`${libraryLoans.finePaise} > 0`, isNull(libraryLoans.finePaidAt)))
         .orderBy(desc(libraryLoans.returnedAt)),
     );
@@ -174,7 +163,7 @@ export class LibraryController {
         await tx.update(libraryLoans).set({ finePaidAt: this.clock.now() }).where(eq(libraryLoans.id, id));
         await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'library.fine_paid', subjectType: 'library_loan', subjectId: id, data: { finePaise: loan.finePaise } });
       }
-      const [row] = await this.loanRows(tx, await this.today(tx), await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay')).where(eq(libraryLoans.id, id));
+      const [row] = await this.loanRows(tx, await this.today(tx), await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay'), (await readSettings(tx, p.tenantId, 'library')).rules).where(eq(libraryLoans.id, id));
       return row;
     });
   }
@@ -186,7 +175,7 @@ export class LibraryController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await assertCanSeeStudent(tx, p, studentId, LIBRARY_ROLES);
       const today = await this.today(tx);
-      const rows = await this.loanRows(tx, today, await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay')).where(eq(libraryLoans.studentId, studentId)).orderBy(desc(libraryLoans.issuedAt)).limit(50);
+      const rows = await this.loanRows(tx, today, await ruleNumber(tx, p.tenantId, 'library', 'finePaisePerDay'), (await readSettings(tx, p.tenantId, 'library')).rules).where(eq(libraryLoans.studentId, studentId)).orderBy(desc(libraryLoans.issuedAt)).limit(50);
       return {
         current: rows.filter((r) => !r.returnedAt),
         history: rows.filter((r) => r.returnedAt),
@@ -196,7 +185,7 @@ export class LibraryController {
     });
   }
 
-  private loanRows(tx: Tx, today: string, finePerDay: number) {
+  private loanRows(tx: Tx, today: string, finePerDay: number, rules: Record<string, unknown> = {}) {
     return tx
       .select({
         id: libraryLoans.id,
@@ -210,7 +199,7 @@ export class LibraryController {
         finePaidAt: libraryLoans.finePaidAt,
         overdue: sql<boolean>`${libraryLoans.returnedAt} is null and ${libraryLoans.dueOn} < ${today}`,
         /** For books still out: the fine if returned today. */
-        fineSoFarPaise: sql<number>`case when ${libraryLoans.returnedAt} is null then greatest(0, ${today}::date - ${libraryLoans.dueOn}) * ${finePerDay} else 0 end`.mapWith(Number),
+        fineSoFarPaise: sql<number>`case when ${libraryLoans.returnedAt} is null and ${libraryLoans.dueOn} < ${today}::date then ${openDaysLateSql(libraryLoans.dueOn, today, rules)} * ${finePerDay} else 0 end`.mapWith(Number),
       })
       .from(libraryLoans)
       .innerJoin(libraryBooks, eq(libraryBooks.id, libraryLoans.bookId))

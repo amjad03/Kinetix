@@ -63,14 +63,14 @@ describe('school life', () => {
       await http().get(`/v1/library/students/${t.students[0].id}`).set(auth('parent2')).expect(404);
       expect((await inbox('parent', 'library'))[0].title).toBe('Library book borrowed: Corporate Accounting');
 
-      // Returned 3 days late: ₹2 a day.
+      // Returned 3 days late (Friday's book back on Monday): ₹2 a day for the days the library was open, so Sunday is free.
       await owner.query(`update library_loans set due_on = due_on - 17 where id = $1`, [loan.id]);
       const overdue = (await http().get('/v1/library/loans?overdue=true').set(auth('principal')).expect(200)).body;
-      expect(overdue).toEqual([expect.objectContaining({ id: loan.id, fineSoFarPaise: 600 })]);
+      expect(overdue).toEqual([expect.objectContaining({ id: loan.id, fineSoFarPaise: 400 })]);
       const back = (await http().post(`/v1/library/loans/${loan.id}/return`).set(auth('principal')).expect(200)).body;
-      expect(back.finePaise).toBe(600);
+      expect(back).toMatchObject({ finePaise: 400, fineDays: 2 });
       const after = (await http().get(`/v1/library/students/${t.students[0].id}`).set(auth('parent')).expect(200)).body;
-      expect(after).toMatchObject({ current: [], finesPaise: 600 });
+      expect(after).toMatchObject({ current: [], finesPaise: 400 });
       expect((await http().get('/v1/library/fines').set(auth('principal')).expect(200)).body.map((f: { id: string }) => f.id)).toEqual([loan.id]);
       await http().post(`/v1/library/loans/${loan.id}/fine-paid`).set(auth('principal')).expect(200);
       expect((await http().get('/v1/library/fines').set(auth('principal')).expect(200)).body).toEqual([]);

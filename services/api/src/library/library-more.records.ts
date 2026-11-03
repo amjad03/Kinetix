@@ -4,12 +4,13 @@ import { alias } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 import { departmentOptions } from '../admin/structure.records.js';
 import { auditUser } from '../common/audit.js';
-import { choiceFilter, choices, oneOf, OptionalInt, qual, Rupees, rupeesOf, Url, yesNo } from '../common/lht-kit.js';
+import { choiceFilter, choices, oneOf, OptionalInt, qual, Rupees, rupeesOf, Url, wordsOf, yesNo } from '../common/lht-kit.js';
 import { nextNumber } from '../common/ops.js';
 import { Clock } from '../common/time.js';
 import { departments, libraryBooks, users } from '../db/schema.js';
 import { libraryEresourceAccess, libraryEresources } from '../db/schema-depth.js';
 import { libraryAcquisitions, libraryBranches, libraryBudgets, libraryGateLog, libraryIll, libraryMembers, libraryPeriodicalIssues, libraryPeriodicals, libraryRepository } from '../db/schema-lht.js';
+import { libraryPurchaseOrders, libraryVendors } from '../db/schema-library.js';
 import { RecordRegistry, type FieldOption, type KitCtx, type RecordEntity } from '../records/entity.js';
 import { DateText, Int, OptionalRef, Text, uuidEq } from '../records/helpers.js';
 import { addCopies, findMember, tenantToday } from './circulation.js';
@@ -24,6 +25,8 @@ const HEADS = choices(['books', 'Books'], ['journals', 'Journals and magazines']
 const PERIODICAL_KINDS = choices(['journal', 'Journal'], ['magazine', 'Magazine'], ['newspaper', 'Newspaper']);
 const FREQUENCIES = choices(['daily', 'Daily'], ['weekly', 'Weekly'], ['fortnightly', 'Fortnightly'], ['monthly', 'Monthly'], ['bimonthly', 'Every two months'], ['quarterly', 'Quarterly'], ['halfyearly', 'Half-yearly'], ['annual', 'Annual']);
 const ISSUE_STATUSES = choices(['expected', 'Expected'], ['received', 'Received'], ['missing', 'Missing'], ['claimed', 'Claimed'], ['cancelled', 'Cancelled']);
+const ER_PROVIDERS = choices(['publisher', 'Publisher'], ['delnet', 'DELNET'], ['nlist', 'N-LIST (INFLIBNET)'], ['eshodhsindhu', 'e-ShodhSindhu'], ['shodhganga', 'Shodhganga'], ['ndl', 'National Digital Library'], ['swayam', 'SWAYAM / NPTEL'], ['open', 'Open access'], ['other', 'Other']);
+const ER_ACCESS = choices(['ip', 'Campus IP range'], ['remote', 'Remote login'], ['both', 'Campus and remote'], ['open', 'Open to all']);
 const ER_KINDS = choices(['ebook', 'E-book'], ['journal', 'E-journal'], ['database', 'Database'], ['video', 'Video'], ['other', 'Other']);
 const REPO_KINDS = choices(['thesis', 'Thesis'], ['dissertation', 'Dissertation'], ['paper', 'Paper'], ['project', 'Project report'], ['question_paper', 'Question paper'], ['book_chapter', 'Book chapter'], ['other', 'Other']);
 const ACCESS = choices(['open', 'Open to all'], ['campus', 'Campus only'], ['restricted', 'Restricted']);
@@ -61,6 +64,15 @@ async function budgetOptions(ctx: KitCtx): Promise<FieldOption[]> {
   const rows = await ctx.tx.select({ id: libraryBudgets.id, fy: libraryBudgets.fiscalYear, head: libraryBudgets.head, dept: departments.name }).from(libraryBudgets).leftJoin(departments, eq(departments.id, libraryBudgets.departmentId)).orderBy(desc(libraryBudgets.fiscalYear), asc(departments.name));
   return rows.map((r) => ({ value: r.id, label: `${r.fy} · ${r.dept ?? 'Library'} · ${HEADS.find((h) => h.value === r.head)?.label ?? r.head}`, group: r.fy }));
 }
+export async function vendorOptions(ctx: KitCtx): Promise<FieldOption[]> {
+  const rows = await ctx.tx.select({ id: libraryVendors.id, name: libraryVendors.name }).from(libraryVendors).where(eq(libraryVendors.active, true)).orderBy(asc(libraryVendors.name));
+  return rows.map((r) => ({ value: r.id, label: r.name }));
+}
+export async function poOptions(ctx: KitCtx): Promise<FieldOption[]> {
+  const rows = await ctx.tx.select({ id: libraryPurchaseOrders.id, number: libraryPurchaseOrders.number, status: libraryPurchaseOrders.status, vendor: libraryVendors.name }).from(libraryPurchaseOrders).innerJoin(libraryVendors, eq(libraryVendors.id, libraryPurchaseOrders.vendorId)).orderBy(desc(libraryPurchaseOrders.createdAt)).limit(200);
+  return rows.map((r) => ({ value: r.id, label: `${r.number} · ${r.vendor}`, group: r.status }));
+}
+export { budgetOptions };
 async function periodicalOptions(ctx: KitCtx): Promise<FieldOption[]> {
   const rows = await ctx.tx.select({ id: libraryPeriodicals.id, title: libraryPeriodicals.title }).from(libraryPeriodicals).orderBy(asc(libraryPeriodicals.title));
   return rows.map((r) => ({ value: r.id, label: r.title }));
@@ -68,7 +80,9 @@ async function periodicalOptions(ctx: KitCtx): Promise<FieldOption[]> {
 
 /** Money committed against a budget (approved or ordered, not yet invoiced) and spent (invoiced, plus periodicals). */
 const committedOf = (budgetId: AnyColumn) => sql<number>`(select coalesce(sum(a.est_price_paise * a.quantity), 0)::bigint from library_acquisitions a where a.budget_id = ${qual(budgetId)} and a.status in ('approved', 'ordered', 'received'))`;
-const spentOf = (budgetId: AnyColumn) => sql<number>`((select coalesce(sum(a.invoice_amount_paise), 0) from library_acquisitions a where a.budget_id = ${qual(budgetId)} and a.status = 'invoiced') + (select coalesce(sum(p.cost_paise), 0) from library_periodicals p where p.budget_id = ${qual(budgetId)} and p.status = 'active'))::bigint`;
+const spentOf = (budgetId: AnyColumn) =>
+  sql<number>`((select coalesce(sum(a.invoice_amount_paise), 0) from library_acquisitions a where a.budget_id = ${qual(budgetId)} and a.status = 'invoiced') + (select coalesce(sum(p.cost_paise), 0) from library_periodicals p where p.budget_id = ${qual(budgetId)} and p.status = 'active')
+    + (select coalesce(sum(e.cost_paise), 0) from library_eresources e where e.budget_id = ${qual(budgetId)}) + (select coalesce(sum(bb.cost_paise), 0) from library_binding_batches bb where bb.budget_id = ${qual(budgetId)} and bb.status <> 'cancelled'))::bigint`;
 
 const suggester = alias(users, 'suggester');
 const gateMember = alias(libraryMembers, 'gate_member');
@@ -126,6 +140,8 @@ export class LibraryMoreRecords implements OnModuleInit {
           status: libraryAcquisitions.status,
           decisionNote: libraryAcquisitions.decisionNote,
           vendor: libraryAcquisitions.vendor,
+          vendorId: libraryAcquisitions.vendorId,
+          poId: libraryAcquisitions.poId,
           orderNo: libraryAcquisitions.orderNo,
           orderedOn: libraryAcquisitions.orderedOn,
           receivedQty: libraryAcquisitions.receivedQty,
@@ -142,6 +158,7 @@ export class LibraryMoreRecords implements OnModuleInit {
           status: choiceFilter('Status', libraryAcquisitions.status, ACQ_STATUSES),
           department: { label: 'Department', options: departmentOptions, where: (v) => uuidEq(libraryAcquisitions.departmentId, v) },
           budget: { label: 'Budget', options: budgetOptions, where: (v) => uuidEq(libraryAcquisitions.budgetId, v) },
+          order: { label: 'Purchase order', options: poOptions, where: (v) => uuidEq(libraryAcquisitions.poId, v) },
         },
         sorts: { number: sql`length(${libraryAcquisitions.number}), ${libraryAcquisitions.number}`, title: libraryAcquisitions.title, status: libraryAcquisitions.status, total, asked: libraryAcquisitions.createdAt, ordered: libraryAcquisitions.orderedOn },
         defaultSort: { id: 'asked', dir: 'desc' },
@@ -159,6 +176,7 @@ export class LibraryMoreRecords implements OnModuleInit {
         suggestedByName: { label: 'Suggested by', type: 'text', schema: z.string().trim().max(120), column: libraryAcquisitions.suggestedByName, help: 'Leave empty for yourself' },
         reason: { label: 'Why', type: 'textarea', schema: z.string().trim().max(500), column: libraryAcquisitions.reason },
         vendor: { label: 'Vendor', type: 'text', schema: z.string().trim().max(120), column: libraryAcquisitions.vendor, bulk: true },
+        vendorId: { label: 'Vendor (from the list)', type: 'select', schema: OptionalRef, options: vendorOptions, column: libraryAcquisitions.vendorId, bulk: true },
       },
       create: async (ctx, v) => {
         const [a] = await ctx.tx
@@ -264,6 +282,22 @@ export class LibraryMoreRecords implements OnModuleInit {
           },
         },
         cancel: { label: 'Cancel', tone: 'danger', apply: async (ctx, id) => void (await setStatus(ctx, id, ['suggested', 'approved', 'ordered'], 'cancelled')) },
+        addToOrder: {
+          label: 'Put on a purchase order',
+          params: z.object({ poId: z.uuid('Choose the purchase order') }),
+          apply: async (ctx, id, raw) => {
+            const { poId } = raw as { poId: string };
+            const [po] = await ctx.tx.select().from(libraryPurchaseOrders).where(eq(libraryPurchaseOrders.id, poId)).for('update');
+            if (!po) throw new BadRequestException('Purchase order not found');
+            if (po.status !== 'draft') throw new ConflictException('Lines are added to a draft order; this one has been sent');
+            const [a] = await ctx.tx.select().from(libraryAcquisitions).where(eq(libraryAcquisitions.id, id)).for('update');
+            if (a.status !== 'approved') throw new ConflictException('Only an approved request goes on an order');
+            const [v] = await ctx.tx.select({ name: libraryVendors.name }).from(libraryVendors).where(eq(libraryVendors.id, po.vendorId));
+            await ctx.tx.update(libraryAcquisitions).set({ poId, vendorId: po.vendorId, vendor: v?.name ?? a.vendor }).where(eq(libraryAcquisitions.id, id));
+            await auditUser(ctx.tx, ctx.p, 'library_acquisition.on_order', 'library_acquisition', id, { poId, changes: { poId: { before: a.poId, after: poId } } });
+            return po.number;
+          },
+        },
       },
     };
   }
@@ -451,6 +485,7 @@ export class LibraryMoreRecords implements OnModuleInit {
           status: libraryPeriodicalIssues.status,
           claimedOn: libraryPeriodicalIssues.claimedOn,
           claimNote: libraryPeriodicalIssues.claimNote,
+          claimCount: libraryPeriodicalIssues.claimCount,
           note: libraryPeriodicalIssues.note,
           late: sql<boolean>`${OVERDUE}`,
         },
@@ -479,12 +514,13 @@ export class LibraryMoreRecords implements OnModuleInit {
         { key: 'status', header: 'Status' },
         { key: 'claimedOn', header: 'Claimed on' },
         { key: 'claimNote', header: 'Claim' },
+        { key: 'claimCount', header: 'Claims sent' },
         { key: 'vendor', header: 'Vendor' },
       ],
       actions: {
         checkIn: { label: 'Check in', params: z.object({ receivedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() }).default({}), apply: set('received', ['expected', 'missing', 'claimed'], async (ctx, raw) => ({ receivedOn: (raw as { receivedOn?: string }).receivedOn ?? (await this.today(ctx)) })) },
         missing: { label: 'Mark missing', apply: set('missing', ['expected']) },
-        claim: { label: 'Claim from the vendor', params: z.object({ note: z.string().trim().max(300).default('') }).default({ note: '' }), apply: set('claimed', ['expected', 'missing'], async (ctx, raw) => ({ claimedOn: await this.today(ctx), claimNote: (raw as { note: string }).note ?? '' })) },
+        claim: { label: 'Claim from the vendor', params: z.object({ note: z.string().trim().max(300).default('') }).default({ note: '' }), apply: set('claimed', ['expected', 'missing', 'claimed'], async (ctx, raw) => ({ claimedOn: await this.today(ctx), claimNote: (raw as { note: string }).note ?? '', claimCount: sql`${libraryPeriodicalIssues.claimCount} + 1` })) },
         cancel: { label: 'Not published', apply: set('cancelled', ['expected', 'missing', 'claimed']) },
       },
     };
@@ -508,26 +544,86 @@ export class LibraryMoreRecords implements OnModuleInit {
       roles: { read: LIBRARY_ROLES, write: LIBRARY_ROLES },
       label: (r) => String(r.title),
       list: {
-        select: { id: libraryEresources.id, title: libraryEresources.title, kind: libraryEresources.kind, publisher: libraryEresources.publisher, url: libraryEresources.url, licenceUntil: libraryEresources.licenceUntil, seats: libraryEresources.seats, status: libraryEresources.status, opens, readers, createdAt: libraryEresources.createdAt },
-        search: [libraryEresources.title, libraryEresources.publisher, libraryEresources.url],
-        filters: { kind: choiceFilter('Kind', libraryEresources.kind, ER_KINDS), status: choiceFilter('Status', libraryEresources.status, choices(['active', 'Active'], ['retired', 'Retired'])) },
+        select: {
+          id: libraryEresources.id,
+          title: libraryEresources.title,
+          kind: libraryEresources.kind,
+          provider: libraryEresources.provider,
+          publisher: libraryEresources.publisher,
+          url: libraryEresources.url,
+          accessMode: libraryEresources.accessMode,
+          ipRanges: libraryEresources.ipRanges,
+          remoteAccess: libraryEresources.remoteAccess,
+          subjects: libraryEresources.subjects,
+          subscriptionFrom: libraryEresources.subscriptionFrom,
+          licenceUntil: libraryEresources.licenceUntil,
+          costRupees: rupeesOf(libraryEresources.costPaise),
+          budgetId: libraryEresources.budgetId,
+          seats: libraryEresources.seats,
+          status: libraryEresources.status,
+          opens,
+          readers,
+          createdAt: libraryEresources.createdAt,
+        },
+        search: [libraryEresources.title, libraryEresources.publisher, libraryEresources.url, libraryEresources.subjects],
+        filters: {
+          kind: choiceFilter('Kind', libraryEresources.kind, ER_KINDS),
+          provider: choiceFilter('Provider', libraryEresources.provider, ER_PROVIDERS),
+          access: choiceFilter('Access', libraryEresources.accessMode, ER_ACCESS),
+          status: choiceFilter('Status', libraryEresources.status, choices(['active', 'Active'], ['retired', 'Retired'])),
+        },
         sorts: { title: libraryEresources.title, licence: libraryEresources.licenceUntil, opens, readers },
         defaultSort: { id: 'title', dir: 'asc' },
       },
       fields: {
         title: { label: 'Title', type: 'text', schema: Text(240), column: libraryEresources.title, required: true },
         kind: { label: 'Kind', type: 'select', schema: oneOf(ER_KINDS), options: ER_KINDS, column: libraryEresources.kind, required: true, bulk: true },
+        provider: { label: 'Through', type: 'select', schema: oneOf(ER_PROVIDERS), options: ER_PROVIDERS, column: libraryEresources.provider, bulk: true, help: 'A consortium (DELNET, N-LIST, e-ShodhSindhu), a national platform, or the publisher' },
         publisher: { label: 'Publisher or platform', type: 'text', schema: z.string().trim().max(160), column: libraryEresources.publisher, help: 'N-LIST, DELNET, the publisher…' },
         url: { label: 'Link', type: 'text', schema: Url, column: libraryEresources.url, required: true },
+        accessMode: { label: 'Access', type: 'select', schema: oneOf(ER_ACCESS), options: ER_ACCESS, column: libraryEresources.accessMode, bulk: true },
+        ipRanges: { label: 'Campus IP ranges', type: 'text', schema: z.string().trim().max(300).regex(/^[0-9a-fA-F.:/,\s-]*$/, 'IP addresses or ranges such as 103.21.4.0/24, separated by commas'), column: libraryEresources.ipRanges, help: 'The addresses the provider recognises' },
+        remoteAccess: { label: 'Remote access', type: 'textarea', schema: z.string().trim().max(500), column: libraryEresources.remoteAccess, help: 'How readers get in from home: the remote-access (proxy) address and the login (N-LIST gives each member their own)' },
+        subjects: { label: 'Subjects', type: 'text', schema: z.string().trim().max(300), column: libraryEresources.subjects },
+        subscriptionFrom: { label: 'Subscribed from', type: 'date', schema: DateText, column: libraryEresources.subscriptionFrom },
         licenceUntil: { label: 'Licence until', type: 'date', schema: DateText, column: libraryEresources.licenceUntil, bulk: true },
+        cost: { label: 'Subscription cost (₹)', type: 'number', schema: Rupees, column: libraryEresources.costPaise, rowKey: 'costRupees', help: 'Counts as journal and e-resource spending for NAAC 4.2' },
+        budgetId: { label: 'Budget', type: 'select', schema: OptionalRef, options: budgetOptions, column: libraryEresources.budgetId },
         seats: { label: 'Seats at a time', type: 'number', schema: OptionalInt(1, 10000), column: libraryEresources.seats },
       },
-      create: async (ctx, v) => (await ctx.tx.insert(libraryEresources).values({ tenantId: ctx.p.tenantId, title: String(v.title), kind: String(v.kind ?? 'ebook'), publisher: String(v.publisher ?? ''), url: String(v.url), licenceUntil: (v.licenceUntil as string | null) ?? null, seats: (v.seats as number | null) ?? null, createdBy: ctx.p.userId }).returning({ id: libraryEresources.id }))[0].id,
+      create: async (ctx, v) =>
+        (
+          await ctx.tx
+            .insert(libraryEresources)
+            .values({
+              tenantId: ctx.p.tenantId,
+              title: String(v.title),
+              kind: String(v.kind ?? 'ebook'),
+              provider: String(v.provider ?? 'publisher'),
+              publisher: String(v.publisher ?? ''),
+              url: String(v.url),
+              accessMode: String(v.accessMode ?? 'ip'),
+              ipRanges: String(v.ipRanges ?? ''),
+              remoteAccess: String(v.remoteAccess ?? ''),
+              subjects: String(v.subjects ?? ''),
+              subscriptionFrom: (v.subscriptionFrom as string | null) ?? null,
+              licenceUntil: (v.licenceUntil as string | null) ?? null,
+              costPaise: Number(v.cost ?? 0),
+              budgetId: (v.budgetId as string | null) ?? null,
+              seats: (v.seats as number | null) ?? null,
+              createdBy: ctx.p.userId,
+            })
+            .returning({ id: libraryEresources.id })
+        )[0].id,
       columns: [
         { key: 'title', header: 'Title' },
         { key: 'kind', header: 'Kind' },
+        { key: 'provider', header: 'Through', value: wordsOf(ER_PROVIDERS, 'provider') },
         { key: 'publisher', header: 'Publisher' },
         { key: 'url', header: 'Link' },
+        { key: 'accessMode', header: 'Access', value: wordsOf(ER_ACCESS, 'accessMode') },
+        { key: 'remoteAccess', header: 'Remote access' },
+        { key: 'costRupees', header: 'Cost (₹)' },
         { key: 'licenceUntil', header: 'Licence until' },
         { key: 'seats', header: 'Seats' },
         { key: 'status', header: 'Status' },

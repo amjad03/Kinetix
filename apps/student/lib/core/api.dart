@@ -561,7 +561,7 @@ abstract class StudentApi implements AnnouncementSource {
   // ── Library catalogue ───────────────────────────────────────────────────────────────────────
 
   /// Searches the catalogue by title, author, subject or ISBN, 20 a page (`GET /v1/library/opac`).
-  Future<CataloguePage> searchCatalogue(String query, {bool availableOnly = false, int page = 1});
+  Future<CataloguePage> searchCatalogue(String query, {bool availableOnly = false, int page = 1, Map<String, String> facets = const {}});
 
   /// Joins the queue for a book whose copies are all out (`POST /v1/library/reservations`).
   Future<void> reserveBook(String bookId);
@@ -1616,8 +1616,8 @@ class HttpStudentApi implements StudentApi {
   // ── Library catalogue ───────────────────────────────────────────────────────────────────────
 
   @override
-  Future<CataloguePage> searchCatalogue(String query, {bool availableOnly = false, int page = 1}) async => CataloguePage.fromJson(
-    await _send('GET', '/v1/library/opac?q=${Uri.encodeQueryComponent(query.trim())}&page=$page${availableOnly ? '&available=true' : ''}') as Map<String, dynamic>,
+  Future<CataloguePage> searchCatalogue(String query, {bool availableOnly = false, int page = 1, Map<String, String> facets = const {}}) async => CataloguePage.fromJson(
+    await _send('GET', '/v1/library/opac?q=${Uri.encodeQueryComponent(query.trim())}&page=$page${availableOnly ? '&available=true' : ''}${[for (final e in facets.entries) if (catalogueFacets.contains(e.key) && e.value.isNotEmpty) '&${e.key}=${Uri.encodeQueryComponent(e.value)}'].join()}') as Map<String, dynamic>,
   );
 
   @override

@@ -363,6 +363,8 @@ export interface LibraryLoan {
   /** When the fine was collected at the desk; null while unpaid (or when there is no fine). */
   finePaidAt: string | null;
   overdue: boolean;
+  /** For books still out: the fine if returned today, in open days under the member's rule. */
+  fineSoFarPaise?: number;
 }
 
 /** What `POST /v1/library/loans/:id/return` sends back (the loan row). */

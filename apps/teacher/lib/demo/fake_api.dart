@@ -18,6 +18,7 @@ import '../core/evidence_models.dart';
 import '../core/growth_models.dart';
 import '../core/hr_models.dart';
 import '../core/insights_models.dart';
+import '../core/library_models.dart';
 import '../core/models.dart';
 import '../core/obe_models.dart';
 import '../core/offline_key.dart';
@@ -2432,4 +2433,56 @@ class FakeTeacherApi implements TeacherApi {
 
   @override
   Future<void> attachTaxProof(String itemId, ChatUpload file) async => calls.add('attachTaxProof $itemId ${file.name}');
+
+  // ── Library ──
+
+  List<LibraryTitle> libraryTitles = const [
+    LibraryTitle(id: 'b1', title: 'Corporate Accounting', author: 'S. N. Maheshwari', callNo: '657.95 MAH', subject: 'Accounting', publisher: 'Vikas Publishing', pubYear: 2022, copies: 4, available: 2, branches: [ShelfCopies(branch: 'Central Library', available: 2, copies: 4)]),
+    LibraryTitle(id: 'b2', title: 'Management Accounting', author: 'S. N. Maheshwari', callNo: '658.15 MAH', subject: 'Accounting', publisher: 'Sultan Chand and Sons', pubYear: 2019, copies: 2, available: 0, reservable: true),
+    LibraryTitle(id: 'b3', title: 'Principles of Management', author: 'Harold Koontz', callNo: '658 KOO', subject: 'Management', publisher: 'McGraw Hill Education', pubYear: 2020, copies: 3, available: 3),
+  ];
+  MyLibrary library = const MyLibrary(
+    cardNo: 'MEM-1204',
+    loanDays: 90,
+    maxBooks: 10,
+    current: [
+      MyLoan(id: 'l1', title: 'Financial Management', author: 'I. M. Pandey', accessionNo: 'ACC-0142', dueOn: '2026-12-10', canRenew: true),
+      MyLoan(id: 'l2', title: 'Cost Accounting', author: 'M. N. Arora', accessionNo: 'ACC-0088', dueOn: '2026-10-28', overdue: true, fineSoFarPaise: 500),
+    ],
+    reservations: [MyReservation(id: 'r1', bookId: 'b9', title: 'Strategic Management', status: 'waiting')],
+  );
+
+  @override
+  Future<LibrarySearch> searchLibrary(String query, {Map<String, String> facets = const {}, bool availableOnly = false, int page = 1}) async {
+    calls.add('searchLibrary $query ${[for (final e in facets.entries) '${e.key}=${e.value}'].join(',')}${availableOnly ? ' shelf' : ''}');
+    final w = query.trim().toLowerCase();
+    final hits = libraryTitles.where((b) => (w.isEmpty || '${b.title} ${b.author} ${b.subject}'.toLowerCase().contains(w)) && (facets['subject'] == null || b.subject == facets['subject']) && (!availableOnly || b.available > 0)).toList();
+    final subjects = <String, int>{};
+    for (final b in hits) {
+      subjects[b.subject] = (subjects[b.subject] ?? 0) + 1;
+    }
+    return LibrarySearch(total: hits.length, page: 1, titles: hits, availableNow: hits.where((b) => b.available > 0).length, facets: {'subject': [for (final e in subjects.entries) FacetValue(value: e.key, count: e.value)], 'language': [FacetValue(value: 'English', count: hits.length)]});
+  }
+
+  @override
+  Future<MyLibrary> myLibrary() async => library;
+
+  @override
+  Future<void> renewMyLoan(String loanId) async {
+    calls.add('renewMyLoan $loanId');
+    library = MyLibrary(cardNo: library.cardNo, loanDays: library.loanDays, maxBooks: library.maxBooks, reservations: library.reservations, current: [for (final l in library.current) l.id == loanId ? MyLoan(id: l.id, title: l.title, author: l.author, accessionNo: l.accessionNo, dueOn: '2027-03-10', renewCount: l.renewCount + 1) : l]);
+  }
+
+  @override
+  Future<void> reserveTitle(String bookId) async {
+    calls.add('reserveTitle $bookId');
+    final b = libraryTitles.firstWhere((x) => x.id == bookId);
+    library = MyLibrary(cardNo: library.cardNo, loanDays: library.loanDays, maxBooks: library.maxBooks, current: library.current, reservations: [...library.reservations, MyReservation(id: 'r${library.reservations.length + 2}', bookId: bookId, title: b.title, status: 'waiting')]);
+  }
+
+  @override
+  Future<void> cancelMyReservation(String id) async {
+    calls.add('cancelMyReservation $id');
+    library = MyLibrary(cardNo: library.cardNo, loanDays: library.loanDays, maxBooks: library.maxBooks, current: library.current, reservations: [for (final r in library.reservations) if (r.id != id) r]);
+  }
 }

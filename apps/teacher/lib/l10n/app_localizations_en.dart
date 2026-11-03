@@ -4526,4 +4526,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get delivery_field_visit => 'Field visit';
+
+  @override
+  String get libTitle => 'Library';
+
+  @override
+  String get libBody => 'Search the catalogue, renew and reserve books';
+
+  @override
+  String get libTabSearch => 'Search';
+
+  @override
+  String get libTabMine => 'My books';
+
+  @override
+  String get libSearchHint => 'Title, author, subject or ISBN';
+
+  @override
+  String get libOnShelf => 'On the shelf';
+
+  @override
+  String libOnShelfN(int count) {
+    return 'On the shelf ($count)';
+  }
+
+  @override
+  String libDecade(String year) {
+    return '${year}s';
+  }
+
+  @override
+  String get libFacetSubject => 'Subject';
+
+  @override
+  String get libFacetLanguage => 'Language';
+
+  @override
+  String get libFacetDecade => 'Published';
+
+  @override
+  String get libFacetMaterial => 'Material';
+
+  @override
+  String get libFacetAuthor => 'Author';
+
+  @override
+  String get libSearchPrompt => 'Search by title, author or subject, then narrow by subject or language.';
+
+  @override
+  String get libNoMatch => 'No titles match.';
+
+  @override
+  String libResults(int count) {
+    return '$count titles';
+  }
+
+  @override
+  String libAvailable(int available, int copies) {
+    return '$available of $copies on the shelf';
+  }
+
+  @override
+  String get libAllOut => 'All copies are out';
+
+  @override
+  String get libInQueue => 'In the queue';
+
+  @override
+  String get libReserve => 'Reserve';
+
+  @override
+  String get libReserved => 'Reserved. The library tells you when a copy is back.';
+
+  @override
+  String get libMore => 'More titles';
+
+  @override
+  String libCardNo(String card) {
+    return 'Library card $card';
+  }
+
+  @override
+  String libRules(int days, int books) {
+    return '$days days a loan · $books books at a time';
+  }
+
+  @override
+  String libOut(int count) {
+    return 'Books out ($count)';
+  }
+
+  @override
+  String get libNothingOut => 'You have no books out.';
+
+  @override
+  String libDue(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String libOverdue(String date, String fine) {
+    return 'Was due $date · fine so far $fine';
+  }
+
+  @override
+  String get libRenew => 'Renew';
+
+  @override
+  String get libRenewed => 'Renewed for another loan period';
+
+  @override
+  String get libMyReservations => 'My reservations';
+
+  @override
+  String get libReady => 'Waiting for you at the desk';
+
+  @override
+  String get libWaiting => 'In the queue for a copy';
+
+  @override
+  String get libCancel => 'Cancel';
+
+  @override
+  String get libCancelled => 'Reservation cancelled';
 }

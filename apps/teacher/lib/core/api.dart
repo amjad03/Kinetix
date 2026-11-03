@@ -15,6 +15,7 @@ import 'academics_models.dart';
 import 'growth_models.dart';
 import 'hr_models.dart';
 import 'insights_models.dart';
+import 'library_models.dart';
 import 'models.dart';
 import 'obe_models.dart';
 import 'offline_key.dart';
@@ -549,6 +550,23 @@ abstract class TeacherApi implements AnnouncementSource {
 
   /// Attaches the proof of one investment (multipart `file`).
   Future<void> attachTaxProof(String itemId, ChatUpload file);
+
+  // ── Library ─────────────────────────────────────────────────────────────────────────────────
+
+  /// Searches the catalogue (`GET /v1/library/opac`), 20 a page, narrowed by facet values (subject, language, decade, material, author).
+  Future<LibrarySearch> searchLibrary(String query, {Map<String, String> facets = const {}, bool availableOnly = false, int page = 1});
+
+  /// My card, books out, reservations and dues (`GET /v1/library/me`).
+  Future<MyLibrary> myLibrary();
+
+  /// Renews a book I have out (`POST /v1/library/loans/:id/renew`).
+  Future<void> renewMyLoan(String loanId);
+
+  /// Joins the queue for a title whose copies are all out (`POST /v1/library/reservations`).
+  Future<void> reserveTitle(String bookId);
+
+  /// Leaves the queue (`POST /v1/library/reservations/:id/cancel`).
+  Future<void> cancelMyReservation(String id);
 }
 
 /// Lets the lesson player load recordings through a [TeacherApi].
@@ -1666,6 +1684,25 @@ class HttpTeacherApi implements TeacherApi {
 
   @override
   Future<void> attachTaxProof(String itemId, ChatUpload file) => _attachFile('/v1/hr/tax-declarations/items/$itemId/proof', file);
+
+  @override
+  Future<LibrarySearch> searchLibrary(String query, {Map<String, String> facets = const {}, bool availableOnly = false, int page = 1}) async {
+    final q = <String, String>{if (query.trim().isNotEmpty) 'q': query.trim(), for (final e in facets.entries) if (libraryFacets.contains(e.key) && e.value.isNotEmpty) e.key: e.value, if (availableOnly) 'available': 'true', if (page > 1) 'page': '$page'};
+    final path = Uri(path: '/v1/library/opac', queryParameters: q.isEmpty ? null : q).toString();
+    return LibrarySearch.fromJson(await _send('GET', path) as Map<String, dynamic>);
+  }
+
+  @override
+  Future<MyLibrary> myLibrary() async => MyLibrary.fromJson(await _send('GET', '/v1/library/me') as Map<String, dynamic>);
+
+  @override
+  Future<void> renewMyLoan(String loanId) => _send('POST', '/v1/library/loans/$loanId/renew');
+
+  @override
+  Future<void> reserveTitle(String bookId) => _send('POST', '/v1/library/reservations', body: {'bookId': bookId});
+
+  @override
+  Future<void> cancelMyReservation(String id) => _send('POST', '/v1/library/reservations/$id/cancel');
 
   @override
   Future<void> attachLeaveDocument(String requestId, ChatUpload file) => _attachFile('/v1/hr/leave/requests/$requestId/document', file);

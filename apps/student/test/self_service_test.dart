@@ -224,6 +224,23 @@ void main() {
       expect(find.byKey(const Key('catalogueEmpty')), findsOneWidget);
     });
 
+    testWidgets('narrows a search by a subject facet and clears it again', (tester) async {
+      phone(tester);
+      await tester.pumpWidget(host(CatalogueScreen(api: api)));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('catalogueSearch')), 'p');
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle();
+      expect(find.text('2 books'), findsOneWidget);
+      await tapOn(tester, find.byKey(const Key('facet-subject-Commerce')));
+      expect(api.calls.last, 'searchCatalogue p 1 subject=Commerce');
+      expect(find.text('1 book'), findsOneWidget);
+      expect(find.byKey(const Key('facet-subject-Physics')), findsNothing);
+      await tapOn(tester, find.descendant(of: find.byKey(const Key('facetChosen-subject')), matching: find.byType(Icon)).last);
+      expect(api.calls.last, 'searchCatalogue p 1');
+      expect(find.text('2 books'), findsOneWidget);
+    });
+
     testWidgets('self-checkout borrows by the book number, and a refusal says why', (tester) async {
       phone(tester);
       await tester.pumpWidget(host(CatalogueScreen(api: api)));

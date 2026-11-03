@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, Bus, BedDouble, Zap } from 'lucide-react';
+import { BookOpen, Bus, BedDouble, FileDown, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition, type ReactNode } from 'react';
 import { bulkRecords } from '@/app/(dashboard)/records-actions';
@@ -11,6 +11,7 @@ import { Dialog, EmptyState, FormGrid, SelectInput, Sheet, StatusPill, SwitchFie
 import { useI18n } from '@/i18n/client';
 import { humanize } from '@/lib/campus-ops';
 import { PARAM_ACTIONS, paramBody, RAW_NUMBERS, REORDER_SCOPE, sortKeyFor, toneOf, VALUE_FROM, type LhtModule, type OptionSource, type ParamField } from '@/lib/lht';
+import { ROW_FILES } from '@/lib/library-pass';
 import { bulkTarget, type FieldOption, type ListState, type RecordMeta, type RecordsPage, type Row } from '@/lib/records';
 
 const ICONS: Record<LhtModule, ReactNode> = { library: <BookOpen />, hostel: <BedDouble />, transport: <Bus /> };
@@ -112,8 +113,10 @@ export function LhtRecords({ module, meta, page, state, view, sources }: { modul
     .filter((a) => paramActions[a.key])
     .map((a) => ({ id: `lht-${a.key}`, label: actionLabel(a), tone: a.tone ?? undefined, onClick: (_rows: Row[], sel: SelectionInfo) => setPending({ action: a, fields: paramActions[a.key], sel, label: actionLabel(a) }) }));
 
-  const rowExtra = (row: Row): RowAction<Row>[] =>
-    meta.actions.map((a) => ({
+  const rowFile = (row: Row): RowAction<Row>[] => (ROW_FILES[entity] ? [{ id: 'lht-row-file', label: t('lp.rowFile'), icon: <FileDown />, onSelect: () => void window.open(`/api/lht-file?kind=${ROW_FILES[entity]}&id=${row.id}`, '_blank', 'noopener') }] : []);
+  const rowExtra = (row: Row): RowAction<Row>[] => [
+    ...rowFile(row),
+    ...meta.actions.map((a) => ({
       id: `lht-row-${a.key}`,
       label: actionLabel(a),
       icon: <Zap />,
@@ -123,7 +126,8 @@ export function LhtRecords({ module, meta, page, state, view, sources }: { modul
         if (fields || a.tone === 'danger') setPending({ action: a, fields: fields ?? [], ids: [row.id], label: actionLabel(a) });
         else void runAction({ action: a, fields: [], ids: [row.id], label: actionLabel(a) }).then((e) => e && toast.error(e));
       },
-    }));
+    })),
+  ];
 
   return (
     <>
@@ -134,7 +138,7 @@ export function LhtRecords({ module, meta, page, state, view, sources }: { modul
         label={label}
         columns={columns}
         onView={(r) => setViewing(r)}
-        extraRowActions={meta.can.write ? rowExtra : undefined}
+        extraRowActions={meta.can.write ? rowExtra : ROW_FILES[entity] ? rowFile : undefined}
         extraBulkActions={meta.can.write ? bulkExtra : undefined}
         reorderScope={REORDER_SCOPE[entity] ?? []}
         extraParams={{ view }}

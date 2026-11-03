@@ -1668,5 +1668,9 @@
   "hlPurposeMess": "ಮೆಸ್ ಸಮಿತಿ",
   "hlPurposeDiscipline": "ಶಿಸ್ತು ಸಮಿತಿ",
   "hlCall": "ಕರೆ ಮಾಡಿ",
-  "hlLateBy": "{n} ನಿಮಿಷ ತಡ"
+  "hlLateBy": "{n} ನಿಮಿಷ ತಡ",
+  "libFacetSubject": "ವಿಷಯ",
+  "libFacetLanguage": "ಭಾಷೆ",
+  "libFacetDecade": "ಪ್ರಕಟಣೆ",
+  "libDecade": "{year} ರ ದಶಕ"
 }

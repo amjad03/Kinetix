@@ -47,6 +47,9 @@ export const DomainEvents = {
   TimetablePublished: 'timetable.version_published',
   CalendarPublished: 'calendar.event_published',
   TeachingLogReviewed: 'academics.teaching_log_reviewed',
+  // Library: a no-dues clearance (for a transfer certificate or exit) and a fine put on the fee account.
+  LibraryClearanceIssued: 'library.clearance_issued',
+  LibraryFineCharged: 'library.fine_charged',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

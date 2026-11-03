@@ -5663,4 +5663,18 @@ class AppLocalizationsKn extends AppLocalizations {
   String hlLateBy(int n) {
     return '$n ನಿಮಿಷ ತಡ';
   }
+
+  @override
+  String get libFacetSubject => 'ವಿಷಯ';
+
+  @override
+  String get libFacetLanguage => 'ಭಾಷೆ';
+
+  @override
+  String get libFacetDecade => 'ಪ್ರಕಟಣೆ';
+
+  @override
+  String libDecade(String year) {
+    return '$year ರ ದಶಕ';
+  }
 }

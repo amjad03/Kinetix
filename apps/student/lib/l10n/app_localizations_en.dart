@@ -5651,4 +5651,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String hlLateBy(int n) {
     return '$n min late';
   }
+
+  @override
+  String get libFacetSubject => 'Subject';
+
+  @override
+  String get libFacetLanguage => 'Language';
+
+  @override
+  String get libFacetDecade => 'Published';
+
+  @override
+  String libDecade(String year) {
+    return '${year}s';
+  }
 }

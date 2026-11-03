@@ -1,3 +1,8 @@
+import { isLibraryPassPost } from './library-pass';
+
+/** The library's no-dues clearance, sent from its reports page. */
+const LIBRARY_DESK_POSTS = /^\/v1\/library\/no-dues\/[0-9a-f-]{36}\/clear$/;
+
 // The shared shape of the "depth" desks (exam operations, quality, HR extras, fees extras, assets, library, hostel, canteen, retention, mentoring):
 // a server page describes panels (a table, forms and row actions) and one client component draws them.
 
@@ -78,7 +83,7 @@ export interface Panel {
 /** The paths the desks may call through the server action; anything else is refused. */
 export const DEPTH_PATHS = /^\/v1\/(accreditation\/((naac|nba|nirf)\/metrics\/[A-Za-z0-9.]+(\/evidence)?|dvv(\/[0-9a-f-]{36})?|iqac\/(meetings(\/[0-9a-f-]{36}(\/actions)?)?|actions\/[0-9a-f-]{36}|practices(\/[0-9a-f-]{36})?|feedback-reports(\/[0-9a-f-]{36})?)|my-evidence|faculty-evidence\/[0-9a-f-]{36}\/verify)|question-bank\/(papers\/[0-9a-f-]{36}\/release(\/cancel)?|releases)|exam-sessions\/[0-9a-f-]{36}\/(practicals|request-publish)|practicals\/[0-9a-f-]{36}\/(marks|cancel)|exam-ops\/(normalise\/[0-9a-f-]{36}|normalisations\/[0-9a-f-]{36}\/revert|class-bands)|quality\/(frameworks(\/[0-9a-f-]{36}\/(criteria|harvest|status))?|criteria\/[0-9a-f-]{36}(\/evidence)?|actions\/[0-9a-f-]{36}\/(root-cause|remeasure)|eval-questions\/[0-9a-f-]{36}\/co|exam-papers\/[0-9a-f-]{36}\/apply-outcome-map)|hr\/(qualifications(\/[0-9a-f-]{36}(\/verify)?)?|evaluations|payroll\/(adjustments(\/[0-9a-f-]{36}\/decide|\/revision-arrears)?|tax-profile|challans))|fees\/(instalment-plans(\/[0-9a-f-]{36}\/active)?|invoices\/[0-9a-f-]{36}\/(instalments|apply-credit)|late-fee-rule|late-fees\/(run|[0-9a-f-]{36}\/waive)|credits(\/refund)?)|asset-ops\/(amc(\/[0-9a-f-]{36}\/(visit|cancel))?|assets\/[0-9a-f-]{36}\/(warranty|room)|smartboards\/[0-9a-f-]{36}\/link)|library\/(loans\/[0-9a-f-]{36}\/(renew|lost|damaged)|reservations(\/[0-9a-f-]{36}\/cancel)?|books\/barcodes\/assign|eresources(\/[0-9a-f-]{36}\/(retire|open))?|topic-links(\/[0-9a-f-]{36})?)|hostel\/work-orders(\/[0-9a-f-]{36}\/(assign|start|complete|verify))?|canteen\/ops\/(stock|feedback)|retention\/sensitive\/(rules\/[a-z_]+|run)|mentoring\/(plans\/[0-9a-f-]{36}\/(support|reassess)|support\/[0-9a-f-]{36}\/done))$/;
 
-export const isDepthPath = (path: string) => !path.includes('?') && DEPTH_PATHS.test(path);
+export const isDepthPath = (path: string) => !path.includes('?') && (DEPTH_PATHS.test(path) || isLibraryPassPost(path) || LIBRARY_DESK_POSTS.test(path));
 
 /** Fills `{key}` placeholders from a row or form values. */
 export function fillPath(path: string, values: Record<string, unknown>): string {

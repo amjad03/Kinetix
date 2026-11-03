@@ -5,9 +5,9 @@ Regenerate: `cd services/api && UPDATE_AUTHZ=1 ./node_modules/.bin/vitest run te
 
 ## Summary
 
-- Routes: 2838
+- Routes: 2864
 - Public (no @Auth, no guard): 101 (all on the allow list below unless flagged)
-- Any signed-in user (no role list): 306; open to students and families, so each must scope to the caller
+- Any signed-in user (no role list): 309; open to students and families, so each must scope to the caller
 - Flagged for review: 40
 
 Flags: `PUBLIC?` no @Auth and not on the public allow list; `BROAD` a write on a staff-sounding path open to students, families or any user; `OWNERSHIP?` an id in the path, open to non-staff, and no sign that the handler or its service reads the caller (each was reviewed: see *Reviewed* below and docs/security/SECURITY_AUDIT.md).
@@ -1577,6 +1577,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/hostel/complaints` | any signed-in user |  |
 | POST | `/v1/hostel/complaints` | any signed-in user |  |
 | POST | `/v1/hostel/complaints/:id/status` | hostel_warden, principal, tenant_admin |  |
+| GET | `/v1/hostel/compliance` | accountant, hostel_warden, principal, quality_officer, tenant_admin |  |
 | POST | `/v1/hostel/duties/plan` | hostel_warden, principal, tenant_admin |  |
 | POST | `/v1/hostel/fees` | hostel_warden, principal, tenant_admin |  |
 | GET | `/v1/hostel/gate-passes` | hostel_warden, principal, tenant_admin |  |
@@ -1590,9 +1591,14 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/hostel/gate-passes/:id/reject` | hostel_warden, principal, tenant_admin |  |
 | GET | `/v1/hostel/gate-passes/for-family` | guardian |  |
 | POST | `/v1/hostel/gate-passes/requests` | guardian, student |  |
+| POST | `/v1/hostel/gate/manual` | hostel_warden, principal, tenant_admin |  |
+| GET | `/v1/hostel/gate/out-now` | hostel_warden, principal, tenant_admin |  |
+| POST | `/v1/hostel/gate/scan` | hostel_warden, principal, tenant_admin |  |
 | POST | `/v1/hostel/mess/bills/charge` | hostel_warden, principal, tenant_admin |  |
 | POST | `/v1/hostel/mess/bills/run` | hostel_warden, principal, tenant_admin |  |
+| POST | `/v1/hostel/mess/expenses/import-stock` | canteen_manager, hostel_warden, principal, tenant_admin |  |
 | POST | `/v1/hostel/mess/fees` | hostel_warden, principal, tenant_admin |  |
+| POST | `/v1/hostel/mess/inspections` | any signed-in user |  |
 | POST | `/v1/hostel/mess/leaves/mine` | guardian, student |  |
 | GET | `/v1/hostel/mess/menu` | any signed-in user |  |
 | PUT | `/v1/hostel/mess/menu` | hostel_warden, principal, tenant_admin |  |
@@ -1603,8 +1609,12 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/hostel/night-attendance` | hostel_warden, principal, tenant_admin |  |
 | GET | `/v1/hostel/no-dues/:studentId` | any signed-in user |  |
 | GET | `/v1/hostel/occupancy` | hostel_warden, principal, tenant_admin |  |
+| GET | `/v1/hostel/reports/aishe` | accountant, hostel_warden, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/hostel/reports/defaulters` | accountant, hostel_warden, principal, quality_officer, tenant_admin |  |
 | POST | `/v1/hostel/requests/mine` | guardian, student |  |
+| GET | `/v1/hostel/safety` | any signed-in user |  |
 | GET | `/v1/hostel/students/:id` | any signed-in user |  |
+| GET | `/v1/hostel/students/:id/gate-qr` | hostel_warden, principal, student, tenant_admin |  |
 | GET | `/v1/hostel/students/:id/requests` | any signed-in user |  |
 | GET | `/v1/hostel/visitors` | hostel_warden, principal, tenant_admin |  |
 | POST | `/v1/hostel/visitors` | hostel_warden, principal, tenant_admin |  |
@@ -1864,6 +1874,11 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/library/books/barcodes/assign` | librarian, principal, tenant_admin |  |
 | GET | `/v1/library/books/labels.pdf` | librarian, principal, tenant_admin |  |
 | GET | `/v1/library/call-number` | librarian, principal, tenant_admin |  |
+| GET | `/v1/library/copies/labels.pdf` | librarian, principal, tenant_admin |  |
+| GET | `/v1/library/copies/rfid.csv` | librarian, principal, tenant_admin |  |
+| GET | `/v1/library/copy-catalogue` | librarian, principal, tenant_admin |  |
+| POST | `/v1/library/copy-catalogue/import` | librarian, principal, tenant_admin |  |
+| GET | `/v1/library/copy-catalogue/targets` | librarian, principal, tenant_admin |  |
 | GET | `/v1/library/dashboard` | librarian, principal, tenant_admin |  |
 | POST | `/v1/library/desk/issue` | librarian, principal, tenant_admin |  |
 | GET | `/v1/library/desk/lookup` | librarian, principal, tenant_admin |  |
@@ -1874,6 +1889,9 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/library/eresources/:id/access` | librarian, principal, tenant_admin |  |
 | POST | `/v1/library/eresources/:id/open` | any signed-in user |  |
 | POST | `/v1/library/eresources/:id/retire` | librarian, principal, tenant_admin |  |
+| GET | `/v1/library/eresources/usage` | librarian, principal, tenant_admin |  |
+| GET | `/v1/library/exits` | librarian, principal, tenant_admin |  |
+| POST | `/v1/library/exits/staff/:separationId/clear` | librarian, principal, tenant_admin |  |
 | GET | `/v1/library/fines` | librarian, principal, tenant_admin |  |
 | POST | `/v1/library/gate/swipe` | librarian, principal, tenant_admin |  |
 | GET | `/v1/library/isbn/:isbn` | librarian, principal, tenant_admin |  |
@@ -1887,17 +1905,24 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/library/marc/export` | librarian, principal, tenant_admin |  |
 | POST | `/v1/library/marc/import` | librarian, principal, tenant_admin |  |
 | POST | `/v1/library/marc/preview` | librarian, principal, tenant_admin |  |
+| GET | `/v1/library/me` | any signed-in user |  |
+| POST | `/v1/library/members/:id/fines-to-fees` | librarian, principal, tenant_admin |  |
 | POST | `/v1/library/members/enrol` | librarian, principal, tenant_admin |  |
+| GET | `/v1/library/naac` | librarian, principal, quality_officer, tenant_admin |  |
 | GET | `/v1/library/new-arrivals` | any signed-in user |  |
 | POST | `/v1/library/new-arrivals/notify` | librarian, principal, tenant_admin |  |
 | GET | `/v1/library/no-dues/:studentId` | any signed-in user |  |
 | POST | `/v1/library/no-dues/:studentId/clear` | librarian, principal, tenant_admin |  |
 | GET | `/v1/library/opac` | any signed-in user |  |
+| GET | `/v1/library/overdue-notices` | librarian, principal, tenant_admin |  |
+| POST | `/v1/library/overdue-notices/run` | librarian, principal, tenant_admin |  |
+| GET | `/v1/library/purchase-orders/:id/pdf` | librarian, principal, tenant_admin |  |
 | GET | `/v1/library/repository` | any signed-in user |  |
 | POST | `/v1/library/repository/:id/open` | any signed-in user |  |
 | GET | `/v1/library/reservations` | any signed-in user |  |
 | POST | `/v1/library/reservations` | any signed-in user |  |
 | POST | `/v1/library/reservations/:id/cancel` | any signed-in user |  |
+| GET | `/v1/library/rules/preview` | librarian, principal, tenant_admin |  |
 | GET | `/v1/library/scan/:code` | librarian, principal, tenant_admin |  |
 | POST | `/v1/library/self-checkout` | student |  |
 | POST | `/v1/library/sip2` | PUBLIC |  |
@@ -1913,6 +1938,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | DELETE | `/v1/library/topic-links/:id` | hod, librarian, principal, teacher, tenant_admin |  |
 | GET | `/v1/library/topics` | hod, librarian, principal, teacher, tenant_admin |  |
 | GET | `/v1/library/topics/:topicId/resources` | any signed-in user | OWNERSHIP? reviewed |
+| GET | `/v1/library/weeding` | librarian, principal, tenant_admin |  |
 | GET | `/v1/lms/courses` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/courses` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/lms/courses/:id` | any signed-in user |  |

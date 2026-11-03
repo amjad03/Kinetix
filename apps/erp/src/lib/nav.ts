@@ -202,6 +202,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/library', label: 'nav.library', section: 'library', icon: 'library' },
       { href: '/library/desk', label: 'lht.desk.library', section: 'library', icon: 'library' },
       { href: '/library/records', label: 'lht.records.library', section: 'library', icon: 'documents' },
+      { href: '/library/opac', label: 'lp.opac.title', section: 'library', icon: 'library' },
+      { href: '/library/reports', label: 'lp.rep.title', section: 'library', icon: 'reports' },
     ],
   },
   {

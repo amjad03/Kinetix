@@ -84,7 +84,7 @@ describe('campus depth: library, hostel work orders, canteen stock, retention, m
 
       await post('lib', `/v1/library/loans/${ids.loanC}/return`).expect(200);
       expect((await get('parentA', `/v1/library/reservations?studentId=${t.students[A].id}`).expect(200)).body[0]).toMatchObject({ status: 'ready' });
-      await post('lib', '/v1/library/loans', { bookId: ids.accounts, studentId: t.students[B].id }).expect(400); // held for the student who reserved
+      await post('lib', '/v1/library/loans', { bookId: ids.accounts, studentId: t.students[B].id }).expect(409); // held for the student who reserved (a conflict, as at the copy desk)
       const mine = (await post('lib', '/v1/library/loans', { bookId: ids.accounts, studentId: t.students[A].id }).expect(201)).body;
       expect(mine.id).toBeTruthy();
       expect((await get('lib', '/v1/library/reservations').expect(200)).body).toHaveLength(0);

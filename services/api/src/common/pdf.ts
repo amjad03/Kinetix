@@ -97,6 +97,40 @@ export class PdfWriter {
     return true;
   }
 
+  /** Text at an absolute position on the current page (points from the bottom-left); the cursor does not move. */
+  textAt(s: string, x: number, y: number, o: { size?: number; bold?: boolean } = {}): void {
+    this.page.push(`BT /${o.bold ? 'F2' : 'F1'} ${o.size ?? 8} Tf ${x.toFixed(1)} ${y.toFixed(1)} Td (${latin(s)}) Tj ET`);
+  }
+
+  /** A thin rectangle outline at an absolute position (label borders). */
+  box(x: number, y: number, w: number, h: number): void {
+    this.page.push(`0.3 w ${x.toFixed(1)} ${y.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)} re S`);
+  }
+
+  /** A linear barcode from its module pattern (true = bar), `w` points wide and `h` high, bottom-left at (x, y). */
+  bars(pattern: boolean[], x: number, y: number, w: number, h: number): void {
+    const unit = w / pattern.length;
+    const out: string[] = ['q 0 g'];
+    let i = 0;
+    while (i < pattern.length) {
+      if (!pattern[i]) {
+        i++;
+        continue;
+      }
+      let j = i;
+      while (j < pattern.length && pattern[j]) j++;
+      out.push(`${(x + i * unit).toFixed(2)} ${y.toFixed(2)} ${((j - i) * unit).toFixed(2)} ${h.toFixed(2)} re f`);
+      i = j;
+    }
+    out.push('Q');
+    this.page.push(out.join(' '));
+  }
+
+  /** Starts a new page when the page has content (label sheets). */
+  pageBreak(): void {
+    if (this.page.length) this.newPage();
+  }
+
   rule(): void {
     this.ensure(8);
     this.page.push(`0.5 w ${M} ${(this.y + 2).toFixed(1)} m ${W - M} ${(this.y + 2).toFixed(1)} l S`);

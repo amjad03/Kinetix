@@ -1328,12 +1328,26 @@
     {
       "idx": 189,
       "version": "7",
+      "when": 1791506064000,
+      "tag": "0202_library_circulation_rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 190,
+      "version": "7",
+      "when": 1791506065000,
+      "tag": "0203_library_acquisition_serials_eresources",
+      "breakpoints": true
+    },
+    {
+      "idx": 191,
+      "version": "7",
       "when": 1791506066000,
       "tag": "0204_hostel_gate_safety",
       "breakpoints": true
     },
     {
-      "idx": 190,
+      "idx": 192,
       "version": "7",
       "when": 1791506067000,
       "tag": "0205_hostel_mess_diet",

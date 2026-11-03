@@ -1,3 +1,4 @@
+import { assertLibraryClearForTc } from '../library/circulation.js';
 import { randomBytes } from 'node:crypto';
 import { FeeHoldsService } from '../fee-depth/fee-holds.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
@@ -203,7 +204,11 @@ export class CertificatesService {
     if (c.status !== 'approved' && !direct) throw new ConflictException(`A ${c.status} request cannot be issued`);
     const [tmpl] = await tx.select().from(certificateTemplates).where(eq(certificateTemplates.id, c.templateId));
     // Overdue fees hold back a transfer certificate when the institution says so, unless the principal allowed it.
-    if (tmpl.kind === 'transfer_certificate' && c.studentId) await this.holds.assertClear(tx, p.tenantId, c.studentId, 'tc');
+    if (tmpl.kind === 'transfer_certificate' && c.studentId) {
+      await this.holds.assertClear(tx, p.tenantId, c.studentId, 'tc');
+      // The library's no-dues: books returned and library fines paid (library settings, on by default).
+      await assertLibraryClearForTc(tx, p.tenantId, c.studentId, this.clock.now());
+    }
     const today = await this.today(tx);
     const fy = financialYear(today);
     // The upsert takes the counter row's lock, so concurrent issues queue and never share a number.

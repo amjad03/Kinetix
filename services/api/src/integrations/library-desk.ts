@@ -1,50 +1,77 @@
-import { and, eq, isNull, sql } from 'drizzle-orm';
-import { audit } from '../common/audit.js';
-import { tenantToday } from '../common/tenant-today.js';
+import { HttpException } from '@nestjs/common';
+import { and, asc, eq, isNull, sql } from 'drizzle-orm';
+import type { UserPrincipal } from '../auth/principal.js';
 import type { Clock } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
-import { libraryBooks, libraryLoans, students } from '../db/schema.js';
-import { libraryReservations } from '../db/schema-depth.js';
+import { libraryBooks, libraryLoans } from '../db/schema.js';
+import { libraryCopies } from '../db/schema-lht.js';
+import { addCopies, ensureStudentMember, issueCopy, returnLoan, type Member } from '../library/circulation.js';
 import type { NotificationsService } from '../notifications/notifications.service.js';
-import { copiesHeld, promoteNext } from '../library/reservations.js';
-import { addDays } from '../teacher/teacher.service.js';
-
-const LOAN_DAYS = 14;
-const FINE_PAISE_PER_DAY = 200;
-const daysBetween = (a: string, b: string) => Math.round((new Date(`${b}T00:00:00Z`).getTime() - new Date(`${a}T00:00:00Z`).getTime()) / 86_400_000);
 
 export type DeskResult = { ok: true; loanId: string; dueOn?: string; fineP?: number; title: string } | { ok: false; reason: string };
 
-/** Library issue and return for machines (RFID readers, the SIP2 bridge); it follows the desk's rules in library.controller.ts. */
-export class LibraryDesk {
-  constructor(private readonly clock: Clock, private readonly notifications: NotificationsService) {}
+const reasonOf = (e: unknown) => (e instanceof HttpException ? String((e.getResponse() as { message?: unknown }).message ?? e.message) : 'error').replace(/\s+/g, '_').toLowerCase().slice(0, 80);
 
-  async issue(tx: Tx, tenantId: string, actorId: string, bookId: string, studentId: string): Promise<DeskResult> {
-    const [book] = await tx.select().from(libraryBooks).where(eq(libraryBooks.id, bookId)).for('update');
-    const [student] = await tx.select({ id: students.id, fullName: students.fullName }).from(students).where(eq(students.id, studentId));
-    if (!book || !student) return { ok: false, reason: 'unknown_item_or_patron' };
-    const [{ out }] = await tx.select({ out: sql<number>`count(*)::int` }).from(libraryLoans).where(and(eq(libraryLoans.bookId, book.id), isNull(libraryLoans.returnedAt)));
-    const held = await copiesHeld(tx, book.id, student.id);
-    if (out >= book.copies) return { ok: false, reason: 'no_copy_available' };
-    if (out + held >= book.copies) return { ok: false, reason: 'held_for_reservation' };
-    const today = await tenantToday(tx, this.clock);
-    const dueOn = addDays(today, LOAN_DAYS);
-    const [loan] = await tx.insert(libraryLoans).values({ tenantId, bookId: book.id, studentId: student.id, dueOn, issuedBy: actorId }).returning();
-    await tx.update(libraryReservations).set({ status: 'fulfilled', loanId: loan.id }).where(and(eq(libraryReservations.bookId, book.id), eq(libraryReservations.studentId, student.id), sql`${libraryReservations.status} in ('waiting', 'ready')`));
-    await audit(tx, { tenantId, actorType: 'user', actorId, action: 'library.issued', subjectType: 'library_loan', subjectId: loan.id, data: { via: 'machine' } });
-    await this.notifications.libraryIssued(tx, { loanId: loan.id, studentId: student.id, studentName: student.fullName, title: book.title, dueOn });
-    return { ok: true, loanId: loan.id, dueOn, title: book.title };
+/**
+ * Library issue and return for machines (RFID readers and self-check kiosks over SIP2). They go through the same
+ * circulation as the desk: copies from the accession register, the member's category and the rules matrix, unpaid-fine
+ * blocks, reservations and holiday-aware fines.
+ */
+export class LibraryDesk {
+  constructor(
+    private readonly clock: Clock,
+    private readonly notifications: NotificationsService,
+  ) {}
+
+  /** The machine acts as the librarian who registered it. */
+  private principal(tenantId: string, actorId: string): UserPrincipal {
+    return { kind: 'user', tenantId, userId: actorId, roles: ['librarian'] };
   }
 
-  /** Returns the open loan of a book (optionally only if held by `studentId`). */
-  async giveBack(tx: Tx, tenantId: string, actorId: string, bookId: string, studentId?: string): Promise<DeskResult> {
-    const [loan] = await tx.select().from(libraryLoans).where(and(eq(libraryLoans.bookId, bookId), isNull(libraryLoans.returnedAt), studentId ? eq(libraryLoans.studentId, studentId) : undefined)).for('update');
+  /** A copy of a book on the shelf; books catalogued before the accession register get their copies first. */
+  private async shelfCopy(tx: Tx, tenantId: string, bookId: string) {
+    const [any] = await tx.select({ id: libraryCopies.id }).from(libraryCopies).where(eq(libraryCopies.bookId, bookId)).limit(1);
+    if (!any) {
+      const [b] = await tx.select({ copies: libraryBooks.copies, price: libraryBooks.pricePaise }).from(libraryBooks).where(eq(libraryBooks.id, bookId));
+      if (b && b.copies > 0) await addCopies(tx, tenantId, bookId, b.copies, { pricePaise: b.price });
+    }
+    const [c] = await tx.select().from(libraryCopies).where(and(eq(libraryCopies.bookId, bookId), eq(libraryCopies.status, 'available'))).orderBy(asc(libraryCopies.accessionNo)).limit(1);
+    return c ?? null;
+  }
+
+  /** Issues a copy (or, given a book, a copy of it on the shelf) to a student. */
+  async issue(tx: Tx, tenantId: string, actorId: string, bookId: string, studentId: string, copyId?: string): Promise<DeskResult> {
+    return this.issueTo(tx, tenantId, actorId, bookId, await ensureStudentMember(tx, tenantId, studentId), copyId);
+  }
+
+  async issueTo(tx: Tx, tenantId: string, actorId: string, bookId: string, member: Member, copyId?: string): Promise<DeskResult> {
+    const [book] = await tx.select({ title: libraryBooks.title }).from(libraryBooks).where(eq(libraryBooks.id, bookId));
+    if (!book) return { ok: false, reason: 'unknown_item_or_patron' };
+    const copy = copyId ? (await tx.select().from(libraryCopies).where(eq(libraryCopies.id, copyId)))[0] : await this.shelfCopy(tx, tenantId, bookId);
+    if (!copy) return { ok: false, reason: 'no_copy_available' };
+    try {
+      const loan = await tx.transaction((sp) => issueCopy(sp, this.principal(tenantId, actorId), this.clock.now(), this.notifications, { member, copy, via: 'sip2' }));
+      return { ok: true, loanId: loan.id, dueOn: loan.dueOn, title: book.title };
+    } catch (e) {
+      return { ok: false, reason: reasonOf(e) };
+    }
+  }
+
+  /** Returns the open loan of a copy (or of a book, optionally only if held by `studentId`). */
+  async giveBack(tx: Tx, tenantId: string, actorId: string, bookId: string, studentId?: string, copyId?: string): Promise<DeskResult> {
+    const [loan] = await tx
+      .select({ id: libraryLoans.id })
+      .from(libraryLoans)
+      .where(and(copyId ? eq(libraryLoans.copyId, copyId) : eq(libraryLoans.bookId, bookId), isNull(libraryLoans.returnedAt), studentId ? eq(libraryLoans.studentId, studentId) : undefined))
+      .orderBy(sql`${libraryLoans.issuedAt}`)
+      .limit(1);
     const [book] = await tx.select({ title: libraryBooks.title }).from(libraryBooks).where(eq(libraryBooks.id, bookId));
     if (!loan || !book) return { ok: false, reason: 'not_on_loan' };
-    const late = Math.max(0, daysBetween(loan.dueOn, await tenantToday(tx, this.clock)));
-    await tx.update(libraryLoans).set({ returnedAt: this.clock.now(), finePaise: late * FINE_PAISE_PER_DAY }).where(eq(libraryLoans.id, loan.id));
-    await audit(tx, { tenantId, actorType: 'user', actorId, action: 'library.returned', subjectType: 'library_loan', subjectId: loan.id, data: { daysLate: late, via: 'machine' } });
-    await promoteNext(tx, loan.bookId, this.clock.now());
-    return { ok: true, loanId: loan.id, fineP: late * FINE_PAISE_PER_DAY, title: book.title };
+    try {
+      const done = await tx.transaction((sp) => returnLoan(sp, this.principal(tenantId, actorId), this.clock.now(), loan.id, { via: 'sip2', notify: this.notifications }));
+      return { ok: true, loanId: done.id, fineP: done.finePaise, title: book.title };
+    } catch (e) {
+      return { ok: false, reason: reasonOf(e) };
+    }
   }
 }

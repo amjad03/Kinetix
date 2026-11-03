@@ -129,13 +129,15 @@ async function one1(tx: Tx, key: string): Promise<AutoValue> {
       return { value: n, text: rows.length ? `${n} rooms: ${rows.map((x) => `${x.n} ${x.kind}`).join(', ')}.` : 'No rooms recorded.', rows: rows.map((x) => [String(x.kind), String(x.n), String(x.seats)]) };
     }
     case 'library_summary': {
-      const x = await one(tx, sql`select (select count(*) from library_books)::int as titles, coalesce((select sum(copies) from library_books), 0)::int as copies, (select count(*) from library_loans)::int as loans`);
-      return { value: r1(x.titles), text: `${x.titles} titles, ${x.copies} copies, ${x.loans} loans recorded in the library module.` };
+      const x = await one(tx, sql`select (select count(*) from library_books where status = 'active')::int as titles, (select count(*) from library_copies where status not in ('withdrawn', 'lost'))::int as copies, (select count(*) from library_loans)::int as loans,
+        (select count(*) from library_periodicals where status = 'active')::int as journals, (select count(*) from library_eresources where status = 'active')::int as eres, (select count(*) from library_repository where status = 'published')::int as repo,
+        (select count(*) from library_branches)::int as branches, exists (select 1 from library_copies where coalesce(rfid, '') <> '')::int as rfid, (select count(*) from library_gate_log where in_at > now() - interval '1 year')::int as footfall`);
+      return { value: r1(x.titles), text: `The library is automated in the ERP's integrated library management system (cataloguing in MARC21 with an accession register, circulation by barcode${Number(x.rfid) ? ' and RFID' : ''}, OPAC on the web and the apps, acquisitions, serials, stock verification and a gate register): ${x.titles} titles and ${x.copies} copies${Number(x.branches) > 1 ? ` in ${x.branches} branches` : ''}, ${x.journals} journals and magazines, ${x.eres} e-resources and ${x.repo} items in the institutional repository; ${x.loans} loans recorded and ${x.footfall} visits in the gate register in the last year.` };
     }
     case 'eresources':
       return { value: r1((await one(tx, sql`select count(*)::int as v from library_eresources`)).v), text: 'E-resources registered' };
     case 'library_use':
-      return { value: r1((await one(tx, sql`select count(*) / 365.0 as v from library_loans`)).v), text: 'Loans recorded divided by 365 days' };
+      return { value: r1((await one(tx, sql`select coalesce((select count(*)::numeric / nullif(count(distinct (in_at at time zone 'Asia/Kolkata')::date), 0) from library_gate_log where in_at > now() - interval '1 year'), (select count(*) / 365.0 from library_loans)) as v`)).v), text: 'Mean daily footfall in the gate register over the last year (loans per day where no gate register is kept)' };
     case 'it_summary': {
       const x = await one(tx, sql`select (select count(*) from devices)::int as boards, (select count(*) from lms_items)::int as items`);
       return { value: r1(x.boards), text: `${x.boards} smartboards enrolled and ${x.items} items on the learning platform.` };

@@ -1,6 +1,8 @@
 // Library, hostel (with the mess) and transport: which record lists each module's records page shows (grouped
 // into tabs), the inputs the lists' actions ask for, and the API paths the desks may call.
 
+import { isLibraryPassPost, isLibraryPassRead } from './library-pass';
+
 export type LhtModule = 'library' | 'hostel' | 'transport';
 
 export interface LhtGroup {
@@ -11,11 +13,12 @@ export interface LhtGroup {
 export const LHT_GROUPS: Record<LhtModule, LhtGroup[]> = {
   library: [
     { key: 'catalogue', entities: ['library-books', 'library-copies', 'library-branches'] },
-    { key: 'members', entities: ['library-members', 'library-member-categories', 'library-clearances'] },
+    { key: 'members', entities: ['library-members', 'library-member-categories', 'library-circ-rules', 'library-clearances'] },
     { key: 'circulation', entities: ['library-loans', 'library-fine-waivers', 'library-gate'] },
-    { key: 'acquisitions', entities: ['library-acquisitions', 'library-budgets'] },
+    { key: 'acquisitions', entities: ['library-acquisitions', 'library-purchase-orders', 'library-invoices', 'library-vendors', 'library-budgets'] },
     { key: 'serials', entities: ['library-periodicals', 'library-issues'] },
-    { key: 'digital', entities: ['library-eresources', 'library-repository', 'library-ill'] },
+    { key: 'digital', entities: ['library-eresources', 'library-eresource-usage', 'library-repository', 'library-ill'] },
+    { key: 'housekeeping', entities: ['library-binding'] },
   ],
   hostel: [
     { key: 'buildings', entities: ['hostels', 'hostel-blocks', 'hostel-room-types', 'hostel-rooms', 'hostel-room-assets'] },
@@ -44,6 +47,7 @@ export const REORDER_SCOPE: Record<string, string[]> = { 'transport-stops': ['ro
 /** Option lists an action's input can take from another list's form (branches, free beds, drivers). */
 export const OPTION_SOURCES = {
   branches: { entity: 'library-gate', field: 'branchId' },
+  orders: { entity: 'library-invoices', field: 'poId' },
   beds: { entity: 'hostel-residents', field: 'bedId' },
   drivers: { entity: 'transport-duty', field: 'substituteDriverId' },
 } as const;
@@ -87,6 +91,14 @@ export const PARAM_ACTIONS: Record<string, Record<string, ParamField[]>> = {
     order: [{ name: 'vendor', type: 'text', required: true }, { name: 'orderNo', type: 'text' }, { name: 'orderedOn', type: 'date' }],
     receive: [{ name: 'quantity', type: 'number' }, { name: 'receivedOn', type: 'date' }, { name: 'price', type: 'number' }, { name: 'branchId', type: 'select', source: 'branches' }],
     invoice: [{ name: 'invoiceNo', type: 'text', required: true }, { name: 'invoiceDate', type: 'date' }, { name: 'amount', type: 'number', required: true }],
+    addToOrder: [{ name: 'poId', type: 'select', source: 'orders', required: true }],
+  },
+  'library-purchase-orders': { send: [{ name: 'orderedOn', type: 'date' }] },
+  'library-invoices': { paid: [{ name: 'paymentRef', type: 'text', required: true }, { name: 'paidOn', type: 'date' }] },
+  'library-binding': {
+    addCopies: [{ name: 'codes', type: 'textarea', required: true }, { name: 'instructions', type: 'text' }],
+    send: [{ name: 'sentOn', type: 'date' }],
+    receive: [{ name: 'receivedOn', type: 'date' }, { name: 'cost', type: 'number' }],
   },
   'library-periodicals': { renew: [{ name: 'until', type: 'date', required: true }, { name: 'cost', type: 'number' }] },
   'library-issues': { checkIn: [{ name: 'receivedOn', type: 'date' }], claim: [note] },
@@ -151,12 +163,12 @@ export const LHT_PATHS =
 /** The hostel pass's desk paths: a gate QR scan and bringing the kitchen purchases into the mess spending. */
 export const HOSTEL_DESK_PATHS = /^\/v1\/hostel\/(gate\/scan|mess\/expenses\/import-stock)$/;
 
-export const isLhtPath = (path: string) => LHT_PATHS.test(path) || HOSTEL_DESK_PATHS.test(path);
+export const isLhtPath = (path: string) => LHT_PATHS.test(path) || HOSTEL_DESK_PATHS.test(path) || isLibraryPassPost(path);
 
 /** The lookups the desks may read (GET): a scanned code, an ISBN, a student's no-dues in each module. */
 export const LHT_READS = /^\/v1\/(library\/(desk\/lookup\?code=[A-Za-z0-9%._-]{1,80}|isbn\/[0-9Xx-]{10,17}|no-dues\/[0-9a-f-]{36})|hostel\/no-dues\/[0-9a-f-]{36}|transport\/no-dues\/[0-9a-f-]{36})$/;
 
-export const isLhtRead = (path: string) => LHT_READS.test(path);
+export const isLhtRead = (path: string) => LHT_READS.test(path) || isLibraryPassRead(path);
 
 /** A column's API sort key: the same name, or the name without its unit ("dueOn" sorts by "due"). */
 export function sortKeyFor(key: string, sorts: string[]): string | undefined {

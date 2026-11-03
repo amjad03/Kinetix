@@ -36,6 +36,7 @@ import '../work/roster_surveys_clubs.dart';
 import '../work/tasks_screen.dart';
 import 'device_trust_tile.dart';
 import '../hr/tax_claims_screen.dart';
+import '../library/library_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key, required this.state, this.teachingTiles = const [], this.title});
@@ -293,6 +294,14 @@ class ProfileTab extends StatelessWidget {
               subtitle: Text(l.taxClaimsBody),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => TaxClaimsScreen(api: state.api))),
+            ),
+            ListTile(
+              key: const Key('openLibrary'),
+              leading: const Icon(Icons.local_library_outlined),
+              title: Text(l.libTitle),
+              subtitle: Text(l.libBody),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => LibraryScreen(api: state.api))),
             ),
             ListTile(
               key: const Key('openEvidence'),

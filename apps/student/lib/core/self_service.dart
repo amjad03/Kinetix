@@ -331,19 +331,29 @@ class CatalogueBook {
   final List<BranchCopies> branches;
 }
 
+/// The facets the student app narrows a catalogue search by.
+const catalogueFacets = ['subject', 'language', 'decade'];
+
 /// One page (20 titles) of a catalogue search.
 class CataloguePage {
-  const CataloguePage({required this.total, required this.page, required this.books});
+  const CataloguePage({required this.total, required this.page, required this.books, this.facets = const {}});
 
-  factory CataloguePage.fromJson(Map<String, dynamic> j) => CataloguePage(
-    total: _int(j['total']),
-    page: _int(j['page']).clamp(1, 1000),
-    books: [for (final b in _maps(j['rows'])) CatalogueBook.fromJson(b)],
-  );
+  factory CataloguePage.fromJson(Map<String, dynamic> j) {
+    final f = j['facets'] is Map ? (j['facets'] as Map).cast<String, dynamic>() : const <String, dynamic>{};
+    return CataloguePage(
+      total: _int(j['total']),
+      page: _int(j['page']).clamp(1, 1000),
+      books: [for (final b in _maps(j['rows'])) CatalogueBook.fromJson(b)],
+      facets: {for (final k in catalogueFacets) k: [for (final v in _maps(f[k])) (value: _s(v['value']), count: _int(v['count']))]},
+    );
+  }
 
   final int total;
   final int page;
   final List<CatalogueBook> books;
+
+  /// What the matches can be narrowed by: each facet's values with how many titles each leaves.
+  final Map<String, List<({String value, int count})>> facets;
 
   bool get hasMore => page * 20 < total;
 }

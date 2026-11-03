@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { CopyFiles, RulesPreview } from '@/components/library/DeskTools';
 import { LinkButton } from '@/components/LinkButton';
 import { LhtDesk, type DeskTask } from '@/components/lht/LhtDesk';
 import { LhtLinks } from '@/components/lht/LhtRecordsPage';
@@ -138,6 +139,15 @@ export default async function LibraryDeskPage() {
         { key: 'depositHeldPaise', label: t('lht.r.deposit'), kind: 'rupees' },
       ],
     },
+    {
+      id: 'notices',
+      title: t('lp.desk.notices'),
+      hint: t('lp.desk.noticesHint'),
+      path: '/v1/library/overdue-notices/run',
+      submit: t('lp.rep.runGo'),
+      fields: [],
+      result: [{ key: 'today', label: t('lp.desk.on') }],
+    },
   ];
 
   return (
@@ -148,6 +158,15 @@ export default async function LibraryDeskPage() {
         actions={
           <>
             <LhtLinks module="library" here="desk" />
+            <LinkButton href="/library/opac" variant="outlined">
+              {t('lp.opac.title')}
+            </LinkButton>
+            <LinkButton href="/library/kiosk" variant="outlined">
+              {t('lp.kiosk.title')}
+            </LinkButton>
+            <LinkButton href="/library/reports" variant="outlined">
+              {t('lp.rep.title')}
+            </LinkButton>
             <LinkButton href="/api/lht-file?kind=marc-export&id=mrc" variant="outlined">
               {t('lht.marc.export')}
             </LinkButton>
@@ -168,6 +187,10 @@ export default async function LibraryDeskPage() {
       </StatGrid>
       <LibraryLookup />
       <LhtDesk tasks={tasks} />
+      <div className="mt-5 grid items-start gap-5 lg:grid-cols-2">
+        <RulesPreview />
+        <CopyFiles />
+      </div>
       <div className="mt-5">
         <MarcImport branches={branches} />
       </div>
