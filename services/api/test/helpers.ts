@@ -32,6 +32,9 @@ export const env = {
   STORAGE_DIR: `/tmp/zynetix-test-objects-${process.pid}`,
   /** Encrypts institutions' payment secrets in tests (32 bytes, base64; not a real key). */
   SECRETS_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64'),
+  /** Every test signs in from 127.0.0.1: per-IP limits are exercised in security.e2e.spec.ts with their own app. */
+  LOGIN_PER_IP_PER_MINUTE: '100000',
+  PUBLIC_PER_IP_PER_MINUTE: '100000',
 };
 Object.assign(process.env, env);
 

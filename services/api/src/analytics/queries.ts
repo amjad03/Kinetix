@@ -196,7 +196,8 @@ export interface ClassroomAnalytics {
 /** Session usage, tool usage and syllabus coverage, from what the board already records. */
 export async function classroomAnalytics(tx: Tx, scope: Scope, range: Range, timezone: string, today: string): Promise<ClassroomAnalytics> {
   const sc = scopeSql(scope);
-  const inRange = (col: string) => sql.raw(`(${col} at time zone '${timezone.replace(/[^A-Za-z0-9_/+-]/g, '')}')::date between '${range.from}'::date and '${range.to}'::date`);
+  // Bound parameters, not text: the dates come from the query string (checked there too).
+  const inRange = (col: string) => sql`(${sql.raw(col)} at time zone ${timezone})::date between ${range.from}::date and ${range.to}::date`;
   const [s] = await rows<{ total: number; hours: number; teachers: number; boards: number; live: number }>(
     tx,
     sql`select count(*)::int total, coalesce(sum(extract(epoch from (coalesce(bs.ended_at, least(bs.expires_at, bs.started_at + interval '2 hours')) - bs.started_at))) / 3600, 0)::float8 hours,

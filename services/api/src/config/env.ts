@@ -188,8 +188,33 @@ const EnvSchema = z.object({
   OTEL_SERVICE_NAME: z.string().default('zynetix-api'),
   /** Fraction of requests traced (0 to 1). */
   OTEL_TRACES_SAMPLER_ARG: z.coerce.number().min(0).max(1).default(1),
-  /** When set, GET /metrics needs `Authorization: Bearer <token>`. */
+  /** When set, GET /metrics needs `Authorization: Bearer <token>`. Required with DEPLOYMENT=production. */
   METRICS_TOKEN: z.string().optional(),
+  /**
+   * `production` turns on the checks for a real deployment (see {@link productionProblems}): no fake payment gateways or
+   * console SMS, a long JWT secret, a metrics token, an explicit list of ERP origins, two-factor for admins. ECS sets it;
+   * docker-compose and development leave it at `development`.
+   */
+  DEPLOYMENT: z.enum(['development', 'staging', 'production']).default('development'),
+  /** Origins allowed to call the API from a browser (comma-separated), e.g. https://erp.zynetix.in. Unset: any origin (bearer tokens, no cookies). */
+  CORS_ORIGINS: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? '').split(',').map((o) => o.trim()).filter(Boolean)),
+  /** Password sign-in attempts per client IP per minute, across all accounts (credential stuffing). */
+  LOGIN_PER_IP_PER_MINUTE: z.coerce.number().int().positive().default(60),
+  /** Public (unauthenticated) /v1/public requests per client IP per minute: forms, verification pages, recruiter portal. */
+  PUBLIC_PER_IP_PER_MINUTE: z.coerce.number().int().positive().default(120),
+  /**
+   * Roles that must use two-factor in every institution, on top of the institution's own policy (comma-separated).
+   * Production: at least tenant_admin and principal.
+   */
+  MFA_ENFORCED_ROLES: z
+    .string()
+    .optional()
+    .transform((v) => (v ?? '').split(',').map((r) => r.trim()).filter(Boolean)),
+  /** Swagger UI at /docs. Off with DEPLOYMENT=production unless set to true. */
+  API_DOCS: z.stringbool().optional(),
   /** Scheduled reports are emailed by POSTing JSON to this relay (SES/Postmark lambda, n8n…); unset: only logged. */
   MAIL_WEBHOOK_URL: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()),
   MAIL_FROM: z.string().default('reports@zynetix.local'),
@@ -225,5 +250,22 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   }
   const sarvam = parsed.data.AI_FALLBACK_PROVIDER === 'sarvam' || parsed.data.ASR_FALLBACK_PROVIDER === 'sarvam';
   if (sarvam && !parsed.data.SARVAM_API_KEY) throw new Error('Invalid environment: SARVAM_API_KEY is required with AI_FALLBACK_PROVIDER=sarvam or ASR_FALLBACK_PROVIDER=sarvam');
+  const problems = productionProblems(parsed.data);
+  if (problems.length) throw new Error(`Invalid environment for DEPLOYMENT=production:\n- ${problems.join('\n- ')}`);
   return parsed.data;
+}
+
+/** What a production deployment must not run with. Empty outside DEPLOYMENT=production. */
+export function productionProblems(env: Env): string[] {
+  if (env.DEPLOYMENT !== 'production') return [];
+  const out: string[] = [];
+  if (env.JWT_SECRET.length < 32) out.push('JWT_SECRET must be at least 32 characters');
+  if (env.RAZORPAY_FAKE || env.PAYU_FAKE) out.push('RAZORPAY_FAKE and PAYU_FAKE are for tests only');
+  if (env.PAYMENTS_PROVIDER === 'demo') out.push('PAYMENTS_PROVIDER=demo moves no money; use none, razorpay, payu or gateways');
+  if (env.SMS_PROVIDER === 'console') out.push('SMS_PROVIDER=console writes sign-in codes to the log; use msg91');
+  if (!env.METRICS_TOKEN || env.METRICS_TOKEN.length < 24) out.push('METRICS_TOKEN (24+ characters) is required so /metrics is not public');
+  if (!env.SECRETS_ENCRYPTION_KEY) out.push('SECRETS_ENCRYPTION_KEY is required (payment secrets, two-factor secrets and sensitive columns are encrypted with it)');
+  if (!env.CORS_ORIGINS.length) out.push('CORS_ORIGINS must list the ERP and portal origins');
+  if (!['tenant_admin', 'principal'].every((r) => env.MFA_ENFORCED_ROLES.includes(r))) out.push('MFA_ENFORCED_ROLES must include tenant_admin and principal');
+  return out;
 }

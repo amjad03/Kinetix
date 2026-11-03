@@ -1,4 +1,15 @@
 import { randomInt } from 'node:crypto';
+import argon2 from 'argon2';
+
+/**
+ * Password hashing: Argon2id, 64 MiB, 3 passes, 4 lanes (above the OWASP minimum of 19 MiB / 2 passes). Pinned here so a
+ * library upgrade cannot change them silently; sign-in re-hashes a password stored with weaker settings.
+ */
+export const ARGON2_OPTIONS = { type: argon2.argon2id, memoryCost: 65_536, timeCost: 3, parallelism: 4 } as const;
+
+export const hashPassword = (password: string): Promise<string> => argon2.hash(password, ARGON2_OPTIONS);
+
+export const passwordNeedsRehash = (hash: string): boolean => argon2.needsRehash(hash, ARGON2_OPTIONS);
 
 /** A temporary password: 14 characters without look-alikes (0/O, 1/l/I). */
 export function temporaryPassword(): string {

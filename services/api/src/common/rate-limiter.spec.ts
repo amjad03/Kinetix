@@ -7,8 +7,12 @@ import { MemoryRateLimiter, RateLimiter, type RedisEval, RedisRateLimiter } from
 class FakeRedis implements RedisEval {
   now = 0;
   readonly keys = new Map<string, { n: number; expiresAt: number }>();
-  async eval(_script: string, _numKeys: number, key: string | number, windowMs: string | number): Promise<unknown> {
+  async eval(script: string, _numKeys: number, key: string | number, windowMs?: string | number): Promise<unknown> {
     const k = String(key);
+    if (!script.includes('INCR')) {
+      const p = this.keys.get(k);
+      return p && p.expiresAt > this.now ? [p.n, p.expiresAt - this.now] : [0, -2];
+    }
     let e = this.keys.get(k);
     if (!e || e.expiresAt <= this.now) e = { n: 0, expiresAt: this.now + Number(windowMs) };
     e.n++;
@@ -49,6 +53,19 @@ function behaves(name: string, make: () => { limiter: RateLimiter; advance: (ms:
       expect(await status(limiter.hit(key, 1, 500))).toBe(429);
       await advance(600);
       expect(await status(limiter.hit(key, 1, 500))).toBe('ok');
+    });
+
+    it('blocked() refuses once a key has `limit` hits, without counting, until the window ends', async () => {
+      const { limiter, advance } = make();
+      const key = `lock-${Math.random()}`;
+      expect(await status(limiter.blocked(key, 2))).toBe('ok');
+      await limiter.hit(key, 100, 1000);
+      expect(await status(limiter.blocked(key, 2))).toBe('ok');
+      expect(await status(limiter.blocked(key, 2))).toBe('ok');
+      await limiter.hit(key, 100, 1000);
+      expect(await status(limiter.blocked(key, 2))).toBe(429);
+      await advance(1100);
+      expect(await status(limiter.blocked(key, 2))).toBe('ok');
     });
   });
 }

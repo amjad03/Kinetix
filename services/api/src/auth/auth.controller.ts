@@ -1,5 +1,5 @@
 import { noteSignInDevice } from '../trust/trust.controller.js';
-import { Body, Controller, Headers, HttpCode, Ip, Post, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Headers, HttpCode, Inject, Ip, Post, UnauthorizedException } from '@nestjs/common';
 import argon2 from 'argon2';
 import { eq, or } from 'drizzle-orm';
 import { z } from 'zod';
@@ -9,11 +9,14 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { users } from '../db/schema.js';
 import { SystemLookups } from '../db/system-lookups.service.js';
+import { randomUUID } from 'node:crypto';
 import { OtpService } from './otp.service.js';
+import { hashPassword, passwordNeedsRehash } from './password-policy.js';
 import { normalizePhone } from './phone.js';
 import { signInResponse } from './sign-in.js';
 import { MfaService } from './mfa.service.js';
 import { Clock } from '../common/time.js';
+import { ENV, type Env } from '../config/env.js';
 
 export { normalizePhone };
 
@@ -30,7 +33,16 @@ const OtpRequestBody = z.object({
   phone: z.string().min(6).max(30),
 });
 
-const MfaVerifyBody = z.object({ mfaToken: z.string().min(10).max(2000), code: z.string().trim().min(6).max(20) });
+let dummy: Promise<string> | undefined;
+/** A hash of a random password, made once, to verify against when the login is unknown. */
+const dummyHash = () => (dummy ??= hashPassword(randomUUID()));
+
+/** Password sign-in limits (the OTP ones are in otp.service.ts). */
+export const LOGIN_LIMITS = {
+  lockout: { failures: 10, windowMs: 15 * 60_000 },
+} as const;
+
+const MfaVerifyBody =z.object({ mfaToken: z.string().min(10).max(2000), code: z.string().trim().min(6).max(20) });
 
 const OtpVerifyBody =OtpRequestBody.extend({ code: z.string().trim().min(1).max(10) });
 
@@ -47,26 +59,38 @@ export class AuthController {
     private readonly limiter: RateLimiter,
     private readonly otp: OtpService,
     private readonly clock: Clock,
+    @Inject(ENV) private readonly env: Env,
   ) {}
 
   @Post('login')
   async login(@Body(new ZodBody(LoginBody)) body: z.infer<typeof LoginBody>, @Ip() ip: string, @Headers('user-agent') userAgent?: string, @Headers('x-device-name') deviceName?: string, @Headers('x-device-id') deviceId?: string) {
-    await this.limiter.hit(`login:${body.tenant}:${body.login}`, 10, 60_000);
-    const fail = new UnauthorizedException('Wrong institution, login or password');
+    const account = `${body.tenant.toLowerCase()}:${body.login.trim().toLowerCase()}`;
+    // Credential stuffing across many accounts from one address, then guessing one account's password.
+    await this.limiter.hit(`login-ip:${ip}`, this.env.LOGIN_PER_IP_PER_MINUTE, 60_000);
+    await this.limiter.hit(`login:${account}`, 20, 60_000);
+    // Lockout: after 10 wrong passwords in 15 minutes the account refuses even the right one until the window ends.
+    await this.limiter.blocked(`login-fail:${account}`, LOGIN_LIMITS.lockout.failures);
+    const failed = new UnauthorizedException('Wrong institution, login or password');
+    const fail = () => this.limiter.hit(`login-fail:${account}`, Number.MAX_SAFE_INTEGER, LOGIN_LIMITS.lockout.windowMs).then(() => failed);
 
     const tenant = await this.system.tenantBySlug(body.tenant);
-    if (!tenant) throw fail;
+    if (!tenant) throw await fail();
 
     const result = await this.db.withTenant(tenant.id, async (tx) => {
       const [user] = await tx
         .select()
         .from(users)
         .where(or(eq(users.email, body.login.trim().toLowerCase()), eq(users.phone, normalizePhone(body.login))));
-      if (!user?.passwordHash) return { refused: null };
+      // The same Argon2 work for an unknown login, so the answer time does not tell which logins exist.
+      if (!user?.passwordHash) {
+        await argon2.verify(await dummyHash(), body.password);
+        return { refused: null };
+      }
       // Failed attempts on a real account are kept for the sign-in report (written below, outside this transaction).
       if (user.status === 'disabled') return { refused: { userId: user.id, action: 'auth.sign_in_blocked' } };
       if (user.status !== 'active') return { refused: null };
       if (!(await argon2.verify(user.passwordHash, body.password))) return { refused: { userId: user.id, action: 'auth.sign_in_failed' } };
+      if (passwordNeedsRehash(user.passwordHash)) await tx.update(users).set({ passwordHash: await hashPassword(body.password) }).where(eq(users.id, user.id));
       await noteSignInDevice(tx, tenant.id, user.id, deviceId);
       return { ok: await signInResponse(tx, this.mfa, tenant.id, user, 'password', { ip, userAgent, deviceName }) };
     });
@@ -75,7 +99,7 @@ export class AuthController {
       const r = result.refused;
       await this.db.withTenant(tenant.id, (tx) => audit(tx, { tenantId: tenant.id, actorType: 'system', action: r.action, subjectType: 'user', subjectId: r.userId, data: { method: 'password', ip: ip ?? null, device: deviceName ?? null } }));
     }
-    throw fail;
+    throw await fail();
   }
 
   /** Second step for a user with two-factor on: the `mfaToken` from login plus an authenticator or backup code. */

@@ -15,11 +15,14 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true, ...(logger && { logger }) }); // rawBody: payment webhook signatures
   configureApp(app);
 
-  const doc = SwaggerModule.createDocument(
-    app,
-    new DocumentBuilder().setTitle('ZYNETIX Cloud API').setVersion('0.1').addBearerAuth().build(),
-  );
-  SwaggerModule.setup('docs', app, doc);
+  // The route map is not published in production unless asked for (API_DOCS=true).
+  if (env.API_DOCS ?? env.DEPLOYMENT !== 'production') {
+    const doc = SwaggerModule.createDocument(
+      app,
+      new DocumentBuilder().setTitle('ZYNETIX Cloud API').setVersion('0.1').addBearerAuth().build(),
+    );
+    SwaggerModule.setup('docs', app, doc);
+  }
 
   await app.listen(env.PORT);
 }

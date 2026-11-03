@@ -8,7 +8,7 @@ import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { users } from '../db/schema.js';
 import { AllowDuringPasswordChange, Auth, CurrentPrincipal, STAFF_ADMIN_ROLES } from './auth.decorators.js';
-import { passwordProblem, temporaryPassword } from './password-policy.js';
+import { hashPassword, passwordProblem, temporaryPassword } from './password-policy.js';
 import type { UserPrincipal } from './principal.js';
 import { userRoleNames } from './sign-in.js';
 import { TokensService } from './tokens.service.js';
@@ -52,7 +52,7 @@ export class MePasswordController {
       if (problem) throw new BadRequestException(problem);
       await tx
         .update(users)
-        .set({ passwordHash: await argon2.hash(body.newPassword), passwordMustChange: false, updatedAt: new Date() })
+        .set({ passwordHash: await hashPassword(body.newPassword), passwordMustChange: false, updatedAt: new Date() })
         .where(eq(users.id, user.id));
       await audit(tx, {
         tenantId: p.tenantId,
@@ -87,7 +87,7 @@ export class PasswordResetController {
   async reset(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string): Promise<PasswordResetResponse> {
     if (id === p.userId) throw new BadRequestException('You cannot reset your own password here. Use Change password.');
     const password = temporaryPassword();
-    const hash = await argon2.hash(password);
+    const hash = await hashPassword(password);
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [user] = await tx.select({ id: users.id }).from(users).where(eq(users.id, id));
       if (!user) throw new NotFoundException('User not found');

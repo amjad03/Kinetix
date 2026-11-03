@@ -35,8 +35,12 @@ locals {
   api_environment = merge(
     local.rds_ca_env,
     {
-      NODE_ENV          = "production"
-      PORT              = "4000"
+      NODE_ENV = "production"
+      # prod: the API refuses to start with test-only settings (services/api/src/config/env.ts productionProblems).
+      DEPLOYMENT         = var.environment == "prod" ? "production" : "staging"
+      CORS_ORIGINS       = "https://${var.erp_domain}"
+      MFA_ENFORCED_ROLES = "tenant_admin,principal,accountant,hr_manager,exam_controller"
+      PORT               = "4000"
       DEFAULT_TIMEZONE  = "Asia/Kolkata"
       LOG_FORMAT        = "json"
       TRUST_PROXY       = "1" # the ALB

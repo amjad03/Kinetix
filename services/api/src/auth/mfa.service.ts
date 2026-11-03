@@ -45,13 +45,17 @@ export class MfaService {
   ) {
     // Without a configured secrets key (development) the box is keyed from the JWT secret.
     this.box = SecretBox.fromEnv(env) ?? new SecretBox({ 1: createHash('sha256').update(`zynetix-mfa:${env.JWT_SECRET}`).digest() }, 1);
+    this.enforced = env.MFA_ENFORCED_ROLES;
   }
+
+  private readonly enforced: string[];
 
   private aad = (tenantId: string, userId: string) => `${tenantId}:mfa.${userId}`;
 
   async requiredRoles(tx: Tx, tenantId: string): Promise<string[]> {
     const [p] = await tx.select().from(tenantSecurityPolicies).where(eq(tenantSecurityPolicies.tenantId, tenantId));
-    return p?.mfaRequiredRoles ?? [];
+    // The platform's floor (MFA_ENFORCED_ROLES, admins in production) applies whatever the institution chose.
+    return [...new Set([...(p?.mfaRequiredRoles ?? []), ...this.enforced])];
   }
 
   async isRequired(tx: Tx, tenantId: string, roles: RoleName[]): Promise<boolean> {

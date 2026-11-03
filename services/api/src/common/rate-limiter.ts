@@ -15,6 +15,8 @@ function tooMany(retryAfterMs: number): HttpException {
  */
 export abstract class RateLimiter {
   abstract hit(key: string, limit: number, windowMs: number): Promise<void>;
+  /** Throws 429 when `key` already has `limit` or more hits in its window, without counting one (account lockout). */
+  abstract blocked(key: string, limit: number): Promise<void>;
 }
 
 export class MemoryRateLimiter extends RateLimiter {
@@ -35,6 +37,12 @@ export class MemoryRateLimiter extends RateLimiter {
     }
     w.count++;
     if (w.count > limit) throw tooMany(w.resetAt - now);
+  }
+
+  async blocked(key: string, limit: number): Promise<void> {
+    const now = this.now();
+    const w = this.windows.get(key);
+    if (w && w.resetAt > now && w.count >= limit) throw tooMany(w.resetAt - now);
   }
 
   /** Drops expired windows now and then, so keys from long ago do not pile up. */
@@ -83,4 +91,19 @@ export class RedisRateLimiter extends RateLimiter {
     }
     if (Number(result[0]) > limit) throw tooMany(Number(result[1]));
   }
+
+  async blocked(key: string, limit: number): Promise<void> {
+    let result: [number, number];
+    try {
+      result = (await this.redis.eval(PEEK_SCRIPT, 1, this.prefix + key)) as [number, number];
+    } catch {
+      return this.fallback.blocked(key, limit);
+    }
+    if (Number(result[0]) >= limit) throw tooMany(Number(result[1]));
+  }
 }
+
+/** The count and ms left of a window, without counting a hit. */
+const PEEK_SCRIPT = `
+local n = tonumber(redis.call('GET', KEYS[1]) or '0')
+return {n, redis.call('PTTL', KEYS[1])}`;

@@ -3,7 +3,7 @@
  * Usage: pnpm db:seed:soundarya   (run after the migrations; safe to run again: it replaces this tenant only)
  * Every module has data. Logins are written to docs/demo/SOUNDARYA_DEMO_LOGINS.md.
  */
-import argon2 from 'argon2';
+import { hashPassword } from '../auth/password-policy.js';
 import pg from 'pg';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -54,7 +54,7 @@ async function main() {
   }
   const t0 = Date.now();
   await wipe();
-  const hash = await argon2.hash(PASSWORD);
+  const hash = await hashPassword(PASSWORD);
   const ctx = await buildCore(makeKit(pool, ''), hash);
   if (PROFILE === 'school') aliasCollegeProgrammes(ctx);
   console.log(`Core: ${ctx.sections.length} classes, ${ctx.students.length} students, ${ctx.staff.length} staff (${Math.round((Date.now() - t0) / 1000)}s)`);
