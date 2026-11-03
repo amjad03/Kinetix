@@ -404,6 +404,33 @@ describe('payment gateways: Razorpay, PayU, Cashfree, Easebuzz and CCAvenue in s
     expect((await payment(stale.paymentId)).status).toBe('cancelled');
   });
 
+  it('opens any checkout in a browser from a short-lived launch link, and takes the gateway back through the return page', async () => {
+    // The default is CCAvenue (a hosted POST): the launch page auto-submits the encrypted request.
+    const co = await checkout(await feeA('Launched fee'));
+    expect(String(co.launchUrl).startsWith(`https://api.zynetix.test/v1/public/checkout/${t.slug}/${co.paymentId}?t=`)).toBe(true);
+    const pageOk = await http().get(co.launchPath).expect(200);
+    expect(pageOk.headers['content-type']).toContain('text/html');
+    expect(pageOk.text).toContain('name="encRequest"');
+    expect(pageOk.text).toContain('₹15,000.00');
+    const [path, q] = String(co.launchPath).split('?t=');
+    expect((await http().get(`${path}?t=${q.slice(0, -2)}xx`).expect(200)).text).toContain('expired');
+    expect((await http().get(`/v1/public/checkout/${other.slug}/${co.paymentId}?t=${q}`).expect(200)).text).toContain('expired');
+    // Razorpay's web checkout posts back its signature: checked with the trust's key secret.
+    const [trust] = await db.select().from(feeAccounts).where(eq(feeAccounts.code, 'SET'));
+    const inv = await feeA('Trust building fund');
+    await db.update(s.feeInvoices).set({ feeAccountId: trust.id }).where(eq(s.feeInvoices.id, inv));
+    const rz = await checkout(inv);
+    expect((await http().get(rz.launchPath).expect(200)).text).toContain('checkout.razorpay.com');
+    const sig = (pay: string) => createHmac('sha256', CRED.razorpay.keySecret).update(`${rz.orderId}|${pay}`).digest('hex');
+    expect((await http().post(`/v1/fees/gateway-return/razorpay/${t.slug}`).type('form').send(form({ razorpay_order_id: rz.orderId, razorpay_payment_id: 'pay_WEB0001', razorpay_signature: 'f'.repeat(64) })).expect(200)).text).toContain('not completed');
+    expect((await http().post(`/v1/fees/gateway-return/razorpay/${t.slug}`).type('form').send(form({ razorpay_order_id: rz.orderId, razorpay_payment_id: 'pay_WEB0001', razorpay_signature: sig('pay_WEB0001') })).expect(200)).text).toContain('Thank you');
+    expect((await payment(rz.paymentId)).status).toBe('paid');
+    // The family downloads the receipt as a PDF; another family cannot.
+    const pdf = await http().get(`/v1/fee-collect/family/payments/${rz.paymentId}/receipt.pdf`).set(as('parent')).buffer(true).expect(200);
+    expect(pdf.headers['content-type']).toBe('application/pdf');
+    await http().get(`/v1/fee-collect/family/payments/${rz.paymentId}/receipt.pdf`).set(as('parent2')).expect(404);
+  });
+
   it('the sandbox answers prove the requests: wrong credentials fail the connection test', async () => {
     await save({ provider: 'cashfree', mode: 'test', keyId: CRED.cashfree.keyId, keySecret: 'cfsk_ma_test_WRONG_0001' }).expect(200);
     expect((await http().post('/v1/admin/payments/gateways/default/test').set(as('principal')).expect(200)).body).toMatchObject({ ok: false, error: 'AUTHENTICATION_FAILED' });

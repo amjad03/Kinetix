@@ -134,10 +134,10 @@ export function GatewayAccounts({ accounts, feeAccounts, apiUrl, serverMode }: {
             <SelectInput label={t('ff.gw.for')} value={scope} onChange={(e) => pick(e.target.value)} options={scopeOptions} />
             <SelectInput label={t('ff.gw.provider')} value={provider} onChange={(e) => setProvider(e.target.value as Gateway)} options={GATEWAYS.map((g) => ({ value: g, label: t(`fd.st.${g}` as MessageKey) }))} />
             {f.mode ? <SelectInput label={t('ff.gw.mode')} value={mode} onChange={(e) => setMode(e.target.value as 'test' | 'live')} options={[{ value: 'test', label: t('fd.st.test') }, { value: 'live', label: t('fd.st.live') }]} /> : null}
-            <TextInput label={t(f.keyId as MessageKey)} value={keyId} onChange={(e) => setKeyId(e.target.value)} error={err(['keyId'])} autoComplete="off" />
-            <TextInput label={t(f.secret as MessageKey)} type="password" value={keySecret} onChange={(e) => setKeySecret(e.target.value)} error={err(['secretRequired', 'secretShort'])} helperText={saved ? t('ff.gw.secretKept', { last4: saved.keySecretLast4 }) : t('ff.gw.secretNew')} autoComplete="new-password" />
-            {f.webhook ? <TextInput label={t('ff.gw.webhookSecret')} type="password" value={webhookSecret} onChange={(e) => setWebhookSecret(e.target.value)} error={err(['webhookRequired'])} autoComplete="new-password" /> : null}
-            {f.access ? <TextInput label={t(f.access === 'code' ? 'ff.gw.accessCode' : 'ff.gw.merchantEmail')} value={accessCode} onChange={(e) => setAccessCode(e.target.value)} error={err(['accessRequired'])} autoComplete="off" /> : null}
+            <TextInput label={t(f.keyId as MessageKey)} value={keyId} onChange={(e) => setKeyId(e.target.value)} error={!!err(['keyId'])} helperText={err(['keyId'])} autoComplete="off" />
+            <TextInput label={t(f.secret as MessageKey)} type="password" value={keySecret} onChange={(e) => setKeySecret(e.target.value)} error={!!err(['secretRequired', 'secretShort'])} helperText={err(['secretRequired', 'secretShort']) ?? (saved ? t('ff.gw.secretKept', { last4: saved.keySecretLast4 }) : t('ff.gw.secretNew'))} autoComplete="new-password" />
+            {f.webhook ? <TextInput label={t('ff.gw.webhookSecret')} type="password" value={webhookSecret} onChange={(e) => setWebhookSecret(e.target.value)} error={!!err(['webhookRequired'])} helperText={err(['webhookRequired'])} autoComplete="new-password" /> : null}
+            {f.access ? <TextInput label={t(f.access === 'code' ? 'ff.gw.accessCode' : 'ff.gw.merchantEmail')} value={accessCode} onChange={(e) => setAccessCode(e.target.value)} error={!!err(['accessRequired'])} helperText={err(['accessRequired'])} autoComplete="off" /> : null}
           </FormGrid>
           <p className="m-0 text-sm text-muted-foreground">{t(`ff.gw.help.${provider}` as MessageKey)}</p>
           <div>

@@ -1466,6 +1466,8 @@ export const feePayments = pgTable(
     linkId: uuid('link_id'),
     /** A card or UPI payment taken on a POS terminal at the counter: the terminal (the approval code is the reference). */
     posTerminal: text('pos_terminal'),
+    /** What the gateway's checkout needs (hosted form or SDK session), for the launch page the apps open in a browser. */
+    checkout: jsonb('checkout').$type<Record<string, unknown> | null>(),
   },
   (t) => [
     uniqueIndex('fee_payments_order_uq').on(t.providerOrderId),

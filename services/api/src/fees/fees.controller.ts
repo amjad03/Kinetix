@@ -407,11 +407,28 @@ export class FeesController {
   async gatewayReturn(@Param('provider') provider: string, @Param('tenantSlug') slug: string, @Req() req: RawBodyRequest<Request>, @Res({ passthrough: true }) res: Response) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
-    if (!['payu', 'easebuzz', 'ccavenue'].includes(provider)) return RETURN_PAGE(false);
+    if (!['payu', 'easebuzz', 'ccavenue', 'razorpay'].includes(provider)) return RETURN_PAGE(false);
     const tenant = /^[a-z0-9-]{1,64}$/.test(slug) ? await this.lookups.tenantBySlug(slug) : undefined;
     if (!tenant || !req.rawBody) return RETURN_PAGE(false);
+    // Razorpay's web checkout posts the payment id, order id and signature (HMAC of order|payment with the key secret).
+    if (provider === 'razorpay') {
+      const f = Object.fromEntries(new URLSearchParams(req.rawBody.toString('utf8'))) as Record<string, string>;
+      if (!f.razorpay_order_id || !f.razorpay_payment_id || !f.razorpay_signature) return RETURN_PAGE(false);
+      return RETURN_PAGE(await this.flow.confirmByOrder(tenant.id, f.razorpay_order_id.slice(0, 100), f.razorpay_payment_id.slice(0, 100), f.razorpay_signature.slice(0, 200)));
+    }
     const r = await this.flow.webhook(tenant.id, provider, req.rawBody, {});
     return RETURN_PAGE(r.ok && ['credited', 'already_paid', 'duplicate'].includes(r.outcome));
+  }
+
+  /** Cashfree sends the browser back with only the order id: the gateway is asked (with the account's keys) and the page says how it went. */
+  @Get('gateway-return/cashfree/:tenantSlug')
+  async cashfreeReturn(@Param('tenantSlug') slug: string, @Query('order_id') orderId: string | undefined, @Res({ passthrough: true }) res: Response) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    const tenant = /^[a-z0-9-]{1,64}$/.test(slug) ? await this.lookups.tenantBySlug(slug) : undefined;
+    const pay = tenant && orderId && /^[A-Za-z0-9_-]{1,64}$/.test(orderId) ? await this.flow.paymentOfOrder(tenant.id, orderId) : null;
+    if (!tenant || !pay) return RETURN_PAGE(false);
+    return RETURN_PAGE((await this.flow.refresh(tenant.id, pay)).status === 'paid');
   }
 
   private paymentEntity(req: Request) {

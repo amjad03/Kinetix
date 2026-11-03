@@ -1,4 +1,6 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException, OnModuleInit, ServiceUnavailableException } from '@nestjs/common';
+import { createHmac } from 'node:crypto';
+import { safeEqual } from './payment-provider.js';
 import { and, asc, eq, gte, inArray, lt, sql } from 'drizzle-orm';
 import { ENV, type Env } from '../config/env.js';
 import { localParts } from '../common/time.js';
@@ -39,6 +41,7 @@ export function allowedAmount(o: { balancePaise: number; dueNowPaise: number | n
 export class GatewayFlow implements OnModuleInit {
   private readonly log = new Logger(GatewayFlow.name);
   private readonly publicUrl: string | undefined;
+  private readonly launchSecret: string;
 
   constructor(
     private readonly db: DbService,
@@ -48,6 +51,19 @@ export class GatewayFlow implements OnModuleInit {
     @Inject(ENV) env: Env,
   ) {
     this.publicUrl = env.API_PUBLIC_URL?.replace(/\/+$/, '');
+    this.launchSecret = `launch:${env.JWT_SECRET}`;
+  }
+
+  /** A short-lived token that lets a browser open the checkout of one payment (the apps hand it the launch URL). */
+  launchToken(tenantId: string, paymentId: string, ttlMinutes = 30): string {
+    const exp = Math.floor(Date.now() / 1000) + ttlMinutes * 60;
+    return `${exp}.${createHmac('sha256', this.launchSecret).update(`${tenantId}:${paymentId}:${exp}`).digest('base64url')}`;
+  }
+
+  launchTokenOk(tenantId: string, paymentId: string, token: string): boolean {
+    const [exp, sig] = token.split('.');
+    if (!exp || !sig || !/^\d{9,11}$/.test(exp) || Number(exp) < Date.now() / 1000) return false;
+    return safeEqual(createHmac('sha256', this.launchSecret).update(`${tenantId}:${paymentId}:${exp}`).digest('base64url'), sig);
   }
 
   onModuleInit(): void {
@@ -87,7 +103,7 @@ export class GatewayFlow implements OnModuleInit {
     });
     const notifyUrl = this.publicUrl ? `${this.publicUrl}/v1/fees/webhooks/${prep.provider.name}/${prep.tenant?.slug ?? ''}` : undefined;
     // Hosted pages send the payer back to the API, which checks the post and asks them to return to the app.
-    const returnUrl = o.returnUrl ?? (this.publicUrl && ['payu', 'easebuzz', 'ccavenue'].includes(prep.provider.name) ? `${this.publicUrl}/v1/fees/gateway-return/${prep.provider.name}/${prep.tenant?.slug ?? ''}` : undefined);
+    const returnUrl = o.returnUrl ?? (this.publicUrl && ['payu', 'easebuzz', 'ccavenue', 'cashfree'].includes(prep.provider.name) ? `${this.publicUrl}/v1/fees/gateway-return/${prep.provider.name}/${prep.tenant?.slug ?? ''}` : undefined);
     let order;
     try {
       order = await prep.provider.createOrder({ amountPaise: prep.amountPaise + prep.conveniencePaise, receipt: `inv_${invoiceId.slice(0, 8)}`, notes: { invoiceId, tenantId, studentId: prep.inv.studentId }, payer: prep.payer, returnUrl, notifyUrl });
@@ -98,8 +114,9 @@ export class GatewayFlow implements OnModuleInit {
     return this.db.withTenant(tenantId, async (tx) => {
       const [pay] = await tx
         .insert(feePayments)
-        .values({ tenantId, invoiceId, studentId: prep.inv.studentId, amountPaise: prep.amountPaise, conveniencePaise: prep.conveniencePaise, method: 'online', status: 'created', provider: prep.provider.name, providerOrderId: order.orderId, payerUserId, gatewayAccountId: prep.accountId, linkId: o.linkId ?? null })
+        .values({ tenantId, invoiceId, studentId: prep.inv.studentId, amountPaise: prep.amountPaise, conveniencePaise: prep.conveniencePaise, method: 'online', status: 'created', provider: prep.provider.name, providerOrderId: order.orderId, payerUserId, gatewayAccountId: prep.accountId, linkId: o.linkId ?? null, checkout: { hosted: order.hosted ?? null, session: order.session ?? null, keyId: prep.provider.keyId, name: prep.tenant?.name ?? '', description: prep.inv.title, prefill: { name: prep.payer.name, email: prep.payer.email, contact: prep.payer.phone } } })
         .returning();
+      const launchPath = `/v1/public/checkout/${prep.tenant?.slug ?? ''}/${pay.id}?t=${this.launchToken(tenantId, pay.id)}`;
       return {
         paymentId: pay.id,
         provider: prep.provider.name,
@@ -117,6 +134,9 @@ export class GatewayFlow implements OnModuleInit {
         name: prep.tenant?.name ?? 'ZYNETIX',
         description: prep.inv.title,
         prefill: { name: prep.payer.name, email: prep.payer.email, contact: prep.payer.phone },
+        /** A page that opens this checkout in any browser (the apps use it for gateways without an in-app SDK). */
+        launchPath,
+        launchUrl: this.publicUrl ? `${this.publicUrl}${launchPath}` : null,
       };
     });
   }
@@ -230,6 +250,34 @@ export class GatewayFlow implements OnModuleInit {
     const paid = await this.fees.markPaid(tx, pay.id, { providerPaymentId: e.providerPaymentId });
     await this.linkPaid(tx, paid);
     return { outcome: 'credited', paymentId: pay.id };
+  }
+
+  /** The API's public address when configured (for return and webhook URLs). */
+  get publicBase(): string | undefined {
+    return this.publicUrl;
+  }
+
+  /**
+   * A browser checkout came back with the gateway's signed answer (Razorpay's callback: payment id and signature):
+   * checked with the key of the account the order was made with, then credited.
+   */
+  async confirmByOrder(tenantId: string, orderId: string, providerPaymentId: string, signature: string, fields?: Record<string, string>): Promise<boolean> {
+    return this.db.withTenant(tenantId, async (tx) => {
+      const [pay] = await tx.select().from(feePayments).where(eq(feePayments.providerOrderId, orderId)).for('update');
+      if (!pay || pay.method !== 'online') return false;
+      if (pay.status === 'paid') return true;
+      const provider = await this.gateway.forAccountId(tx, pay.gatewayAccountId);
+      if (!provider || !provider.verifyPayment(orderId, providerPaymentId, signature, fields)) return false;
+      const paid = await this.fees.markPaid(tx, pay.id, { providerPaymentId });
+      await this.linkPaid(tx, paid);
+      return true;
+    });
+  }
+
+  /** The payment of an order (a return page that names only the order: Cashfree's return URL). */
+  async paymentOfOrder(tenantId: string, orderId: string): Promise<string | null> {
+    const [p] = await this.db.withTenant(tenantId, (tx) => tx.select({ id: feePayments.id }).from(feePayments).where(eq(feePayments.providerOrderId, orderId)));
+    return p?.id ?? null;
   }
 
   /** A payment made through a payment link closes the link. */

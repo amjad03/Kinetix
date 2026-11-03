@@ -18,7 +18,7 @@ import { assertPeriodOpen, approverIds, deskTexts, nextNumber, settingsOf } from
 import { fyOf } from '../fee-accounts/fee-accounts.logic.js';
 import { parseChallanCsv, rupeesInWords } from '../fees/fee-depth.logic.js';
 import { lineState, raiseInvoice, reduceCharge } from '../fees/fee-lines.js';
-import { FEE_ROLES } from '../fees/fees.service.js';
+import { FEE_ROLES, FeesService } from '../fees/fees.service.js';
 import { receiptInvoices, reverseReceipt } from '../fees/receipts.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { CollectionService } from './collection.service.js';
@@ -61,6 +61,7 @@ export class CollectionController {
     private readonly duesSvc: DuesService,
     private readonly notifications: NotificationsService,
     private readonly engine: DocumentEngine,
+    private readonly fees: FeesService,
   ) {}
 
   private async ask(tx: Tx, role: string, what: string, number: string, id: string, except: string) {
@@ -148,9 +149,30 @@ export class CollectionController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [r] = await tx.update(feeReceipts).set({ printCount: sql`${feeReceipts.printCount} + 1`, lastPrintedAt: new Date() }).where(eq(feeReceipts.id, id)).returning();
       if (!r) throw new NotFoundException('Receipt not found');
+      return this.renderPdf(tx, p, id, r.printCount > 1, res);
+    });
+  }
+
+  /**
+   * The family's copy of a receipt (Parent and Student apps): the receipt of one of their payments as the same PDF,
+   * without counting as the office's duplicate print.
+   */
+  @Get('family/payments/:paymentId/receipt.pdf')
+  @Auth('user')
+  familyPdf(@CurrentPrincipal() p: UserPrincipal, @Param('paymentId', ParseUUIDPipe) paymentId: string, @Res({ passthrough: true }) res: Response) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [pay] = await tx.select({ studentId: feePayments.studentId, receiptId: feePayments.receiptId, status: feePayments.status }).from(feePayments).where(eq(feePayments.id, paymentId));
+      if (!pay) throw new NotFoundException('Receipt not found');
+      await this.fees.assertCanSee(tx, p, pay.studentId);
+      if (!pay.receiptId) throw new NotFoundException('Receipt not found');
+      return this.renderPdf(tx, p, pay.receiptId, false, res);
+    });
+  }
+
+  private async renderPdf(tx: Tx, p: UserPrincipal, id: string, duplicate: boolean, res: Response) {
+    {
       const v = await this.collection.view(tx, id);
-      const duplicate = r.printCount > 1;
-      if (duplicate) await auditUser(tx, p, 'fee_receipt.duplicate_printed', 'fee_receipt', id, { copy: r.printCount });
+      if (duplicate) await auditUser(tx, p, 'fee_receipt.duplicate_printed', 'fee_receipt', id, { copy: v.printCount });
       const towards = v.items.map((i) => `${i.head} ₹${(i.amountPaise / 100).toLocaleString('en-IN')}`).join('; ') + (v.advancePaise ? `; Advance ₹${(v.advancePaise / 100).toLocaleString('en-IN')}` : '');
       const watermark = v.status === 'cancelled' ? 'CANCELLED' : v.status === 'bounced' ? 'CHEQUE RETURNED' : duplicate ? 'DUPLICATE' : undefined;
       const paidOn = longDate(v.date);
@@ -185,7 +207,7 @@ export class CollectionController {
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `inline; filename="${v.receiptNo.replace(/\//g, '-')}${duplicate ? '-duplicate' : ''}.pdf"`);
       return new StreamableFile(out.pdf);
-    });
+    }
   }
 
   /** Asks to cancel a receipt (wrong student, wrong amount); the receipt-cancel chain decides. Nothing is deleted. */

@@ -40,6 +40,8 @@ ALTER TABLE "fee_payments" ADD COLUMN IF NOT EXISTS "status_checked_at" timestam
 ALTER TABLE "fee_payments" ADD COLUMN IF NOT EXISTS "status_checks" integer NOT NULL DEFAULT 0;--> statement-breakpoint
 ALTER TABLE "fee_payments" ADD COLUMN IF NOT EXISTS "link_id" uuid;--> statement-breakpoint
 ALTER TABLE "fee_payments" ADD COLUMN IF NOT EXISTS "pos_terminal" text;--> statement-breakpoint
+-- What the gateway's checkout needs (hosted form fields or SDK session), for the browser launch page the apps open.
+ALTER TABLE "fee_payments" ADD COLUMN IF NOT EXISTS "checkout" jsonb;--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "fee_payments_pending_idx" ON "fee_payments" ("tenant_id", "status", "created_at") WHERE status = 'created' AND method = 'online';--> statement-breakpoint
 
 -- Gateway credentials: one row per institution (fee_account_id null: the default) or per fee account.

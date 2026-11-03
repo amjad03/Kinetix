@@ -16,6 +16,7 @@ import { PaymentsAdminController } from './payments-admin.controller.js';
 import { GatewayAccountsController } from './gateway-accounts.controller.js';
 import { GatewayFlow } from './gateway-flow.service.js';
 import { PaymentLinksController } from './payment-links.controller.js';
+import { CheckoutLaunchController } from './checkout-launch.controller.js';
 
 @Module({
   imports: [NotificationsModule],
@@ -29,7 +30,7 @@ import { PaymentLinksController } from './payment-links.controller.js';
     { provide: RazorpayApi, inject: [ENV], useFactory: (env: Env) => (env.RAZORPAY_FAKE ? new FakeRazorpayApi() : new HttpRazorpayApi(env.PAYMENT_GATEWAY_TEST_BASE ? `${env.PAYMENT_GATEWAY_TEST_BASE.replace(/\/+$/, '')}/razorpay` : undefined)) },
     { provide: PayuApi, inject: [ENV], useFactory: (env: Env) => (env.PAYU_FAKE ? new FakePayuApi() : new HttpPayuApi(env.PAYU_MODE)) },
   ],
-  controllers: [FeesController, FeesDepthController, PaymentsAdminController, PaymentsGatewayController, GatewayAccountsController, PaymentLinksController, SettlementsController, BankTransfersController, SponsorBillingController],
+  controllers: [FeesController, FeesDepthController, PaymentsAdminController, PaymentsGatewayController, GatewayAccountsController, PaymentLinksController, CheckoutLaunchController, SettlementsController, BankTransfersController, SponsorBillingController],
   exports: [FeesService, PaymentGateway, GatewayFlow, ApplicationFeesService, WalletTopupService],
 })
 export class FeesModule {}
