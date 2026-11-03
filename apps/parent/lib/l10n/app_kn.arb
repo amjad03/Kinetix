@@ -1098,5 +1098,12 @@
   "examAppFeeWaived": "ಶುಲ್ಕ ಮನ್ನಾ",
   "examAppInvoice": "ಬಿಲ್ {no}",
   "examAppRegistered": "ನೋಂದಾಯಿತ",
-  "examAppIneligible": "ಅರ್ಹರಲ್ಲ"
+  "examAppIneligible": "ಅರ್ಹರಲ್ಲ",
+  "payInBrowserTitle": "ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಪಾವತಿ ಪೂರ್ಣಗೊಳಿಸಿ",
+  "payInBrowserBody": "ಪಾವತಿ ಪುಟ ತೆರೆದಿದೆ. ಪಾವತಿಸಿದ ನಂತರ ಇಲ್ಲಿಗೆ ಮರಳಿ ಪರಿಶೀಲಿಸಿ.",
+  "checkPayment": "ನಾನು ಪಾವತಿಸಿದ್ದೇನೆ: ಪರಿಶೀಲಿಸಿ",
+  "paymentPending": "ಇನ್ನೂ ದೃಢಪಟ್ಟಿಲ್ಲ. ನೀವು ಪಾವತಿಸಿದ್ದರೆ ಕೆಲವು ನಿಮಿಷಗಳಲ್ಲಿ ಇಲ್ಲಿ ಕಾಣುತ್ತದೆ.",
+  "payDueNow": "ಕಂತು {amount}",
+  "atLeastPart": "ಒಮ್ಮೆಗೆ ಕನಿಷ್ಠ {amount} ಪಾವತಿಸಿ",
+  "downloadReceipt": "ರಸೀದಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ (PDF)"
 }

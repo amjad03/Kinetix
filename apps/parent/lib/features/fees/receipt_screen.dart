@@ -7,16 +7,20 @@ import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import '../../core/files.dart';
 import 'payment_gateway.dart';
 
 /// A numbered fee receipt: after paying, from the payment history, or from a "Payment received"
 /// update. The receipt itself is a light, paper-like card in both themes so it prints and reads
 /// like the office's own.
 class ReceiptScreen extends StatefulWidget {
-  const ReceiptScreen({super.key, required this.api, required this.paymentId, this.receipt, this.justPaid = false});
+  const ReceiptScreen({super.key, required this.api, required this.paymentId, this.receipt, this.justPaid = false, this.openFile = openWithSystem});
 
   final ParentApi api;
   final String paymentId;
+
+  /// Opens the downloaded PDF (tests replace it).
+  final OpenFile openFile;
 
   /// Already loaded (straight after paying); otherwise fetched.
   final FeeReceipt? receipt;
@@ -72,6 +76,19 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
       if (mounted) setState(() => _receipt = r);
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e);
+    }
+  }
+
+  /// The receipt as the office prints it (PDF), opened in the phone's viewer.
+  Future<void> _pdf(FeeReceipt r) async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final bytes = await widget.api.receiptPdf(widget.paymentId);
+      final ok = await widget.openFile(bytes, 'receipt-${r.receiptNo.replaceAll('/', '-')}.pdf', 'application/pdf');
+      if (!ok) messenger.showSnackBar(SnackBar(content: Text(l.fileOpenFailed)));
+    } on ApiException catch (e) {
+      if (mounted) messenger.showSnackBar(SnackBar(content: Text(describeError(l, e))));
     }
   }
 
@@ -146,6 +163,16 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                   label: Text(l.copyReceipt),
                   style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(Kx.target)),
                 ),
+                if (!ReceiptScreen.isDemo(r)) ...[
+                  const SizedBox(height: Kx.s8),
+                  OutlinedButton.icon(
+                    key: const Key('receiptPdf'),
+                    onPressed: () => _pdf(r),
+                    icon: const Icon(Icons.picture_as_pdf_outlined),
+                    label: Text(l.downloadReceipt),
+                    style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(Kx.target)),
+                  ),
+                ],
                 if (widget.justPaid) ...[
                   const SizedBox(height: Kx.s8),
                   FilledButton(

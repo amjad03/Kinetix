@@ -70,6 +70,25 @@ export class GatewayFlow implements OnModuleInit {
     this.jobs.registerHourly(POLL_JOB, (job: Job) => this.pollPending(job.tenantId).then(() => undefined));
   }
 
+  /** What is due now on each of these invoices that is on instalments (the instalments due by today, else the next one). */
+  async dueNowOf(tx: Tx, invs: { id: string; paidPaise: number }[]): Promise<Map<string, number>> {
+    const out = new Map<string, number>();
+    if (!invs.length) return out;
+    const [t] = await tx.select({ tz: tenants.timezone }).from(tenants);
+    const today = localParts(new Date(), t?.tz ?? 'Asia/Kolkata').date;
+    const inst = await tx.select().from(feeInstalments).where(inArray(feeInstalments.invoiceId, invs.map((i) => i.id))).orderBy(asc(feeInstalments.seq));
+    for (const inv of invs) {
+      const mine = inst.filter((x) => x.invoiceId === inv.id);
+      if (!mine.length) continue;
+      const schedule = allocatePaid(mine.map((x) => ({ seq: x.seq, dueOn: x.dueOn, amountPaise: x.amountPaise })), inv.paidPaise, today);
+      const now = schedule.filter((x) => x.dueOn <= today && x.status !== 'paid').reduce((s, x) => s + x.amountPaise - x.paidPaise, 0);
+      const next = schedule.find((x) => x.status !== 'paid');
+      const v = now > 0 ? now : next ? next.amountPaise - next.paidPaise : 0;
+      if (v > 0) out.set(inv.id, v);
+    }
+    return out;
+  }
+
   /** The invoice's balance and what is due now on its instalments. */
   async payable(tx: Tx, invoiceId: string) {
     const [inv] = await tx.select().from(feeInvoices).where(eq(feeInvoices.id, invoiceId));

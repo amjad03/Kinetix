@@ -3484,4 +3484,29 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get examAppIneligible => 'ಅರ್ಹರಲ್ಲ';
+
+  @override
+  String get payInBrowserTitle => 'ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಪಾವತಿ ಪೂರ್ಣಗೊಳಿಸಿ';
+
+  @override
+  String get payInBrowserBody => 'ಪಾವತಿ ಪುಟ ತೆರೆದಿದೆ. ಪಾವತಿಸಿದ ನಂತರ ಇಲ್ಲಿಗೆ ಮರಳಿ ಪರಿಶೀಲಿಸಿ.';
+
+  @override
+  String get checkPayment => 'ನಾನು ಪಾವತಿಸಿದ್ದೇನೆ: ಪರಿಶೀಲಿಸಿ';
+
+  @override
+  String get paymentPending => 'ಇನ್ನೂ ದೃಢಪಟ್ಟಿಲ್ಲ. ನೀವು ಪಾವತಿಸಿದ್ದರೆ ಕೆಲವು ನಿಮಿಷಗಳಲ್ಲಿ ಇಲ್ಲಿ ಕಾಣುತ್ತದೆ.';
+
+  @override
+  String payDueNow(Object amount) {
+    return 'ಕಂತು $amount';
+  }
+
+  @override
+  String atLeastPart(Object amount) {
+    return 'ಒಮ್ಮೆಗೆ ಕನಿಷ್ಠ $amount ಪಾವತಿಸಿ';
+  }
+
+  @override
+  String get downloadReceipt => 'ರಸೀದಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ (PDF)';
 }

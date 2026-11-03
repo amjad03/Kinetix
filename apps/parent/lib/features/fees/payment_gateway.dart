@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/format.dart';
@@ -59,6 +60,35 @@ class PaymentInWallet extends PaymentResult {
   final String? walletName;
 }
 
+/// The checkout opened in the browser (PayU, Cashfree, Easebuzz, CCAvenue, or Razorpay where its SDK is not
+/// available). The server learns the outcome from the gateway; the app asks it when the parent comes back.
+class PaymentInBrowser extends PaymentResult {
+  const PaymentInBrowser();
+}
+
+/// Opens [url] outside the app (the system browser). Tests replace it.
+typedef UrlOpener = Future<bool> Function(Uri url);
+
+Future<bool> _openExternally(Uri url) => launchUrl(url, mode: LaunchMode.externalApplication);
+
+/// The gateway's own checkout page, opened from the server's short-lived launch link.
+class BrowserGateway implements PaymentGateway {
+  BrowserGateway({UrlOpener? open}) : _open = open ?? _openExternally;
+
+  final UrlOpener _open;
+
+  /// Tests replace how the browser is opened.
+  static UrlOpener? debugOpener;
+
+  @override
+  Future<PaymentResult> pay(BuildContext context, FeeCheckout checkout) async {
+    final url = checkout.launchUrl;
+    if (url == null) return const PaymentFailed('This payment cannot be opened on this device.', reason: PaymentFailure.couldNotOpen);
+    final ok = await (debugOpener ?? _open)(Uri.parse(url));
+    return ok ? const PaymentInBrowser() : const PaymentFailed('The payment page could not be opened.', reason: PaymentFailure.couldNotOpen);
+  }
+}
+
 /// An online payment gateway's checkout on the device.
 abstract class PaymentGateway {
   /// Takes the payment that [checkout] describes.
@@ -73,15 +103,18 @@ abstract class PaymentGateway {
       !kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS);
 
   /// Whether this device can pay online with what the institution has set up.
-  static bool available(OnlinePayments? mode) => switch (mode) {
+  /// [browser]: the payment can open in the browser when there is no in-app SDK (fees can; the canteen wallet cannot).
+  static bool available(OnlinePayments? mode, {bool browser = true}) => switch (mode) {
     null => false,
     OnlinePayments.demo => true,
-    OnlinePayments.razorpay => debugOverride != null || razorpaySupported,
+    // Razorpay's SDK on phones; elsewhere its web checkout in the browser.
+    OnlinePayments.razorpay => debugOverride != null || razorpaySupported || browser,
+    OnlinePayments.browser => browser,
   };
 
   /// Why the parent can't pay online here, in plain words; null when they can.
-  static String? unavailableReason(AppLocalizations l, OnlinePayments? mode) {
-    if (available(mode)) return null;
+  static String? unavailableReason(AppLocalizations l, OnlinePayments? mode, {bool browser = true}) {
+    if (available(mode, browser: browser)) return null;
     if (mode == null) return l.paymentNotSetUp;
     return l.paymentPhonesOnly;
   }
@@ -92,6 +125,7 @@ abstract class PaymentGateway {
     return switch (provider) {
       'demo' => DemoPaymentGateway(),
       'razorpay' when razorpaySupported => RazorpayGateway(),
+      'razorpay' || 'payu' || 'cashfree' || 'easebuzz' || 'ccavenue' => BrowserGateway(),
       _ => const UnavailableGateway(),
     };
   }

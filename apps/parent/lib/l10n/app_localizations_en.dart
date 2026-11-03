@@ -3465,4 +3465,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get examAppIneligible => 'Not eligible';
+
+  @override
+  String get payInBrowserTitle => 'Finish paying in the browser';
+
+  @override
+  String get payInBrowserBody => 'The payment page has opened. When you have paid, come back here and check it.';
+
+  @override
+  String get checkPayment => 'I have paid: check';
+
+  @override
+  String get paymentPending => 'Not confirmed yet. If you paid, it will show here in a few minutes.';
+
+  @override
+  String payDueNow(Object amount) {
+    return 'Instalment $amount';
+  }
+
+  @override
+  String atLeastPart(Object amount) {
+    return 'Pay at least $amount at a time';
+  }
+
+  @override
+  String get downloadReceipt => 'Download the receipt (PDF)';
 }

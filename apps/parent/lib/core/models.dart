@@ -467,6 +467,7 @@ class FeeInvoice {
     required this.paidPaise,
     required this.dueOn,
     required this.status,
+    this.dueNowPaise,
   });
 
   factory FeeInvoice.fromJson(Map<String, dynamic> j) => FeeInvoice(
@@ -476,6 +477,7 @@ class FeeInvoice {
     paidPaise: _paise(j['paidPaise'] ?? 0),
     dueOn: parseIsoDate(j['dueOn'] as String),
     status: j['status'] == 'paid' ? FeeStatus.paid : FeeStatus.due,
+    dueNowPaise: j['dueNowPaise'] == null ? null : _paise(j['dueNowPaise']),
   );
 
   final String id;
@@ -484,6 +486,9 @@ class FeeInvoice {
   final int paidPaise;
   final DateTime dueOn;
   final FeeStatus status;
+
+  /// On instalments: what is due now (the instalments due by today, or the next one); null otherwise.
+  final int? dueNowPaise;
 
   bool get isPaid => status == FeeStatus.paid;
   int get balancePaise => isPaid ? 0 : (amountPaise - paidPaise).clamp(0, amountPaise);
@@ -537,24 +542,38 @@ class FeePayment {
 }
 
 /// How the institution takes online payments.
-enum OnlinePayments { razorpay, demo }
+/// How the institution takes payments online: Razorpay (its SDK on phones), the demo, or a gateway whose checkout
+/// opens in the browser (PayU, Cashfree, Easebuzz, CCAvenue).
+enum OnlinePayments { razorpay, demo, browser }
+
+OnlinePayments? onlinePaymentsOf(Object? name) => switch (name) {
+  'razorpay' => OnlinePayments.razorpay,
+  'demo' => OnlinePayments.demo,
+  'payu' || 'cashfree' || 'easebuzz' || 'ccavenue' => OnlinePayments.browser,
+  _ => null,
+};
 
 /// A child's fees: what is due, and what has been paid.
 class StudentFees {
-  StudentFees({required this.duePaise, required this.onlinePayments, required this.invoices, required this.payments});
+  StudentFees({required this.duePaise, required this.onlinePayments, required this.invoices, required this.payments, this.allowPartial = true, this.minPartPaise = 0});
 
-  factory StudentFees.fromJson(Map<String, dynamic> j) => StudentFees(
-    duePaise: _paise(j['duePaise'] ?? 0),
-    onlinePayments: switch (j['onlinePayments']) {
-      'razorpay' => OnlinePayments.razorpay,
-      'demo' => OnlinePayments.demo,
-      _ => null,
-    },
-    invoices: [for (final i in (j['invoices'] as List? ?? const [])) FeeInvoice.fromJson(i as Map<String, dynamic>)],
-    payments: [for (final p in (j['payments'] as List? ?? const [])) FeePayment.fromJson(p as Map<String, dynamic>)],
-  );
+  factory StudentFees.fromJson(Map<String, dynamic> j) {
+    final online = (j['online'] as Map?)?.cast<String, dynamic>() ?? const {};
+    return StudentFees(
+      duePaise: _paise(j['duePaise'] ?? 0),
+      onlinePayments: onlinePaymentsOf(j['onlinePayments']),
+      invoices: [for (final i in (j['invoices'] as List? ?? const [])) FeeInvoice.fromJson(i as Map<String, dynamic>)],
+      payments: [for (final p in (j['payments'] as List? ?? const [])) FeePayment.fromJson(p as Map<String, dynamic>)],
+      allowPartial: online['allowPartial'] as bool? ?? true,
+      minPartPaise: _paise(online['minPartPaise'] ?? 0),
+    );
+  }
 
   final int duePaise;
+
+  /// Whether the institution takes part payments online, and the least part.
+  final bool allowPartial;
+  final int minPartPaise;
 
   /// Null when the institution only takes payments at the fees counter.
   final OnlinePayments? onlinePayments;
@@ -588,11 +607,15 @@ class FeeCheckout {
     this.prefillName = '',
     this.prefillEmail = '',
     this.prefillContact = '',
+    this.launchUrl,
   });
 
-  factory FeeCheckout.fromJson(Map<String, dynamic> j) {
+  /// [baseUrl] completes the launch page's address when the server gave only its path.
+  factory FeeCheckout.fromJson(Map<String, dynamic> j, {String? baseUrl}) {
     final prefill = (j['prefill'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final path = j['launchPath'] as String?;
     return FeeCheckout(
+      launchUrl: j['launchUrl'] as String? ?? (path != null && baseUrl != null ? '$baseUrl$path' : null),
       paymentId: j['paymentId'] as String,
       provider: j['provider'] as String,
       keyId: j['keyId'] as String? ?? '',
@@ -609,7 +632,10 @@ class FeeCheckout {
 
   final String paymentId;
 
-  /// 'razorpay' or 'demo'.
+  /// A page that opens this checkout in any browser (gateways without an in-app SDK).
+  final String? launchUrl;
+
+  /// 'razorpay', 'payu', 'cashfree', 'easebuzz', 'ccavenue' or 'demo'.
   final String provider;
   final String keyId;
   final String orderId;
@@ -627,6 +653,21 @@ class FeeCheckout {
 }
 
 /// A numbered receipt for one payment.
+/// What the server says about an online payment after asking the gateway (a browser checkout came back).
+class FeeRefresh {
+  FeeRefresh({required this.status, this.receipt});
+
+  factory FeeRefresh.fromJson(Map<String, dynamic> j) => FeeRefresh(
+    status: j['status'] as String? ?? 'pending',
+    receipt: j['receipt'] is Map ? FeeReceipt.fromJson((j['receipt'] as Map).cast<String, dynamic>()) : null,
+  );
+
+  /// paid, pending, failed or cancelled.
+  final String status;
+  final FeeReceipt? receipt;
+  bool get paid => status == 'paid';
+}
+
 class FeeReceipt {
   FeeReceipt({
     required this.receiptNo,

@@ -68,7 +68,7 @@ class _FeesScreenState extends State<FeesScreen> {
 
   /// Amount → checkout → the gateway → confirm with the server → receipt.
   Future<void> _pay(FeeInvoice invoice, StudentFees fees) async {
-    final amount = await PaySheet.show(context, invoice: invoice, demo: fees.onlinePayments == OnlinePayments.demo);
+    final amount = await PaySheet.show(context, invoice: invoice, demo: fees.onlinePayments == OnlinePayments.demo, allowPartial: fees.allowPartial, minPartPaise: fees.minPartPaise);
     if (amount == null || !mounted) return;
     final l = context.l10n;
     var confirming = false;
@@ -86,6 +86,11 @@ class _FeesScreenState extends State<FeesScreen> {
             ..showSnackBar(SnackBar(content: Text(l.paymentCancelled)));
         case PaymentFailed failed:
           await _problem(l.paymentFailedTitle, failed.describe(l));
+        case PaymentInBrowser():
+          final done = await BrowserWaitSheet.show(context, api: api, paymentId: checkout.paymentId);
+          if (!mounted) return;
+          await _load();
+          if (done != null && mounted) await ReceiptScreen.open(context, api, paymentId: checkout.paymentId, receipt: done, justPaid: true);
         case PaymentInWallet(:final walletName):
           final wallet = walletName ?? l.yourWalletApp;
           await _problem(l.finishInWallet(wallet), l.walletBody(wallet));
@@ -394,27 +399,119 @@ class InvoiceCard extends StatelessWidget {
 }
 
 /// Full balance or a part of it, typed in rupees: at least ₹1 and no more than the balance.
-class PaySheet extends StatefulWidget {
-  const PaySheet({super.key, required this.invoice, this.demo = false});
+/// After the gateway's page opened in the browser: the parent comes back and the app asks the server whether the
+/// payment went through (it also asks by itself when the app is back in front). Pops with the receipt once paid.
+class BrowserWaitSheet extends StatefulWidget {
+  const BrowserWaitSheet({super.key, required this.api, required this.paymentId});
 
-  final FeeInvoice invoice;
-  final bool demo;
+  final ParentApi api;
+  final String paymentId;
 
-  /// The amount to pay in paise, or null when the parent backs out.
-  static Future<int?> show(BuildContext context, {required FeeInvoice invoice, bool demo = false}) => showModalBottomSheet<int>(
+  static Future<FeeReceipt?> show(BuildContext context, {required ParentApi api, required String paymentId}) => showModalBottomSheet<FeeReceipt>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
-    builder: (_) => PaySheet(invoice: invoice, demo: demo),
+    builder: (_) => BrowserWaitSheet(api: api, paymentId: paymentId),
+  );
+
+  @override
+  State<BrowserWaitSheet> createState() => _BrowserWaitSheetState();
+}
+
+class _BrowserWaitSheetState extends State<BrowserWaitSheet> with WidgetsBindingObserver {
+  bool _checking = false;
+  String? _note;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _check(quiet: true);
+  }
+
+  Future<void> _check({bool quiet = false}) async {
+    if (_checking) return;
+    final l = context.l10n;
+    setState(() => _checking = true);
+    try {
+      final r = await widget.api.refreshPayment(widget.paymentId);
+      if (!mounted) return;
+      if (r.paid) return Navigator.pop(context, r.receipt);
+      setState(() => _note = r.status == 'failed' ? l.paymentFailedTitle : (quiet ? null : l.paymentPending));
+    } on ApiException catch (e) {
+      if (mounted && !quiet) setState(() => _note = describeError(l, e));
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(Kx.s24, 0, Kx.s24, Kx.s24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l.payInBrowserTitle, style: context.text.headlineSmall),
+            const SizedBox(height: Kx.s8),
+            Text(l.payInBrowserBody, style: context.text.bodyLarge),
+            if (_note != null) ...[const SizedBox(height: Kx.s12), Text(_note!, key: const Key('browserNote'), style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant))],
+            const SizedBox(height: Kx.s24),
+            FilledButton(
+              key: const Key('checkPayment'),
+              onPressed: _checking ? null : () => _check(),
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(Kx.target)),
+              child: Text(l.checkPayment),
+            ),
+            const SizedBox(height: Kx.s8),
+            TextButton(onPressed: () => Navigator.pop(context), style: TextButton.styleFrom(minimumSize: const Size.fromHeight(Kx.target)), child: Text(l.cancel)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// How much to pay: the whole balance, the instalment due now, or (when the institution allows it) a part.
+enum PayChoice { full, instalment, part }
+
+class PaySheet extends StatefulWidget {
+  const PaySheet({super.key, required this.invoice, this.demo = false, this.allowPartial = true, this.minPartPaise = 0});
+
+  final FeeInvoice invoice;
+  final bool demo;
+  final bool allowPartial;
+  final int minPartPaise;
+
+  /// The amount to pay in paise, or null when the parent backs out.
+  static Future<int?> show(BuildContext context, {required FeeInvoice invoice, bool demo = false, bool allowPartial = true, int minPartPaise = 0}) => showModalBottomSheet<int>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (_) => PaySheet(invoice: invoice, demo: demo, allowPartial: allowPartial, minPartPaise: minPartPaise),
   );
 
   /// Null when [text] is a payable amount against [balancePaise]; otherwise what is wrong.
-  static String? validate(AppLocalizations l, String text, int balancePaise) {
+  static String? validate(AppLocalizations l, String text, int balancePaise, {int minPaise = 0}) {
     if (text.trim().isEmpty) return l.enterAmount;
     final paise = Fmt.parseRupees(text);
     if (paise == null) return l.enterAmountRupees;
     if (paise < 100) return l.smallestPayment;
     if (paise > balancePaise) return l.moreThanDue(Fmt.rupees(balancePaise));
+    if (paise < minPaise && paise != balancePaise) return l.atLeastPart(Fmt.rupees(minPaise));
     return null;
   }
 
@@ -423,7 +520,8 @@ class PaySheet extends StatefulWidget {
 }
 
 class _PaySheetState extends State<PaySheet> {
-  bool _part = false;
+  PayChoice _choice = PayChoice.full;
+  bool get _part => _choice == PayChoice.part;
   final _amount = TextEditingController();
   final _focus = FocusNode();
   String? _error;
@@ -431,8 +529,17 @@ class _PaySheetState extends State<PaySheet> {
 
   int get _balance => widget.invoice.balancePaise;
 
-  int? get _paise =>
-      _part ? (PaySheet.validate(context.l10n, _amount.text, _balance) == null ? Fmt.parseRupees(_amount.text) : null) : _balance;
+  /// The instalment due now, when it is less than the whole balance.
+  int? get _dueNow {
+    final d = widget.invoice.dueNowPaise;
+    return d != null && d > 0 && d < _balance ? d : null;
+  }
+
+  int? get _paise => switch (_choice) {
+    PayChoice.full => _balance,
+    PayChoice.instalment => _dueNow ?? _balance,
+    PayChoice.part => PaySheet.validate(context.l10n, _amount.text, _balance, minPaise: widget.minPartPaise) == null ? Fmt.parseRupees(_amount.text) : null,
+  };
 
   @override
   void dispose() {
@@ -443,7 +550,7 @@ class _PaySheetState extends State<PaySheet> {
 
   void _submit() {
     if (_part) {
-      final err = PaySheet.validate(context.l10n, _amount.text, _balance);
+      final err = PaySheet.validate(context.l10n, _amount.text, _balance, minPaise: widget.minPartPaise);
       setState(() {
         _tried = true;
         _error = err;
@@ -473,19 +580,23 @@ class _PaySheetState extends State<PaySheet> {
               style: context.text.bodyLarge?.copyWith(color: c.onSurfaceVariant),
             ),
             const SizedBox(height: Kx.s20),
-            SegmentedButton<bool>(
-              segments: [
-                ButtonSegment(value: false, label: Text(l.fullAmount(Fmt.rupees(_balance)), key: const Key('payFull'))),
-                ButtonSegment(value: true, label: Text(l.partAmount, key: const Key('payPart'))),
-              ],
-              selected: {_part},
-              showSelectedIcon: false,
-              onSelectionChanged: (s) => setState(() {
-                _part = s.single;
-                _error = null;
-                _tried = false;
-              }),
-            ),
+            if (_dueNow != null || widget.allowPartial)
+              SegmentedButton<PayChoice>(
+                segments: [
+                  ButtonSegment(value: PayChoice.full, label: Text(l.fullAmount(Fmt.rupees(_balance)), key: const Key('payFull'))),
+                  if (_dueNow != null) ButtonSegment(value: PayChoice.instalment, label: Text(l.payDueNow(Fmt.rupees(_dueNow!)), key: const Key('payInstalment'))),
+                  if (widget.allowPartial) ButtonSegment(value: PayChoice.part, label: Text(l.partAmount, key: const Key('payPart'))),
+                ],
+                selected: {_choice},
+                showSelectedIcon: false,
+                onSelectionChanged: (s) => setState(() {
+                  _choice = s.single;
+                  _error = null;
+                  _tried = false;
+                }),
+              )
+            else
+              Text(l.fullAmount(Fmt.rupees(_balance)), key: const Key('payFull'), style: context.text.titleMedium),
             if (_part) ...[
               const SizedBox(height: Kx.s16),
               TextField(
@@ -502,7 +613,7 @@ class _PaySheetState extends State<PaySheet> {
                   errorText: _error,
                   border: const OutlineInputBorder(),
                 ),
-                onChanged: (_) => setState(() => _error = _tried ? PaySheet.validate(l, _amount.text, _balance) : null),
+                onChanged: (_) => setState(() => _error = _tried ? PaySheet.validate(l, _amount.text, _balance, minPaise: widget.minPartPaise) : null),
                 onSubmitted: (_) => _submit(),
               ),
             ],

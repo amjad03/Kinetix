@@ -152,6 +152,9 @@ class _BoardingScreenState extends State<BoardingScreen> {
             ..showSnackBar(SnackBar(content: Text(l.paymentCancelled)));
         case PaymentFailed failed:
           await _problem(l.paymentFailedTitle, failed.describe(l));
+        // Wallet top-ups never open in the browser (they are offered only where the in-app checkout works).
+        case PaymentInBrowser():
+          await _load();
         case PaymentInWallet(:final walletName):
           final app = walletName ?? l.yourWalletApp;
           await _problem(l.finishInWallet(app), l.walletBody(app));
@@ -295,7 +298,7 @@ class _BoardingScreenState extends State<BoardingScreen> {
                         Text(l.walletBalance, style: context.text.labelLarge?.copyWith(color: context.colors.onSurfaceVariant)),
                         Text(Fmt.rupees(w.balancePaise), key: const Key('walletBalance'), style: context.text.displaySmall),
                         const SizedBox(height: Kx.s12),
-                        if (PaymentGateway.available(w.onlinePayments))
+                        if (PaymentGateway.available(w.onlinePayments, browser: false))
                           FilledButton.icon(
                             key: const Key('walletTopUp'),
                             onPressed: _busy == null ? () => _topUp(w) : null,
@@ -303,7 +306,7 @@ class _BoardingScreenState extends State<BoardingScreen> {
                             label: Text(l.addMoney),
                           )
                         else
-                          Text(PaymentGateway.unavailableReason(l, w.onlinePayments) ?? '', style: context.text.bodyMedium),
+                          Text(PaymentGateway.unavailableReason(l, w.onlinePayments, browser: false) ?? '', style: context.text.bodyMedium),
                       ],
                     ),
                   ),

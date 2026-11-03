@@ -2624,5 +2624,22 @@
   "examAppIneligible": "Not eligible",
   "@examAppIneligible": {
     "description": "Exam applications."
-  }
+  },
+  "payInBrowserTitle": "Finish paying in the browser",
+  "payInBrowserBody": "The payment page has opened. When you have paid, come back here and check it.",
+  "checkPayment": "I have paid: check",
+  "paymentPending": "Not confirmed yet. If you paid, it will show here in a few minutes.",
+  "payDueNow": "Instalment {amount}",
+  "@payDueNow": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "atLeastPart": "Pay at least {amount} at a time",
+  "@atLeastPart": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "downloadReceipt": "Download the receipt (PDF)"
 }

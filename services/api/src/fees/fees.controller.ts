@@ -258,11 +258,13 @@ export class FeesController {
       for (const o of own) if (!names.has(o.a!)) names.set(o.a!, await this.gateway.availableName(tx, o.a));
       const accountOf = new Map(own.map((o) => [o.id, o.a!]));
       const s = await settingsOf(tx, p.tenantId);
+      // On instalments: what is due now, so the apps can offer "pay this instalment".
+      const dueNow = await this.flow.dueNowOf(tx, invoices.filter((i) => i.status === 'due'));
       return {
         duePaise,
         onlinePayments: await this.gateway.availableName(tx),
         online: { allowPartial: s.online.allowPartial !== false, minPartPaise: Math.round((s.online.minPartRupees ?? 0) * 100) },
-        invoices: invoices.map((i) => (accountOf.has(i.id) ? { ...i, onlinePayments: names.get(accountOf.get(i.id)!) ?? null } : i)),
+        invoices: invoices.map((i) => ({ ...i, ...(accountOf.has(i.id) ? { onlinePayments: names.get(accountOf.get(i.id)!) ?? null } : {}), ...(dueNow.has(i.id) ? { dueNowPaise: dueNow.get(i.id) } : {}) })),
         payments,
       };
     });

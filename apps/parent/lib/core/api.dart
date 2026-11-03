@@ -139,6 +139,12 @@ abstract class ParentApi implements AnnouncementSource {
   Future<FeeReceipt> confirmPayment(String paymentId, {required String providerPaymentId, required String signature});
   Future<FeeReceipt> receipt(String paymentId);
 
+  /// Asks the server to check a pending online payment with the gateway (`POST /v1/fees/payments/:id/refresh`).
+  Future<FeeRefresh> refreshPayment(String paymentId);
+
+  /// The receipt of one of the family's payments as a PDF.
+  Future<Uint8List> receiptPdf(String paymentId);
+
   /// The hostel bed and the recent night roll calls (`GET /v1/hostel/students/:id`).
   Future<BoardingView> boarding(String childId);
 
@@ -552,7 +558,14 @@ class HttpParentApi implements ParentApi {
   @override
   Future<FeeCheckout> checkout(String invoiceId, {int? amountPaise}) async => FeeCheckout.fromJson(
     await _send('POST', '/v1/fees/invoices/$invoiceId/checkout', body: {'amountPaise': ?amountPaise}) as Map<String, dynamic>,
+    baseUrl: baseUrl,
   );
+
+  @override
+  Future<FeeRefresh> refreshPayment(String paymentId) async => FeeRefresh.fromJson(await _send('POST', '/v1/fees/payments/$paymentId/refresh') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> receiptPdf(String paymentId) => _download('/v1/fee-collect/family/payments/$paymentId/receipt.pdf');
 
   @override
   Future<FeeReceipt> confirmPayment(String paymentId, {required String providerPaymentId, required String signature}) async =>

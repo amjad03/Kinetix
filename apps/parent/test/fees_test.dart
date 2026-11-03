@@ -7,6 +7,8 @@ import 'package:zynetix_parent/core/models.dart';
 import 'package:zynetix_parent/features/fees/fees_screen.dart';
 import 'package:zynetix_parent/features/fees/payment_gateway.dart';
 import 'package:zynetix_parent/features/fees/razorpay_gateway.dart';
+import 'package:zynetix_parent/features/fees/receipt_screen.dart';
+import 'package:zynetix_parent/l10n/app_localizations.dart';
 
 import 'helpers.dart';
 
@@ -245,19 +247,93 @@ void main() {
     expect(find.byKey(const Key('demoBanner')), findsNothing);
   });
 
-  testWidgets('Razorpay on a desktop build also points to the fees counter', (tester) async {
+  testWidgets('Razorpay on a desktop build pays in the browser, then the app checks with the server', (tester) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    final opened = <Uri>[];
+    BrowserGateway.debugOpener = (u) async {
+      opened.add(u);
+      return true;
+    };
     try {
-      await pumpApp(tester, section: 'fees', setup: (api) => api.onlinePayments = 'razorpay');
-      await scrollTo(tester, find.byKey(const Key('feesCard')));
-      expect(inCard('Please pay at the fees counter.'), findsOneWidget);
-      await tester.tap(find.text('View fees and receipts'));
+      final (api, _) = await pumpApp(tester, section: 'fees', setup: (api) => api.onlinePayments = 'razorpay');
+      await openFees(tester);
+      await tester.tap(find.byKey(const Key('pay-i2')));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Android phones and iPhones'), findsOneWidget);
-      expect(find.byKey(const Key('pay-i1')), findsNothing);
+      await tester.tap(find.byKey(const Key('payContinue')));
+      await tester.pumpAndSettle();
+      expect(opened.single.path, '/v1/public/checkout/demo-college/pay10');
+      // Not paid yet at the gateway: the app says so and keeps waiting.
+      await tester.tap(find.byKey(const Key('checkPayment')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('browserNote')), findsOneWidget);
+      api.browserPaid.add('pay10');
+      await tester.tap(find.byKey(const Key('checkPayment')));
+      await tester.pumpAndSettle();
+      expect(api.calls.where((c) => c == 'refresh pay10'), hasLength(2));
+      expect(find.byType(ReceiptScreen), findsOneWidget);
     } finally {
       debugDefaultTargetPlatformOverride = null;
+      BrowserGateway.debugOpener = null;
     }
+  });
+
+  testWidgets('Cashfree, PayU, Easebuzz and CCAvenue open their checkout in the browser', (tester) async {
+    BrowserGateway.debugOpener = (u) async => true;
+    addTearDown(() => BrowserGateway.debugOpener = null);
+    final (api, _) = await pumpApp(tester, section: 'fees', setup: (api) => api.onlinePayments = 'cashfree');
+    await openFees(tester);
+    await tester.tap(find.byKey(const Key('pay-i2')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('payContinue')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('checkPayment')), findsOneWidget);
+    api.browserPaid.add('pay10');
+    await tester.tap(find.byKey(const Key('checkPayment')));
+    await tester.pumpAndSettle();
+    expect(find.byType(ReceiptScreen), findsOneWidget);
+  });
+
+  testWidgets('the pay sheet offers the instalment due now, and a part payment only when the institution allows it', (tester) async {
+    final (api, _) = await pumpApp(
+      tester,
+      section: 'fees',
+      setup: (api) {
+        api.allowPartial = false;
+        final list = api.invoices.values.first;
+        final i = list.indexWhere((x) => x.id == 'i2');
+        final inv = list[i];
+        list[i] = FeeInvoice(id: inv.id, title: inv.title, amountPaise: inv.amountPaise, paidPaise: inv.paidPaise, dueOn: inv.dueOn, status: inv.status, dueNowPaise: 1_000_00);
+      },
+    );
+    await openFees(tester);
+    await tester.tap(find.byKey(const Key('pay-i2')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('payPart')), findsNothing);
+    await tester.tap(find.byKey(const Key('payInstalment')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('payContinue')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('checkout i2 100000'));
+  });
+
+  testWidgets('a receipt downloads as the office’s PDF', (tester) async {
+    final (api, _) = await pumpApp(tester, section: 'fees', setup: (api) => api.onlinePayments = 'cashfree');
+    final files = <String>[];
+    await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: ReceiptScreen(api: api, paymentId: 'p1', openFile: (bytes, name, mime) async {
+        files.add('$name $mime ${bytes.length}');
+        return true;
+      }),
+    ));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('receiptPdf')), 200, scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.byKey(const Key('receiptPdf')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('receiptPdf p1'));
+    expect(files.single, startsWith('receipt-'));
+    expect(files.single, contains('application/pdf'));
   });
 
   testWidgets('the Razorpay checkout gets the order and reports success, cancel and wallets', (tester) async {

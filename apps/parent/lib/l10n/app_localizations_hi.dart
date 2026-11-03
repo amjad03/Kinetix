@@ -3476,4 +3476,29 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get examAppIneligible => 'पात्र नहीं';
+
+  @override
+  String get payInBrowserTitle => 'ब्राउज़र में भुगतान पूरा करें';
+
+  @override
+  String get payInBrowserBody => 'भुगतान पेज खुल गया है। भुगतान के बाद यहाँ लौटकर जाँचें।';
+
+  @override
+  String get checkPayment => 'मैंने भुगतान किया: जाँचें';
+
+  @override
+  String get paymentPending => 'अभी पुष्टि नहीं हुई। यदि आपने भुगतान किया है, तो कुछ मिनटों में यहाँ दिखेगा।';
+
+  @override
+  String payDueNow(Object amount) {
+    return 'किस्त $amount';
+  }
+
+  @override
+  String atLeastPart(Object amount) {
+    return 'एक बार में कम से कम $amount चुकाएँ';
+  }
+
+  @override
+  String get downloadReceipt => 'रसीद डाउनलोड करें (PDF)';
 }

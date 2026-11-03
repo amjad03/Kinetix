@@ -854,14 +854,37 @@ class FakeParentApi implements ParentApi {
     final list = [...?invoices[childId]]..sort((a, b) => b.dueOn.compareTo(a.dueOn));
     return StudentFees(
       duePaise: list.where((i) => !i.isPaid).fold(0, (s, i) => s + i.balancePaise),
-      onlinePayments: switch (onlinePayments) {
-        'demo' => OnlinePayments.demo,
-        'razorpay' => OnlinePayments.razorpay,
-        _ => null,
-      },
+      onlinePayments: onlinePaymentsOf(onlinePayments),
       invoices: list,
       payments: [...?feePayments[childId]]..sort((a, b) => b.paidAt!.compareTo(a.paidAt!)),
+      allowPartial: allowPartial,
+      minPartPaise: minPartPaise,
     );
+  }
+
+  /// Whether part payments are taken online, and the least part (tests set them).
+  bool allowPartial = true;
+  int minPartPaise = 0;
+
+  /// Browser checkouts the payer has finished at the gateway (tests add the payment id).
+  final browserPaid = <String>{};
+
+  @override
+  Future<FeeRefresh> refreshPayment(String paymentId) async {
+    calls.add('refresh $paymentId');
+    final o = _orders[paymentId];
+    if (o == null) throw ApiException(404, 'Payment not found');
+    if (!browserPaid.contains(paymentId)) return FeeRefresh(status: 'pending');
+    if (feePayments[o.childId]!.any((p) => p.id == paymentId)) return FeeRefresh(status: 'paid', receipt: await receipt(paymentId));
+    final providerPaymentId = 'cf_${paymentId.hashCode.abs()}';
+    final signature = Hmac(sha256, utf8.encode('zynetix-demo-payments')).convert(utf8.encode('${o.orderId}|$providerPaymentId')).toString();
+    return FeeRefresh(status: 'paid', receipt: await confirmPayment(paymentId, providerPaymentId: providerPaymentId, signature: signature));
+  }
+
+  @override
+  Future<Uint8List> receiptPdf(String paymentId) async {
+    calls.add('receiptPdf $paymentId');
+    return Uint8List.fromList(utf8.encode('%PDF-1.4 demo receipt $paymentId'));
   }
 
   // ── Hostel nights and the canteen wallet ─────────────────────────────────────────────────────
@@ -959,6 +982,7 @@ class FakeParentApi implements ParentApi {
     _orders[paymentId] = (invoiceId: invoiceId, childId: childId, amountPaise: amount, orderId: orderId);
     return FeeCheckout(
       paymentId: paymentId,
+      launchUrl: onlinePayments == 'demo' ? null : 'https://api.zynetix.test/v1/public/checkout/demo-college/$paymentId?t=demo',
       provider: onlinePayments!,
       keyId: onlinePayments == 'demo' ? 'demo' : 'rzp_test_key',
       orderId: orderId,

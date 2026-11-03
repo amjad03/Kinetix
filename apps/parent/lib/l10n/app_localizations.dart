@@ -6008,6 +6008,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not eligible'**
   String get examAppIneligible;
+
+  /// No description provided for @payInBrowserTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish paying in the browser'**
+  String get payInBrowserTitle;
+
+  /// No description provided for @payInBrowserBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The payment page has opened. When you have paid, come back here and check it.'**
+  String get payInBrowserBody;
+
+  /// No description provided for @checkPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'I have paid: check'**
+  String get checkPayment;
+
+  /// No description provided for @paymentPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Not confirmed yet. If you paid, it will show here in a few minutes.'**
+  String get paymentPending;
+
+  /// No description provided for @payDueNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Instalment {amount}'**
+  String payDueNow(Object amount);
+
+  /// No description provided for @atLeastPart.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay at least {amount} at a time'**
+  String atLeastPart(Object amount);
+
+  /// No description provided for @downloadReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the receipt (PDF)'**
+  String get downloadReceipt;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
