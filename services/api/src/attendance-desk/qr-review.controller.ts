@@ -44,8 +44,7 @@ export class QrReviewController {
   /** Scans in the dates (default today), newest first, limited to the periods this person may mark. */
   @Get('qr-scans')
   @Auth('user', CLASS_ROLES)
-  list(@CurrentPrincipal() p: UserPrincipal, @Query() raw: Record<string, string>) {
-    const q = ListQuery.parse(raw);
+  list(@CurrentPrincipal() p: UserPrincipal, @Query(new ZodBody(ListQuery)) q: z.infer<typeof ListQuery>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const today = (await this.desk.now(tx)).date;
       const from = q.from ?? today;

@@ -43,6 +43,8 @@ const TARGETS: Record<string, (id: string) => string> = {
   'grievance-evidence': (id) => `/v1/grievances/evidence/${id}/download`,
   'leave-doc': (id) => `/v1/attendance-desk/leaves/${id}/document`,
   'condonation-doc': (id) => `/v1/attendance/condonations/${id}/document`,
+  'detention-pdf': (id) => `/v1/attendance-desk/detention-lists/${id}?format=pdf`,
+  'detention-xlsx': (id) => `/v1/attendance-desk/detention-lists/${id}?format=xlsx`,
   'placement-shortlist': (id) => `/v1/placements/drives/${id}/shortlist?format=csv`,
   'placement-offer-letter': (id) => `/v1/placements/offers/${id}/letter`,
   'staff-doc': (id) => `/v1/hr/staff-documents/${id}/file`,

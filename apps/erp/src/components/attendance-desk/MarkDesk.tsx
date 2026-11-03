@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarClock, CheckCheck, ClipboardCopy, Fingerprint, Lock, UserX } from 'lucide-react';
+import { CalendarClock, CheckCheck, ClipboardCopy, Fingerprint, Lock, ScanFace, UserX } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
@@ -80,9 +80,13 @@ export function SheetEditor({ sheet }: { sheet: Sheet }) {
   const counts = MARKS.map((m) => [m, sheet.roster.filter((r) => marks[r.id] === m).length] as const);
   const readOnly = sheet.locked || sheet.future || sheet.status === 'cancelled';
   const punches = sheet.roster.some((r) => r.punch);
+  const taps = new Map((sheet.hints ?? []).filter((h) => h.source === 'reader').map((h) => [h.studentId, h]));
+  const held = new Map((sheet.hints ?? []).filter((h) => h.source === 'qr').map((h) => [h.studentId, h]));
   const combined = new Set(sheet.roster.map((r) => r.section)).size > 1;
 
   const setAll = (m: MarkStatus) => setMarks((x) => Object.fromEntries(sheet.roster.map((r) => [r.id, r.leave ? r.leave.countsAs : m])));
+  // The classroom reader's taps: tapped students present, the rest absent (leave keeps its mark); the teacher saves to confirm.
+  const fromTaps = () => setMarks(() => Object.fromEntries(sheet.roster.map((r) => [r.id, r.leave ? r.leave.countsAs : taps.has(r.id) ? 'present' : 'absent'])));
   const fromPunches = () => setMarks((x) => Object.fromEntries(sheet.roster.map((r) => [r.id, r.leave ? r.leave.countsAs : r.punch ? (r.punch === 'late' ? 'late' : 'present') : 'absent'])));
 
   const save = () =>
@@ -147,6 +151,12 @@ export function SheetEditor({ sheet }: { sheet: Sheet }) {
               {t('atd.fromPunches')}
             </Button>
           )}
+          {taps.size > 0 && (
+            <Button variant="outline" className="h-9" onClick={fromTaps} data-testid="from-taps">
+              <ScanFace />
+              {t('atdp.fromTaps', { n: fmt.number(taps.size) })}
+            </Button>
+          )}
           {sheet.kind === 'period' && (sheet.others?.length ?? 0) > 0 && (
             <Button variant="outline" className="h-9" onClick={() => setCopyOpen(true)} disabled={dirty || sheet.roster.every((r) => !r.status)} title={dirty ? t('atd.saveFirst') : undefined}>
               <ClipboardCopy />
@@ -187,6 +197,12 @@ export function SheetEditor({ sheet }: { sheet: Sheet }) {
                       {combined && <span className="text-xs text-muted-foreground">{r.section}</span>}
                       {r.leave && <StatusPill tone="info">{t(`atd.leave.${r.leave.kind}` as MessageKey)}</StatusPill>}
                       {r.punch && <StatusPill tone="neutral">{t('atd.punched')}</StatusPill>}
+                      {taps.has(r.id) && <StatusPill tone="neutral">{t('atdp.tapped', { time: fmt.time(taps.get(r.id)!.at) })}</StatusPill>}
+                      {held.has(r.id) && (
+                        <StatusPill tone="warning" title={held.get(r.id)!.reasons.map((x) => t(`atdp.reason.${x}` as MessageKey)).join(', ')}>
+                          {t('atdp.qrHeld')}
+                        </StatusPill>
+                      )}
                     </span>
                   </th>
                   <td className="px-3 py-2">

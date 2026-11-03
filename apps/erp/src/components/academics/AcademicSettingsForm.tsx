@@ -92,6 +92,32 @@ export function AcademicSettingsForm({ initial }: { initial: AcademicSettings })
               </FormRow>
               {flag('attendance', 'shortageAlerts', t('acad.set.shortageAlerts'))}
               {flag('attendance', 'dailyDigest', t('acad.set.dailyDigest'))}
+              <fieldset className="grid gap-2 border-0 p-0" data-testid="alert-channels">
+                <legend className="mb-1 text-sm font-medium">{t('atdp.set.channels')}</legend>
+                <p className="m-0 text-sm text-muted-foreground">{t('atdp.set.channelsHelp')}</p>
+                {(['sms', 'whatsapp'] as const).map((c) => (
+                  <CheckboxField
+                    key={c}
+                    label={t(`atdp.set.channel.${c}`)}
+                    checked={(v.attendance.alertChannels ?? ['app']).includes(c)}
+                    onChange={(on) => patch('attendance', { alertChannels: ['app', ...(['sms', 'whatsapp'] as const).filter((x) => (x === c ? on : (v.attendance.alertChannels ?? []).includes(x)))] })}
+                  />
+                ))}
+              </fieldset>
+              <fieldset className="grid gap-3 border-0 p-0" data-testid="qr-rules">
+                <legend className="mb-1 text-sm font-medium">{t('atdp.set.qr')}</legend>
+                <p className="m-0 text-sm text-muted-foreground">{t('atdp.set.qrHelp')}</p>
+                <CheckboxField label={t('atdp.set.qrEnabled')} checked={v.attendance.qr?.enabled ?? true} onChange={(c) => patch('attendance', { qr: { ...v.attendance.qr, enabled: c } })} />
+                <CheckboxField label={t('atdp.set.qrBind')} checked={v.attendance.qr?.bindDevice ?? true} onChange={(c) => patch('attendance', { qr: { ...v.attendance.qr, bindDevice: c } })} />
+                <CheckboxField label={t('atdp.set.qrLocation')} checked={v.attendance.qr?.requireLocation ?? false} onChange={(c) => patch('attendance', { qr: { ...v.attendance.qr, requireLocation: c } })} />
+                <FormRow>
+                  <TextInput className="w-[160px]" type="number" label={t('atdp.set.lat')} value={v.attendance.qr?.lat === null || v.attendance.qr?.lat === undefined ? '' : String(v.attendance.qr.lat)} onChange={(e) => patch('attendance', { qr: { ...v.attendance.qr, lat: e.target.value === '' ? null : Number(e.target.value) } })} />
+                  <TextInput className="w-[160px]" type="number" label={t('atdp.set.lng')} value={v.attendance.qr?.lng === null || v.attendance.qr?.lng === undefined ? '' : String(v.attendance.qr.lng)} onChange={(e) => patch('attendance', { qr: { ...v.attendance.qr, lng: e.target.value === '' ? null : Number(e.target.value) } })} />
+                  <TextInput className="w-[160px]" type="number" label={t('atdp.set.radius')} value={String(v.attendance.qr?.radiusM ?? 250)} onChange={(e) => patch('attendance', { qr: { ...v.attendance.qr, radiusM: Number(e.target.value) } })} />
+                  <TextInput className="w-[180px]" type="number" label={t('atdp.set.accuracy')} value={String(v.attendance.qr?.maxAccuracyM ?? 150)} onChange={(e) => patch('attendance', { qr: { ...v.attendance.qr, maxAccuracyM: Number(e.target.value) } })} />
+                  <TextInput className="w-[200px]" type="number" label={t('atdp.set.late')} value={String(v.attendance.qr?.lateMinutes ?? 15)} onChange={(e) => patch('attendance', { qr: { ...v.attendance.qr, lateMinutes: Number(e.target.value) } })} />
+                </FormRow>
+              </fieldset>
             </div>
           ),
         },

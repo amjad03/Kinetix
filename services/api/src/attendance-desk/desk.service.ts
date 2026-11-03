@@ -715,10 +715,10 @@ export class AttendanceDeskService implements OnModuleInit {
           const [logged] = await tx.insert(attendanceAlerts).values({ tenantId, studentId: e.studentId, kind, scope: s.scope, level, percent: s.pct }).onConflictDoNothing().returning({ id: attendanceAlerts.id });
           if (!logged) continue;
           const n = await this.notifications.attendanceNotice(tx, e.studentId, { text: deskTexts.shortage({ studentName: names.get(e.studentId) ?? '', subject: s.label, pct: s.pct, threshold: policy.thresholdPct, short: kind === 'shortage' }), data: { studentId: e.studentId, scope: s.scope }, dedupeKey: `att-${kind}:${e.studentId}:${s.scope}:${level}` });
-          const before = queued.sms + queued.whatsapp;
+          const before = { sms: queued.sms, whatsapp: queued.whatsapp };
           await queueFamilyMessage(tx, { tenantId, channels: policy.alertChannels, template: ATTENDANCE_TEMPLATES.shortage, studentId: e.studentId, studentName: names.get(e.studentId) ?? '', vars: { pct: String(s.pct), subject: s.label || 'overall', threshold: String(policy.thresholdPct) }, dedupeKey: `att-${kind}:${e.studentId}:${s.scope}:${level}`, now: this.clock.now() }, queued);
-          const texted = queued.sms + queued.whatsapp > before;
-          await tx.update(attendanceAlerts).set({ recipients: n, channels: texted ? ['app', ...policy.alertChannels.filter((c) => c !== 'app')] : ['app'] }).where(eq(attendanceAlerts.id, logged.id));
+          const channels = ['app', ...(queued.sms > before.sms ? ['sms'] : []), ...(queued.whatsapp > before.whatsapp ? ['whatsapp'] : [])];
+          await tx.update(attendanceAlerts).set({ recipients: n, channels }).where(eq(attendanceAlerts.id, logged.id));
           recipients += n;
           sent = true;
         }

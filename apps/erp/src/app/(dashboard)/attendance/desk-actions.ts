@@ -63,3 +63,26 @@ export async function askCondonation(studentId: string, subjectId: string | null
   if (res.ok) revalidatePath('/attendance/eligibility');
   return res;
 }
+
+/** Accepts (marks present) or rejects QR scans held for review. */
+export async function decideQrScans(ids: string[], decision: 'accepted' | 'rejected', note?: string) {
+  return send<{ done: number; failed: number; report: { id: string; ok: boolean; error?: string }[] }>('/v1/attendance-desk/qr-scans/decide', { ids, decision, note }, '/attendance/qr-review');
+}
+
+/** Releases a student's bound phone (a new or lost phone). */
+export async function releaseDeviceBinding(studentId: string, reason: string) {
+  return send(`/v1/attendance-desk/device-bindings/${enc(studentId)}/release`, { reason }, '/attendance/qr-review');
+}
+
+/** Freezes today's shortage list as a draft detention list. */
+export async function prepareDetentionList(b: { programId?: string; term?: number }) {
+  return send<{ id: string }>('/v1/attendance-desk/detention-lists', b, '/attendance/eligibility');
+}
+
+export async function publishDetentionList(id: string) {
+  return send<{ notified: number; sms: number; whatsapp: number; skipped: string[] }>(`/v1/attendance-desk/detention-lists/${enc(id)}/publish`, {}, '/attendance/eligibility');
+}
+
+export async function withdrawDetentionList(id: string, reason: string) {
+  return send(`/v1/attendance-desk/detention-lists/${enc(id)}/withdraw`, { reason }, '/attendance/eligibility');
+}

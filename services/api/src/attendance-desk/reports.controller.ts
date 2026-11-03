@@ -5,6 +5,7 @@ import { attendancePolicy, attendanceWindow, classStudents, eligibilityFor } fro
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { Day } from '../common/ops.js';
+import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { departments, sections, timetableSlots, users } from '../db/schema.js';
 import { addDays, isSchoolAdmin } from '../teacher/teacher.service.js';
@@ -37,8 +38,7 @@ export class AttendanceReportsController {
    */
   @Get('compliance')
   @Auth('user', REPORT_ROLES)
-  compliance(@CurrentPrincipal() p: UserPrincipal, @Query() raw: Record<string, string>) {
-    const q = Range.parse(raw);
+  compliance(@CurrentPrincipal() p: UserPrincipal, @Query(new ZodBody(Range)) q: z.infer<typeof Range>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const now = await this.desk.now(tx);
       const to = q.to ?? now.date;
@@ -74,8 +74,7 @@ export class AttendanceReportsController {
   /** A class's subjects over the current term: periods held, the class average, students short and under the warning level. */
   @Get('subjects')
   @Auth('user', REPORT_ROLES)
-  subjects(@CurrentPrincipal() p: UserPrincipal, @Query() raw: Record<string, string>) {
-    const q = ClassQuery.parse(raw);
+  subjects(@CurrentPrincipal() p: UserPrincipal, @Query(new ZodBody(ClassQuery)) q: z.infer<typeof ClassQuery>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.desk.assertDayMarker(tx, p.roles.includes('exam_controller') || p.roles.includes('quality_officer') ? { ...p, roles: [...p.roles, 'tenant_admin'] } : p, q.sectionId);
       const today = (await this.desk.now(tx)).date;
@@ -119,8 +118,7 @@ export class AttendanceReportsController {
   /** Students under the threshold (and condonable / detained) at the end of each of the last weeks of the term, cumulative from its start. */
   @Get('trend')
   @Auth('user', REPORT_ROLES)
-  trend(@CurrentPrincipal() p: UserPrincipal, @Query() raw: Record<string, string>) {
-    const q = TrendQuery.parse(raw);
+  trend(@CurrentPrincipal() p: UserPrincipal, @Query(new ZodBody(TrendQuery)) q: z.infer<typeof TrendQuery>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const today = (await this.desk.now(tx)).date;
       const headed = !isSchoolAdmin(p) && p.roles.includes('hod') && !p.roles.includes('exam_controller') && !p.roles.includes('quality_officer');
@@ -156,8 +154,7 @@ export class AttendanceReportsController {
    */
   @Get('accreditation')
   @Auth('user', REPORT_ROLES)
-  accreditation(@CurrentPrincipal() p: UserPrincipal, @Query() raw: Record<string, string>) {
-    const q = YearQuery.parse(raw);
+  accreditation(@CurrentPrincipal() p: UserPrincipal, @Query(new ZodBody(YearQuery)) q: z.infer<typeof YearQuery>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const today = (await this.desk.now(tx)).date;
       const start = q.year ? Number(q.year.slice(0, 4)) : Number(today.slice(0, 4)) - (today.slice(5) < '06-01' ? 1 : 0);

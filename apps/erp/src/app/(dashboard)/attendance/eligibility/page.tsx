@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import { GraduationCap } from 'lucide-react';
 import { AlertsLog, ClassEligibility, DetentionTable } from '@/components/attendance-desk/EligibilityViews';
 import { AttendanceTabs, FilterForm, SelectField } from '@/components/attendance-desk/kit';
+import { DetentionLists } from '@/components/attendance-desk/PassViews';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState, ErrorState } from '@/components/States';
 import { LinkTabs } from '@/components/ui';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
-import { isId, type AlertRow, type DeskClass, type DetentionRow, type Eligibility } from '@/lib/attendance-desk';
+import { isId, type AlertRow, type DeskClass, type DetentionList, type DetentionRow, type Eligibility } from '@/lib/attendance-desk';
 import type { Structure } from '@/lib/types';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -57,7 +58,8 @@ export default async function EligibilityPage({ searchParams }: { searchParams: 
       const structure = await api<Structure>('/v1/admin/structure');
       const q = new URLSearchParams({ ...(isId(sp.programme) ? { programId: sp.programme } : {}), ...(sp.term && /^\d{1,2}$/.test(sp.term) ? { term: sp.term } : {}) });
       const list = await api<{ classes: number; eligible: number; rows: DetentionRow[] }>(`/v1/attendance-desk/detention?${q.toString()}`);
-      return { structure, list };
+      const lists = await api<DetentionList[]>('/v1/attendance-desk/detention-lists');
+      return { structure, list, lists };
     });
     return (
       <>
@@ -72,6 +74,7 @@ export default async function EligibilityPage({ searchParams }: { searchParams: 
             </FilterForm>
             <p className="mb-3 text-sm text-muted-foreground">{t('atd.detention.summary', { classes: res.data.list.classes, eligible: res.data.list.eligible, short: res.data.list.rows.length })}</p>
             <DetentionTable rows={res.data.list.rows} />
+            <DetentionLists lists={res.data.lists} programId={isId(sp.programme) ? sp.programme : undefined} term={sp.term && /^\d{1,2}$/.test(sp.term) ? sp.term : undefined} canPublish={admin} />
           </>
         )}
       </>

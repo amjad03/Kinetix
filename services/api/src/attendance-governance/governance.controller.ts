@@ -364,8 +364,8 @@ export class StudentQrController {
   @Post('scan')
   @HttpCode(200)
   @Auth('user', ['student'])
-  scan(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(ScanBody)) b: z.infer<typeof ScanBody>) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
+  async scan(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(ScanBody)) b: z.infer<typeof ScanBody>) {
+    const r = await this.db.withTenant(p.tenantId, async (tx) => {
       const now = this.clock.now();
       const [stu] = await tx.select({ id: students.id, sectionId: students.sectionId }).from(students).where(eq(students.userId, p.userId));
       if (!stu) throw new NotFoundException('Student not found');
@@ -407,12 +407,15 @@ export class StudentQrController {
       await tx.insert(attendanceQrScans).values({ tenantId: p.tenantId, studentId: stu.id, timetableSlotId: slot.id, date, deviceHash, lat: loc?.lat ?? null, lng: loc?.lng ?? null, accuracyM: loc ? Math.round(loc.accuracyM) : null, distanceM: v.distanceM, outcome: v.outcome, reasons: v.reasons });
       if (v.bind && deviceHash) await tx.insert(attendanceDeviceBindings).values({ tenantId: p.tenantId, studentId: stu.id, deviceHash }).onConflictDoNothing();
       await auditUser(tx, p, `attendance.qr_scan.${v.outcome}`, 'timetable_slot', slot.id, { date, studentId: stu.id, reasons: v.reasons, distanceM: v.distanceM });
-      if (v.outcome === 'refused') {
-        throw new ForbiddenException({ message: v.reasons.includes('period_over') ? 'This period is over. Ask your teacher to mark you.' : 'This phone has already been used to mark another student. Use your own phone, or ask your teacher.', reasons: v.reasons });
-      }
+      // Refused attempts stay in the log: answered after the transaction commits (below).
+      if (v.outcome === 'refused') return { refused: v.reasons };
       if (v.outcome === 'flagged') return { status: null, alreadyMarked: false, outcome: 'flagged' as const, reasons: v.reasons };
       await tx.insert(attendanceRecords).values({ tenantId: p.tenantId, studentId: stu.id, sectionId: stu.sectionId, date, timetableSlotId: slot.id, status: 'present', markedBy: p.userId, occurredAt: now });
       return { status: 'present' as const, alreadyMarked: false, outcome: 'accepted' as const, reasons: [] };
     });
+    if ('refused' in r) {
+      throw new ForbiddenException({ message: r.refused.includes('period_over') ? 'This period is over. Ask your teacher to mark you.' : 'This phone has already been used to mark another student. Use your own phone, or ask your teacher.', reasons: r.refused, code: 'QR_REFUSED' });
+    }
+    return r;
   }
 }

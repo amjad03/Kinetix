@@ -53,7 +53,8 @@ describe('timetable: substitutes and room capacity', () => {
 
   it('suggests free teachers of the same subject and refuses double booking', async () => {
     await http().get(`/v1/timetable/substitutes?slotId=${t.slot.id}&date=${monday}`).set(as('teacher')).expect(403);
-    await http().get(`/v1/timetable/substitutes?slotId=${t.slot.id}&date=${monday.slice(0, 8)}09`).set(as('principal')).expect(400);
+    // A Wednesday is not the slot's day (the old "the 9th" fixture failed whenever the next Monday was the 9th).
+    await http().get(`/v1/timetable/substitutes?slotId=${t.slot.id}&date=${new Date(Date.parse(monday) + 2 * 86400_000).toISOString().slice(0, 10)}`).set(as('principal')).expect(400);
     const sug = (await http().get(`/v1/timetable/substitutes?slotId=${t.slot.id}&date=${monday}`).set(as('principal')).expect(200)).body;
     const ids = sug.candidates.map((c: { id: string }) => c.id);
     expect(ids).toContain(t.teacher2.id);

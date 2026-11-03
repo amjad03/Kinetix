@@ -51,6 +51,105 @@ export interface SheetRow {
   punch: MarkStatus | null;
 }
 
+/** A classroom reader tap or a QR scan held for review: not a mark until the teacher saves or accepts it. */
+export interface SheetHint {
+  studentId: string;
+  source: 'reader' | 'qr';
+  at: string;
+  verify: string | null;
+  scanId: string | null;
+  reasons: string[];
+}
+
+/** A QR self-mark in the review list. */
+export interface QrScanRow {
+  id: string;
+  date: string;
+  slotId: string;
+  studentId: string;
+  student: string;
+  rollNo: string;
+  section: string;
+  subject: string;
+  startsAt: string;
+  outcome: 'accepted' | 'flagged' | 'refused';
+  reasons: string[];
+  distanceM: number | null;
+  accuracyM: number | null;
+  decision: 'accepted' | 'rejected' | null;
+  decidedBy: string | null;
+  decidedAt: string | null;
+  decisionNote: string | null;
+  scannedAt: string;
+}
+
+/** A published (or draft) detention list. */
+export interface DetentionList {
+  id: string;
+  title: string;
+  asOn: string;
+  status: 'draft' | 'published' | 'withdrawn';
+  program: string | null;
+  term: number | null;
+  classes: number;
+  eligible: number;
+  condonable: number;
+  detained: number;
+  preparedByName: string;
+  publishedAt: string | null;
+  withdrawReason: string | null;
+}
+
+export interface ComplianceRow {
+  teacherId: string;
+  teacher: string;
+  department: string;
+  scheduled: number;
+  sameDay: number;
+  later: number;
+  unmarked: number;
+  markedPct: number | null;
+  onTimePct: number | null;
+}
+
+export interface SubjectSummaryRow {
+  subjectId: string;
+  code: string;
+  subject: string;
+  teachers: string[];
+  held: number;
+  averagePct: number | null;
+  short: number;
+  warning: number;
+}
+
+export interface TrendWeek {
+  weekEnding: string;
+  students: number;
+  short: number;
+  condonable: number;
+  detained: number;
+  warning: number;
+  shortPct: number | null;
+}
+
+export interface AccreditationFigures {
+  year: string;
+  from: string;
+  to: string;
+  instructionalDays: number;
+  periodsHeld: number;
+  programmes: { program: string; students: number; held: number; attended: number; averagePct: number | null }[];
+  shortageStudents: number;
+  alertsTexted: number;
+  detained: number;
+  condonable: number;
+  condonationsApproved: number;
+  condonedPoints: number;
+  staff: { days: number; marked: number; presentPct: number | null };
+  feeds: { framework: string; item: string; what: string; source: string }[];
+}
+
 export interface Sheet {
   kind: 'period' | 'day' | 'session' | 'special';
   date: string;
@@ -58,6 +157,8 @@ export interface Sheet {
   locked: boolean;
   future: boolean;
   roster: SheetRow[];
+  /** Classroom reader taps and QR scans held for review (period sheets). */
+  hints?: SheetHint[];
   slotId?: string;
   meets?: boolean;
   subject?: { id: string; name: string; code: string };
@@ -168,7 +269,7 @@ export interface DeptDashboard {
 }
 
 /** The attendance pages, in the order of their tabs. */
-export const ATTENDANCE_TABS = ['today', 'mark', 'unmarked', 'leave', 'register', 'eligibility', 'governance', 'student'] as const;
+export const ATTENDANCE_TABS = ['today', 'mark', 'unmarked', 'leave', 'register', 'eligibility', 'governance', 'qr', 'reports', 'student'] as const;
 export type AttendanceTab = (typeof ATTENDANCE_TABS)[number];
 export const ATTENDANCE_HREF: Record<AttendanceTab, string> = {
   today: '/attendance',
@@ -178,6 +279,8 @@ export const ATTENDANCE_HREF: Record<AttendanceTab, string> = {
   register: '/attendance/register',
   eligibility: '/attendance/eligibility',
   governance: '/attendance/governance',
+  qr: '/attendance/qr-review',
+  reports: '/attendance/reports',
   student: '/attendance/student',
 };
 
