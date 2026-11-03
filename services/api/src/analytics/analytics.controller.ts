@@ -1,3 +1,4 @@
+import { dashboardCache, dashboardTtl, scopeKey } from '../common/ttl-cache.js';
 import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query, Res, StreamableFile } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';
@@ -66,10 +67,13 @@ export class AnalyticsController {
   @Auth('user', MGMT)
   kpis(@CurrentPrincipal() p: UserPrincipal, @Query() q: Record<string, string>) {
     const params = parseParams(q);
-    return this.db.withTenant(p.tenantId, async (tx) => {
-      const ctx = await this.reports.context(tx, params);
-      return institutionKpis(tx, ctx.scope, ctx.range, ctx.annual, ctx.timezone, ctx.today);
-    });
+    // The same figures for every manager of the institution (and campus scope): computed once per DASHBOARD_CACHE_MS.
+    return dashboardCache.get(scopeKey('analytics.kpis', p.tenantId, params), dashboardTtl(), () =>
+      this.db.withTenant(p.tenantId, async (tx) => {
+        const ctx = await this.reports.context(tx, params);
+        return institutionKpis(tx, ctx.scope, ctx.range, ctx.annual, ctx.timezone, ctx.today);
+      }),
+    );
   }
 
   /** `?metric=enrolment|attendance|fees|results|coverage&by=campus|program|section` plus the scope filters. */

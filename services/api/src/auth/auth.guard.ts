@@ -67,11 +67,16 @@ export class AuthGuard implements CanActivate {
   private async assertSessionActive(tenantId: string, userId: string, sessionId: string): Promise<Access> {
     const now = this.clock.now();
     const res = await this.db.withTenant(tenantId, async (tx) => {
-      const [s] = await tx.select({ revokedAt: userSessions.revokedAt, seen: userSessions.lastSeenAt, status: users.status }).from(userSessions).innerJoin(users, eq(users.id, userSessions.userId)).where(and(eq(userSessions.id, sessionId), eq(userSessions.userId, userId)));
+      // One round trip: the session, the account's status and the current roles and campuses (accessColumns).
+      const [s] = await tx
+        .select({ revokedAt: userSessions.revokedAt, seen: userSessions.lastSeenAt, status: users.status, ...accessColumns(userId) })
+        .from(userSessions)
+        .innerJoin(users, eq(users.id, userSessions.userId))
+        .where(and(eq(userSessions.id, sessionId), eq(userSessions.userId, userId)));
       // A disabled account stops working at once, even with a token signed before it was disabled.
       if (!s || s.revokedAt || s.status === 'disabled') return null;
       if (now.getTime() - s.seen.getTime() > 60_000) await tx.update(userSessions).set({ lastSeenAt: now }).where(eq(userSessions.id, sessionId));
-      return accessOf(tx, userId);
+      return toAccess(s);
     });
     if (!res) throw new UnauthorizedException('This session was signed out');
     return res;
@@ -130,18 +135,25 @@ interface Access {
  * One query on user_roles per request.
  */
 export async function accessOf(tx: Tx, userId: string): Promise<Access> {
-  // Only staff roles count for the campus limit: a student's or family's own records are already theirs alone.
-  const staff = sql`${userRoles.role}::text not in (${sql.join(NOT_STAFF.map((r) => sql`${r}`), sql`, `)})`;
-  const [r] = await tx
-    .select({
-      roles: sql<RoleName[] | null>`array_agg(distinct ${userRoles.role}::text)`,
-      open: sql<boolean | null>`bool_or(${userRoles.campusId} is null) filter (where ${staff})`,
-      ids: sql<string[] | null>`array_agg(distinct ${userRoles.campusId}::text) filter (where ${userRoles.campusId} is not null and ${staff})`,
-    })
-    .from(userRoles)
-    .where(eq(userRoles.userId, userId));
-  return { roles: r?.roles ?? [], campusIds: !r || r.open !== false || !r.ids?.length ? undefined : r.ids };
+  const [r] = await tx.select(accessColumns(userId)).from(sql`(select 1) as one`);
+  return toAccess(r);
 }
+
+/** The roles and campus columns of {@link accessOf}, as subqueries, so they can ride along another select. */
+function accessColumns(userId: string) {
+  // Only staff roles count for the campus limit: a student's or family's own records are already theirs alone.
+  const staff = sql`r.role::text not in (${sql.join(NOT_STAFF.map((x) => sql`${x}`), sql`, `)})`;
+  return {
+    roles: sql<RoleName[] | null>`(select array_agg(distinct r.role::text) from user_roles r where r.user_id = ${userId}::uuid)`,
+    open: sql<boolean | null>`(select bool_or(r.campus_id is null) from user_roles r where r.user_id = ${userId}::uuid and ${staff})`,
+    ids: sql<string[] | null>`(select array_agg(distinct r.campus_id::text) from user_roles r where r.user_id = ${userId}::uuid and r.campus_id is not null and ${staff})`,
+  };
+}
+
+const toAccess = (r: { roles: RoleName[] | null; open: boolean | null; ids: string[] | null } | undefined): Access => ({
+  roles: r?.roles ?? [],
+  campusIds: !r || r.open !== false || !r.ids?.length ? undefined : r.ids,
+});
 
 /** The campuses a member of staff is limited to (see {@link accessOf}). */
 export async function campusScope(tx: Tx, userId: string): Promise<string[] | undefined> {

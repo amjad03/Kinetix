@@ -1,25 +1,29 @@
 #!/usr/bin/env node
 // Load test for the 25 busiest API endpoints (what the Parent App home, the Teacher App and the ERP dashboard, students,
 // attendance, fees and records pages call): VUS virtual users, each signed in as their own family or member of staff,
-// loop over the endpoints for DURATION seconds. Prints p50 / p95 / p99 per endpoint and writes JSON (OUT).
+// loop over the endpoints for DURATION seconds, pausing THINK_MS (±50%) after each request. Prints p50 / p95 / p99 per endpoint and writes JSON (OUT).
 // Against the seeded large tenant only (scripts/perf/seed-large-tenant.mjs); the API must run with
 // LOGIN_PER_IP_PER_MINUTE high enough for the sign-ins.
 //
 //   API=http://localhost:4100 VUS=500 DURATION=60 OUT=perf-before.json node scripts/perf/load.mjs
+//   API=http://localhost:4100,http://localhost:4101 spreads the virtual users over several instances (as the load balancer does).
 import { writeFileSync } from 'node:fs';
 import http from 'node:http';
 
-const API = process.env.API ?? 'http://localhost:4100';
+const APIS = (process.env.API ?? 'http://localhost:4100').split(',').map((a) => a.trim()).filter(Boolean);
+const API = APIS[0];
 const VUS = Number(process.env.VUS ?? 500);
 const DURATION = Number(process.env.DURATION ?? 60) * 1000;
 const SLUG = process.env.SLUG ?? 'perf-college';
 const PASSWORD = process.env.PERF_PASSWORD ?? 'perf-pass-123';
 const FAMILIES = Number(process.env.FAMILIES ?? 400);
 const STAFF = Number(process.env.STAFF_USERS ?? 40);
+/** Pause after each request per virtual user (a person reading the screen); 0 = as fast as possible (saturation). */
+const THINK_MS = Number(process.env.THINK_MS ?? 0);
 const agent = new http.Agent({ keepAlive: true, maxSockets: VUS });
 
-function call(method, path, token, body) {
-  const u = new URL(path, API);
+function call(method, path, token, body, base = API) {
+  const u = new URL(path, base);
   return new Promise((resolve) => {
     const t = process.hrtime.bigint();
     const req = http.request(u, { method, agent, headers: { 'content-type': 'application/json', ...(token ? { authorization: `Bearer ${token}` } : {}) } }, (res) => {
@@ -86,21 +90,23 @@ const ENDPOINTS = [
 const stats = Object.fromEntries(ENDPOINTS.map(([n]) => [n, { ms: [], errors: 0, statuses: {} }]));
 const deadline = Date.now() + DURATION;
 let done = 0;
-console.log(`Running ${VUS} virtual users for ${DURATION / 1000}s against ${API}…`);
+console.log(`Running ${VUS} virtual users for ${DURATION / 1000}s against ${APIS.join(', ')}…`);
 await Promise.all(
   Array.from({ length: VUS }, async (_, v) => {
     const fam = families[v % families.length];
     const teacher = staff[v % staff.length];
+    const base = APIS[v % APIS.length];
     let i = v % ENDPOINTS.length;
     while (Date.now() < deadline) {
       const [name, who, path] = ENDPOINTS[i++ % ENDPOINTS.length];
       const token = who === 'family' ? fam.token : who === 'teacher' ? teacher : principal;
-      const r = await call('GET', path(fam), token);
+      const r = await call('GET', path(fam), token, undefined, base);
       const s = stats[name];
       s.ms.push(r.ms);
       s.statuses[r.status] = (s.statuses[r.status] ?? 0) + 1;
       if (r.status === 0 || r.status >= 500) s.errors++;
       done++;
+      if (THINK_MS) await new Promise((res) => setTimeout(res, THINK_MS * (0.5 + Math.random())));
     }
   }),
 );
@@ -114,5 +120,5 @@ console.log(`\n${'endpoint'.padEnd(24)} ${'reqs'.padStart(7)} ${'p50 ms'.padStar
 for (const r of report) console.log(`${r.endpoint.padEnd(24)} ${String(r.requests).padStart(7)} ${String(r.p50).padStart(8)} ${String(r.p95).padStart(8)} ${String(r.p99).padStart(8)}  ${JSON.stringify(r.statuses)}`);
 const all = Object.values(stats).flatMap((s) => s.ms);
 console.log(`\nTotal ${done} requests, ${(done / (DURATION / 1000)).toFixed(0)} req/s, overall p50 ${pct(all, 50).toFixed(1)} ms, p95 ${pct(all, 95).toFixed(1)} ms`);
-if (process.env.OUT) writeFileSync(process.env.OUT, JSON.stringify({ vus: VUS, durationS: DURATION / 1000, rps: done / (DURATION / 1000), p50: pct(all, 50), p95: pct(all, 95), endpoints: report }, null, 1));
+if (process.env.OUT) writeFileSync(process.env.OUT, JSON.stringify({ instances: APIS.length, vus: VUS, thinkMs: THINK_MS, durationS: DURATION / 1000, rps: done / (DURATION / 1000), p50: pct(all, 50), p95: pct(all, 95), endpoints: report }, null, 1));
 agent.destroy();

@@ -1,3 +1,4 @@
+import { dashboardCache, dashboardTtl, scopeKey } from '../common/ttl-cache.js';
 import { Controller, Get } from '@nestjs/common';
 import { sql } from 'drizzle-orm';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -102,6 +103,11 @@ export class AnalyticsCardsController {
   @Get('attendance-week')
   @Auth('user', ACADEMIC)
   attendanceWeek(@CurrentPrincipal() p: UserPrincipal) {
+    // Institution-wide counts, the same for every reader in the same campus scope.
+    return dashboardCache.get(scopeKey('admin.attendance_week', p.tenantId), dashboardTtl(), () => this.attendanceWeekNow(p));
+  }
+
+  private attendanceWeekNow(p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const today = await this.today(tx);
       const monday = mondayOf(today);

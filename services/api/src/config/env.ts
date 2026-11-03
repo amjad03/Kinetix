@@ -218,6 +218,10 @@ const EnvSchema = z.object({
    * (observability/error-reporter.ts), e.g. a Sentry/GlitchTip relay in India. Unset: logged only.
    */
   ERROR_WEBHOOK_URL: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()),
+  /** Connections each API instance keeps to the database for requests (the app role). */
+  DB_POOL_MAX: z.coerce.number().int().min(2).max(200).default(20),
+  /** How long institution-wide dashboard figures (KPIs, attendance week) are reused, ms (common/ttl-cache.ts); 0 = never. */
+  DASHBOARD_CACHE_MS: z.coerce.number().int().min(0).default(30_000),
   /** Swagger UI at /docs. Off with DEPLOYMENT=production unless set to true. */
   API_DOCS: z.stringbool().optional(),
   /** Scheduled reports are emailed by POSTing JSON to this relay (SES/Postmark lambda, n8n…); unset: only logged. */

@@ -99,7 +99,7 @@ export async function institutionKpis(tx: Tx, scope: Scope, range: Range, annual
     tx,
     sql`select coalesce(sum(p.amount_paise), 0)::float8 amount
         from fee_payments p join fee_invoices i on i.id = p.invoice_id join sections sec on sec.id = i.section_id join programs pr on pr.id = sec.program_id
-        where p.status = 'paid' and (p.paid_at at time zone ${timezone})::date between ${range.from}::date and ${range.to}::date ${sc}`,
+        where p.status = 'paid' and p.paid_at >= (${range.from}::date::timestamp at time zone ${timezone}) and p.paid_at < ((${range.to}::date + 1)::timestamp at time zone ${timezone}) ${sc}`,
   );
   const staffRows = await rows<{ type: string; status: string; n: number }>(tx, sql`select employment_type type, status, count(*)::int n from staff_profiles group by 1, 2`);
   const [teachers] = await rows<{ n: number }>(tx, sql`select count(distinct user_id)::int n from user_roles where role = 'teacher'`);
