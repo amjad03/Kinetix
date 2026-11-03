@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { LhtDesk, type DeskTask } from '@/components/lht/LhtDesk';
+import { HostelLinks } from '@/components/hostel/HostelLinks';
 import { LhtLinks } from '@/components/lht/LhtRecordsPage';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
@@ -79,6 +80,21 @@ export default async function HostelDeskPage() {
       result: [
         { key: 'bills', label: t('lht.r.bills') },
         { key: 'alreadyCharged', label: t('lht.r.alreadyCharged') },
+        { key: 'diets', label: t('hsp.desk.diets') },
+        { key: 'spentPaise', label: t('hsp.desk.spent'), kind: 'rupees' },
+        { key: 'dietRatePaise', label: t('hsp.desk.dietRate'), kind: 'rupees' },
+      ],
+    },
+    {
+      id: 'stock',
+      title: t('hsp.desk.stock'),
+      hint: t('hsp.desk.stockHint'),
+      path: '/v1/hostel/mess/expenses/import-stock',
+      submit: t('hsp.desk.stockGo'),
+      fields: [{ name: 'month', label: t('lht.f.month'), type: 'month', initial: month, required: true }],
+      result: [
+        { key: 'added', label: t('hsp.desk.added') },
+        { key: 'amountPaise', label: t('hsp.desk.amount'), kind: 'rupees' },
       ],
     },
     {
@@ -115,12 +131,12 @@ export default async function HostelDeskPage() {
 
   return (
     <>
-      <PageHeader title={t('lht.desk.hostel')} subtitle={t('lht.desk.hostel.sub')} actions={<LhtLinks module="hostel" here="desk" />} />
+      <PageHeader title={t('lht.desk.hostel')} subtitle={t('lht.desk.hostel.sub')} actions={<><LhtLinks module="hostel" here="desk" /><HostelLinks /></>} />
       <StatGrid min={140}>
         <StatTile label={t('lht.s.beds')} value={fmt.number(o.totals.beds)} caption={t('lht.s.occupiedN', { n: fmt.number(o.totals.occupied) })} testId="lht-ho-beds" />
         <StatTile label={t('lht.s.free')} value={fmt.number(o.totals.free)} caption={t('lht.s.heldN', { n: o.totals.held, closed: o.totals.closed })} href="/hostel/records?view=hostel-rooms&f.vacancy=yes" />
         <StatTile label={t('lht.s.applications')} value={fmt.number(o.applications)} caption={t('lht.s.waitlistN', { n: o.waitlisted })} href="/hostel/records?view=hostel-applications" />
-        <StatTile label={t('lht.s.outNow')} value={fmt.number(o.outNow)} tone={o.lateBack ? 'warning' : 'default'} caption={t('lht.s.lateN', { n: o.lateBack })} href="/hostel/records?view=hostel-gate-passes&f.status=out" />
+        <StatTile label={t('lht.s.outNow')} value={fmt.number(o.outNow)} tone={o.lateBack ? 'warning' : 'default'} caption={t('lht.s.lateN', { n: o.lateBack })} href="/hostel/gate" />
         <StatTile label={t('lht.s.passes')} value={fmt.number(o.passRequests)} caption={t('lht.s.visitorsN', { n: o.visitorsInside })} href="/hostel/records?view=hostel-gate-passes&f.status=requested" />
         <StatTile label={t('lht.s.requests')} value={fmt.number(o.requests)} href="/hostel/records?view=hostel-requests&f.status=pending" />
         <StatTile label={t('lht.s.complaints')} value={fmt.number(o.complaintsOpen)} caption={t('lht.s.incidentsN', { n: o.incidentsOpen })} href="/hostel/records?view=hostel-complaints" />

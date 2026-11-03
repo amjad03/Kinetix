@@ -18,6 +18,9 @@ describe('library, hostel and transport lists', () => {
     }
     expect(groupOf('hostel', 'mess-bills')?.key).toBe('mess');
     expect(groupOf('library', 'mess-bills')).toBeNull();
+    expect(groupOf('hostel', 'hostel-gate-log')?.key).toBe('gate');
+    expect(groupOf('hostel', 'hostel-committees')?.key).toBe('welfare');
+    expect(groupOf('hostel', 'mess-inspections')?.key).toBe('mess');
   });
 
   it('words every action input', () => {
@@ -45,6 +48,9 @@ describe('library, hostel and transport lists', () => {
     expect(isLhtPath('/v1/library/desk/issue')).toBe(true);
     expect(isLhtPath('/v1/transport/handovers/5b0c2a1e-1111-4222-8333-944455556666/verify')).toBe(true);
     expect(isLhtPath('/v1/hostel/mess/bills/charge')).toBe(true);
+    expect(isLhtPath('/v1/hostel/gate/scan')).toBe(true);
+    expect(isLhtPath('/v1/hostel/mess/expenses/import-stock')).toBe(true);
+    expect(isLhtPath('/v1/hostel/gate/manual')).toBe(false);
     expect(isLhtPath('/v1/fees/invoices')).toBe(false);
     expect(isLhtPath('/v1/library/desk/issue?x=1')).toBe(false);
     expect(isLhtPath('/v1/transport/handovers/../../admin/verify')).toBe(false);

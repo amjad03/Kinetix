@@ -20,10 +20,10 @@ export const LHT_GROUPS: Record<LhtModule, LhtGroup[]> = {
   hostel: [
     { key: 'buildings', entities: ['hostels', 'hostel-blocks', 'hostel-room-types', 'hostel-rooms', 'hostel-room-assets'] },
     { key: 'residents', entities: ['hostel-residents', 'hostel-applications', 'hostel-requests', 'hostel-bed-holds', 'hostel-deposits', 'hostel-settlements'] },
-    { key: 'gate', entities: ['hostel-gate-passes', 'hostel-visitors', 'hostel-late-entries'] },
-    { key: 'welfare', entities: ['hostel-complaints', 'hostel-incidents', 'hostel-sickbay'] },
+    { key: 'gate', entities: ['hostel-gate-passes', 'hostel-gate-log', 'hostel-visitors', 'hostel-late-entries'] },
+    { key: 'welfare', entities: ['hostel-complaints', 'hostel-incidents', 'hostel-sickbay', 'hostel-committees'] },
     { key: 'staff', entities: ['hostel-staff', 'hostel-duties'] },
-    { key: 'mess', entities: ['mess-plans', 'mess-subscriptions', 'mess-leaves', 'mess-bills'] },
+    { key: 'mess', entities: ['mess-plans', 'mess-subscriptions', 'mess-leaves', 'mess-bills', 'mess-expenses', 'mess-inspections'] },
   ],
   transport: [
     { key: 'fleet', entities: ['transport-vehicles', 'transport-drivers', 'transport-maintenance', 'transport-expenses'] },
@@ -100,7 +100,10 @@ export const PARAM_ACTIONS: Record<string, Record<string, ParamField[]>> = {
   'hostel-complaints': { resolve: [{ name: 'resolution', type: 'textarea', required: true }] },
   'hostel-deposits': { refund: [{ name: 'damages', type: 'number' }, note], forfeit: [{ name: 'note', type: 'textarea', required: true }] },
   'hostel-settlements': { paid: [{ name: 'reference', type: 'text' }] },
-  'hostel-sickbay': { discharge: [note] },
+  'hostel-sickbay': { discharge: [note], hospital: [{ name: 'hospital', type: 'text', required: true }, { name: 'escort', type: 'text' }] },
+  'hostel-room-assets': { chargeDamage: [{ name: 'amount', type: 'number', required: true }, { name: 'student', type: 'text' }, note] },
+  'hostel-committees': { addMember: [{ name: 'person', type: 'text', required: true }, { name: 'role', type: 'select', values: ['chair', 'secretary', 'member', 'external'], initial: 'member' }] },
+  'mess-inspections': { close: [{ name: 'actionTaken', type: 'textarea', required: true }] },
   'transport-riders': { end: [{ name: 'on', type: 'date' }] },
   'transport-change-requests': { reject: [note] },
   'transport-maintenance': { done: [{ name: 'doneOn', type: 'date' }, { name: 'odometerKm', type: 'number' }, { name: 'cost', type: 'number' }] },
@@ -145,7 +148,10 @@ export function paramBody(fields: ParamField[], values: Record<string, string>):
 export const LHT_PATHS =
   /^\/v1\/(library\/(desk\/(issue|return)|dropbox|gate\/swipe|members\/enrol|new-arrivals\/notify|no-dues\/[0-9a-f-]{36}\/clear)|hostel\/(applications\/auto-allot|mess\/bills\/(run|charge)|duties\/plan)|transport\/(fees\/month|duty\/today|handovers\/(otp|photo|[0-9a-f-]{36}\/verify)))$/;
 
-export const isLhtPath = (path: string) => LHT_PATHS.test(path);
+/** The hostel pass's desk paths: a gate QR scan and bringing the kitchen purchases into the mess spending. */
+export const HOSTEL_DESK_PATHS = /^\/v1\/hostel\/(gate\/scan|mess\/expenses\/import-stock)$/;
+
+export const isLhtPath = (path: string) => LHT_PATHS.test(path) || HOSTEL_DESK_PATHS.test(path);
 
 /** The lookups the desks may read (GET): a scanned code, an ISBN, a student's no-dues in each module. */
 export const LHT_READS = /^\/v1\/(library\/(desk\/lookup\?code=[A-Za-z0-9%._-]{1,80}|isbn\/[0-9Xx-]{10,17}|no-dues\/[0-9a-f-]{36})|hostel\/no-dues\/[0-9a-f-]{36}|transport\/no-dues\/[0-9a-f-]{36})$/;

@@ -168,7 +168,7 @@ export const RELATED_KIND: Record<string, RecordKind> = { applications: 'applica
 export const MODULE_REPORTS: Record<OpsModule, string[]> = {
   admissions: ['admissions.register', 'admissions.funnel'],
   library: ['library.circulation', 'library.fines', 'library.stock', 'library.accession', 'library.overdue', 'library.most-borrowed', 'library.circulation-stats', 'library.footfall', 'library.naac', 'library.withdrawals'],
-  hostel: ['hostel.occupancy', 'hostel.outpasses', 'hostel.complaints', 'hostel.vacancy', 'hostel.fee-dues', 'hostel.night-absent', 'hostel.residents', 'hostel.late-entries', 'hostel.mess-bills'],
+  hostel: ['hostel.occupancy', 'hostel.outpasses', 'hostel.complaints', 'hostel.vacancy', 'hostel.fee-dues', 'hostel.night-absent', 'hostel.residents', 'hostel.late-entries', 'hostel.mess-bills', 'hostel.defaulters', 'hostel.gate-log'],
   transport: ['transport.riders', 'transport.compliance', 'transport.expenses', 'transport.stop-list', 'transport.expiry-calendar', 'transport.fee-dues', 'transport.maintenance', 'transport.incidents', 'transport.alerts'],
   canteen: ['canteen.sales'],
   inventory: ['inventory.stock', 'inventory.ledger', 'inventory.stockRegister', 'inventory.slowMoving', 'inventory.consumption', 'inventory.verification', 'inventory.gate'],
