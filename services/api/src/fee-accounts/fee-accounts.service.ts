@@ -17,7 +17,10 @@ export async function settingsOf(tx: Tx, tenantId: string) {
       .onConflictDoNothing();
     [row] = await tx.select().from(feeAccountsSettings);
   }
-  return { ...row, series: { ...DEFAULT_SERIES, ...row.series }, mappings: { ...DEFAULT_MAPPINGS, ...row.mappings }, approvals: { ...DEFAULT_APPROVALS, ...row.approvals } };
+  // Stored JSON of the wrong shape (hand edits, old imports) reads as the defaults rather than breaking the settings page.
+  const online = row.online && typeof row.online === 'object' && !Array.isArray(row.online) ? row.online : {};
+  const escalations = Array.isArray(row.escalations) ? row.escalations : [];
+  return { ...row, online, escalations, series: { ...DEFAULT_SERIES, ...row.series }, mappings: { ...DEFAULT_MAPPINGS, ...row.mappings }, approvals: { ...DEFAULT_APPROVALS, ...row.approvals } };
 }
 
 /** Takes the next number of a series (the settings row is locked, so two requests never share one). */
