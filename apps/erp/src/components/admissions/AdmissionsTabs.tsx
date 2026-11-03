@@ -14,6 +14,10 @@ const TABS = [
   { href: '/admissions/online-test', key: 'onlineTest', label: 'adm.tab.onlineTest' },
   { href: '/admissions/partners', key: 'partners', label: 'adm.tab.partners' },
   { href: '/admissions/depth', key: 'depth', label: 'adm.tab.depth' },
+  { href: '/admissions/seats', key: 'seats', label: 'ap.tab.seats' },
+  { href: '/admissions/enrolment', key: 'enrolment', label: 'ap.tab.enrolment' },
+  { href: '/admissions/broadcasts', key: 'broadcasts', label: 'ap.tab.broadcasts' },
+  { href: '/admissions/returns', key: 'returns', label: 'ap.tab.returns' },
 ] as const;
 
 /** The admissions areas, as link tabs across the top of each page. */

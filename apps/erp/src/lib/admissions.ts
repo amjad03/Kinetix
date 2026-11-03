@@ -145,6 +145,11 @@ export interface ApplicationDetail extends Omit<ApplicationRow, 'cycleName'> {
   statusReason: string | null;
   offerExpiresOn: string | null;
   studentId: string | null;
+  /** Verified claims and the seat held (admissions pass, migration 0196). */
+  claims?: { horizontal?: string[]; supernumerary?: string[]; familyIncomePaise?: number };
+  seatType?: string | null;
+  seatCategory?: string | null;
+  allottedOption?: string | null;
   /** regular | lateral | transfer, and the term a lateral or transfer applicant joins. */
   admissionType: string;
   entryTermOverride: number | null;

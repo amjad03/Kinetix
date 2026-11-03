@@ -173,6 +173,8 @@ export class EnrolmentService {
     const a = await this.admissions.application(tx, applicationId);
     const s = (await readSettings(tx, p.tenantId, 'admissions')).rules;
     const registerNo = await this.assignRegisterNo(tx, actor, res.studentId, a);
+    // A verified PwD claim is the profile's disability (AISHE 5.4 and the PwD returns read it there).
+    if (a.claims?.horizontal?.includes('pwd')) await tx.update(studentProfiles).set({ disability: sql`coalesce(${studentProfiles.disability}, 'Benchmark disability (verified at admission)')`, updatedAt: new Date() }).where(eq(studentProfiles.studentId, res.studentId));
     const [y] = await tx.select({ label: academicYears.label }).from(sections).innerJoin(academicYears, eq(academicYears.id, sections.academicYearId)).where(eq(sections.id, res.sectionId));
     await tx
       .insert(feeStudentProfiles)

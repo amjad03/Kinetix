@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AdmissionPanel } from '@/components/admissions/AdmissionPanel';
 import { ApplicationDeskPanel } from '@/components/admissions/ApplicationDeskPanel';
+import type { Checklist } from '@/lib/admissions-pass';
 import { ApplicationReview } from '@/components/admissions/ApplicationReview';
 import type { ApplicationDesk } from '@/lib/admissions-desk';
 import { StatusPill } from '@/components/admissions/Chips';
@@ -52,7 +54,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
     );
   }
   const a = app.data;
-  const [structure, desk] = await Promise.all([load(() => api<Structure>('/v1/admin/structure')), load(() => api<ApplicationDesk>(`/v1/admissions/applications/${id}/desk`))]);
+  const [structure, desk, checklist] = await Promise.all([load(() => api<Structure>('/v1/admin/structure')), load(() => api<ApplicationDesk>(`/v1/admissions/applications/${id}/desk`)), load(() => api<Checklist>(`/v1/admissions/applications/${id}/checklist`))]);
   // A lateral or transfer applicant joins a later term than the cycle's.
   const joinTerm = a.entryTermOverride ?? a.cycle.entryTerm;
   const classes = a.status === 'accepted' ? (structure.data?.sections ?? []).filter((s) => s.programId === a.cycle.programId && s.term === joinTerm).map((s) => ({ id: s.id, name: s.displayName, term: s.term })) : [];
@@ -125,6 +127,9 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
         ) : (
           <ApplicationDeskPanel applicationId={a.id} status={a.status} desk={desk.data} kind={{ admissionType: a.admissionType, entryTermOverride: a.entryTermOverride, nationality: a.nationality }} termCount={termCount} />
         )}
+      </div>
+      <div className="mt-6">
+        <AdmissionPanel applicationId={a.id} status={a.status} studentId={a.studentId} claims={a.claims ?? {}} checklist={checklist.data ?? null} seat={{ seatType: a.seatType ?? null, seatCategory: a.seatCategory ?? null, option: a.allottedOption ?? null }} />
       </div>
     </>
   );
