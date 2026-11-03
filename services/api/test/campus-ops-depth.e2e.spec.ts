@@ -40,7 +40,7 @@ describe('campus operations depth: module settings, record views, reports, libra
     const a = (await http().post('/v1/library/books').set(as('principal')).send({ title: 'Cost Accounting', copies: 3, barcode: 'LB-1' }).expect(201)).body;
     const loan = (await http().post('/v1/library/loans').set(as('principal')).send({ bookId: a.id, studentId: t.students[0].id }).expect(201)).body;
     expect(loan.dueOn).toBe('2026-10-19');
-    await http().post('/v1/library/loans').set(as('principal')).send({ bookId: a.id, studentId: t.students[0].id }).expect(400);
+    await http().post('/v1/library/loans').set(as('principal')).send({ bookId: a.id, studentId: t.students[0].id }).expect(409); // over the per-student limit (a conflict, as at the copy desk)
 
     // Numbering: procurement series with a financial-year prefix, moved forward to 42.
     await http().put('/v1/module-settings/procurement').set(as('principal')).send({ numbering: { REQ: { prefix: 'IND/{FY}/', pad: 5, next: 42 } } }).expect(200);
