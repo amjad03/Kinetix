@@ -114,6 +114,38 @@ export async function transportPass(c: Ctx): Promise<void> {
     if (missed) await k.ins('transport_trip_events', { tripId: live.id, kind: 'not_boarded', stopId: missed.stopId, at: at(c.today, '07:39'), detail: (await k.q<{ fullName: string }>('select full_name from students where id = $1', [missed.studentId]))[0]?.fullName ?? '' }, { returning: false });
   }
 
+  // ---- GPS alerts, the maintenance schedule, duty with a spare, temporary changes, families' requests, hand-overs ----
+  const recent = trips.slice(-8);
+  if (recent.length >= 3) {
+    const ev = (t: (typeof trips)[number], kind: string, mins: number, speed: number | null, detail: string, ack: boolean) => ({ tripId: t.id, kind, at: new Date(t.startedAt.getTime() + mins * 60_000), lat: '13.052100', lng: '77.531800', speedKmh: speed == null ? null : String(speed), detail, acknowledgedBy: ack ? mgr : null, acknowledgedAt: ack ? new Date(t.startedAt.getTime() + (mins + 4) * 60_000) : null });
+    await k.ins('transport_trip_events', [ev(recent[0], 'overspeed', 18, 58, '58 km/h (limit 50)', true), ev(recent[1], 'deviation', 31, null, '740 m off the route', true), ev(recent[2], 'overspeed', 22, 63, '63 km/h (limit 50)', false)], { returning: false });
+  }
+  const maint = vehicles.flatMap((v, i) => [
+    { vehicleId: v.id, kind: 'service', dueOn: addDays(c.today, i === 1 ? -4 : 20 + i * 15), dueKm: 45_000 + i * 5_000, vendor: 'Sri Chamundi Motors, Peenya', note: 'Engine oil, filters and brake check', status: 'scheduled' },
+    { vehicleId: v.id, kind: i % 2 ? 'tyres' : 'battery', dueOn: addDays(c.today, -35 - i * 5), doneOn: addDays(c.today, -33 - i * 5), odometerKm: 40_100 + i * 5_000, costPaise: rupees(i % 2 ? 24_800 : 7_600), vendor: i % 2 ? 'MRF Tyre Point, Yeshwanthpur' : 'Amaron Battery Care', status: 'done' },
+  ]);
+  await k.ins('transport_maintenance', maint, { returning: false });
+  const [spare] = await k.ins<{ id: string }>('transport_drivers', { fullName: 'Somashekar', phone: '+919000022007', role: 'driver', gender: 'male', licenceClass: 'HMV, transport badge', licenseNo: 'KA0220150077110', licenseExpiresOn: addDays(c.today, 900), licenceIssuedOn: addDays(c.today, -11 * 365), policeVerifiedOn: addDays(c.today, -60), policeVerificationRef: 'BLR/PV/2026/2410', medicalValidUntil: addDays(c.today, 300), isSpare: true, active: true });
+  const duty = routes.filter((x) => x.driverId).map((x, i) => ({ driverId: x.driverId, dutyOn: c.today, routeId: x.id, status: i === 2 ? 'leave' : 'present', substituteDriverId: i === 2 ? spare.id : null, note: i === 2 ? 'Family function; Somashekar covers' : '' }));
+  // Two routes share a driver: one duty row a day per driver.
+  const seen = new Set<string>();
+  await k.ins('transport_driver_duty', duty.filter((d) => !seen.has(d.driverId) && seen.add(d.driverId)), { returning: false });
+  if (routes[2]) await k.ins('transport_route_overrides', [
+    { routeId: routes[2].id, fromOn: c.today, untilOn: c.today, kind: 'driver', substituteDriverId: spare.id, reason: 'Regular driver on leave', createdBy: mgr, notifiedAt: at(c.today, '06:15') },
+    { routeId: routes[0].id, fromOn: addDays(c.today, 9), untilOn: addDays(c.today, 11), kind: 'timing', shiftMinutes: -30, reason: 'Semester-end examinations start at 9:00', createdBy: mgr },
+  ], { returning: false });
+  const moveTo = stops.filter((s) => s.routeId === routes[1]?.id);
+  const asking = riders.filter((s) => s.routeId === routes[0]?.id).slice(0, 2);
+  if (moveTo.length > 1 && asking.length === 2) {
+    await k.ins('transport_change_requests', [
+      { studentId: asking[0].studentId, fromRouteId: routes[0].id, fromStopId: asking[0].stopId, toRouteId: routes[1].id, toStopId: moveTo[1].id, effectiveOn: addDays(c.today, 5), reason: 'We are moving to Rajajinagar from next week', requestedBy: c.byEmail.transport.id, status: 'pending' },
+      { studentId: asking[1].studentId, fromRouteId: routes[0].id, fromStopId: asking[1].stopId, toRouteId: routes[0].id, toStopId: stops.find((s) => s.routeId === routes[0].id && s.seq === 2)?.id ?? asking[1].stopId, effectiveOn: addDays(c.today, -10), reason: 'Closer to the new tuition centre', requestedBy: c.byEmail.transport.id, status: 'rejected', decisionNote: 'That stop is full on the morning run', decidedBy: mgr, decidedAt: at(addDays(c.today, -11), '12:00') },
+    ], { returning: false });
+  }
+  const persons = await k.ins<{ id: string; studentId: string }>('transport_pickup_persons', riders.slice(0, 6).map((s, i) => ({ studentId: s.studentId, name: ['Ramesh (father)', 'Savitha (mother)', 'Krishnappa (grandfather)', 'Geetha (aunt)', 'Mohan (uncle)', 'Vani (mother)'][i], relation: ['father', 'mother', 'grandfather', 'aunt', 'uncle', 'mother'][i], phone: `+9198450${String(31100 + i)}`, idProof: i % 2 ? 'Aadhaar ending 4417' : 'Driving licence KA01' })));
+  const drop = trips.filter((t) => t.direction === 'drop').at(-1);
+  if (drop) await k.ins('transport_handovers', persons.slice(0, 4).map((p, i) => ({ studentId: p.studentId, tripId: drop.id, personId: i % 2 ? p.id : null, method: i % 2 ? 'photo' : 'otp', status: i === 3 ? 'refused' : 'done', attempts: i === 3 ? 5 : i === 0 ? 1 : 0, note: i === 3 ? 'Too many wrong codes; child brought back to campus and parent called' : '', handedAt: i === 3 ? null : new Date(drop.startedAt.getTime() + (20 + i * 6) * 60_000), recordedBy: mgr })), { returning: false });
+
   // ---- a resolved SOS last week -------------------------------------------------------------------------------------
   const sosTrip = trips.find((t) => t.routeId === routes[1]?.id);
   if (sosTrip) {
