@@ -36,9 +36,9 @@ export const splitCodes = (s: string) => [...new Set(s.split(/[\s,;]+/).map((x) 
  * The desk: a card per task (issue and return books, run the mess bills, send a hand-over code ...), each a small
  * form sent to the API; the answer is shown under the form (per scanned code where the task takes several).
  */
-export function LhtDesk({ tasks }: { tasks: DeskTask[] }) {
+export function LhtDesk({ tasks, columns = 2 }: { tasks: DeskTask[]; columns?: 1 | 2 }) {
   return (
-    <div className="grid items-start gap-5 lg:grid-cols-2" data-testid="lht-desk">
+    <div className={columns === 2 ? 'grid items-start gap-5 lg:grid-cols-2' : 'grid items-start gap-5'} data-testid="lht-desk">
       {tasks.map((task) => (
         <TaskCard key={task.id} task={task} />
       ))}

@@ -126,7 +126,7 @@ export default area(
     'hsp.naac.undertakings': 'Undertakings for the year',
     'hsp.naac.ragging': 'Ragging incidents',
     'hsp.naac.sickbay': 'Sick bay',
-    'hsp.naac.emergenciesN': '{visits} visits · {emergencies} emergencies',
+    'hsp.naac.emergenciesN': 'Visits {visits} · emergencies {emergencies}',
     'hsp.naac.complaints': 'Complaints',
     'hsp.naac.resolvedN': '{all} · {pct}% resolved',
     'hsp.naac.meanDays': 'Days to resolve (mean)',

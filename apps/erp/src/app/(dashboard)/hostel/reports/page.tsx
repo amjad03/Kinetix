@@ -294,7 +294,7 @@ async function AisheTab({ year }: { year?: string }) {
         <StatTile label={t('hsp.naac.residents')} value={fmt.number(n.residents)} />
         <StatTile label={t('hsp.naac.occupancy')} value={pct(n.occupancyPercent)} testId="hp-naac-occupancy" />
       </StatGrid>
-      <div className="grid items-start gap-5 lg:grid-cols-2">
+      <div className="grid items-start gap-5 xl:grid-cols-2">
         <Card title={t('hsp.aishe.title')} subtitle={t('hsp.aishe.sub')} padded={false} testId="hp-aishe">
           <Table head={[t('hsp.aishe.type'), t('hsp.aishe.hostels'), t('hsp.aishe.capacity'), t('hsp.aishe.residing'), t('hsp.aishe.male'), t('hsp.aishe.female'), t('hsp.aishe.other')]} min={520}>
             {a.aishe.rows.map((r) => (

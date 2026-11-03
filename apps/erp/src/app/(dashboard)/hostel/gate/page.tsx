@@ -71,9 +71,9 @@ export default async function HostelGatePage() {
         <StatTile label={t('hsp.gate.overdue')} value={fmt.number(overdue)} tone={overdue ? 'warning' : 'default'} caption={overdue ? t('hsp.gate.overdueHelp') : undefined} testId="hp-gate-overdue" />
         <StatTile label={t('hsp.gate.lateToday')} value={t('hsp.gate.see')} href="/hostel/records?view=hostel-late-entries&f.when=week" />
       </StatGrid>
-      <div className="grid items-start gap-5 lg:grid-cols-[1fr_1.4fr]">
+      <div className="grid items-start gap-5 xl:grid-cols-[1fr_1.4fr]">
         <div className="grid gap-5">
-          <LhtDesk tasks={[scan]} />
+          <LhtDesk tasks={[scan]} columns={1} />
           <Card title={t('hsp.gate.byHand')} testId="hp-gate-hand">
             <p className="mt-0 mb-3 text-sm text-muted-foreground">{t('hsp.gate.byHandHint')}</p>
             <div className="flex flex-wrap gap-2">
