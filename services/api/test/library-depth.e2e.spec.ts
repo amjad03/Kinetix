@@ -5,6 +5,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { writeIso2709 } from '../src/library/marc.js';
 import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
 
+/** The date in India of an instant (the institution's day). */
+const ist = (ms: number) => new Date(ms + 5.5 * 3_600_000).toISOString().slice(0, 10);
+
 const binary = (res: request.Response, cb: (e: Error | null, body: Buffer) => void) => {
   const chunks: Buffer[] = [];
   res.on('data', (c: Buffer) => chunks.push(c));
@@ -46,6 +49,8 @@ describe('library depth', () => {
     tokens.student = await login(t.slug, t.studentUser.email!);
     tokens.parent = await login(t.slug, t.guardian.email!);
     tokens.outsider = await login(other.slug, other.principal.email!);
+    // These figures count every day: no weekly closed day (the holiday-aware fines are tested in library-pass).
+    await http().put('/v1/module-settings/library').set(as('principal')).send({ rules: { closedWeekdays: '' } }).expect(200);
   }, 120_000);
 
   afterAll(async () => {
@@ -150,7 +155,7 @@ describe('library depth', () => {
 
   it('fines late returns from the drop box by the time dropped, waives with approval, and collects with fees', async () => {
     // Make the loan four days overdue, then return it through the drop box as of yesterday.
-    const due = new Date(Date.now() - 5 * 86_400_000).toISOString().slice(0, 10);
+    const due = ist(Date.now() - 5 * 86_400_000);
     await owner.query(`update library_loans set issued_at = now() - interval '20 days' where id = $1`, [ids.loanA]);
     await http().patch(`/v1/records/library-loans/${ids.loanA}`).set(as('lib')).send({ dueOn: due }).expect(200);
     expect((await get('lib', `/v1/records/library-loans?f.status=overdue`).expect(200)).body.total).toBe(1);
@@ -160,7 +165,7 @@ describe('library depth', () => {
     const row = (await get('lib', `/v1/records/library-loans/${ids.loanA}`).expect(200)).body;
     expect(row).toMatchObject({ status: 'returned', returnedVia: 'dropbox', fineRupees: 8, unpaidRupees: 8 });
     // Unpaid fines from ₹5 (library settings) block the next issue.
-    await http().put('/v1/module-settings/library').set(as('principal')).send({ rules: { blockIssueAtFinePaise: 500 } }).expect(200);
+    await http().put('/v1/module-settings/library').set(as('principal')).send({ rules: { blockIssueAtFinePaise: 500, closedWeekdays: '' } }).expect(200);
     await post('lib', '/v1/records/library-loans', { copyCode: 'ACC-0001', memberCode: ids.cardA }).expect(409);
     // The librarian asks; only the principal decides.
     await action('lib', 'library-loans', ids.loanA, 'requestWaiver', { amount: 10, reason: 'Hospitalised' }).expect(200).then((x) => expect(x.body.rows[0].ok).toBe(false));
@@ -187,7 +192,7 @@ describe('library depth', () => {
     await post('lib', '/v1/library/desk/issue', { memberCode: ids.cardC, copyCodes: ['ACC-0002'], bookBank: true }).expect(409);
     const bb = (await post('lib', '/v1/library/desk/issue', { memberCode: ids.cardB, copyCodes: ['ACC-0002'], bookBank: true }).expect(200)).body.results[0];
     expect(bb.ok).toBe(true);
-    expect(bb.dueOn > new Date(Date.now() + 140 * 86_400_000).toISOString().slice(0, 10)).toBe(true);
+    expect(bb.dueOn > ist(Date.now() + 140 * 86_400_000)).toBe(true);
     expect((await action('lib', 'library-loans', bb.loanId, 'renew').expect(200)).body.rows[0].ok).toBe(false);
     // Self-checkout by student C (their own card).
     await post('lib', '/v1/library/self-checkout', { copyCode: 'ACC-0004' }).expect(403);
@@ -206,6 +211,9 @@ describe('library depth', () => {
     await post('lib', `/v1/library/no-dues/${t.students[0].id}/clear`, { purpose: 'TC' }).expect(409);
     const lostLoan = (await get('lib', `/v1/records/library-loans?f.status=lost`).expect(200)).body.rows[0];
     await action('lib', 'library-loans', lostLoan.id, 'finePaid').expect(200);
+    // The ₹5 sent to the fee account still counts until the fee is paid.
+    expect((await post('lib', `/v1/library/no-dues/${t.students[0].id}/clear`, { purpose: 'TC' }).expect(409)).body.message).toContain('on the fee account not yet paid');
+    await owner.query(`update fee_invoices set paid_paise = amount_paise, status = 'paid' where student_id = $1 and title like 'Library fine%'`, [t.students[0].id]);
     const cleared = (await post('lib', `/v1/library/no-dues/${t.students[0].id}/clear`, { purpose: 'TC' }).expect(201)).body;
     expect(cleared).toMatchObject({ purpose: 'TC' });
     expect((await get('lib', '/v1/records/library-clearances').expect(200)).body.rows[0]).toMatchObject({ fullName: 'Student A', purpose: 'TC' });
