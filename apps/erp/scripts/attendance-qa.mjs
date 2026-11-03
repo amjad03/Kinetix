@@ -31,12 +31,16 @@ async function get(prefix, url) {
 const classes = (await get('principal', '/v1/attendance-desk/classes')) ?? [];
 const bcom = classes.find((c) => c.name === 'BCom Sem 3 A') ?? classes[0];
 const sahana = (await get('principal', `/v1/students?q=25BCM001`))?.rows?.[0] ?? (await get('principal', `/v1/students?q=25BCM001`))?.[0];
-const today = new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10);
+const istToday = new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10);
+const weekAgo = new Date(Date.now() + 5.5 * 3600_000 - 7 * 86_400_000).toISOString().slice(0, 10);
+// The demo day: the latest day with held QR scans (the seed's day, even after midnight), else today.
+const held = await get('principal', `/v1/attendance-desk/qr-scans?from=${weekAgo}&to=${istToday}`);
+const today = held?.rows?.[0]?.date ?? istToday;
 const month = today.slice(0, 7);
 // The class's second period today has the classroom face terminal's taps (Soundarya seed, attendance-pass.ts).
 const day = await get('principal', `/v1/attendance-desk/day?sectionId=${bcom.id}&date=${today}`);
 const tapped = day?.periods?.[1]?.slotId;
-const markUrl = tapped ? `/attendance/mark?slot=${tapped}&date=${today}` : '/attendance/mark';
+const markUrl = tapped ? `/attendance/mark?section=${bcom.id}&slot=${tapped}&date=${today}` : '/attendance/mark';
 
 const PAGES = [
   ['/attendance', 'principal'],
@@ -107,12 +111,12 @@ mkdirSync(OUT, { recursive: true });
 const SHOTS = [
   { name: '01-department-day', url: '/attendance' },
   { name: '02-mark-reader-taps', url: markUrl },
-  { name: '03-qr-review', url: '/attendance/qr-review' },
+  { name: '03-qr-review', url: `/attendance/qr-review?from=${today}&to=${today}` },
   { name: '04-detention-lists', url: '/attendance/eligibility?view=programme' },
   { name: '05-monthly-register', url: `/attendance/register?sectionId=${bcom.id}&month=${month}` },
   { name: '06-reports-naac', url: '/attendance/reports?view=accreditation' },
   { name: '07-defaulter-trend', url: '/attendance/reports?view=trend' },
-  { name: '08-qr-review-phone', url: '/attendance/qr-review', width: 390 },
+  { name: '08-qr-review-phone', url: `/attendance/qr-review?from=${today}&to=${today}`, width: 390 },
 ];
 for (const s of SHOTS) {
   const ctx = await open(s.width ?? 1280, s.login);
