@@ -14,8 +14,8 @@ depth; **Info** no risk today.
 
 | | Critical | High | Medium | Low | Info |
 | --- | --- | --- | --- | --- | --- |
-| Found | 1 | 6 | 13 | 4 | 2 |
-| Fixed in this pass | 1 | 6 | 11 | 4 | 2 |
+| Found | 1 | 6 | 14 | 4 | 2 |
+| Fixed in this pass | 1 | 6 | 12 | 4 | 2 |
 | Open (accepted or handed over, below) | 0 | 0 | 2 | 0 | 0 |
 
 What was already in good shape and is now pinned by tests: row-level security on every tenant table (the app role has
