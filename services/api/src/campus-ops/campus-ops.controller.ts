@@ -1,5 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
-import { and, desc, eq, sql, type SQL } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -11,6 +11,8 @@ import { writeXlsx } from '../common/xlsx.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { docCounters, libraryBooks, libraryStockCheckItems, libraryStockChecks, moduleSettings } from '../db/schema.js';
+import { libraryCopies } from '../db/schema-lht.js';
+import { libraryStockCheckCopies } from '../db/schema-library.js';
 import { hasRole } from '../placements/placements.access.js';
 import { DEFAULTS, MODULE_ROLES, NUMBERING, OPS_MODULES, RECORD_KINDS, REPORTS, type OpsModule } from './catalog.js';
 import { defaultSeries, mergeSettings, SeriesBody, type Series } from './settings.js';
@@ -26,7 +28,8 @@ const SettingsBody = z.object({
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const ReportQuery = z.object({ from: Day.optional(), to: Day.optional(), status: z.string().trim().min(1).max(40).optional(), format: z.enum(['json', 'csv', 'xlsx', 'pdf']).default('json') });
 const ScanBody = z.object({ code: z.string().trim().min(1).max(80) });
-const StartBody = z.object({ note: z.string().trim().max(300).default('') });
+const StartBody = z.object({ note: z.string().trim().max(300).default(''), branchId: z.uuid().optional(), shelfPrefix: z.string().trim().max(40).default('') });
+const CloseBody = z.object({ markMissing: z.boolean().default(false) });
 const SECRET = /hash|token|secret|password/i;
 
 function moduleOf(m: string): OpsModule {
@@ -186,31 +189,52 @@ export class CampusOpsController {
   @Get('library/stock-checks')
   @Auth('user', MODULE_ROLES.library)
   checks(@CurrentPrincipal() p: UserPrincipal) {
-    return this.db.withTenant(p.tenantId, (tx) => tx.select().from(libraryStockChecks).orderBy(desc(libraryStockChecks.createdAt)).limit(50));
+    return this.db.withTenant(p.tenantId, (tx) =>
+      tx
+        .select({ c: libraryStockChecks, scanned: sql<number>`(select count(*)::int from library_stock_check_copies s where s.check_id = ${libraryStockChecks.id})`, branch: sql<string | null>`(select name from library_branches b where b.id = ${libraryStockChecks.branchId})` })
+        .from(libraryStockChecks)
+        .orderBy(desc(libraryStockChecks.createdAt))
+        .limit(50)
+        .then((rows) => rows.map((r) => ({ ...r.c, scannedCopies: r.scanned, branchName: r.branch }))),
+    );
   }
 
+  /** Starts a verification of the whole library, one branch, or a shelf range (shelf marks starting with `shelfPrefix`). */
   @Post('library/stock-checks')
   @Auth('user', MODULE_ROLES.library)
   start(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(StartBody)) b: z.infer<typeof StartBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [open] = await tx.select({ id: libraryStockChecks.id }).from(libraryStockChecks).where(eq(libraryStockChecks.status, 'open'));
       if (open) throw new ConflictException('A stock verification is already open; close it first');
-      const [row] = await tx.insert(libraryStockChecks).values({ tenantId: p.tenantId, number: await nextNumber(tx, p.tenantId, 'LSC'), note: b.note, startedBy: p.userId }).returning();
-      await auditUser(tx, p, 'library.stock_check.started', 'library_stock_check', row.id, { number: row.number });
+      const [row] = await tx.insert(libraryStockChecks).values({ tenantId: p.tenantId, number: await nextNumber(tx, p.tenantId, 'LSC'), note: b.note, branchId: b.branchId ?? null, shelfPrefix: b.shelfPrefix, startedBy: p.userId }).returning();
+      await auditUser(tx, p, 'library.stock_check.started', 'library_stock_check', row.id, { number: row.number, branchId: b.branchId ?? null, shelfPrefix: b.shelfPrefix });
       return row;
     });
   }
 
-  /** Scans one copy by barcode, ISBN or book id; scanning the same title again counts another copy. */
+  /**
+   * Scans one copy by its barcode, accession number or RFID tag (each copy counts once, a second scan is reported as a
+   * repeat). A book's own barcode or ISBN (catalogues from before the accession register) counts one more copy of it.
+   */
   @Post('library/stock-checks/:id/scan')
   @HttpCode(200)
   @Auth('user', MODULE_ROLES.library)
   scan(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ScanBody)) b: z.infer<typeof ScanBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const check = await this.openCheck(tx, id);
+      const code = b.code.toLowerCase();
+      const [copy] = await tx.select().from(libraryCopies).where(sql`lower(${libraryCopies.barcode}) = ${code} or lower(${libraryCopies.accessionNo}) = ${code} or lower(${libraryCopies.rfid}) = ${code}`).limit(1);
+      if (copy) {
+        const [book] = await tx.select({ id: libraryBooks.id, title: libraryBooks.title, copies: libraryBooks.copies }).from(libraryBooks).where(eq(libraryBooks.id, copy.bookId));
+        const [seen] = await tx.insert(libraryStockCheckCopies).values({ tenantId: p.tenantId, checkId: check.id, copyId: copy.id, priorStatus: copy.status, scannedBy: p.userId }).onConflictDoNothing().returning({ id: libraryStockCheckCopies.id });
+        const [{ found }] = await tx.select({ found: sql<number>`count(*)::int` }).from(libraryStockCheckCopies).innerJoin(libraryCopies, eq(libraryCopies.id, libraryStockCheckCopies.copyId)).where(and(eq(libraryStockCheckCopies.checkId, check.id), eq(libraryCopies.bookId, book.id)));
+        // Out of place: another branch's copy, or a copy the register says is out or gone.
+        const note = check.branchId && copy.branchId && copy.branchId !== check.branchId ? 'other_branch' : copy.status === 'on_loan' ? 'on_loan' : ['lost', 'withdrawn', 'missing'].includes(copy.status) ? copy.status : null;
+        return { bookId: book.id, copyId: copy.id, accessionNo: copy.accessionNo, title: book.title, found, copies: book.copies, repeat: !seen, status: copy.status, note, over: false };
+      }
       const uuid = /^[0-9a-f-]{36}$/i.test(b.code) ? b.code : '00000000-0000-0000-0000-000000000000';
       const [book] = await tx.select().from(libraryBooks).where(sql`${libraryBooks.barcode} = ${b.code} or ${libraryBooks.isbn} = ${b.code} or ${libraryBooks.id} = ${uuid}::uuid`).limit(1);
-      if (!book) throw new NotFoundException('No book has this code');
+      if (!book) throw new NotFoundException('No copy or book has this code');
       const [item] = await tx
         .insert(libraryStockCheckItems)
         .values({ tenantId: p.tenantId, checkId: check.id, bookId: book.id, scannedBy: p.userId })
@@ -220,23 +244,61 @@ export class CampusOpsController {
     });
   }
 
-  /** Closes the verification: copies expected (on the register, less those on loan) against copies found. */
+  /**
+   * Closes the verification. Each copy in scope that should be on the shelf (on the shelf, missing or damaged in the
+   * register) is found or not; copies out on loan, at the binder or in transit are accounted for elsewhere. With
+   * `markMissing`, copies not found become "missing" and missing copies that were found go back on the shelf.
+   */
   @Post('library/stock-checks/:id/close')
   @HttpCode(200)
   @Auth('user', MODULE_ROLES.library)
-  close(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+  close(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(CloseBody)) b: z.infer<typeof CloseBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const check = await this.openCheck(tx, id);
-      const lines = (
-        await tx.execute<{ bookId: string; title: string; expected: number; found: number }>(sql`
-          select b.id as "bookId", b.title, (b.copies - count(l.id) filter (where l.returned_at is null))::int as expected, coalesce(max(i.found), 0)::int as found
-          from library_books b left join library_loans l on l.book_id = b.id left join library_stock_check_items i on i.book_id = b.id and i.check_id = ${check.id}::uuid
-          group by b.id order by b.title`)
+      const scope = sql`${check.branchId ? sql`and coalesce(c.at_branch_id, c.branch_id) = ${check.branchId}::uuid` : sql``} ${check.shelfPrefix ? sql`and c.shelf ilike ${`${check.shelfPrefix.replace(/[\\%_]/g, (x) => `\\${x}`)}%`}` : sql``}`;
+      const copies = (
+        await tx.execute<{ id: string; book_id: string; accession_no: string; title: string; status: string; price_paise: number; found: boolean }>(sql`
+          select c.id, c.book_id, c.accession_no, b.title, c.status, c.price_paise, exists (select 1 from library_stock_check_copies s where s.check_id = ${check.id}::uuid and s.copy_id = c.id) as found
+          from library_copies c join library_books b on b.id = c.book_id
+          where c.status not in ('withdrawn', 'lost') ${scope}
+          order by length(c.accession_no), c.accession_no`)
       ).rows;
-      const missing = lines.filter((l) => l.found < l.expected).map((l) => ({ ...l, short: l.expected - l.found }));
-      const summary = { titles: lines.length, expected: lines.reduce((s, l) => s + Math.max(0, l.expected), 0), found: lines.reduce((s, l) => s + l.found, 0), missing: missing.slice(0, 500), missingTitles: missing.length };
+      // Titles scanned by their own barcode before the register: their count stands in for copies of that title.
+      const byTitle = new Map((await tx.select({ bookId: libraryStockCheckItems.bookId, found: libraryStockCheckItems.found }).from(libraryStockCheckItems).where(eq(libraryStockCheckItems.checkId, check.id))).map((r) => [r.bookId, r.found]));
+      const shelfStatuses = ['available', 'missing', 'damaged'];
+      const expected = copies.filter((c) => shelfStatuses.includes(c.status));
+      const counted = new Map<string, number>();
+      const missing = expected.filter((c) => {
+        if (c.found) return false;
+        const left = (byTitle.get(c.book_id) ?? 0) - (counted.get(c.book_id) ?? 0);
+        if (left > 0) {
+          counted.set(c.book_id, (counted.get(c.book_id) ?? 0) + 1);
+          return false;
+        }
+        return true;
+      });
+      const foundAgain = copies.filter((c) => c.found && c.status === 'missing');
+      if (b.markMissing) {
+        if (missing.length) await tx.update(libraryCopies).set({ status: 'missing', note: `Not found in stock verification ${check.number}` }).where(and(inArray(libraryCopies.id, missing.map((c) => c.id)), eq(libraryCopies.status, 'available')));
+        if (foundAgain.length) await tx.update(libraryCopies).set({ status: 'available', note: `Found in stock verification ${check.number}` }).where(inArray(libraryCopies.id, foundAgain.map((c) => c.id)));
+      }
+      const summary = {
+        copies: copies.length,
+        expected: expected.length,
+        found: expected.length - missing.length,
+        onLoan: copies.filter((c) => c.status === 'on_loan').length,
+        atBinder: copies.filter((c) => c.status === 'binding').length,
+        inTransit: copies.filter((c) => c.status === 'in_transit').length,
+        missingCopies: missing.length,
+        missingValuePaise: missing.reduce((s, c) => s + Number(c.price_paise), 0),
+        foundAgain: foundAgain.length,
+        markedMissing: b.markMissing,
+        missing: missing.slice(0, 500).map((c) => ({ copyId: c.id, accessionNo: c.accession_no, title: c.title, bookId: c.book_id })),
+        missingTitles: new Set(missing.map((c) => c.book_id)).size,
+        titles: new Set(copies.map((c) => c.book_id)).size,
+      };
       const [row] = await tx.update(libraryStockChecks).set({ status: 'closed', closedBy: p.userId, closedAt: new Date(), summary }).where(eq(libraryStockChecks.id, id)).returning();
-      await auditUser(tx, p, 'library.stock_check.closed', 'library_stock_check', id, { expected: summary.expected, found: summary.found, missingTitles: summary.missingTitles });
+      await auditUser(tx, p, 'library.stock_check.closed', 'library_stock_check', id, { expected: summary.expected, found: summary.found, missingCopies: summary.missingCopies, markedMissing: b.markMissing });
       return row;
     });
   }

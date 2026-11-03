@@ -5,6 +5,8 @@ import { and, eq, isNull, sql } from 'drizzle-orm';
 import { Clock, localParts } from '../common/time.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { libraryBooks, libraryLoans, students } from '../db/schema.js';
+import { libraryCopies } from '../db/schema-lht.js';
+import { ensureStudentMember, memberStanding, tenantToday } from '../library/circulation.js';
 import { credentialTags, apiTokens } from '../db/schema-integrations.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { ApiTokenService } from './feeds.controller.js';
@@ -87,9 +89,21 @@ export class Sip2Service {
     return s ?? null;
   }
 
+  /** An item by its copy's barcode, accession number or RFID tag, or (catalogues before the register) the book's barcode. */
   private async findItem(tx: Tx, barcode: string) {
+    const code = barcode.trim().toLowerCase();
+    if (!code) return null;
+    const [c] = await tx
+      .select({ id: libraryBooks.id, title: libraryBooks.title, copyId: libraryCopies.id, status: libraryCopies.status })
+      .from(libraryCopies)
+      .innerJoin(libraryBooks, eq(libraryBooks.id, libraryCopies.bookId))
+      .where(sql`lower(${libraryCopies.barcode}) = ${code} or lower(${libraryCopies.accessionNo}) = ${code} or lower(${libraryCopies.rfid}) = ${code}`)
+      .limit(1);
+    if (c) return { id: c.id, title: c.title, copyId: c.copyId as string | null, onLoan: c.status === 'on_loan' };
     const [b] = await tx.select({ id: libraryBooks.id, title: libraryBooks.title, copies: libraryBooks.copies }).from(libraryBooks).where(eq(libraryBooks.barcode, barcode));
-    return b ?? null;
+    if (!b) return null;
+    const [{ out }] = await tx.select({ out: sql<number>`count(*)::int` }).from(libraryLoans).where(and(eq(libraryLoans.bookId, b.id), isNull(libraryLoans.returnedAt)));
+    return { id: b.id, title: b.title, copyId: null, onLoan: out >= b.copies };
   }
 
   private async patron(tx: Tx, line: string, _s: Sip2Session) {
@@ -97,7 +111,8 @@ export class Sip2Service {
     const date = sipDate(this.clock.now());
     const st = await this.findPatron(tx, f.AA ?? '');
     if (!st) return `64YYYYYYYYYYYYYY000${date}000000000000000000000000000000AO|AA${f.AA ?? ''}|AE|BLN|`;
-    const [counts] = await tx.select({ charged: sql<number>`count(*) filter (where returned_at is null)::int`, overdue: sql<number>`count(*) filter (where returned_at is null and due_on < current_date)::int`, fines: sql<number>`coalesce(sum(fine_paise) filter (where fine_paid_at is null), 0)::int` }).from(libraryLoans).where(eq(libraryLoans.studentId, st.id));
+    const standing = await memberStanding(tx, await ensureStudentMember(tx, _s.tenantId, st.id), await tenantToday(tx, this.clock.now()));
+    const counts = { charged: standing.out, overdue: standing.overdue, fines: standing.unpaidPaise };
     const n = (x: number) => String(x).padStart(4, '0');
     return `64${st.status === 'active' || st.status === 'enrolled' ? ' ' : 'Y'}YYYYYYYYYYYYY000${date}${n(0)}${n(counts.overdue)}${n(counts.charged)}${n(0)}${n(0)}${n(0)}AO|AA${st.rollNo}|AE${st.name}|BLY|BV${(counts.fines / 100).toFixed(2)}|`;
   }
@@ -107,8 +122,7 @@ export class Sip2Service {
     const date = sipDate(this.clock.now());
     const b = await this.findItem(tx, f.AB ?? '');
     if (!b) return `1801 01${date}AB${f.AB ?? ''}|AJ|`;
-    const [{ out }] = await tx.select({ out: sql<number>`count(*)::int` }).from(libraryLoans).where(and(eq(libraryLoans.bookId, b.id), isNull(libraryLoans.returnedAt)));
-    return `18${out >= b.copies ? '04' : '03'}0201${date}AB${f.AB}|AJ${b.title}|`;
+    return `18${b.onLoan ? '04' : '03'}0201${date}AB${f.AB}|AJ${b.title}|`;
   }
 
   private async checkout(tx: Tx, line: string, s: Sip2Session) {
@@ -117,7 +131,7 @@ export class Sip2Service {
     const st = await this.findPatron(tx, f.AA ?? '');
     const b = await this.findItem(tx, f.AB ?? '');
     if (!st || !b) return `120NNN${date}AO|AA${f.AA ?? ''}|AB${f.AB ?? ''}|AJ${b?.title ?? ''}|AF${!st ? 'Unknown patron' : 'Unknown item'}|`;
-    const r = await this.desk.issue(tx, s.tenantId, s.actorId!, b.id, st.id);
+    const r = await this.desk.issue(tx, s.tenantId, s.actorId!, b.id, st.id, b.copyId ?? undefined);
     if (!r.ok) return `120NNN${date}AO|AA${f.AA}|AB${f.AB}|AJ${b.title}|AF${r.reason.replace(/_/g, ' ')}|`;
     return `121NNY${date}AO|AA${f.AA}|AB${f.AB}|AJ${b.title}|AH${r.dueOn!.replace(/-/g, '')}    000000|`;
   }
@@ -127,7 +141,7 @@ export class Sip2Service {
     const date = sipDate(this.clock.now());
     const b = await this.findItem(tx, f.AB ?? '');
     if (!b) return `100NUN${date}AO|AB${f.AB ?? ''}|AQ|AJ|AF Unknown item|`;
-    const r = await this.desk.giveBack(tx, s.tenantId, s.actorId!, b.id);
+    const r = await this.desk.giveBack(tx, s.tenantId, s.actorId!, b.id, undefined, b.copyId ?? undefined);
     return r.ok ? `101YNN${date}AO|AB${f.AB}|AQ|AJ${b.title}|${r.fineP ? `BV${(r.fineP / 100).toFixed(2)}|` : ''}` : `100NUN${date}AO|AB${f.AB}|AQ|AJ${b.title}|AF Not on loan|`;
   }
 }

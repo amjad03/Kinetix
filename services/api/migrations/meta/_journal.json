@@ -1310,6 +1310,20 @@
       "when": 1791506061000,
       "tag": "0199_hr_pay_matrix_settlement_careers",
       "breakpoints": true
+    },
+    {
+      "idx": 187,
+      "version": "7",
+      "when": 1791506064000,
+      "tag": "0202_library_circulation_rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 188,
+      "version": "7",
+      "when": 1791506065000,
+      "tag": "0203_library_acquisition_serials_eresources",
+      "breakpoints": true
     }
   ]
 }

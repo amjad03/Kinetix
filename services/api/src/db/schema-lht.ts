@@ -68,6 +68,10 @@ export const libraryAcquisitions = pgTable(
     invoiceDate: date('invoice_date'),
     invoiceAmountPaise: paise('invoice_amount_paise').notNull().default(0),
     bookId: uuid('book_id').references(() => libraryBooks.id, { onDelete: 'set null' }),
+    // The vendor from the vendor list, the purchase order and the vendor's invoice (migration 0203; schema-library).
+    vendorId: uuid('vendor_id'),
+    poId: uuid('po_id'),
+    invoiceId: uuid('invoice_id'),
     createdAt: createdAt(),
   },
   (t) => [index('library_acquisitions_status_idx').on(t.tenantId, t.status, t.createdAt)],
@@ -182,6 +186,8 @@ export const libraryPeriodicals = pgTable('library_periodicals', {
   subscriptionTo: date('subscription_to'),
   costPaise: paise('cost_paise').notNull().default(0),
   budgetId: uuid('budget_id').references(() => libraryBudgets.id, { onDelete: 'set null' }),
+  /** The subscription agent from the vendor list (migration 0203). */
+  vendorId: uuid('vendor_id'),
   /** active | cancelled */
   status: text('status').notNull().default('active'),
   createdAt: createdAt(),
@@ -201,6 +207,8 @@ export const libraryPeriodicalIssues = pgTable(
     status: text('status').notNull().default('expected'),
     claimedOn: date('claimed_on'),
     claimNote: text('claim_note').notNull().default(''),
+    /** Claims sent to the vendor for this issue (migration 0203). */
+    claimCount: integer('claim_count').notNull().default(0),
     note: text('note').notNull().default(''),
     createdAt: createdAt(),
   },

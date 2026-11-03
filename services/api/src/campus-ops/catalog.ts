@@ -30,7 +30,7 @@ export const MODULE_ROLES: Record<OpsModule, RoleName[]> = {
 /** The document kinds whose numbers `nextNumber` issues, by the module whose settings page owns the series. */
 export const NUMBERING: Record<OpsModule, string[]> = {
   admissions: [],
-  library: ['LSC', 'ACC', 'MEM', 'ACQ'],
+  library: ['LSC', 'ACC', 'MEM', 'ACQ', 'LPO', 'LBB'],
   hostel: ['HAP'],
   transport: [],
   canteen: [],
@@ -66,8 +66,23 @@ export const DEFAULTS: Record<OpsModule, ModuleDefaults> = {
     defaults: { counsellorFollowUpDays: 2, enquirySource: 'walk_in' },
   },
   library: {
-    rules: { loanDays: 14, finePaisePerDay: 200, maxRenewals: 2, maxBooksPerStudent: 4, holdDays: 3, blockIssueAtFinePaise: 10000, bookBankDays: 150, cardReissueFeePaise: 5000, claimAfterDays: 15 },
-    templates: { overdueReminder: '{name}, "{title}" was due on {due}. Please return it to avoid further fines.' },
+    rules: {
+      loanDays: 14, finePaisePerDay: 200, maxRenewals: 2, maxBooksPerStudent: 4, holdDays: 3, blockIssueAtFinePaise: 10000, bookBankDays: 150, cardReissueFeePaise: 5000, claimAfterDays: 15,
+      /** Late fines are not charged for the academic calendar's holidays or the weekdays the library is closed. */
+      fineSkipsHolidays: true,
+      /** Weekdays the library is closed (0 = Sunday … 6 = Saturday), comma separated; empty when it opens every day. */
+      closedWeekdays: '0',
+      /** A due date that falls on a closed day moves to the next day the library is open. */
+      dueOnOpenDay: true,
+      /** Days after the due date on which overdue notices go out (first, second, final), and the days before it for a reminder. */
+      noticeDays: '1,7,15',
+      dueSoonDays: 2,
+      /** Channels for overdue notices besides the app: sms, whatsapp (Communication templates `library_overdue`). */
+      noticeChannels: 'sms',
+      /** A transfer certificate needs the library's no-dues (no books out, no unpaid fines). */
+      tcNeedsLibraryClearance: true,
+    },
+    templates: { overdueReminder: '{name}, "{title}" was due on {due}. Please return it to avoid further fines.', holdReady: '{name}, "{title}" is waiting for you at the library desk until {until}.' },
     defaults: { stockCheckScope: 'all' },
   },
   hostel: {
@@ -282,20 +297,47 @@ export const REPORTS: Record<string, ReportDef> = {
   },
   'library.naac': {
     module: 'library',
-    columns: [['year', 'Financial year'], ['booksAdded', 'Copies added'], ['booksSpend', 'Books (₹)'], ['journals', 'Journals subscribed'], ['journalsSpend', 'Journals (₹)'], ['eresources', 'E-resources'], ['eresourceOpens', 'E-resource uses'], ['footfallPerDay', 'Readers a day'], ['issuesPerDay', 'Books issued a day']],
+    columns: [['year', 'Financial year'], ['booksAdded', 'Copies added'], ['booksSpend', 'Books (₹)'], ['journals', 'Journals subscribed'], ['journalsSpend', 'Journals and e-resources (₹)'], ['eresources', 'E-resources'], ['eresourceOpens', 'E-resource uses'], ['footfallStudents', 'Footfall (students)'], ['footfallTeachers', 'Footfall (teachers)'], ['footfallPerDay', 'Readers a day'], ['issuesPerDay', 'Books issued a day']],
     sql: `with y as (select distinct case when extract(month from d) >= 4 then extract(year from d)::int else extract(year from d)::int - 1 end as fy
                      from generate_series(coalesce($1::date, current_date - 1095), least(coalesce($2::date, current_date), current_date), interval '1 month') d where $3::text is null)
           select y.fy || '-' || lpad(((y.fy + 1) % 100)::text, 2, '0') as year,
             (select count(*)::int from library_copies c where coalesce(c.acquired_on, c.created_at::date) between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "booksAdded",
-            (select round(coalesce(sum(c.price_paise), 0) / 100.0, 2) from library_copies c where coalesce(c.acquired_on, c.created_at::date) between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "booksSpend",
+            (select round(coalesce(sum(c.price_paise), 0) / 100.0, 2) from library_copies c where c.source in ('purchase', 'book_bank') and c.acquisition_id is null and coalesce(c.acquired_on, c.created_at::date) between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31))
+              + (select round(coalesce(sum(a.invoice_amount_paise), 0) / 100.0, 2) from library_acquisitions a left join library_invoices i on i.id = a.invoice_id where a.status = 'invoiced' and coalesce(i.invoice_date, a.invoice_date) between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "booksSpend",
             (select count(*)::int from library_periodicals p where p.subscription_from <= make_date(y.fy + 1, 3, 31) and coalesce(p.subscription_to, '2999-12-31') >= make_date(y.fy, 4, 1)) as journals,
-            (select round(coalesce(sum(p.cost_paise), 0) / 100.0, 2) from library_periodicals p where p.subscription_from between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "journalsSpend",
+            (select round(coalesce(sum(p.cost_paise), 0) / 100.0, 2) from library_periodicals p where p.subscription_from between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31))
+              + (select round(coalesce(sum(e.cost_paise), 0) / 100.0, 2) from library_eresources e where coalesce(e.subscription_from, e.created_at::date) between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "journalsSpend",
             (select count(*)::int from library_eresources e where e.created_at::date <= make_date(y.fy + 1, 3, 31)) as eresources,
             (select count(*)::int from library_eresource_access a where a.accessed_at::date between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "eresourceOpens",
+            (select count(*)::int from library_gate_log g join library_members m on m.id = g.member_id where m.kind = 'student' and (g.in_at at time zone 'Asia/Kolkata')::date between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "footfallStudents",
+            (select count(*)::int from library_gate_log g join library_members m on m.id = g.member_id where m.kind = 'staff' and (g.in_at at time zone 'Asia/Kolkata')::date between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "footfallTeachers",
             (select round(count(*)::numeric / greatest(count(distinct (g.in_at at time zone 'Asia/Kolkata')::date), 1), 1) from library_gate_log g where (g.in_at at time zone 'Asia/Kolkata')::date between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "footfallPerDay",
             (select round(count(*)::numeric / greatest(count(distinct (l.issued_at at time zone 'Asia/Kolkata')::date), 1), 1) from library_loans l where (l.issued_at at time zone 'Asia/Kolkata')::date between make_date(y.fy, 4, 1) and make_date(y.fy + 1, 3, 31)) as "issuesPerDay"
           from y order by y.fy desc`,
     filters: ['from', 'to'],
+  },
+  'library.notices': {
+    module: 'library',
+    columns: [['sentOn', 'Sent on'], ['step', 'Notice'], ['title', 'Title'], ['borrower', 'Borrower'], ['dueOn', 'Due'], ['daysOverdue', 'Days overdue'], ['channels', 'Channels'], ['returned', 'Returned since']],
+    sql: `select to_char(n.sent_at at time zone 'Asia/Kolkata', 'YYYY-MM-DD') as "sentOn", n.step, b.title, coalesce(m.full_name, s.full_name, '') as borrower, l.due_on::text as "dueOn", n.days_overdue as "daysOverdue", n.channels, coalesce(to_char(l.returned_at, 'YYYY-MM-DD'), '') as returned
+          from library_overdue_notices n join library_loans l on l.id = n.loan_id join library_books b on b.id = l.book_id left join library_members m on m.id = l.member_id left join students s on s.id = l.student_id
+          where (n.sent_at at time zone 'Asia/Kolkata')::date between ${D} and ${T} and ($3::text is null or n.step = $3) order by n.sent_at desc limit 5000`,
+    filters: ['from', 'to', 'status'],
+  },
+  'library.binding': {
+    module: 'library',
+    columns: [['batch', 'Batch'], ['binder', 'Binder'], ['status', 'Status'], ['sentOn', 'Sent'], ['expectedOn', 'Expected'], ['receivedOn', 'Received'], ['items', 'Items'], ['cost', 'Cost (₹)']],
+    sql: `select bb.number as batch, coalesce(v.name, '') as binder, bb.status, coalesce(bb.sent_on::text, '') as "sentOn", coalesce(bb.expected_on::text, '') as "expectedOn", coalesce(bb.received_on::text, '') as "receivedOn",
+            (select count(*)::int from library_binding_items i where i.batch_id = bb.id) as items, round(bb.cost_paise / 100.0, 2) as cost
+          from library_binding_batches bb left join library_vendors v on v.id = bb.vendor_id where coalesce(bb.sent_on, bb.created_at::date) between ${D} and ${T} and ($3::text is null or bb.status = $3) order by bb.created_at desc`,
+    filters: ['from', 'to', 'status'],
+  },
+  'library.vendor-invoices': {
+    module: 'library',
+    columns: [['vendor', 'Vendor'], ['invoiceNo', 'Invoice'], ['invoiceDate', 'Date'], ['order', 'Order'], ['gross', 'Gross (₹)'], ['discount', 'Discount (₹)'], ['gst', 'GST (₹)'], ['net', 'Net (₹)'], ['status', 'Status'], ['paidOn', 'Paid on']],
+    sql: `select v.name as vendor, i.invoice_no as "invoiceNo", i.invoice_date::text as "invoiceDate", coalesce(o.number, '') as "order", round(i.gross_paise / 100.0, 2) as gross, round(i.discount_paise / 100.0, 2) as discount, round(i.gst_paise / 100.0, 2) as gst, round(i.net_paise / 100.0, 2) as net, i.status, coalesce(i.paid_on::text, '') as "paidOn"
+          from library_invoices i join library_vendors v on v.id = i.vendor_id left join library_purchase_orders o on o.id = i.po_id where i.invoice_date between ${D} and ${T} and ($3::text is null or i.status = $3) order by i.invoice_date desc`,
+    filters: ['from', 'to', 'status'],
   },
   'library.withdrawals': {
     module: 'library',

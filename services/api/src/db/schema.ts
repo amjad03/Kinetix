@@ -1550,6 +1550,12 @@ export const libraryBooks = pgTable(
     status: text('status').notNull().default('active'),
     /** The MARC21 record it was imported from, as tag → values. */
     marc: jsonb('marc').$type<Record<string, string[]>>(),
+    /** ddc | cc (Colon Classification) | udc | lcc (migration 0202). */
+    classScheme: text('class_scheme').notNull().default('ddc'),
+    /** The class number in that scheme (the DDC number for DDC). */
+    classNumber: text('class_number').notNull().default(''),
+    /** The book number that follows the class number in the call number (author mark, or the CC year code). */
+    bookNumber: text('book_number').notNull().default(''),
     createdAt: createdAt(),
   },
   (t) => [index('library_books_title_idx').on(t.tenantId, t.title)],
@@ -1590,6 +1596,12 @@ export const libraryLoans = pgTable(
     via: text('via').notNull().default('desk'),
     /** desk | dropbox | kiosk | self */
     returnedVia: text('returned_via'),
+    /** Days the late fine was charged for: closed days and the grace period are left out (migration 0202). */
+    fineDays: integer('fine_days').notNull().default(0),
+    /** The fee invoice the fine went to (fee_invoices, set null). */
+    fineInvoiceId: uuid('fine_invoice_id'),
+    noticesSent: integer('notices_sent').notNull().default(0),
+    lastNoticeAt: timestamp('last_notice_at', { withTimezone: true }),
   },
   (t) => [index('library_loans_student_idx').on(t.studentId, t.returnedAt), index('library_loans_book_idx').on(t.bookId, t.returnedAt)],
 );
@@ -4116,6 +4128,7 @@ export const TENANT_TABLES = [
   'role_access_rules', 'tenant_exports',
   // Library, hostel and transport depth (0168-0170).
   'library_branches', 'library_budgets', 'library_acquisitions', 'library_copies', 'library_member_categories', 'library_members', 'library_fine_waivers', 'library_periodicals', 'library_periodical_issues', 'library_repository', 'library_repository_access', 'library_ill', 'library_gate_log', 'library_alert_subscriptions', 'library_clearances',
+  'library_circ_rules', 'library_overdue_notices', 'library_stock_check_copies', 'library_vendors', 'library_purchase_orders', 'library_invoices', 'library_binding_batches', 'library_binding_items', 'library_eresource_usage',
   'hostels', 'hostel_room_types', 'hostel_applications', 'hostel_bed_holds', 'hostel_requests', 'hostel_deposits', 'hostel_settlements', 'hostel_staff', 'hostel_duties', 'hostel_sickbay', 'hostel_late_entries', 'hostel_incidents', 'hostel_room_assets', 'mess_leaves', 'mess_bills',
   'transport_change_requests', 'transport_maintenance', 'transport_route_overrides', 'transport_pickup_persons', 'transport_handovers', 'transport_driver_duty',
   // Campus life, welfare, communication and LMS depth (migrations 0174-0176, schema-life.ts).
@@ -8583,6 +8596,9 @@ export const libraryStockChecks = pgTable('library_stock_checks', {
   closedBy: uuid('closed_by').references(() => users.id),
   closedAt: timestamp('closed_at', { withTimezone: true }),
   summary: jsonb('summary'),
+  /** The branch and shelf range the check covers (migration 0202); empty for the whole library. */
+  branchId: uuid('branch_id'),
+  shelfPrefix: text('shelf_prefix').notNull().default(''),
   createdAt: createdAt(),
 });
 

@@ -186,9 +186,35 @@ export const SOURCES: Record<string, SourceDef> = {
       union all select title, 'AMC', starts_on::text, round(coalesce(cost_paise, 0) / 1e7, 4)::float8 from amc_contracts where starts_on between ${y.from}::date and ${y.to}::date order by 3` },
   opex_lakhs: { label: 'Operational expenditure (INR lakhs)', basis: 'Salaries paid (employer cost of payroll months in the year) plus departmental expenses', columns: ['Head', 'Month or date', 'Amount (INR lakhs)'], value: { op: 'sum', col: 2 }, query: (y) => sql`select 'Salaries', r.month, round(sum(ps.employer_cost_paise) / 1e7, 4)::float8 from payroll_runs r join payslips ps on ps.run_id = r.id where to_date(r.month || '-01', 'YYYY-MM-DD') between ${y.from}::date and ${y.to}::date group by r.month
       union all select coalesce(description, 'Expense'), spent_on::text, round(amount_paise / 1e7, 4)::float8 from cost_expenses where spent_on between ${y.from}::date and ${y.to}::date order by 2` },
-  library_spend_lakhs: { label: 'Expenditure on books and journals (INR lakhs)', basis: 'Price times copies of library books added in the year', columns: ['Title', 'Copies', 'Added on', 'Amount (INR lakhs)'], value: { op: 'sum', col: 3 }, query: (y) => sql`select title, copies, created_at::date::text, round(coalesce(price_paise, 0) * coalesce(copies, 1) / 1e7, 4)::float8 from library_books where created_at::date between ${y.from}::date and ${y.to}::date order by 3` },
-  library_loans: { label: 'Library loans', basis: 'Books issued in the year', columns: ['Book', 'Borrower', 'Issued on'], query: (y) => sql`select b.title, coalesce(st.full_name, ''), l.issued_at::date::text from library_loans l join library_books b on b.id = l.book_id left join students st on st.id = l.student_id where l.issued_at::date between ${y.from}::date and ${y.to}::date order by 3` },
+  library_spend_lakhs: {
+    label: 'Expenditure on books and journals (INR lakhs)',
+    basis: 'Books accessioned in the year at their price (or the vendor invoices of ordered books), and journal and e-resource subscriptions starting in the year',
+    columns: ['Item', 'Head', 'Date', 'Amount (INR lakhs)'],
+    value: { op: 'sum', col: 3 },
+    query: (y) => sql`select b.title, 'Books', coalesce(c.acquired_on, c.created_at::date)::text, round(c.price_paise / 1e7, 4)::float8 from library_copies c join library_books b on b.id = c.book_id
+        where c.source in ('purchase', 'book_bank') and c.acquisition_id is null and coalesce(c.acquired_on, c.created_at::date) between ${y.from}::date and ${y.to}::date
+      union all select a.title, 'Books', coalesce(i.invoice_date, a.invoice_date)::text, round(a.invoice_amount_paise / 1e7, 4)::float8 from library_acquisitions a left join library_invoices i on i.id = a.invoice_id
+        where a.status = 'invoiced' and coalesce(i.invoice_date, a.invoice_date) between ${y.from}::date and ${y.to}::date
+      union all select title, 'Journals', subscription_from::text, round(cost_paise / 1e7, 4)::float8 from library_periodicals where subscription_from between ${y.from}::date and ${y.to}::date
+      union all select title, 'E-resources', coalesce(subscription_from, created_at::date)::text, round(cost_paise / 1e7, 4)::float8 from library_eresources where cost_paise > 0 and coalesce(subscription_from, created_at::date) between ${y.from}::date and ${y.to}::date
+      order by 2, 3`,
+  },
+  library_loans: { label: 'Library loans', basis: 'Books issued in the year', columns: ['Book', 'Borrower', 'Issued on'], query: (y) => sql`select b.title, coalesce(st.full_name, m.full_name, ''), l.issued_at::date::text from library_loans l join library_books b on b.id = l.book_id left join students st on st.id = l.student_id left join library_members m on m.id = l.member_id where l.issued_at::date between ${y.from}::date and ${y.to}::date order by 3` },
   library_days: { label: 'Days the library issued books', basis: 'Distinct days with at least one loan in the year', columns: ['Day', 'Loans'], query: (y) => sql`select issued_at::date::text, count(*)::int from library_loans where issued_at::date between ${y.from}::date and ${y.to}::date group by 1 order by 1` },
+  library_footfall: {
+    label: 'Library footfall of students and teachers, and online logins',
+    basis: 'Gate register entries of student and staff cards by day, with e-resource and repository opens',
+    columns: ['Date', 'Footfall (teachers)', 'Footfall (students)', 'Online logins'],
+    value: { op: 'sum', col: 1 },
+    query: (y) => sql`select d::date::text,
+        (select count(*)::int from library_gate_log g join library_members m on m.id = g.member_id where m.kind = 'staff' and (g.in_at at time zone 'Asia/Kolkata')::date = d::date),
+        (select count(*)::int from library_gate_log g join library_members m on m.id = g.member_id where m.kind = 'student' and (g.in_at at time zone 'Asia/Kolkata')::date = d::date),
+        ((select count(*) from library_eresource_access a where (a.accessed_at at time zone 'Asia/Kolkata')::date = d::date) + (select count(*) from library_repository_access a where (a.accessed_at at time zone 'Asia/Kolkata')::date = d::date))::int
+      from generate_series(${y.from}::date, least(${y.to}::date, current_date), interval '1 day') d
+      where exists (select 1 from library_gate_log g where (g.in_at at time zone 'Asia/Kolkata')::date = d::date) order by 1`,
+  },
+  library_open_days: { label: 'Days the library was open', basis: 'Distinct days with gate register entries (or loans, before the gate register was kept)', columns: ['Day'], query: (y) => sql`select distinct d::text from (select (in_at at time zone 'Asia/Kolkata')::date as d from library_gate_log union select (issued_at at time zone 'Asia/Kolkata')::date from library_loans) x where d between ${y.from}::date and ${y.to}::date order by 1` },
+  library_users: { label: 'Students and teachers', basis: 'Students on roll and teachers in service', columns: ['Kind', 'Count'], value: { op: 'sum', col: 1 }, query: () => sql`select 'Students', count(*)::int from students where status in ('active', 'enrolled') union all select 'Teachers', count(distinct user_id)::int from user_roles where role::text in ('teacher', 'hod')` },
   library_titles: { label: 'Library books (copies)', basis: 'Copies of the books catalogued in the library', columns: ['Title', 'Author', 'ISBN', 'Copies'], value: { op: 'sum', col: 3 }, query: () => sql`select title, coalesce(author, ''), coalesce(isbn, ''), coalesce(copies, 1) from library_books order by 1` },
   eresources: { label: 'E-resources subscribed', basis: 'E-resources registered and active', columns: ['Resource', 'Kind', 'Publisher', 'Licence until'], query: () => sql`select title, kind, coalesce(publisher, ''), licence_until::text from library_eresources where coalesce(status, 'active') = 'active' order by 1` },
   fees_lakhs: { label: 'Fee receipts (INR lakhs)', basis: 'Fees paid against invoices raised in the year', columns: ['Invoice', 'Title', 'Due on', 'Paid (INR lakhs)'], value: { op: 'sum', col: 3 }, query: (y) => sql`select coalesce(invoice_no, ''), title, due_on::text, round(paid_paise / 1e7, 4)::float8 from fee_invoices where status <> 'cancelled' and created_at::date between ${y.from}::date and ${y.to}::date order by 3` },

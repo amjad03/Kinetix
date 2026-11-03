@@ -43,6 +43,9 @@ export const DomainEvents = {
   // Attendance: the detention list feeding examination eligibility, and QR scans held for the teacher.
   DetentionListPublished: 'attendance.detention_list_published',
   DetentionListWithdrawn: 'attendance.detention_list_withdrawn',
+  // Library: a no-dues clearance (for a transfer certificate or exit) and a fine put on the fee account.
+  LibraryClearanceIssued: 'library.clearance_issued',
+  LibraryFineCharged: 'library.fine_charged',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

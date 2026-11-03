@@ -9,15 +9,17 @@ import { nextNumber } from '../common/ops.js';
 import { Clock } from '../common/time.js';
 import { departments, libraryBooks, libraryLoans, students, users } from '../db/schema.js';
 import { libraryBranches, libraryClearances, libraryCopies, libraryFineWaivers, libraryMemberCategories, libraryMembers } from '../db/schema-lht.js';
+import { EventBus } from '../events/events.js';
 import { FeesService } from '../fees/fees.service.js';
+import { sendFineToFees } from './fees-link.js';
 import { fail, int, lc, outcome, required } from '../import/row-helpers.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { RecordRegistry, type FieldOption, type KitCtx, type RecordEntity } from '../records/entity.js';
 import { copyName, DateText, Int, OptionalRef, OptionalText, Text, uuidEq } from '../records/helpers.js';
 import { eachRow } from '../records/import.js';
-import { addCopies, ensureStudentMember, findCopy, findMember, issueCopy, memberClass, memberStanding, nextCardNo, renewLoan, returnLoan, settleLoan, syncCopies, tenantToday, unpaidFineSql } from './circulation.js';
+import { addCopies, ensureStudentMember, findCopy, findMember, issueCopy, memberClass, memberStanding, nextCardNo, renewLoan, replaceLost, returnLoan, settleLoan, syncCopies, tenantToday, unpaidFineSql } from './circulation.js';
 import { LIBRARY_ROLES } from './library.controller.js';
-import { callNumber, normaliseIsbn } from './marc.js';
+import { callNumber, callNumberFor, classNumberProblem, normaliseIsbn } from './marc.js';
 
 /**
  * The library's lists as record kit entities: the catalogue, the accession register, members and their categories,
@@ -25,10 +27,11 @@ import { callNumber, normaliseIsbn } from './marc.js';
  * periodicals, the repository, inter-library loans and the gate register are in library-more.records.ts.
  */
 
+export const CLASS_SCHEME_CHOICES = choices(['ddc', 'Dewey Decimal (DDC)'], ['cc', 'Colon Classification (CC)'], ['udc', 'Universal Decimal (UDC)'], ['lcc', 'Library of Congress (LCC)']);
 export const MATERIALS = choices(['book', 'Book'], ['reference', 'Reference'], ['thesis', 'Thesis'], ['cd', 'CD or DVD'], ['map', 'Map'], ['other', 'Other']);
 export const COPY_STATUSES = choices(['available', 'On the shelf'], ['on_loan', 'On loan'], ['in_transit', 'In transit'], ['missing', 'Missing'], ['damaged', 'Damaged'], ['binding', 'At the binder'], ['lost', 'Lost'], ['withdrawn', 'Withdrawn']);
 const SETTABLE_COPY_STATUSES = COPY_STATUSES.filter((s) => ['available', 'missing', 'damaged', 'binding'].includes(s.value));
-const SOURCES = choices(['purchase', 'Purchase'], ['donation', 'Donation'], ['exchange', 'Exchange'], ['book_bank', 'Book bank']);
+const SOURCES = choices(['purchase', 'Purchase'], ['donation', 'Donation'], ['exchange', 'Exchange'], ['book_bank', 'Book bank'], ['replacement', 'Replacement for a lost copy']);
 const MEMBER_KINDS = choices(['student', 'Student'], ['staff', 'Staff'], ['external', 'External']);
 const CATEGORY_KINDS = choices(['student', 'Students'], ['staff', 'Staff'], ['external', 'External readers'], ['book_bank', 'Book bank']);
 const MEMBER_STATUSES = choices(['active', 'Active'], ['blocked', 'Blocked'], ['expired', 'Expired'], ['left', 'Left']);
@@ -95,6 +98,7 @@ export class LibraryRecords implements OnModuleInit {
     private readonly clock: Clock,
     private readonly notifications: NotificationsService,
     private readonly fees: FeesService,
+    private readonly events: EventBus,
   ) {}
 
   onModuleInit(): void {
@@ -123,6 +127,9 @@ export class LibraryRecords implements OnModuleInit {
           isbn: libraryBooks.isbn,
           callNo: libraryBooks.callNo,
           ddc: libraryBooks.ddc,
+          classScheme: libraryBooks.classScheme,
+          classNumber: libraryBooks.classNumber,
+          bookNumber: libraryBooks.bookNumber,
           subject: libraryBooks.subject,
           keywords: libraryBooks.keywords,
           publisher: libraryBooks.publisher,
@@ -146,6 +153,7 @@ export class LibraryRecords implements OnModuleInit {
         search: [libraryBooks.title, libraryBooks.author, libraryBooks.isbn, libraryBooks.callNo, libraryBooks.subject, libraryBooks.keywords, libraryBooks.publisher],
         filters: {
           material: choiceFilter('Material', libraryBooks.material, MATERIALS),
+          scheme: choiceFilter('Classification', libraryBooks.classScheme, CLASS_SCHEME_CHOICES),
           department: { label: 'Department', options: departmentOptions, where: (v) => uuidEq(libraryBooks.departmentId, v) },
           availability: yesNo('On the shelf', sql`${shelfCopies} > 0`, sql`${shelfCopies} = 0`, ['Available now', 'All copies out']),
           status: choiceFilter('Status', libraryBooks.status, choices(['active', 'In the catalogue'], ['withdrawn', 'Withdrawn'])),
@@ -162,8 +170,11 @@ export class LibraryRecords implements OnModuleInit {
         pubYear: { label: 'Year', type: 'number', schema: OptionalInt(1400, 2100), column: libraryBooks.pubYear },
         language: { label: 'Language', type: 'text', schema: z.string().trim().max(40), column: libraryBooks.language, bulk: true },
         subject: { label: 'Subject', type: 'text', schema: z.string().trim().max(200), column: libraryBooks.subject, bulk: true },
+        classScheme: { label: 'Classification', type: 'select', schema: oneOf(CLASS_SCHEME_CHOICES), column: libraryBooks.classScheme, options: CLASS_SCHEME_CHOICES, bulk: true, help: 'The scheme the class number follows: DDC, Colon (Ranganathan), UDC or LCC' },
+        classNumber: { label: 'Class number', type: 'text', schema: z.string().trim().max(60), column: libraryBooks.classNumber, help: 'In the chosen scheme, e.g. 657.95 (DDC) or O111,3M8 (CC)' },
+        bookNumber: { label: 'Book number', type: 'text', schema: z.string().trim().max(30), column: libraryBooks.bookNumber, help: 'Leave empty to use the author mark (DDC) or the year code (CC)' },
         ddc: { label: 'DDC number', type: 'text', schema: z.string().trim().max(30), column: libraryBooks.ddc, help: 'Dewey Decimal Classification, e.g. 657.95' },
-        callNo: { label: 'Call number', type: 'text', schema: OptionalText(40), column: libraryBooks.callNo, help: 'The shelf mark; "Assign call numbers" makes it from the DDC number and the author' },
+        callNo: { label: 'Call number', type: 'text', schema: OptionalText(40), column: libraryBooks.callNo, help: 'The shelf mark; "Assign call numbers" makes it from the class number and the book number' },
         keywords: { label: 'Keywords', type: 'text', schema: z.string().trim().max(500), column: libraryBooks.keywords },
         pages: { label: 'Pages', type: 'number', schema: OptionalInt(1, 20000), column: libraryBooks.pages },
         material: { label: 'Material', type: 'select', schema: oneOf(MATERIALS), column: libraryBooks.material, options: MATERIALS, bulk: true },
@@ -184,7 +195,10 @@ export class LibraryRecords implements OnModuleInit {
             pubYear: (v.pubYear as number | null) ?? null,
             language: (v.language as string) ?? '',
             subject: (v.subject as string) ?? '',
-            ddc: (v.ddc as string) ?? '',
+            ddc: (v.ddc as string) ?? ((v.classScheme ?? 'ddc') === 'ddc' ? ((v.classNumber as string) ?? '') : ''),
+            classScheme: (v.classScheme as string) ?? 'ddc',
+            classNumber: (v.classNumber as string) ?? (v.ddc as string) ?? '',
+            bookNumber: (v.bookNumber as string) ?? '',
             callNo: (v.callNo as string | null) ?? null,
             keywords: (v.keywords as string) ?? '',
             pages: (v.pages as number | null) ?? null,
@@ -204,6 +218,8 @@ export class LibraryRecords implements OnModuleInit {
         { key: 'isbn', header: 'ISBN' },
         { key: 'callNo', header: 'Call number' },
         { key: 'ddc', header: 'DDC' },
+        { key: 'classScheme', header: 'Classification', value: wordsOf(CLASS_SCHEME_CHOICES, 'classScheme') },
+        { key: 'classNumber', header: 'Class number' },
         { key: 'subject', header: 'Subject' },
         { key: 'publisher', header: 'Publisher' },
         { key: 'edition', header: 'Edition' },
@@ -221,8 +237,11 @@ export class LibraryRecords implements OnModuleInit {
           label: 'Assign call numbers',
           apply: async (ctx, id) => {
             const [b] = await ctx.tx.select().from(libraryBooks).where(eq(libraryBooks.id, id));
-            if (!b.ddc) throw new BadRequestException('Give the DDC number first');
-            const callNo = callNumber(b.ddc, b.author);
+            const cls = b.classNumber || (b.classScheme === 'ddc' ? b.ddc : '');
+            if (!cls) throw new BadRequestException(b.classScheme === 'ddc' ? 'Give the DDC number first' : 'Give the class number first');
+            const problem = classNumberProblem(b.classScheme, cls);
+            if (problem) throw new BadRequestException(problem);
+            const callNo = callNumberFor(b.classScheme, cls, { author: b.author, year: b.pubYear, bookNumber: b.bookNumber });
             await ctx.tx.update(libraryBooks).set({ callNo }).where(eq(libraryBooks.id, id));
             await auditUser(ctx.tx, ctx.p, 'library_book.call_number', 'library_book', id, { changes: { callNo: { before: b.callNo, after: callNo } } });
             return callNo;
@@ -264,6 +283,8 @@ export class LibraryRecords implements OnModuleInit {
           { key: 'edition', header: 'Edition', example: '7th' },
           { key: 'year', header: 'Year', example: '2023' },
           { key: 'ddc', header: 'DDC number', example: '657.95' },
+          { key: 'scheme', header: 'Classification', options: CLASS_SCHEME_CHOICES.map((c) => c.value), help: 'ddc if empty' },
+          { key: 'class_number', header: 'Class number', help: 'In the classification scheme (the DDC number for DDC)' },
           { key: 'call_no', header: 'Call number', example: '657.95 MAH' },
           { key: 'subject', header: 'Subject', example: 'Accounting' },
           { key: 'keywords', header: 'Keywords' },
@@ -285,15 +306,21 @@ export class LibraryRecords implements OnModuleInit {
             const material = r.get('material') ? (MATERIALS.find((m) => m.value === lc(r.get('material')))?.value ?? fail('Unknown material', r.get('material'))) : 'book';
             const price = r.get('price') ? Math.round(Number(r.get('price')) * 100) : undefined;
             if (price !== undefined && !(price >= 0)) fail('This value is not valid', r.get('price'));
+            const scheme = r.get('scheme') ? (CLASS_SCHEME_CHOICES.find((c) => c.value === lc(r.get('scheme')))?.value ?? fail('Unknown classification', r.get('scheme'))) : 'ddc';
+            const classNumber = r.get('class_number') || (scheme === 'ddc' ? r.get('ddc') : '');
+            const bad = classNumberProblem(scheme, classNumber);
+            if (bad) fail(bad, classNumber);
             const values = {
               title,
+              classScheme: scheme,
+              classNumber,
               author: r.get('author'),
               isbn,
               publisher: r.get('publisher'),
               edition: r.get('edition'),
               pubYear: r.get('year') ? int(r.get('year'), 1400, 2100) : null,
               ddc: r.get('ddc'),
-              callNo: r.get('call_no') || (r.get('ddc') ? callNumber(r.get('ddc'), r.get('author')) : null),
+              callNo: r.get('call_no') || (classNumber ? callNumberFor(scheme, classNumber, { author: r.get('author'), year: r.get('year') ? Number(r.get('year')) : null }) : null),
               subject: r.get('subject'),
               keywords: r.get('keywords'),
               language: r.get('language'),
@@ -973,7 +1000,7 @@ export class LibraryRecords implements OnModuleInit {
           params: z.object({ branchId: OptionalRef.optional() }).default({}),
           apply: async (ctx, id, raw) => {
             const { branchId } = raw as { branchId?: string | null };
-            const l = await returnLoan(ctx.tx, ctx.p, this.clock.now(), id, { branchId: branchId ?? null });
+            const l = await returnLoan(ctx.tx, ctx.p, this.clock.now(), id, { branchId: branchId ?? null, notify: this.notifications });
             return l.finePaise > 0 ? `Fine ₹${(l.finePaise / 100).toFixed(2)}` : undefined;
           },
         },
@@ -991,19 +1018,7 @@ export class LibraryRecords implements OnModuleInit {
         },
         sendToFees: {
           label: 'Collect the fine with fees',
-          apply: async (ctx, id) => {
-            const [l] = await ctx.tx.select({ l: libraryLoans, title: libraryBooks.title }).from(libraryLoans).innerJoin(libraryBooks, eq(libraryBooks.id, libraryLoans.bookId)).where(eq(libraryLoans.id, id));
-            if (!l.l.studentId) throw new ConflictException('Only a student’s fine can go on the fee account');
-            const due = l.l.finePaise - l.l.fineWaivedPaise;
-            if (!l.l.returnedAt || due <= 0) throw new ConflictException('There is no fine to collect');
-            if (l.l.finePaidAt || l.l.fineInvoiceTitle) throw new ConflictException('This fine is already settled');
-            const title = `Library fine: ${l.title.slice(0, 60)} (${id.slice(0, 8)})`;
-            const res = await this.fees.chargeStudents(ctx.tx, ctx.p, title, await this.today(ctx), [{ studentId: l.l.studentId, amountPaise: due }]);
-            if (res.charged === 0) throw new ConflictException('The fee account could not be charged');
-            await ctx.tx.update(libraryLoans).set({ fineInvoiceTitle: title }).where(eq(libraryLoans.id, id));
-            await auditUser(ctx.tx, ctx.p, 'library.fine_sent_to_fees', 'library_loan', id, { finePaise: due, title });
-            return title;
-          },
+          apply: async (ctx, id) => (await sendFineToFees(ctx.tx, ctx.p, this.fees, this.events, id, await this.today(ctx))).title,
         },
         requestWaiver: {
           label: 'Ask to waive the fine',
@@ -1037,8 +1052,17 @@ export class LibraryRecords implements OnModuleInit {
           params: z.object({ note: z.string().trim().min(3, 'Describe the damage').max(300), amount: Rupees.optional() }),
           apply: async (ctx, id, raw) => {
             const { note, amount } = raw as { note: string; amount?: number };
-            const l = await settleLoan(ctx.tx, ctx.p, this.clock.now(), id, 'damaged', note, amount);
+            const l = await settleLoan(ctx.tx, ctx.p, this.clock.now(), id, 'damaged', note, amount, this.notifications);
             return `Fine ₹${(l.finePaise / 100).toFixed(2)}`;
+          },
+        },
+        replaceLost: {
+          label: 'Replaced with a new copy',
+          params: z.object({ note: z.string().trim().max(300).default(''), branchId: OptionalRef.optional() }).default({ note: '' }),
+          apply: async (ctx, id, raw) => {
+            const { note, branchId } = raw as { note: string; branchId?: string | null };
+            const r = await replaceLost(ctx.tx, ctx.p, this.clock.now(), id, { note, branchId: branchId ?? (await mainBranch(ctx)) });
+            return `${r.accessionNo}; ₹${(r.waivedPaise / 100).toFixed(2)} of the fine waived`;
           },
         },
       },

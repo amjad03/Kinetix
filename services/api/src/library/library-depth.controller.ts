@@ -1,5 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res } from '@nestjs/common';
-import { and, asc, desc, eq, ilike, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -14,15 +14,18 @@ import { chapters, libraryBooks, libraryLoans, students, tenants, topics } from 
 import { libraryEresourceAccess, libraryEresources, libraryReservations, resourceTopicLinks } from '../db/schema-depth.js';
 import { addDays } from '../teacher/teacher.service.js';
 import { LIBRARY_ROLES } from './library.controller.js';
-import { copiesHeld, copiesOut, expireHolds, promoteNext } from './reservations.js';
-import { libraryCopies } from '../db/schema-lht.js';
-import { renewLoan, settleLoan } from './circulation.js';
+import { copiesHeld, copiesOut, expireHolds, heldBy, promoteNext } from './reservations.js';
+import { libraryCopies, libraryMembers } from '../db/schema-lht.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { ensureStudentMember, findMember, memberStanding, renewLoan, rulesFor, selfMember, settleLoan } from './circulation.js';
+import { lateFine, openDaysLateSql } from './fines.js';
 
 const SEAT_WINDOW_MINUTES = 30;
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86_400_000);
 
 const ConditionBody = z.object({ note: z.string().trim().min(3).max(300), amountPaise: z.number().int().min(0).max(100_000_00).optional() });
-const ReserveBody = z.object({ bookId: z.uuid(), studentId: z.uuid().optional() });
+const ReserveBody = z.object({ bookId: z.uuid(), studentId: z.uuid().optional(), memberCode: z.string().trim().min(1).max(60).optional() });
+const isDesk = (p: UserPrincipal) => p.roles.some((r) => LIBRARY_ROLES.includes(r));
 const EresourceBody = z.object({ title: z.string().trim().min(2).max(240), kind: z.enum(['ebook', 'journal', 'database', 'video', 'other']).default('ebook'), publisher: z.string().trim().max(160).default(''), url: z.url(), licenceUntil: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullish(), seats: z.number().int().min(1).max(10000).nullish() });
 const TopicLinkBody = z.object({ topicId: z.uuid(), resourceKind: z.enum(['book', 'eresource']), resourceId: z.uuid() });
 
@@ -32,6 +35,7 @@ export class LibraryDepthController {
   constructor(
     private readonly db: DbService,
     private readonly clock: Clock,
+    private readonly notifications: NotificationsService,
   ) {}
 
   private async today(tx: Tx): Promise<string> {
@@ -41,7 +45,10 @@ export class LibraryDepthController {
 
   // ---- renew --------------------------------------------------------------------------------------------------
 
-  /** Extends a loan by another loan period, up to the renewal limit, unless another student is waiting for the book. The librarian, the student or a guardian can do it. */
+  /**
+   * Extends a loan by another loan period, up to the renewal limit, unless another member is waiting for the book. The
+   * librarian, the borrower (a student or a member of staff) or a student's guardian can do it.
+   */
   @Post('loans/:id/renew')
   @HttpCode(200)
   @Auth('user')
@@ -49,64 +56,94 @@ export class LibraryDepthController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [loan] = await tx.select().from(libraryLoans).where(eq(libraryLoans.id, id)).for('update');
       if (!loan) throw new NotFoundException('Loan not found');
-      if (loan.studentId) await assertCanSeeStudent(tx, p, loan.studentId, LIBRARY_ROLES);
-      else if (!p.roles.some((r) => LIBRARY_ROLES.includes(r))) throw new NotFoundException('Loan not found');
+      if (!(await this.ownsLoan(tx, p, loan))) throw new NotFoundException('Loan not found');
       return renewLoan(tx, p, this.clock.now(), id);
     });
   }
 
+  /** The desk, the borrower, or (for a student's loan) the student's family. */
+  private async ownsLoan(tx: Tx, p: UserPrincipal, loan: { studentId: string | null; memberId: string | null }): Promise<boolean> {
+    if (isDesk(p)) return true;
+    if (loan.studentId) return assertCanSeeStudent(tx, p, loan.studentId, LIBRARY_ROLES).then(() => true, () => false);
+    if (!loan.memberId) return false;
+    const [m] = await tx.select({ userId: libraryMembers.userId }).from(libraryMembers).where(eq(libraryMembers.id, loan.memberId));
+    return m?.userId === p.userId;
+  }
+
   // ---- reservations --------------------------------------------------------------------------------------------
 
-  /** Joins the queue for a book whose copies are all out. A student reserves for themselves; a guardian or the desk reserves for a student. */
+  /** Whose reservation this is: the student named (the desk or their family), the card given at the desk, or the reader's own card. */
+  private async holderFor(tx: Tx, p: UserPrincipal, b: { studentId?: string; memberCode?: string }) {
+    if (b.studentId) {
+      await assertCanSeeStudent(tx, p, b.studentId, LIBRARY_ROLES);
+      return ensureStudentMember(tx, p.tenantId, b.studentId);
+    }
+    if (b.memberCode) {
+      if (!isDesk(p)) throw new ForbiddenException('Only the library desk reserves for another member');
+      return findMember(tx, p.tenantId, b.memberCode);
+    }
+    const me = await selfMember(tx, p);
+    if (!me) throw new BadRequestException('Say which student the reservation is for');
+    return me;
+  }
+
+  /** Joins the queue for a book whose copies are all out: for oneself (a student or teacher), a guardian's child, or any member at the desk. */
   @Post('reservations')
   @Auth('user')
   reserve(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(ReserveBody)) b: z.infer<typeof ReserveBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      let studentId = b.studentId;
-      if (!studentId) {
-        const [me] = await tx.select({ id: students.id }).from(students).where(eq(students.userId, p.userId));
-        studentId = me?.id;
-      }
-      if (!studentId) throw new BadRequestException('Say which student the reservation is for');
-      await assertCanSeeStudent(tx, p, studentId, LIBRARY_ROLES);
+      const member = await this.holderFor(tx, p, b);
       const [book] = await tx.select().from(libraryBooks).where(eq(libraryBooks.id, b.bookId)).for('update');
-      if (!book) throw new NotFoundException('Book not found');
-      await expireHolds(tx, this.clock.now());
-      const [dup] = await tx.select({ id: libraryReservations.id }).from(libraryReservations).where(and(eq(libraryReservations.bookId, b.bookId), eq(libraryReservations.studentId, studentId), sql`${libraryReservations.status} in ('waiting', 'ready')`));
-      if (dup) throw new ConflictException('This student already has a reservation for the book');
-      const [mine] = await tx.select({ id: libraryLoans.id }).from(libraryLoans).where(and(eq(libraryLoans.bookId, b.bookId), eq(libraryLoans.studentId, studentId), isNull(libraryLoans.returnedAt)));
-      if (mine) throw new ConflictException('This student already has the book');
+      if (!book || book.status !== 'active') throw new NotFoundException('Book not found');
+      if (member.status !== 'active') throw new ConflictException('This card is not active');
+      const rules = await rulesFor(tx, p.tenantId, member, book.material);
+      if (!rules.canReserve) throw new ConflictException('Members of this category cannot reserve this material');
+      await expireHolds(tx, this.clock.now(), this.notifications);
+      const holder = { memberId: member.id, studentId: member.studentId };
+      const [dup] = await tx.select({ id: libraryReservations.id }).from(libraryReservations).where(and(eq(libraryReservations.bookId, b.bookId), heldBy(holder), sql`${libraryReservations.status} in ('waiting', 'ready')`));
+      if (dup) throw new ConflictException('This member already has a reservation for the book');
+      const mine = sql`(${libraryLoans.memberId} = ${member.id}${member.studentId ? sql` or ${libraryLoans.studentId} = ${member.studentId}` : sql``})`;
+      const [has] = await tx.select({ id: libraryLoans.id }).from(libraryLoans).where(and(eq(libraryLoans.bookId, b.bookId), mine, isNull(libraryLoans.returnedAt)));
+      if (has) throw new ConflictException('This member already has the book');
       const free = book.copies - (await copiesOut(tx, b.bookId)) - (await copiesHeld(tx, b.bookId));
       if (free > 0) throw new ConflictException('A copy is on the shelf; ask the desk to issue it');
-      const [row] = await tx.insert(libraryReservations).values({ tenantId: p.tenantId, bookId: b.bookId, studentId }).returning();
-      await auditUser(tx, p, 'library.reserved', 'library_reservation', row.id);
+      const [row] = await tx.insert(libraryReservations).values({ tenantId: p.tenantId, bookId: b.bookId, studentId: member.studentId, memberId: member.id }).returning();
+      await auditUser(tx, p, 'library.reserved', 'library_reservation', row.id, { member: member.cardNo, bookId: b.bookId });
       return row;
     });
   }
 
-  /** The queue for every book (desk), or one student's reservations (`studentId`; the student and family can ask for their own). */
+  /** The queue for every book (desk), or one member's reservations (a student, their family, or one's own). */
   @Get('reservations')
   @Auth('user')
   reservations(@CurrentPrincipal() p: UserPrincipal, @Query('studentId') studentId?: string, @Query('bookId') bookId?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      await expireHolds(tx, this.clock.now());
-      let who = studentId && z.uuid().safeParse(studentId).success ? studentId : undefined;
-      if (!p.roles.some((r) => LIBRARY_ROLES.includes(r))) {
-        if (!who) {
-          const [me] = await tx.select({ id: students.id }).from(students).where(eq(students.userId, p.userId));
-          who = me?.id;
-        }
-        if (!who) throw new ForbiddenException('Say which student');
-        await assertCanSeeStudent(tx, p, who, LIBRARY_ROLES);
+      await expireHolds(tx, this.clock.now(), this.notifications);
+      const sid = studentId && z.uuid().safeParse(studentId).success ? studentId : undefined;
+      let holder: { memberId?: string | null; studentId?: string | null } | null = null;
+      if (sid) {
+        await assertCanSeeStudent(tx, p, sid, LIBRARY_ROLES);
+        holder = { studentId: sid, memberId: (await tx.select({ id: libraryMembers.id }).from(libraryMembers).where(eq(libraryMembers.studentId, sid)))[0]?.id ?? null };
+      } else if (!isDesk(p)) {
+        const me = await selfMember(tx, p);
+        if (!me) throw new ForbiddenException('Say which student');
+        holder = { memberId: me.id, studentId: me.studentId };
       }
       const rows = await tx
-        .select({ r: libraryReservations, title: libraryBooks.title, student: students.fullName })
+        .select({ r: libraryReservations, title: libraryBooks.title, member: sql<string>`coalesce(${libraryMembers.fullName}, ${students.fullName})`, cardNo: libraryMembers.cardNo })
         .from(libraryReservations)
         .innerJoin(libraryBooks, eq(libraryBooks.id, libraryReservations.bookId))
-        .innerJoin(students, eq(students.id, libraryReservations.studentId))
-        .where(and(who ? eq(libraryReservations.studentId, who) : undefined, bookId && z.uuid().safeParse(bookId).success ? eq(libraryReservations.bookId, bookId) : undefined, sql`${libraryReservations.status} in ('waiting', 'ready')`))
-        .orderBy(asc(libraryReservations.createdAt));
-      return rows.map((r) => ({ ...r.r, title: r.title, student: r.student, position: r.r.status === 'waiting' ? rows.filter((x) => x.r.bookId === r.r.bookId && x.r.status === 'waiting' && x.r.createdAt <= r.r.createdAt).length : 0 }));
+        .leftJoin(libraryMembers, eq(libraryMembers.id, libraryReservations.memberId))
+        .leftJoin(students, eq(students.id, libraryReservations.studentId))
+        .where(and(holder ? heldBy(holder) : undefined, bookId && z.uuid().safeParse(bookId).success ? eq(libraryReservations.bookId, bookId) : undefined, sql`${libraryReservations.status} in ('waiting', 'ready')`))
+        .orderBy(asc(libraryReservations.createdAt))
+        .limit(500);
+      // The place in each book's queue counts everyone waiting ahead, not only the rows on this page.
+      const ids = [...new Set(rows.map((r) => r.r.bookId))];
+      const queue = ids.length
+        ? await tx.select({ id: libraryReservations.id, bookId: libraryReservations.bookId, createdAt: libraryReservations.createdAt }).from(libraryReservations).where(and(inArray(libraryReservations.bookId, ids), eq(libraryReservations.status, 'waiting'))).orderBy(asc(libraryReservations.createdAt))
+        : [];
+      return rows.map((r) => ({ ...r.r, title: r.title, student: r.member, member: r.member, cardNo: r.cardNo, position: r.r.status === 'waiting' ? queue.filter((q) => q.bookId === r.r.bookId).findIndex((q) => q.id === r.r.id) + 1 : 0 }));
     });
   }
 
@@ -116,20 +153,90 @@ export class LibraryDepthController {
   cancelReservation(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [r] = await tx.select().from(libraryReservations).where(eq(libraryReservations.id, id)).for('update');
-      if (!r) throw new NotFoundException('Reservation not found');
-      await assertCanSeeStudent(tx, p, r.studentId, LIBRARY_ROLES);
+      if (!r || !(await this.ownsLoan(tx, p, r))) throw new NotFoundException('Reservation not found');
       if (r.status !== 'waiting' && r.status !== 'ready') throw new ConflictException('This reservation is closed');
       const [row] = await tx.update(libraryReservations).set({ status: 'cancelled' }).where(eq(libraryReservations.id, id)).returning();
-      if (r.status === 'ready') await promoteNext(tx, r.bookId, this.clock.now());
+      if (r.status === 'ready') await promoteNext(tx, r.bookId, this.clock.now(), this.notifications);
       await auditUser(tx, p, 'library.reservation_cancelled', 'library_reservation', id);
       return row;
+    });
+  }
+
+  // ---- my library ---------------------------------------------------------------------------------------------------
+
+  /**
+   * The reader's own account (a student or a member of staff), or a student's for their family (`studentId`): the card,
+   * books out with the fine so far, past loans, fines, reservations and the rules that apply.
+   */
+  @Get('me')
+  @Auth('user')
+  me(@CurrentPrincipal() p: UserPrincipal, @Query('studentId') studentId?: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      let member;
+      if (studentId) {
+        if (!z.uuid().safeParse(studentId).success) throw new BadRequestException('Not a student');
+        await assertCanSeeStudent(tx, p, studentId, LIBRARY_ROLES);
+        member = await ensureStudentMember(tx, p.tenantId, studentId);
+      } else member = await selfMember(tx, p);
+      if (!member) throw new NotFoundException('You have no library card');
+      await expireHolds(tx, this.clock.now(), this.notifications);
+      const today = await this.today(tx);
+      const rules = await rulesFor(tx, p.tenantId, member);
+      const lateDays = openDaysLateSql(libraryLoans.dueOn, today, rules.settings);
+      const mine = member.studentId ? or(eq(libraryLoans.memberId, member.id), eq(libraryLoans.studentId, member.studentId)) : eq(libraryLoans.memberId, member.id);
+      const loans = await tx
+        .select({
+          id: libraryLoans.id,
+          bookId: libraryLoans.bookId,
+          title: libraryBooks.title,
+          author: libraryBooks.author,
+          callNo: libraryBooks.callNo,
+          accessionNo: libraryCopies.accessionNo,
+          issuedAt: libraryLoans.issuedAt,
+          dueOn: libraryLoans.dueOn,
+          returnedAt: libraryLoans.returnedAt,
+          renewCount: libraryLoans.renewCount,
+          finePaise: libraryLoans.finePaise,
+          fineWaivedPaise: libraryLoans.fineWaivedPaise,
+          finePaidAt: libraryLoans.finePaidAt,
+          fineInvoiceTitle: libraryLoans.fineInvoiceTitle,
+          bookBank: libraryLoans.bookBank,
+          overdue: sql<boolean>`${libraryLoans.returnedAt} is null and ${libraryLoans.dueOn} < ${today}::date`,
+          lateDays: sql<number>`case when ${libraryLoans.returnedAt} is null and ${libraryLoans.dueOn} < ${today}::date then ${lateDays} else 0 end`.mapWith(Number),
+        })
+        .from(libraryLoans)
+        .innerJoin(libraryBooks, eq(libraryBooks.id, libraryLoans.bookId))
+        .leftJoin(libraryCopies, eq(libraryCopies.id, libraryLoans.copyId))
+        .where(mine)
+        .orderBy(desc(libraryLoans.issuedAt))
+        .limit(100);
+      const standing = await memberStanding(tx, member, today);
+      const current = loans
+        .filter((l) => !l.returnedAt)
+        .map((l) => ({ ...l, fineSoFarPaise: lateFine(l.lateDays, rules.finePerDay, rules.maxFinePaise), canRenew: !l.overdue && !l.bookBank && l.renewCount < rules.maxRenewals }));
+      const reservations = await tx
+        .select({ id: libraryReservations.id, bookId: libraryReservations.bookId, title: libraryBooks.title, status: libraryReservations.status, expiresAt: libraryReservations.expiresAt, createdAt: libraryReservations.createdAt })
+        .from(libraryReservations)
+        .innerJoin(libraryBooks, eq(libraryBooks.id, libraryReservations.bookId))
+        .where(and(heldBy({ memberId: member.id, studentId: member.studentId }), sql`${libraryReservations.status} in ('waiting', 'ready')`))
+        .orderBy(asc(libraryReservations.createdAt));
+      return {
+        member: { id: member.id, cardNo: member.cardNo, fullName: member.fullName, kind: member.kind, status: member.status, validUntil: member.validUntil },
+        rules: { loanDays: rules.loanDays, maxBooks: rules.maxBooks, finePerDayPaise: rules.finePerDay, maxRenewals: rules.maxRenewals, canReserve: rules.canReserve },
+        current,
+        history: loans.filter((l) => l.returnedAt).slice(0, 50),
+        unpaidPaise: standing.unpaidPaise,
+        feesPendingPaise: standing.feesPendingPaise,
+        accruingPaise: current.reduce((s, l) => s + l.fineSoFarPaise, 0),
+        reservations,
+      };
     });
   }
 
   // ---- lost and damaged ------------------------------------------------------------------------------------------
 
   private async settle(p: UserPrincipal, id: string, kind: 'lost' | 'damaged', b: z.infer<typeof ConditionBody>) {
-    return this.db.withTenant(p.tenantId, (tx) => settleLoan(tx, p, this.clock.now(), id, kind, b.note, b.amountPaise));
+    return this.db.withTenant(p.tenantId, (tx) => settleLoan(tx, p, this.clock.now(), id, kind, b.note, b.amountPaise, this.notifications));
   }
 
   /** The book is lost: the loan closes, the fine is the late fine plus the book's price, and the library has one copy fewer. */
@@ -259,7 +366,7 @@ export class LibraryDepthController {
         if (busy.n >= r.seats) throw new ConflictException('All seats are in use; try again in a little while');
       }
       await tx.insert(libraryEresourceAccess).values({ tenantId: p.tenantId, resourceId: id, userId: p.userId, accessedAt: now });
-      return { url: r.url, title: r.title };
+      return { url: r.url, title: r.title, provider: r.provider, accessMode: r.accessMode, remoteAccess: r.remoteAccess };
     });
   }
 
