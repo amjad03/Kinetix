@@ -40,6 +40,9 @@ export const DomainEvents = {
   // Admissions desk: an approved cancellation (the refund owed) and an approved programme change.
   AdmissionCancelled: 'admissions.admission_cancelled',
   ProgrammeChanged: 'admissions.programme_changed',
+  // Attendance: the detention list feeding examination eligibility, and QR scans held for the teacher.
+  DetentionListPublished: 'attendance.detention_list_published',
+  DetentionListWithdrawn: 'attendance.detention_list_withdrawn',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

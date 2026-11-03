@@ -3,6 +3,7 @@ import type { AttendanceCounts, AttendanceStatus, Homework, TeacherPeriod, Teach
 import { and, asc, desc, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { Clock, localParts } from '../common/time.js';
+import { periodHints } from '../attendance-governance/suggestions.js';
 import type { Tx } from '../db/db.service.js';
 import { attendanceRecords, homework, lessonPlans, rooms, sections, students, subjects, teacherSubstitutions, timetableSlots, users } from '../db/schema.js';
 import { CalendarService } from '../timetable/calendar.service.js';
@@ -174,7 +175,8 @@ export class TeacherService {
       .where(and(eq(attendanceRecords.timetableSlotId, slotId), eq(attendanceRecords.date, date)));
     const counts: AttendanceCounts = { present: 0, absent: 0, late: 0, excused: 0 };
     for (const r of records) counts[r.status as AttendanceStatus]++;
-    return { slotId, date, taken: records.length > 0, records, counts };
+    // Classroom reader taps and QR scans held for review: the Teacher App offers them to confirm.
+    return { slotId, date, taken: records.length > 0, records, counts, hints: await periodHints(tx, slotId, date) };
   }
 
   async homeworkList(tx: Tx, where: SQL | undefined, order: 'due' | 'created'): Promise<Homework[]> {

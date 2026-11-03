@@ -1761,5 +1761,19 @@
   "unlockPending": "प्रतीक्षा में",
   "unlockApproved": "अनलॉक किया",
   "unlockRejected": "अस्वीकार",
-  "unlockCancelled": "वापस लिया"
+  "unlockCancelled": "वापस लिया",
+  "qrCodeTitle": "स्व-अंकन कोड",
+  "qrCodeHelp": "छात्र यह कोड स्टूडेंट ऐप में लिखते हैं। यह हर 30 सेकंड में बदलता है, इसलिए कक्षा से बाहर भेजा गया कोड काम नहीं करता।",
+  "qrCodeChanges": "{seconds} से. में बदलेगा",
+  "qrHeldTitle": "आपकी जाँच के लिए रुके ({count})",
+  "qrHeldNone": "कोई स्कैन प्रतीक्षा में नहीं।",
+  "qrAccept": "स्वीकार: उपस्थित दर्ज करें",
+  "qrReject": "अस्वीकार करें",
+  "qrScanAccepted": "उपस्थित दर्ज किया",
+  "qrScanRejected": "स्कैन अस्वीकार किया",
+  "qrReasonOutside": "परिसर से बाहर",
+  "qrReasonPhone": "दूसरा फ़ोन",
+  "qrReasonLate": "देर से स्कैन",
+  "qrReasonLocation": "स्थान की पुष्टि नहीं",
+  "useReaderTaps": "कक्षा रीडर के टैप लागू करें ({count})"
 }

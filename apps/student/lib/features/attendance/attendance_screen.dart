@@ -4,6 +4,7 @@ import 'package:zynetix_ui/zynetix_ui.dart';
 import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../core/scan_location.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import 'attendance_overview_screen.dart';
@@ -242,7 +243,10 @@ class _DayCard extends StatelessWidget {
 
 /// Type the code the teacher shows on the classroom screen to mark yourself present (rotates every 30 seconds).
 class AttendanceCodeScreen extends StatefulWidget {
-  const AttendanceCodeScreen({super.key, required this.api});
+  const AttendanceCodeScreen({super.key, required this.api, this.locator = const GeolocatorScanLocator()});
+
+  /// Where the phone is, for the campus check.
+  final ScanLocator locator;
 
   final StudentApi api;
 
@@ -268,11 +272,17 @@ class _AttendanceCodeScreenState extends State<AttendanceCodeScreen> {
       _message = null;
     });
     try {
-      final already = await widget.api.scanAttendance(_code.text);
+      final location = await widget.locator.current();
+      final r = await widget.api.scanAttendance(_code.text, location: location);
       if (!mounted) return;
+      final l = context.l10n;
       setState(() {
         _failed = false;
-        _message = already ? context.l10n.attendanceAlreadyMarked : context.l10n.attendanceMarkedPresent;
+        _message = r.held
+            ? l.attendanceHeld(r.reasons.map((x) => _reason(l, x)).join(', '))
+            : r.alreadyMarked
+                ? l.attendanceAlreadyMarked
+                : l.attendanceMarkedPresent;
       });
     } on ApiException catch (e) {
       if (mounted) {
@@ -285,6 +295,14 @@ class _AttendanceCodeScreenState extends State<AttendanceCodeScreen> {
       if (mounted) setState(() => _busy = false);
     }
   }
+
+  /// Why a scan was held, in the reader's language.
+  static String _reason(AppLocalizations l, String r) => switch (r) {
+        'outside_campus' => l.attendanceReasonOutside,
+        'new_device' || 'no_device' => l.attendanceReasonPhone,
+        'late_scan' => l.attendanceReasonLate,
+        _ => l.attendanceReasonLocation,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -299,13 +317,16 @@ class _AttendanceCodeScreenState extends State<AttendanceCodeScreen> {
               key: const Key('attendance-code-field'),
               controller: _code,
               autocorrect: false,
+              // The teacher's screen shows 8 digits (they change every 30 seconds).
+              keyboardType: TextInputType.number,
+              maxLength: 9,
               decoration: InputDecoration(labelText: context.l10n.attendanceCodeHint),
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: Kx.s16),
             FilledButton(
               key: const Key('attendance-code-submit'),
-              onPressed: _busy || _code.text.trim().length < 20 ? null : _submit,
+              onPressed: _busy || _code.text.replaceAll(RegExp(r'[^0-9]'), '').length < 8 ? null : _submit,
               child: Text(context.l10n.attendanceCodeSubmit),
             ),
             if (_message != null) ...[

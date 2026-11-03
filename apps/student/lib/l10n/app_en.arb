@@ -3917,5 +3917,17 @@
   "payInBrowserBody": "The payment page has opened. When you have paid, come back here and check it.",
   "checkPayment": "I have paid: check",
   "paymentPending": "Not confirmed yet. If you paid, it will show here in a few minutes.",
-  "downloadReceipt": "Download the receipt (PDF)"
+  "downloadReceipt": "Download the receipt (PDF)",
+  "attendanceHeld": "Your scan is waiting for your teacher to confirm: {reasons}.",
+  "attendanceReasonOutside": "you seem to be outside the campus",
+  "attendanceReasonPhone": "this is not the phone you usually mark from",
+  "attendanceReasonLate": "the period started a while ago",
+  "attendanceReasonLocation": "your location could not be confirmed",
+  "@attendanceHeld": {
+    "placeholders": {
+      "reasons": {
+        "type": "String"
+      }
+    }
+  }
 }

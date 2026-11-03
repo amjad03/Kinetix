@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// App name (keep in English).
   ///
@@ -7598,9 +7605,94 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Withdrawn'**
   String get unlockCancelled;
+
+  /// No description provided for @qrCodeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-mark code'**
+  String get qrCodeTitle;
+
+  /// No description provided for @qrCodeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Students type this code in the Student App. It changes every 30 seconds, so a code sent to someone outside the room stops working.'**
+  String get qrCodeHelp;
+
+  /// No description provided for @qrCodeChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes in {seconds} s'**
+  String qrCodeChanges(int seconds);
+
+  /// No description provided for @qrHeldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Held for you to check ({count})'**
+  String qrHeldTitle(int count);
+
+  /// No description provided for @qrHeldNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No scans are waiting.'**
+  String get qrHeldNone;
+
+  /// No description provided for @qrAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept: mark present'**
+  String get qrAccept;
+
+  /// No description provided for @qrReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get qrReject;
+
+  /// No description provided for @qrScanAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked present'**
+  String get qrScanAccepted;
+
+  /// No description provided for @qrScanRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan rejected'**
+  String get qrScanRejected;
+
+  /// No description provided for @qrReasonOutside.
+  ///
+  /// In en, this message translates to:
+  /// **'outside the campus'**
+  String get qrReasonOutside;
+
+  /// No description provided for @qrReasonPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'another phone'**
+  String get qrReasonPhone;
+
+  /// No description provided for @qrReasonLate.
+  ///
+  /// In en, this message translates to:
+  /// **'late scan'**
+  String get qrReasonLate;
+
+  /// No description provided for @qrReasonLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'location not confirmed'**
+  String get qrReasonLocation;
+
+  /// No description provided for @useReaderTaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Use classroom reader taps ({count})'**
+  String useReaderTaps(int count);
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -7609,7 +7701,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

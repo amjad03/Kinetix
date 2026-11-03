@@ -429,7 +429,7 @@ class Student {
 enum AttendanceStatus { present, absent, late, excused }
 
 class AttendanceSheet {
-  AttendanceSheet({required this.taken, required this.records});
+  AttendanceSheet({required this.taken, required this.records, this.hints = const []});
 
   factory AttendanceSheet.fromJson(Map<String, dynamic> j) => AttendanceSheet(
     taken: j['taken'] as bool,
@@ -437,10 +437,50 @@ class AttendanceSheet {
       for (final r in (j['records'] as List).cast<Map<String, dynamic>>())
         r['studentId'] as String: AttendanceStatus.values.byName(r['status'] as String),
     },
+    hints: [for (final h in (j['hints'] as List? ?? const []).cast<Map<String, dynamic>>()) AttendanceHint.fromJson(h)],
   );
 
   final bool taken;
   final Map<String, AttendanceStatus> records;
+
+  /// Classroom reader taps and QR scans held for review: suggestions for the teacher, not marks.
+  final List<AttendanceHint> hints;
+}
+
+/// A classroom reader tap (finger, face, card) or a QR self-mark held for the teacher to accept or reject.
+class AttendanceHint {
+  const AttendanceHint({required this.studentId, required this.source, required this.at, this.verify, this.scanId, this.reasons = const []});
+
+  factory AttendanceHint.fromJson(Map<String, dynamic> j) => AttendanceHint(
+    studentId: j['studentId'] as String,
+    source: j['source'] as String,
+    at: DateTime.parse(j['at'] as String),
+    verify: j['verify'] as String?,
+    scanId: j['scanId'] as String?,
+    reasons: [for (final r in (j['reasons'] as List? ?? const [])) r as String],
+  );
+
+  final String studentId;
+
+  /// reader or qr.
+  final String source;
+  final DateTime at;
+  final String? verify;
+  final String? scanId;
+  final List<String> reasons;
+
+  bool get isReaderTap => source == 'reader';
+  bool get isHeldScan => source == 'qr';
+}
+
+/// The rotating self-mark code for a period (changes every 30 seconds).
+class AttendanceCode {
+  const AttendanceCode({required this.code, required this.expiresAt});
+
+  factory AttendanceCode.fromJson(Map<String, dynamic> j) => AttendanceCode(code: j['code'] as String, expiresAt: DateTime.parse(j['expiresAt'] as String));
+
+  final String code;
+  final DateTime expiresAt;
 }
 
 /// The board session the teacher is running, as returned by a claim or GET /v1/teacher/session.

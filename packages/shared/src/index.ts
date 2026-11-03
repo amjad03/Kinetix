@@ -454,6 +454,17 @@ export interface AttendanceSheet {
   taken: boolean;
   records: { studentId: string; status: AttendanceStatus }[];
   counts: AttendanceCounts;
+  /** Classroom reader taps and QR scans held for review, for the teacher to confirm (not marks yet). */
+  hints?: AttendanceHint[];
+}
+
+export interface AttendanceHint {
+  studentId: string;
+  source: 'reader' | 'qr';
+  at: string;
+  verify: string | null;
+  scanId: string | null;
+  reasons: string[];
 }
 
 /** GET /v1/teacher/session */

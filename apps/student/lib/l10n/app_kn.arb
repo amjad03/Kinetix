@@ -1612,5 +1612,10 @@
   "payInBrowserBody": "ಪಾವತಿ ಪುಟ ತೆರೆದಿದೆ. ಪಾವತಿಸಿದ ನಂತರ ಇಲ್ಲಿಗೆ ಮರಳಿ ಪರಿಶೀಲಿಸಿ.",
   "checkPayment": "ನಾನು ಪಾವತಿಸಿದ್ದೇನೆ: ಪರಿಶೀಲಿಸಿ",
   "paymentPending": "ಇನ್ನೂ ದೃಢಪಟ್ಟಿಲ್ಲ. ನೀವು ಪಾವತಿಸಿದ್ದರೆ ಕೆಲವು ನಿಮಿಷಗಳಲ್ಲಿ ಇಲ್ಲಿ ಕಾಣುತ್ತದೆ.",
-  "downloadReceipt": "ರಸೀದಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ (PDF)"
+  "downloadReceipt": "ರಸೀದಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ (PDF)",
+  "attendanceHeld": "ನಿಮ್ಮ ಸ್ಕ್ಯಾನ್ ಶಿಕ್ಷಕರ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯುತ್ತಿದೆ: {reasons}.",
+  "attendanceReasonOutside": "ನೀವು ಆವರಣದ ಹೊರಗಿರುವಂತೆ ಕಾಣುತ್ತದೆ",
+  "attendanceReasonPhone": "ನೀವು ಸಾಮಾನ್ಯವಾಗಿ ಹಾಜರಿ ಹಾಕುವ ಫೋನ್ ಇದಲ್ಲ",
+  "attendanceReasonLate": "ಅವಧಿ ಆರಂಭವಾಗಿ ಸ್ವಲ್ಪ ಸಮಯವಾಗಿದೆ",
+  "attendanceReasonLocation": "ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ದೃಢೀಕರಿಸಲಾಗಲಿಲ್ಲ"
 }

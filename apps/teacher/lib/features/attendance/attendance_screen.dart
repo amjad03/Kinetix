@@ -6,6 +6,7 @@ import '../../core/format.dart';
 import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
+import 'attendance_code_screen.dart';
 import 'attendance_controller.dart';
 
 /// Roster for one period. Tap a student to mark them absent; long-press for late or excused.
@@ -104,6 +105,24 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           appBar: AppBar(
             title: Text(l.attendance),
             actions: [
+              if (controller.students.isNotEmpty)
+                IconButton(
+                  key: const Key('showCode'),
+                  tooltip: l.qrCodeTitle,
+                  icon: const Icon(Icons.pin_outlined),
+                  onPressed: () async {
+                    await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => AttendanceCodeScreen(api: widget.api, period: p, date: widget.date, students: controller.students)));
+                    // Accepted scans are marks now: reload the sheet.
+                    if (mounted) await controller.load();
+                  },
+                ),
+              if (controller.tapped.isNotEmpty)
+                IconButton(
+                  key: const Key('useReaderTaps'),
+                  tooltip: l.useReaderTaps(controller.tapped.length),
+                  icon: const Icon(Icons.face_retouching_natural),
+                  onPressed: controller.useReaderTaps,
+                ),
               if (controller.students.isNotEmpty)
                 TextButton.icon(
                   key: const Key('markAllPresent'),

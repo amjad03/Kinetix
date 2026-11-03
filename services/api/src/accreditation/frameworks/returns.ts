@@ -69,7 +69,7 @@ export const UDISE_PLUS: FrameworkDef = define({
   criteria: [
     { id: 'P', title: 'School profile', weight: 0, indicators: [{ id: 'P', title: 'School profile', metrics: [
       ql('UDISE-1.1', 'UDISE code, school name, location, category (classes offered), management, medium of instruction, affiliation board and year of establishment', 0, { narrative: 'institution_profile', formula: 'From the institution profile', evidence: ['Recognition certificate', 'Affiliation letter'] }),
-      qn('UDISE-1.2', 'Instructional days in the previous academic year', 'days', 0, { ...one, inputs: [{ key: 'v', label: 'Instructional days' }], formula: 'Days on which classes were held', columns: ['Academic year', 'Instructional days', 'Average school hours (students)', 'Average working hours (teachers)'] }),
+      qn('UDISE-1.2', 'Instructional days in the previous academic year', 'days', 0, { ...one, inputs: [{ key: 'v', label: 'Instructional days', source: 'instructional_days' }], rowsSource: 'instructional_days', formula: 'Days on which classes were held (days with attendance taken)', columns: ['Academic year', 'Instructional days', 'Average school hours (students)', 'Average working hours (teachers)'] }),
     ] }] },
     { id: 'F', title: 'Physical facilities and equipment', weight: 0, indicators: [{ id: 'F', title: 'Facilities', metrics: [
       qn('UDISE-2.1', 'Classrooms in good condition used for instruction', 'rooms', 0, { ...one, inputs: [{ key: 'v', label: 'Classrooms', source: 'classrooms' }], rowsSource: 'classrooms', formula: 'Classrooms recorded in the ERP', columns: ['Room', 'Condition (good / minor repair / major repair)', 'Used for instruction'] }),

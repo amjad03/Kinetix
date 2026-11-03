@@ -1612,5 +1612,10 @@
   "payInBrowserBody": "भुगतान पेज खुल गया है। भुगतान के बाद यहाँ लौटकर जाँचें।",
   "checkPayment": "मैंने भुगतान किया: जाँचें",
   "paymentPending": "अभी पुष्टि नहीं हुई। यदि आपने भुगतान किया है, तो कुछ मिनटों में यहाँ दिखेगा।",
-  "downloadReceipt": "रसीद डाउनलोड करें (PDF)"
+  "downloadReceipt": "रसीद डाउनलोड करें (PDF)",
+  "attendanceHeld": "आपका स्कैन शिक्षक की पुष्टि की प्रतीक्षा में है: {reasons}।",
+  "attendanceReasonOutside": "आप परिसर से बाहर लगते हैं",
+  "attendanceReasonPhone": "यह वह फ़ोन नहीं है जिससे आप सामान्यतः उपस्थिति लगाते हैं",
+  "attendanceReasonLate": "पीरियड शुरू हुए काफ़ी समय हो गया",
+  "attendanceReasonLocation": "आपके स्थान की पुष्टि नहीं हो सकी"
 }

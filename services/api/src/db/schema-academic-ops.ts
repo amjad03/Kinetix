@@ -290,7 +290,100 @@ export const attendanceAlerts = pgTable(
     level: smallint('level').notNull(),
     percent: num('percent', 5, 1).notNull(),
     recipients: integer('recipients').notNull().default(0),
+    /** app, and sms / whatsapp when they were queued (migration 0194). */
+    channels: text('channels').array().notNull().default(sql`'{app}'::text[]`),
     sentAt: timestamp('sent_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex('attendance_alerts_once_uq').on(t.studentId, t.kind, t.scope, t.level), index('attendance_alerts_sent_idx').on(t.tenantId, t.sentAt)],
+);
+
+// ---- QR anti-proxy and the published detention list (migrations 0194, 0195) -----------------------
+
+export type QrOutcome = 'accepted' | 'flagged' | 'refused';
+
+/**
+ * Every QR self-mark attempt, with the phone (hashed install id) and where it was made. accepted = marked present;
+ * flagged = held for the teacher (another phone, outside the geofence, poor fix, late); refused = nothing recorded.
+ */
+export const attendanceQrScans = pgTable(
+  'attendance_qr_scans',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    timetableSlotId: uuid('timetable_slot_id').notNull(),
+    date: date('date').notNull(),
+    deviceHash: text('device_hash'),
+    lat: num('lat', 9, 6),
+    lng: num('lng', 9, 6),
+    accuracyM: integer('accuracy_m'),
+    distanceM: integer('distance_m'),
+    outcome: text('outcome').$type<QrOutcome>().notNull(),
+    reasons: text('reasons').array().notNull().default(sql`'{}'::text[]`),
+    decision: text('decision').$type<'accepted' | 'rejected'>(),
+    decidedBy: userRef('decided_by'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    decisionNote: text('decision_note'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('attendance_qr_scans_slot_idx').on(t.tenantId, t.timetableSlotId, t.date)],
+);
+
+/** The one phone a student self-marks from; staff release it when the student changes phones. */
+export const attendanceDeviceBindings = pgTable('attendance_device_bindings', {
+  id: id(),
+  tenantId: tenantId(),
+  studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+  deviceHash: text('device_hash').notNull(),
+  boundAt: timestamp('bound_at', { withTimezone: true }).notNull().defaultNow(),
+  releasedBy: userRef('released_by'),
+  releasedAt: timestamp('released_at', { withTimezone: true }),
+  releaseReason: text('release_reason'),
+});
+
+/** A frozen detention list for a programme and term (or all classes), published by the principal before an examination. */
+export const attendanceDetentionLists = pgTable('attendance_detention_lists', {
+  id: id(),
+  tenantId: tenantId(),
+  programId: uuid('program_id').references(() => programs.id, { onDelete: 'cascade' }),
+  term: smallint('term'),
+  title: text('title').notNull(),
+  asOn: date('as_on').notNull(),
+  status: text('status').$type<'draft' | 'published' | 'withdrawn'>().notNull().default('draft'),
+  classes: integer('classes').notNull().default(0),
+  eligible: integer('eligible').notNull().default(0),
+  condonable: integer('condonable').notNull().default(0),
+  detained: integer('detained').notNull().default(0),
+  preparedBy: uuid('prepared_by').notNull().references(() => users.id),
+  publishedBy: userRef('published_by'),
+  publishedAt: timestamp('published_at', { withTimezone: true }),
+  withdrawnBy: userRef('withdrawn_by'),
+  withdrawnAt: timestamp('withdrawn_at', { withTimezone: true }),
+  withdrawReason: text('withdraw_reason'),
+  createdAt: createdAt(),
+});
+
+export interface DetentionShortIn {
+  code: string;
+  subject: string;
+  pct: number | null;
+  effective: number | null;
+}
+
+/** One student on a detention list: detained, or short but condonable, with the figures it was decided on. */
+export const attendanceDetentionEntries = pgTable(
+  'attendance_detention_entries',
+  {
+    id: id(),
+    tenantId: tenantId(),
+    listId: uuid('list_id').notNull().references(() => attendanceDetentionLists.id, { onDelete: 'cascade' }),
+    studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    sectionId: uuid('section_id').notNull().references(() => sections.id),
+    status: text('status').$type<'condonable' | 'detained'>().notNull(),
+    pct: num('pct', 5, 1),
+    effectivePct: num('effective_pct', 5, 1),
+    thresholdPct: num('threshold_pct', 5, 1).notNull(),
+    shortIn: jsonb('short_in').$type<DetentionShortIn[]>().notNull().default([]),
+  },
+  (t) => [uniqueIndex('attendance_detention_entries_uq').on(t.listId, t.studentId)],
 );

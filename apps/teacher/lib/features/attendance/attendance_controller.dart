@@ -28,6 +28,22 @@ class AttendanceController extends ChangeNotifier {
       if (count(s) > 0 || s == AttendanceStatus.present || s == AttendanceStatus.absent) (s, count(s)),
   ];
 
+  /// Classroom reader taps and QR scans held for review on this period.
+  List<AttendanceHint> hints = const [];
+
+  /// Students the classroom reader saw.
+  Set<String> get tapped => {for (final h in hints) if (h.isReaderTap) h.studentId};
+
+  /// Confirms the reader: tapped students present, everyone else absent (the teacher still saves).
+  void useReaderTaps() {
+    final seen = tapped;
+    for (final s in students) {
+      marks[s.id] = seen.contains(s.id) ? AttendanceStatus.present : AttendanceStatus.absent;
+    }
+    dirty = true;
+    notifyListeners();
+  }
+
   Future<void> load() async {
     loading = true;
     error = null;
@@ -37,6 +53,7 @@ class AttendanceController extends ChangeNotifier {
       students = results[0] as List<Student>;
       final sheet = results[1] as AttendanceSheet;
       alreadyTaken = sheet.taken;
+      hints = sheet.hints;
       marks
         ..clear()
         ..addEntries(students.map((s) => MapEntry(s.id, sheet.records[s.id] ?? AttendanceStatus.present)));

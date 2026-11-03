@@ -47,6 +47,10 @@ describe('attendance governance, QR attendance, institution profile', () => {
   });
 
   it('QR attendance: signed 30 s codes, student scans, teacher marks stand, tampering and expiry are refused', async () => {
+    // Five minutes into the 10:00 period, from the student's own phone (later scans and other phones are held: attendance-pass spec).
+    const base = new Date(start.getTime() - 25 * 60_000);
+    clock.at = base;
+    const phone = { deviceId: 'install-student-c-0001' };
     const q = (await post('teacher', '/v1/attendance/qr', { slotId: t.slot.id }).expect(200)).body;
     expect(q.ttlSeconds).toBe(30);
     expect(q.code).toMatch(/^\d{8}$/);
@@ -54,18 +58,18 @@ describe('attendance governance, QR attendance, institution profile', () => {
     await post('student', '/v1/attendance/qr', { slotId: t.slot.id }).expect(403);
 
     // The student (C) scans and is marked present.
-    const first = (await post('student', '/v1/student/attendance/scan', { code: q.code }).expect(200)).body;
-    expect(first).toEqual({ status: 'present', alreadyMarked: false });
-    expect((await post('student', '/v1/student/attendance/scan', { code: q.code }).expect(200)).body.alreadyMarked).toBe(true);
-    expect(await audited('attendance.qr_scan')).toBe(1);
+    const first = (await post('student', '/v1/student/attendance/scan', { code: q.code, ...phone }).expect(200)).body;
+    expect(first).toEqual({ status: 'present', alreadyMarked: false, outcome: 'accepted', reasons: [] });
+    expect((await post('student', '/v1/student/attendance/scan', { code: q.code, ...phone }).expect(200)).body.alreadyMarked).toBe(true);
+    expect(await audited('attendance.qr_scan.accepted')).toBe(1);
 
     await post('student', '/v1/student/attendance/scan', { code: q.code.slice(0, -1) + (q.code.endsWith('0') ? '1' : '0') }).expect(400);
     // Another institution's student cannot use this institution's code.
     const otherStudent = await login(other.slug, other.studentUser.email!);
     await http().post('/v1/student/attendance/scan').set({ authorization: `Bearer ${otherStudent}` }).send({ code: q.code }).expect(400);
 
-    clock.at = new Date(start.getTime() + 90_000);
-    const late = await post('student', '/v1/student/attendance/scan', { code: q.code }).expect(400);
+    clock.at = new Date(base.getTime() + 90_000);
+    const late = await post('student', '/v1/student/attendance/scan', { code: q.code, ...phone }).expect(400);
     expect(late.body.message).toMatch(/expired/);
     await post('student', '/v1/student/attendance/scan', { code: 'abc' }).expect(400);
     clock.at = start;

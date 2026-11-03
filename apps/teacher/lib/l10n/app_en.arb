@@ -4404,5 +4404,40 @@
   "unlockCancelled": "Withdrawn",
   "@unlockCancelled": {
     "description": "Question paper setting and marks unlock requests."
+  },
+  "qrCodeTitle": "Self-mark code",
+  "qrCodeHelp": "Students type this code in the Student App. It changes every 30 seconds, so a code sent to someone outside the room stops working.",
+  "qrCodeChanges": "Changes in {seconds} s",
+  "qrHeldTitle": "Held for you to check ({count})",
+  "qrHeldNone": "No scans are waiting.",
+  "qrAccept": "Accept: mark present",
+  "qrReject": "Reject",
+  "qrScanAccepted": "Marked present",
+  "qrScanRejected": "Scan rejected",
+  "qrReasonOutside": "outside the campus",
+  "qrReasonPhone": "another phone",
+  "qrReasonLate": "late scan",
+  "qrReasonLocation": "location not confirmed",
+  "useReaderTaps": "Use classroom reader taps ({count})",
+  "@qrCodeChanges": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "@qrHeldTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@useReaderTaps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

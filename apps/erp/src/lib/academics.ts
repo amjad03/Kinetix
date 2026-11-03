@@ -209,6 +209,10 @@ export interface AcademicSettings {
     medicalCountsAs: 'absent' | 'excused';
     personalCountsAs: 'absent' | 'excused';
     condonationFeePaise: number;
+    /** Where absence and shortage alerts go (SMS and WhatsApp through Communication templates). */
+    alertChannels: ('app' | 'sms' | 'whatsapp')[];
+    /** QR self-marking: the campus geofence and anti-proxy checks. */
+    qr: { enabled: boolean; requireLocation: boolean; lat: number | null; lng: number | null; radiusM: number; maxAccuracyM: number; lateMinutes: number; bindDevice: boolean };
   };
   assessment: { components: { code: string; name: string; weight: number; maxMarks: number }[]; lockBeforePublish: boolean; passPercent: number };
   timetable: { periodsPerDay: number; periodMinutes: number; maxPeriodsPerTeacherPerDay: number; maxPeriodsPerTeacherPerWeek: number; changeNeedsApproval: boolean; substitutionNeedsApproval: boolean };

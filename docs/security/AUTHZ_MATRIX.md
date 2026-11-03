@@ -5,7 +5,7 @@ Regenerate: `cd services/api && UPDATE_AUTHZ=1 ./node_modules/.bin/vitest run te
 
 ## Summary
 
-- Routes: 2707
+- Routes: 2721
 - Public (no @Auth, no guard): 89 (all on the allow list below unless flagged)
 - Any signed-in user (no role list): 302; open to students and families, so each must scope to the caller
 - Flagged for review: 40
@@ -647,6 +647,13 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/attendance-desk/day` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/attendance-desk/day` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/attendance-desk/detention` | exam_controller, hod, principal, teacher, tenant_admin |  |
+| GET | `/v1/attendance-desk/detention-lists` | exam_controller, hod, principal, tenant_admin |  |
+| POST | `/v1/attendance-desk/detention-lists` | exam_controller, hod, principal, tenant_admin |  |
+| GET | `/v1/attendance-desk/detention-lists/:id` | exam_controller, hod, principal, tenant_admin |  |
+| POST | `/v1/attendance-desk/detention-lists/:id/publish` | principal, tenant_admin |  |
+| POST | `/v1/attendance-desk/detention-lists/:id/withdraw` | principal, tenant_admin |  |
+| GET | `/v1/attendance-desk/device-bindings/:studentId` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/attendance-desk/device-bindings/:studentId/release` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/attendance-desk/leaves` | guardian, hod, principal, student, teacher, tenant_admin |  |
 | POST | `/v1/attendance-desk/leaves/:id/cancel` | guardian, hod, principal, student, teacher, tenant_admin |  |
 | POST | `/v1/attendance-desk/leaves/:id/decision` | hod, principal, teacher, tenant_admin |  |
@@ -655,7 +662,14 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/attendance-desk/leaves/mine` | guardian, student |  |
 | POST | `/v1/attendance-desk/leaves/on-duty` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/attendance-desk/policy` | hod, principal, teacher, tenant_admin |  |
+| GET | `/v1/attendance-desk/qr-scans` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/attendance-desk/qr-scans/:id/decision` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/attendance-desk/qr-scans/decide` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/attendance-desk/register` | exam_controller, hod, principal, teacher, tenant_admin |  |
+| GET | `/v1/attendance-desk/reports/accreditation` | exam_controller, hod, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/attendance-desk/reports/compliance` | exam_controller, hod, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/attendance-desk/reports/subjects` | exam_controller, hod, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/attendance-desk/reports/trend` | exam_controller, hod, principal, quality_officer, tenant_admin |  |
 | GET | `/v1/attendance-desk/sheet` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/attendance-desk/special/:id` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/attendance-desk/students/:id` | any signed-in user |  |

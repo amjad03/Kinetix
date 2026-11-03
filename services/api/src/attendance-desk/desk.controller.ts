@@ -339,39 +339,7 @@ export class AttendanceDeskController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const programId = uuid(q.programId, 'programme');
       const term = q.term && /^\d{1,2}$/.test(q.term) ? Number(q.term) : undefined;
-      const secs = await tx.execute<{ id: string; name: string }>(sql`
-        select s.id, s.display_name as name from sections s join academic_years y on y.id = s.academic_year_id
-        where y.is_current and (${programId ?? null}::uuid is null or s.program_id = ${programId ?? null}::uuid) and (${term ?? null}::int is null or s.term = ${term ?? null}::int)
-        order by s.display_name`);
-      const today = (await this.desk.now(tx)).date;
-      const out = [];
-      let eligible = 0;
-      for (const s of secs.rows) {
-        const policy = await attendancePolicy(tx, s.id);
-        const window = await attendanceWindow(tx, s.id, today);
-        const roster = await classStudents(tx, s.id);
-        const who = new Map(roster.map((r) => [r.id, r]));
-        for (const e of await eligibilityFor(tx, roster.map((r) => r.id), policy, window)) {
-          if (e.status === 'eligible') {
-            eligible++;
-            continue;
-          }
-          out.push({
-            studentId: e.studentId,
-            rollNo: who.get(e.studentId)!.rollNo,
-            fullName: who.get(e.studentId)!.fullName,
-            sectionId: s.id,
-            section: s.name,
-            status: e.status,
-            pct: e.overall.pct,
-            effectivePct: e.overall.effective,
-            thresholdPct: policy.thresholdPct,
-            basis: policy.basis,
-            shortIn: e.subjects.filter((x) => e.shortIn.includes(x.subjectId)).map((x) => ({ code: x.code, subject: x.subject, pct: x.pct, effective: x.effective })),
-          });
-        }
-      }
-      return { classes: secs.rows.length, eligible, rows: out };
+      return this.desk.detentionRows(tx, programId, term);
     });
   }
 
@@ -432,12 +400,16 @@ export class AttendanceDeskController {
       return;
     }
     const pdf = new PdfWriter();
-    pdf.text(`Attendance register: ${r.section}, ${r.month}`, { size: 13, bold: true });
+    if (r.institution) pdf.text(r.institution, { size: 13, bold: true, align: 'center' });
+    pdf.text(`Attendance register: ${r.section}, ${r.month}${r.subject ? `, ${r.subject}` : ''}`, { size: 11, bold: true, align: 'center' });
+    pdf.text(`Minimum attendance ${r.thresholdPct}% · ${r.mode === 'hour' && !r.subject ? 'cells: periods attended / held' : 'P present, A absent, L late'} · OD on duty, ML medical leave, E excused`, { size: 7, align: 'center' });
     pdf.gap(4);
     const fixed = [0, 30];
     const step = (515 - 150) / Math.max(1, r.days.length + 3);
     const xs = [...fixed, ...Array.from({ length: r.days.length + 3 }, (_, i) => Math.round(150 + i * step))];
     grid.forEach((line, i) => pdf.row(line.map((c) => String(c ?? '')), xs, { bold: i === 0, size: 6 }));
+    pdf.gap(30);
+    pdf.row(['Teacher / class teacher', '', 'Head of department', '', 'Principal'], [0, 120, 200, 320, 420], { size: 8 });
     res.setHeader('content-type', 'application/pdf');
     res.setHeader('content-disposition', `attachment; filename="${name}.pdf"`);
     res.end(pdf.build());

@@ -92,6 +92,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/attendance/register', label: 'nav.attendanceRegister', section: 'school', icon: 'reports' },
       { href: '/attendance/eligibility', label: 'nav.attendanceEligibility', section: 'school', icon: 'exams' },
       { href: '/attendance/governance', label: 'nav.attendanceGov', section: 'school', icon: 'academicAudit' },
+      { href: '/attendance/qr-review', label: 'nav.attendanceQr', section: 'school', icon: 'tasks' },
+      { href: '/attendance/reports', label: 'nav.attendanceReports', section: 'school', icon: 'reports' },
     ],
   },
   {
