@@ -32,6 +32,7 @@ import { examOffice } from './exam-office.js';
 import { examFlagship } from './exam-flagship.js';
 import { attendancePass } from './attendance-pass.js';
 import { academicsPass } from './academics-pass.js';
+import { hostelPass } from './hostel-pass.js';
 import { gatewayBooksSamples } from './gateway-books.js';
 import { feeAccountsSamples } from './fee-accounts.js';
 import { feeFlagshipSamples } from './fee-flagship.js';
@@ -110,6 +111,8 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['fee accounts for the trust and the college, gateway, online rules, reminders, fee references, SSP scholarships, payment links and a duplicate flag', feeFlagshipSamples],
   // After the academics desk (its attendance settings) and the exams: QR scans, a face terminal, a published detention list.
   ['attendance: QR scans with anti-proxy checks, classroom face terminal, SMS templates, detention lists', attendancePass],
+  // After the fees, governance committees and the kitchen stock log: hostels, wardens, gate log, committees, diet bills.
+  ['hostel pass: hostels and room types, a block-scoped warden, applications, deposits and a settlement, the QR gate log, emergencies, anti-ragging committee and undertakings, mess inspections and diet bills, hostel fee defaulters', hostelPass],
   // Last: version 1 is the live timetable as the earlier stages left it, and the diary follows the held periods.
   ['academics: bell schedule, lab batches and an open elective, allocations, unavailability, timetable versions, the teaching diary', academicsPass],
 ];
