@@ -14,7 +14,7 @@ import { PaymentLinksController } from '../../fees/payment-links.controller.js';
 import { SecretBox } from '../../common/secret-box.js';
 import { loadEnv } from '../../config/env.js';
 import type { Ctx } from './ctx.js';
-import { addDays, J, rupees } from './kit.js';
+import { addDays, rupees } from './kit.js';
 import { service } from './nest.js';
 
 export async function feeFlagshipSamples(c: Ctx): Promise<void> {
@@ -55,8 +55,8 @@ export async function feeFlagshipSamples(c: Ctx): Promise<void> {
   // 3. Online rules and the reminder schedule (a week before, on the day, then escalating).
   await k.q('update fee_accounts_settings set online = $2::jsonb, escalations = $3::jsonb where tenant_id = $1', [
     t,
-    J({ allowPartial: true, minPartRupees: 1000, linkValidDays: 7, pollAfterMinutes: 30 }),
-    J([
+    JSON.stringify({ allowPartial: true, minPartRupees: 1000, linkValidDays: 7, pollAfterMinutes: 30 }),
+    JSON.stringify([
       { offsetDays: -7, audience: ['family'], channels: ['app', 'sms'] },
       { offsetDays: 0, audience: ['family'], channels: ['app', 'sms', 'whatsapp'] },
       { offsetDays: 7, audience: ['family', 'class_teacher'], channels: ['app', 'whatsapp'] },
