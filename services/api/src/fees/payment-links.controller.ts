@@ -93,7 +93,7 @@ export class PaymentLinksController {
       const number = `PL-${String(n + 1).padStart(5, '0')}`;
       const [row] = await tx
         .insert(feePaymentLinks)
-        .values({ tenantId: p.tenantId, tokenHash: hashToken(token), number, studentId: inv.studentId, invoiceId: inv.id, amountPaise: amount, allowPartial: b.allowPartial ?? false, expiresAt: new Date(this.clock.now().getTime() + days * 86400_000), channels: b.channels, createdBy: p.userId })
+        .values({ tenantId: p.tenantId, tokenHash: hashToken(token), number, studentId: inv.studentId, invoiceId: inv.id, amountPaise: amount, allowPartial: b.allowPartial ?? false, expiresAt: new Date(this.clock.now().getTime() + days * 86400_000), channels: b.channels, createdBy: p.userId, createdAt: this.clock.now() })
         .returning();
       const t = await this.slug(tx);
       const url = `${this.base}/${t.slug}/${token}`;

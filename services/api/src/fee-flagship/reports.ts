@@ -14,7 +14,7 @@ const UUID = /^[0-9a-f-]{36}$/i;
 
 /** What government scholarships still expected hold back, per student (it does not count as overdue). */
 export const heldSql = sql`(select g.student_id, sum(greatest(coalesce(nullif(g.sanctioned_paise, 0), g.expected_paise, g.applied_paise) - g.received_paise, 0)) as held
-  from fee_govt_scholarships g where g.hold_dues and g.status in ('applied', 'verified', 'sanctioned') group by g.student_id)`;
+  from fee_govt_scholarships g where g.hold_dues and g.status in ('applied', 'verified', 'sanctioned', 'received') group by g.student_id)`;
 
 /** Fee subjects whose audit entries make the fees audit trail. */
 const AUDIT_SUBJECTS = ['fee_invoice', 'fee_payment', 'fee_receipt', 'fee_concession', 'fee_refund', 'fee_refund_request', 'fee_write_off', 'fee_cheque', 'fee_cash_closing', 'fee_challan', 'fee_structure', 'fee_payment_link', 'fee_account', 'fee_payment_flag', 'fee_programme_transfer', 'govt_scholarship', 'fee_late_fee', 'fee_waiver_request', 'fee_custom_plan', 'acct_voucher_request', 'settlement_batch', 'settlement_line', 'bank_transfer', 'fee_head', 'fee_reminder'];
@@ -35,16 +35,16 @@ export async function flagshipReport(tx: Tx, key: string, q: Record<string, stri
     }
     case 'ageing': {
       const raw = num(await rowsOf(tx, sql`select i.id, i.student_id as "studentId", (${to}::date - i.due_on)::int as days, (i.amount_paise - i.paid_paise) as "balancePaise" from fee_invoices i where i.status = 'due' and i.amount_paise > i.paid_paise ${acct(sql`i.fee_account_id`)}`), 'balancePaise', 'days');
-      const order = ['not due', '0-30', '31-60', '61-90', '90+'];
+      const order = ['current', '0-30', '31-60', '61-90', '90+'];
       const by = new Map(order.map((b) => [b, { id: b, bucket: b, invoices: 0, students: new Set<string>(), balancePaise: 0 }]));
       for (const r of raw) {
-        const b = by.get(Number(r.days) < 0 ? 'not due' : ageBucket(Number(r.days)))!;
+        const b = by.get(ageBucket(Number(r.days)))!;
         b.invoices++;
         b.students.add(String(r.studentId));
         b.balancePaise += Number(r.balancePaise);
       }
       const rows = [...by.values()].map((b) => ({ id: b.id, bucket: b.bucket, invoices: b.invoices, students: b.students.size, balancePaise: b.balancePaise }));
-      return { rows, totals: { balancePaise: sum(rows, 'balancePaise'), overduePaise: sum(rows.filter((r) => r.bucket !== 'not due'), 'balancePaise') } };
+      return { rows, totals: { balancePaise: sum(rows, 'balancePaise'), overduePaise: sum(rows.filter((r) => r.bucket !== 'current'), 'balancePaise') } };
     }
     case 'defaulters': {
       const minDays = Math.max(0, Number(q.minDays ?? 1) || 0);
@@ -52,7 +52,7 @@ export async function flagshipReport(tx: Tx, key: string, q: Record<string, stri
       const rows = num(
         await rowsOf(
           tx,
-          sql`with o as (select i.student_id, sum(i.amount_paise - i.paid_paise) as overdue, min(i.due_on) as oldest, count(*)::int as invoices from fee_invoices i where i.status = 'due' and i.due_on < ${to}::date - ${minDays - 1} ${acct(sql`i.fee_account_id`)} group by i.student_id),
+          sql`with o as (select i.student_id, sum(i.amount_paise - i.paid_paise) as overdue, min(i.due_on) as oldest, count(*)::int as invoices from fee_invoices i where i.status = 'due' and i.due_on < (${to}::date - ${minDays - 1}::int) ${acct(sql`i.fee_account_id`)} group by i.student_id),
             h as ${heldSql}
             select s.id, s.full_name as student, s.roll_no as "rollNo", sec.display_name as section, o.invoices, o.overdue as "overduePaise", coalesce(h.held, 0) as "heldPaise", greatest(o.overdue - coalesce(h.held, 0), 0) as "netPaise", o.oldest::text as "oldestDue", (${to}::date - o.oldest)::int as "daysOverdue",
               (select u.full_name from guardians g join users u on u.id = g.user_id where g.student_id = s.id order by g.is_primary desc limit 1) as guardian,
@@ -110,21 +110,23 @@ export async function flagshipReport(tx: Tx, key: string, q: Record<string, stri
       return { rows, totals: { amountPaise: sum(rows, 'amountPaise'), open: rows.filter((r) => r.status === 'open').length } };
     }
     case 'fee-account-summary': {
+      // An invoice or receipt naming no account belongs to the default account.
+      const own = (col: SQL) => sql`coalesce(${col}, (select d.id from fee_accounts d where d.is_default limit 1)) = a.id`;
       const rows = num(
         await rowsOf(
           tx,
-          sql`select coalesce(a.id::text, 'default') as id, coalesce(a.code || ' ' || a.name, 'Default account') as account, a.receipt_prefix as series,
-              (select count(*)::int from fee_receipts r where r.fee_account_id is not distinct from a.id and r.status in ('active', 'cancel_pending') and r.collected_on between ${from}::date and ${to}::date) as receipts,
-              (select coalesce(sum(p.amount_paise), 0) from fee_payments p join fee_invoices i on i.id = p.invoice_id where i.fee_account_id is not distinct from a.id and ${paidIn}) as "collectedPaise",
-              (select coalesce(sum(i.amount_paise - i.paid_paise), 0) from fee_invoices i where i.fee_account_id is not distinct from a.id and i.status = 'due') as "outstandingPaise",
+          sql`select a.id, a.code || ' ' || a.name as account, a.receipt_prefix as series, a.is_default as "isDefault",
+              (select count(*)::int from fee_receipts r where ${own(sql`r.fee_account_id`)} and r.status in ('active', 'cancel_pending') and r.collected_on between ${from}::date and ${to}::date) as receipts,
+              (select coalesce(sum(p.amount_paise), 0) from fee_payments p join fee_invoices i on i.id = p.invoice_id where ${own(sql`i.fee_account_id`)} and ${paidIn}) as "collectedPaise",
+              (select coalesce(sum(i.amount_paise - i.paid_paise), 0) from fee_invoices i where ${own(sql`i.fee_account_id`)} and i.status = 'due') as "outstandingPaise",
               (select coalesce(sum(l.debit_paise - l.credit_paise), 0) from acct_voucher_lines l join acct_vouchers v on v.id = l.voucher_id where l.account_id = a.bank_account_id and v.voided_at is null) as "bankPaise",
               (select g.provider || ' · ' || g.mode from payment_gateway_accounts g where g.fee_account_id = a.id) as gateway
-            from (select id, code, name, receipt_prefix, bank_account_id, sort_order from fee_accounts union all select null, null, null, null, null, -1) a order by a.sort_order`,
+            from fee_accounts a order by a.sort_order, a.code`,
         ),
         'collectedPaise',
         'outstandingPaise',
         'bankPaise',
-      ).filter((r) => r.id !== 'default' || Number(r.collectedPaise) || Number(r.outstandingPaise) || Number(r.receipts));
+      );
       return { rows, totals: { collectedPaise: sum(rows, 'collectedPaise'), outstandingPaise: sum(rows, 'outstandingPaise') } };
     }
     case 'scholarship-tracker': {

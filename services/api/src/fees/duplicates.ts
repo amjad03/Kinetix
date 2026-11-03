@@ -8,7 +8,7 @@ import { feeAccountsSettings } from '../db/schema-fee-accounts.js';
 import { feePaymentFlags } from '../db/schema-fee-flagship.js';
 import { accrues } from './accruals.js';
 import { accountOfInvoice } from './fee-accounts-core.js';
-import { unallocate } from './fee-lines.js';
+import { feeClock, unallocate } from './fee-lines.js';
 
 type Payment = typeof feePayments.$inferSelect;
 
@@ -38,7 +38,8 @@ export async function flagDuplicate(tx: Tx, pay: Payment, _today: string) {
     const [same] = await tx
       .select({ id: feePayments.id })
       .from(feePayments)
-      .where(and(eq(feePayments.status, 'paid'), ne(feePayments.id, pay.id), eq(feePayments.reference, ref), pay.receiptId ? sql`${feePayments.receiptId} is distinct from ${pay.receiptId}::uuid` : undefined))
+      // Payments made in the same collection (one payment split over two fee accounts' receipts) are one payment.
+      .where(and(eq(feePayments.status, 'paid'), ne(feePayments.id, pay.id), eq(feePayments.reference, ref), pay.receiptId ? sql`${feePayments.receiptId} is distinct from ${pay.receiptId}::uuid` : undefined, sql`${feePayments.createdAt} <> (select x.created_at from fee_payments x where x.id = ${pay.id}::uuid)`))
       .limit(1);
     if (same) {
       reason = 'same_reference';
@@ -46,11 +47,11 @@ export async function flagDuplicate(tx: Tx, pay: Payment, _today: string) {
     }
   }
   if (!reason && pay.method !== 'credit' && pay.method !== 'scholarship') {
-    const since = new Date(Date.now() - DUPLICATE_WINDOW_MINUTES * 60_000);
+    const since = new Date(feeClock.now().getTime() - DUPLICATE_WINDOW_MINUTES * 60_000);
     const [same] = await tx
       .select({ id: feePayments.id })
       .from(feePayments)
-      .where(and(eq(feePayments.status, 'paid'), ne(feePayments.id, pay.id), eq(feePayments.invoiceId, pay.invoiceId), eq(feePayments.amountPaise, pay.amountPaise), eq(feePayments.method, pay.method), gte(feePayments.paidAt, since), pay.receiptId ? sql`${feePayments.receiptId} is distinct from ${pay.receiptId}::uuid` : undefined))
+      .where(and(eq(feePayments.status, 'paid'), ne(feePayments.id, pay.id), eq(feePayments.invoiceId, pay.invoiceId), eq(feePayments.amountPaise, pay.amountPaise), eq(feePayments.method, pay.method), gte(feePayments.paidAt, since), pay.receiptId ? sql`${feePayments.receiptId} is distinct from ${pay.receiptId}::uuid` : undefined, sql`${feePayments.createdAt} <> (select x.created_at from fee_payments x where x.id = ${pay.id}::uuid)`))
       .limit(1);
     if (same) {
       reason = 'same_amount_day';

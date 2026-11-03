@@ -40,8 +40,8 @@ import { convenienceFee } from './fee-depth.logic.js';
 import type { PaymentProvider } from './payment-provider.js';
 import { naturalAsc } from '../common/natural-order.js';
 import { GatewayFlow } from './gateway-flow.service.js';
-import { syncAccruals } from './accruals.js';
-import { feeToday } from './fee-lines.js';
+import { accrues, syncAccruals } from './accruals.js';
+import { ensureLines, feeToday, findHead, headsOf } from './fee-lines.js';
 
 const RETURN_PAGE = (ok: boolean) =>
   `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Payment</title><style>body{font-family:system-ui,sans-serif;margin:0;display:grid;place-items:center;min-height:100vh;background:#f6f7f9;color:#1f2937}main{max-width:28rem;padding:2rem;text-align:center}</style></head><body><main><h1>${ok ? 'Thank you' : 'Payment not completed'}</h1><p>${ok ? 'Your payment has reached the institution. The receipt will appear in the app in a moment; you can close this window.' : 'The payment did not go through. No money was taken by the institution; you can close this window and try again.'}</p></main></body></html>`;
@@ -89,9 +89,20 @@ export class FeesController {
       const roster = await tx.select({ id: students.id }).from(students).where(and(eq(students.sectionId, section.id), eq(students.status, 'active')));
       if (roster.length === 0) throw new BadRequestException('This class has no students');
       const batchId = randomUUID();
-      await tx.insert(feeInvoices).values(
-        roster.map((s) => ({ tenantId: p.tenantId, studentId: s.id, sectionId: section.id, batchId, title: body.title, amountPaise: body.amountPaise, dueOn: body.dueOn, createdBy: p.userId })),
-      );
+      // The fee's head (by its title) names the fee account it is collected into.
+      const head = findHead(await headsOf(tx, p.tenantId), body.title);
+      const made = await tx
+        .insert(feeInvoices)
+        .values(roster.map((s) => ({ tenantId: p.tenantId, studentId: s.id, sectionId: section.id, batchId, title: body.title, amountPaise: body.amountPaise, dueOn: body.dueOn, createdBy: p.userId, feeAccountId: head?.feeAccountId ?? null })))
+        .returning({ id: feeInvoices.id });
+      // On the accrual basis the charge is booked now, under its head.
+      if (made.length && (await accrues(tx, made[0].id))) {
+        const day = await feeToday(tx);
+        for (const m of made) {
+          await ensureLines(tx, m.id);
+          await syncAccruals(tx, { tenantId: p.tenantId, userId: p.userId }, m.id, day);
+        }
+      }
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'fees.issued', subjectType: 'fee_batch', subjectId: batchId, data: { ...body, students: roster.length } });
       await this.notifications.feeIssued(tx, { batchId, title: body.title, amountPaise: body.amountPaise, dueOn: body.dueOn, studentIds: roster.map((s) => s.id) });
       return { batchId, invoices: roster.length };

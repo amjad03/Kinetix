@@ -11,10 +11,13 @@ import { accountForHeads } from './fee-accounts-core.js';
 import { tenants } from '../db/schema.js';
 import { localParts } from '../common/time.js';
 
+/** The application's clock for the dates of fee changes (FeesService points it at the injected Clock). */
+export const feeClock: { now: () => Date } = { now: () => new Date() };
+
 /** Today in the institution's time zone (the date of the books' entries for changes made now). */
 export async function feeToday(tx: Tx): Promise<string> {
   const [t] = await tx.select({ tz: tenants.timezone }).from(tenants);
-  return localParts(new Date(), t?.tz ?? 'Asia/Kolkata').date;
+  return localParts(feeClock.now(), t?.tz ?? 'Asia/Kolkata').date;
 }
 
 /** Who and when, for the books' entries a change makes, and what kind of change it is. */

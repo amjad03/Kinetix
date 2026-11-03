@@ -9,7 +9,7 @@ import { feeReceipts } from '../db/schema-fee-depth.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import type { RoleName } from '../auth/principal.js';
-import { allocatePayment, ensureLines, feeToday, findHead, headsOf } from './fee-lines.js';
+import { allocatePayment, ensureLines, feeClock, feeToday, findHead, headsOf } from './fee-lines.js';
 import { accrues, syncAccruals } from './accruals.js';
 import { nextReceiptNo, postPayment, prefixFor } from './receipts.js';
 import { accountOfInvoice } from './fee-accounts-core.js';
@@ -30,7 +30,9 @@ export class FeesService {
     private readonly notifications: NotificationsService,
     private readonly events: EventBus,
     private readonly clock: Clock,
-  ) {}
+  ) {
+    feeClock.now = () => this.clock.now();
+  }
 
   isFeeStaff(p: UserPrincipal): boolean {
     return p.roles.some((r) => FEE_ROLES.includes(r));
