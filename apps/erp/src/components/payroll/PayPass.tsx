@@ -543,10 +543,9 @@ export function SettlementCard({ separationId, saved, editable }: { separationId
           rowId={(l) => String(l.k)}
           exportName={`settlement-${separationId.slice(0, 8)}`}
           columns={[
-            { id: 'l', header: t('hp.ff.line'), rowHeader: true, cell: (l) => l.label },
+            { id: 'l', header: t('hp.ff.line'), rowHeader: true, cell: (l) => <span className="whitespace-nowrap">{l.label}</span> },
             { id: 'b', header: t('hp.ff.basis'), cell: (l) => <span className="text-muted-foreground">{l.basis}</span> },
-            { id: 'e', header: t('hp.ff.earning'), align: 'right', cell: (l) => (l.kind === 'earning' ? formatRupees(l.amountPaise) : '') },
-            { id: 'r', header: t('hp.ff.recovery'), align: 'right', cell: (l) => (l.kind === 'recovery' ? formatRupees(l.amountPaise) : '') },
+            { id: 'a', header: t('hp.f.amount'), align: 'right', cell: (l) => (l.kind === 'earning' ? formatRupees(l.amountPaise) : <span className="text-destructive">− {formatRupees(l.amountPaise)}</span>), csv: (l) => String((l.kind === 'earning' ? l.amountPaise : -l.amountPaise) / 100) },
           ]}
         />
       )}
