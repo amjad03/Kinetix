@@ -20,7 +20,7 @@ import { gateMove, residentOf } from './allotment.js';
 import { HOSTEL_ROLES } from './hostel.controller.js';
 import { HostelRecords } from './hostel.records.js';
 import { minutesLate } from './hostel-rules.js';
-import { assertStudentInScope, blockScope, studentScope } from './hostel-scope.js';
+import { assertStudentInScope, blockScope, LOCAL_TODAY, studentScope } from './hostel-scope.js';
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
 const Month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a month like 2026-10');
@@ -47,7 +47,7 @@ export async function gateEvent(tx: Tx, p: UserPrincipal, now: Date, deps: GateD
   if (!(await residentOf(tx, o.studentId))) throw new BadRequestException('This student has no hostel bed');
   await assertStudentInScope(tx, p, o.studentId);
   const [st] = await tx.select({ id: students.id, fullName: students.fullName, rollNo: students.rollNo }).from(students).where(eq(students.id, o.studentId));
-  const [last] = await tx.select({ direction: hostelGateLogs.direction }).from(hostelGateLogs).where(eq(hostelGateLogs.studentId, o.studentId)).orderBy(desc(hostelGateLogs.at)).limit(1);
+  const [last] = await tx.select({ direction: hostelGateLogs.direction }).from(hostelGateLogs).where(eq(hostelGateLogs.studentId, o.studentId)).orderBy(desc(hostelGateLogs.createdAt), desc(hostelGateLogs.at)).limit(1);
   const lastDir = last?.direction ?? 'in';
   const direction = o.direction ?? (lastDir === 'out' ? 'in' : 'out');
   if (direction === lastDir) throw new ConflictException(direction === 'out' ? `${st.fullName} is already out` : `${st.fullName} is already in`);
@@ -169,7 +169,7 @@ export class HostelPassController {
         join hostel_beds b on b.id = a.bed_id join hostel_rooms r on r.id = b.room_id join hostel_blocks k on k.id = r.block_id
         left join hostel_gate_passes g on g.id = l.gate_pass_id
         where ${blockScope(p, sql.raw('k.id')) ?? sql`true`}
-        order by l.student_id, l.at desc`);
+        order by l.student_id, l.created_at desc, l.at desc`);
       const now = this.clock.now();
       return rows.rows
         .filter((r) => r.direction === 'out')
@@ -188,9 +188,9 @@ export class HostelPassController {
   compliance(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const committees = await tx.execute<{ purpose: string; name: string; valid: boolean; members: number; meetings: number; last_meeting: string | null; helpline: string }>(sql`
-        select hc.purpose, c.name, (hc.valid_until is null or hc.valid_until >= current_date) as valid, hc.helpline,
-          (select count(*)::int from committee_members m where m.committee_id = c.id and (m.tenure_end is null or m.tenure_end >= current_date)) as members,
-          (select count(*)::int from committee_meetings mt where mt.committee_id = c.id and mt.status = 'held' and mt.meeting_on >= current_date - 365) as meetings,
+        select hc.purpose, c.name, (hc.valid_until is null or hc.valid_until >= ${LOCAL_TODAY}) as valid, hc.helpline,
+          (select count(*)::int from committee_members m where m.committee_id = c.id and (m.tenure_end is null or m.tenure_end >= ${LOCAL_TODAY})) as members,
+          (select count(*)::int from committee_meetings mt where mt.committee_id = c.id and mt.status = 'held' and mt.meeting_on >= ${LOCAL_TODAY} - 365) as meetings,
           (select max(mt.meeting_on)::text from committee_meetings mt where mt.committee_id = c.id and mt.status = 'held') as last_meeting
         from hostel_committees hc join committees c on c.id = hc.committee_id where c.active order by hc.purpose, c.name`);
       const has = (purpose: string) => committees.rows.some((c) => c.purpose === purpose && c.valid && c.members > 0);
@@ -205,7 +205,7 @@ export class HostelPassController {
         await tx.execute<{ n: number; quality: number | null; quantity: number | null; hygiene: number | null; open: number }>(sql`
         select count(*)::int as n, round(avg(quality), 2)::float as quality, round(avg(quantity), 2)::float as quantity, round(avg(hygiene), 2)::float as hygiene,
           count(*) filter (where status = 'open')::int as open
-        from mess_inspections where inspected_on >= current_date - 30`)
+        from mess_inspections where inspected_on >= ${LOCAL_TODAY} - 30`)
       ).rows;
       const missing = u.residents - u.received - u.verified;
       return {
@@ -221,7 +221,7 @@ export class HostelPassController {
   @Auth('user')
   safety(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const rows = await tx.select({ purpose: hostelCommittees.purpose, helpline: hostelCommittees.helpline, name: sql<string>`(select c.name from committees c where c.id = ${hostelCommittees.committeeId})` }).from(hostelCommittees).where(sql`${hostelCommittees.validUntil} is null or ${hostelCommittees.validUntil} >= current_date`).orderBy(asc(hostelCommittees.purpose));
+      const rows = await tx.select({ purpose: hostelCommittees.purpose, helpline: hostelCommittees.helpline, name: sql<string>`(select c.name from committees c where c.id = ${hostelCommittees.committeeId})` }).from(hostelCommittees).where(sql`${hostelCommittees.validUntil} is null or ${hostelCommittees.validUntil} >= ${LOCAL_TODAY}`).orderBy(asc(hostelCommittees.purpose));
       // The UGC's national anti-ragging helpline, always shown.
       return { nationalHelpline: '1800-180-5522', nationalEmail: 'helpline@antiragging.in', committees: rows };
     });
@@ -236,7 +236,7 @@ export class HostelPassController {
   inspect(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(InspectionBody)) b: z.infer<typeof InspectionBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       if (!p.roles.some((r) => MESS_ROLES.includes(r))) {
-        const member = await tx.execute<{ ok: boolean }>(sql`select exists (select 1 from committee_members m join hostel_committees hc on hc.committee_id = m.committee_id where hc.purpose = 'mess' and m.user_id = ${p.userId}::uuid and m.tenure_start <= current_date and (m.tenure_end is null or m.tenure_end >= current_date)) as ok`);
+        const member = await tx.execute<{ ok: boolean }>(sql`select exists (select 1 from committee_members m join hostel_committees hc on hc.committee_id = m.committee_id where hc.purpose = 'mess' and m.user_id = ${p.userId}::uuid and m.tenure_start <= ${LOCAL_TODAY} and (m.tenure_end is null or m.tenure_end >= ${LOCAL_TODAY})) as ok`);
         if (!member.rows[0]?.ok) throw new ForbiddenException('Only the mess committee can record an inspection');
       }
       const [t] = await tx.select({ tz: tenants.timezone }).from(tenants);

@@ -11,7 +11,9 @@ import type { Tx } from '../db/db.service.js';
  */
 
 const OVERSEERS = ['tenant_admin', 'principal'];
-const serving = sql.raw(`hs.from_on <= current_date and (hs.until_on is null or hs.until_on >= current_date)`);
+/** Today in the institution's time zone (the database's own date can still be yesterday in the small hours of IST). */
+export const LOCAL_TODAY = sql.raw(`(now() at time zone coalesce((select timezone from tenants limit 1), 'Asia/Kolkata'))::date`);
+const serving = sql`hs.from_on <= ${LOCAL_TODAY} and (hs.until_on is null or hs.until_on >= ${LOCAL_TODAY})`;
 
 /** True when the person sees every block (no scope applies). */
 export const seesAll = (p: UserPrincipal) => p.roles.some((r) => OVERSEERS.includes(r)) || !p.roles.includes('hostel_warden');

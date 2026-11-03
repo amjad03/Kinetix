@@ -108,7 +108,11 @@ const AmenityText = z
   .string()
   .trim()
   .max(600)
-  .transform((v) => [...new Set(v.split(',').map((x) => x.trim()).filter(Boolean).map((x) => x.charAt(0).toUpperCase() + x.slice(1)))])
+  .transform((v) => {
+    const out = new Map<string, string>();
+    for (const x of v.split(',').map((y) => y.trim()).filter(Boolean)) if (!out.has(x.toLowerCase())) out.set(x.toLowerCase(), x.charAt(0).toUpperCase() + x.slice(1));
+    return [...out.values()];
+  })
   .refine((a) => a.length <= 20 && a.every((x) => x.length <= 40), 'At most 20 amenities, each up to 40 letters');
 
 @Injectable()

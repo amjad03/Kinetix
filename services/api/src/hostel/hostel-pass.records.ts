@@ -14,7 +14,7 @@ import { DateText, Text, uuidEq } from '../records/helpers.js';
 import { HOSTEL_ROLES } from './hostel.controller.js';
 import { HostelRecords, hostelOptions, studentCols, studentField, studentSearch, withStudent } from './hostel.records.js';
 import { gateEvent } from './hostel-pass.controller.js';
-import { studentScope } from './hostel-scope.js';
+import { LOCAL_TODAY, studentScope } from './hostel-scope.js';
 
 const DIRECTIONS = choices(['out', 'Out'], ['in', 'In']);
 const METHODS = choices(['qr', 'QR scan'], ['manual', 'By hand']);
@@ -99,10 +99,10 @@ export class HostelPassRecords implements OnModuleInit {
   }
 
   committees(): RecordEntity {
-    const members = sql<number>`(select count(*)::int from committee_members m where m.committee_id = ${qual(hostelCommittees.committeeId)} and (m.tenure_end is null or m.tenure_end >= current_date))`;
-    const chair = sql<string | null>`(select u.full_name from committee_members m join users u on u.id = m.user_id where m.committee_id = ${qual(hostelCommittees.committeeId)} and m.role = 'chair' and (m.tenure_end is null or m.tenure_end >= current_date) limit 1)`;
+    const members = sql<number>`(select count(*)::int from committee_members m where m.committee_id = ${qual(hostelCommittees.committeeId)} and (m.tenure_end is null or m.tenure_end >= ${LOCAL_TODAY}))`;
+    const chair = sql<string | null>`(select u.full_name from committee_members m join users u on u.id = m.user_id where m.committee_id = ${qual(hostelCommittees.committeeId)} and m.role = 'chair' and (m.tenure_end is null or m.tenure_end >= ${LOCAL_TODAY}) limit 1)`;
     const lastMeeting = sql<string | null>`(select max(mt.meeting_on)::text from committee_meetings mt where mt.committee_id = ${qual(hostelCommittees.committeeId)} and mt.status = 'held')`;
-    const valid = sql`(${hostelCommittees.validUntil} is null or ${hostelCommittees.validUntil} >= current_date)`;
+    const valid = sql`(${hostelCommittees.validUntil} is null or ${hostelCommittees.validUntil} >= ${LOCAL_TODAY})`;
     return {
       key: 'hostel-committees',
       module: 'hostel',
@@ -167,7 +167,7 @@ export class HostelPassRecords implements OnModuleInit {
               ? await ctx.tx.select({ id: users.id, name: users.fullName }).from(users).where(sql`lower(${users.email}) = ${p.person.toLowerCase()}`)
               : await ctx.tx.select({ id: students.userId, name: students.fullName }).from(students).where(sql`lower(${students.rollNo}) = ${p.person.toLowerCase()} and ${students.userId} is not null`);
             if (!u?.id) throw new NotFoundException('No one with that email or roll number');
-            const [dup] = await ctx.tx.select({ id: committeeMembers.id }).from(committeeMembers).where(and(eq(committeeMembers.committeeId, hc.committeeId), eq(committeeMembers.userId, u.id), sql`(${committeeMembers.tenureEnd} is null or ${committeeMembers.tenureEnd} >= current_date)`));
+            const [dup] = await ctx.tx.select({ id: committeeMembers.id }).from(committeeMembers).where(and(eq(committeeMembers.committeeId, hc.committeeId), eq(committeeMembers.userId, u.id), sql`(${committeeMembers.tenureEnd} is null or ${committeeMembers.tenureEnd} >= ${LOCAL_TODAY})`));
             if (dup) throw new ConflictException(`${u.name} is already a member`);
             const [m] = await ctx.tx.insert(committeeMembers).values({ tenantId: ctx.p.tenantId, committeeId: hc.committeeId, userId: u.id, role: p.role, tenureStart: await todayIn(ctx.tx, this.clock.now()), tenureEnd: hc.validUntil }).returning({ id: committeeMembers.id });
             await auditUser(ctx.tx, ctx.p, 'hostel_committee.member_added', 'hostel_committee', id, { memberId: m.id, userId: u.id, role: p.role });
