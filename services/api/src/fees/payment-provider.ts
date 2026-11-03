@@ -283,8 +283,8 @@ export class RazorpayProvider extends PaymentProvider {
     const refund = body?.payload?.refund?.entity;
     if (body?.event === 'refund.processed' && refund && pay) return { ok: true, event: { key: eventId ?? `refund:${refund.id}`, kind: 'refund', orderId: pay.order_id, providerPaymentId: refund.payment_id, amountPaise: refund.amount, status: 'refunded' } };
     if (!pay || typeof pay.order_id !== 'string') return { ok: true, event: null };
-    if (body?.event === 'payment.captured' || body?.event === 'order.paid') return { ok: true, event: { key: eventId ?? `paid:${pay.id}`, kind: 'payment', orderId: pay.order_id, providerPaymentId: pay.id, amountPaise: pay.amount, status: 'paid' } };
-    if (body?.event === 'payment.failed') return { ok: true, event: { key: eventId ?? `failed:${pay.id}`, kind: 'payment', orderId: pay.order_id, providerPaymentId: pay.id, amountPaise: pay.amount, status: 'failed' } };
+    if (body?.event === 'payment.captured' || body?.event === 'order.paid') return { ok: true, event: { key: eventId ?? `paid:${pay.id}:${pay.order_id}:${pay.amount}`, kind: 'payment', orderId: pay.order_id, providerPaymentId: pay.id, amountPaise: pay.amount, status: 'paid' } };
+    if (body?.event === 'payment.failed') return { ok: true, event: { key: eventId ?? `failed:${pay.id}:${pay.order_id}`, kind: 'payment', orderId: pay.order_id, providerPaymentId: pay.id, amountPaise: pay.amount, status: 'failed' } };
     return { ok: true, event: null };
   }
 
@@ -513,8 +513,14 @@ export class DemoPaymentProvider extends PaymentProvider {
     return safeEqual(hmacHex(DemoPaymentProvider.SECRET, rawBody), signature);
   }
 
-  readWebhook(): WebhookRead {
-    return { ok: false };
+  /** Demo webhooks look like Razorpay's, signed with the demo secret. */
+  readWebhook(rawBody: Buffer, headers: Record<string, string | undefined>): WebhookRead {
+    const sig = headers['x-razorpay-signature'];
+    if (!sig || !this.verifyWebhook(rawBody, sig)) return { ok: false };
+    const body = readJson<{ event?: string; payload?: { payment?: { entity?: { id: string; order_id: string; amount: number } } } }>(rawBody);
+    const pay = body?.payload?.payment?.entity;
+    if (!pay || typeof pay.order_id !== 'string' || !['payment.captured', 'order.paid'].includes(body?.event ?? '')) return { ok: true, event: null };
+    return { ok: true, event: { key: headers['x-razorpay-event-id'] ?? `paid:${pay.id}:${pay.order_id}:${pay.amount}`, kind: 'payment', orderId: pay.order_id, providerPaymentId: pay.id, amountPaise: pay.amount, status: 'paid' } };
   }
 
   async fetchStatus(): Promise<GatewayStatus> {

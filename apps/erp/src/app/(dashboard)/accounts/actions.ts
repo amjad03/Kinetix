@@ -5,10 +5,11 @@ import { act, api } from '@/lib/api';
 import type { ActionResult } from '@/lib/types';
 
 /**
- * Only the fees and accounts endpoints (the desk, fee setup, the counter, bank reconciliation, and the shared fee
- * reminder and late-fee rule) can be reached through these actions.
+ * Only the fees and accounts endpoints (the desk, fee setup, the counter, bank reconciliation, the shared fee
+ * reminder and late-fee rule, payment links, duplicate flags, the UPI QR, fee references and the accrual re-booking)
+ * can be reached through these actions.
  */
-const ALLOWED = /^\/v1\/(fee-accounts\/[a-z0-9/-]+|fee-setup\/[a-z0-9/-]+|fee-collect\/[a-z0-9/-]+|accounts-depth\/[a-z0-9/-]+|fees\/reminders|fees\/late-fee-rule|fees\/late-fees\/run)$/;
+const ALLOWED = /^\/v1\/(fee-accounts\/[a-z0-9/-]+|fee-setup\/[a-z0-9/-]+|fee-collect\/[a-z0-9/-]+|accounts-depth\/[a-z0-9/-]+|fees\/reminders|fees\/late-fee-rule|fees\/late-fees\/run|fees\/payment-links(\/[0-9a-f-]{36}\/(resend|cancel))?|fees\/flags\/[0-9a-f-]{36}\/resolve|fees\/invoices\/[0-9a-f-]{36}\/upi|fees\/fee-refs\/generate|fees\/accruals\/sync)$/;
 
 /** Sends a change to the API and refreshes the fees and accounts pages. */
 export async function deskSend<T = unknown>(path: string, body: unknown, method: 'POST' | 'PUT' | 'PATCH' = 'POST'): Promise<ActionResult<T>> {

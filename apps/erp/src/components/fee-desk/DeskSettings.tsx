@@ -26,7 +26,26 @@ export interface DeskSettingsData {
   reminders: { enabled?: boolean; daysBefore?: number[]; daysAfter?: number[]; channels?: string[]; dailySummary?: boolean };
   convenience: { percent?: number; flatRupees?: number };
   refundRules: { untilDays: number | null; percent: number; deductionRupees: number }[];
+  basis?: 'cash' | 'accrual';
+  accrualSince?: string | null;
+  online?: { allowPartial?: boolean; minPartRupees?: number; linkValidDays?: number; pollAfterMinutes?: number };
+  escalations?: Escalation[];
 }
+export interface Escalation {
+  offsetDays: number;
+  audience: string[];
+  channels: string[];
+  minRupees?: number;
+}
+const AUDIENCES = ['family', 'class_teacher', 'principal', 'accountant'];
+const STEP_CHANNELS = ['app', 'sms', 'whatsapp', 'email'];
+/** A schedule to start from: a week before, on the day, a week after (class teacher told), a month after (principal). */
+const SUGGESTED: Escalation[] = [
+  { offsetDays: -7, audience: ['family'], channels: ['app', 'sms'] },
+  { offsetDays: 0, audience: ['family'], channels: ['app', 'sms', 'whatsapp'] },
+  { offsetDays: 7, audience: ['family', 'class_teacher'], channels: ['app', 'whatsapp'] },
+  { offsetDays: 30, audience: ['family', 'class_teacher', 'principal'], channels: ['app', 'sms', 'whatsapp', 'email'] },
+];
 export interface LateRule {
   mode?: 'daily' | 'slab';
   graceDays: number;
@@ -75,7 +94,7 @@ export function DeskSettings({ initial, rule, accounts }: { initial: DeskSetting
   const word = useWord();
   const router = useRouter();
   const toast = useToastOptional();
-  const [s, setS] = useState<DeskSettingsData>(() => ({ ...initial, chains: { ...DEFAULT_CHAINS, ...(initial.chains ?? {}) }, duesBlock: initial.duesBlock ?? {}, reminders: initial.reminders ?? {}, convenience: initial.convenience ?? {}, refundRules: initial.refundRules ?? [] }));
+  const [s, setS] = useState<DeskSettingsData>(() => ({ ...initial, chains: { ...DEFAULT_CHAINS, ...(initial.chains ?? {}) }, duesBlock: initial.duesBlock ?? {}, reminders: initial.reminders ?? {}, convenience: initial.convenience ?? {}, refundRules: initial.refundRules ?? [], online: initial.online ?? {}, escalations: initial.escalations ?? [], basis: initial.basis ?? 'cash' }));
   const [before, setBefore] = useState((initial.reminders?.daysBefore ?? []).join(', '));
   const [after, setAfter] = useState((initial.reminders?.daysAfter ?? []).join(', '));
   const [dirty, setDirty] = useState(false);
@@ -91,8 +110,9 @@ export function DeskSettings({ initial, rule, accounts }: { initial: DeskSetting
 
   const save = () =>
     start(async () => {
-      const { feeHeads: _heads, ...rest } = s;
+      const { feeHeads: _heads, accrualSince: _since, ...rest } = s;
       void _heads;
+      void _since;
       const res = await deskSend('/v1/fee-accounts/settings', { ...rest, reminders: { ...s.reminders, daysBefore: days(before), daysAfter: days(after).filter((d) => d > 0) } }, 'PUT');
       if (!res.ok) return toast?.error(res.error);
       setDirty(false);
@@ -160,16 +180,38 @@ export function DeskSettings({ initial, rule, accounts }: { initial: DeskSetting
           content: (
             <div className="grid gap-4">
               <FormRow>
-                <SelectInput label={t('fd.set.gateway')} value={s.gateway} options={['razorpay', 'payu', 'none'].map((g) => ({ value: g, label: word(g) }))} onChange={(e) => edit({ gateway: e.target.value })} />
+                <p className="m-0 text-sm">{t('ff.set.gatewaysHere')}</p>
                 <Button asChild variant="outline">
-                  <Link href="/settings">{t('fd.set.gatewayKeys')}</Link>
+                  <Link href="/fees/gateways">{t('ff.gw.title')}</Link>
                 </Button>
               </FormRow>
+              <SwitchField label={t('ff.set.allowPartial')} checked={s.online?.allowPartial !== false} onChange={(v) => edit({ online: { ...s.online, allowPartial: v } })} />
+              <FormGrid>
+                <TextInput label={t('ff.set.minPart')} type="number" value={String(s.online?.minPartRupees ?? '')} onChange={(e) => edit({ online: { ...s.online, minPartRupees: Number(e.target.value) || 0 } })} />
+                <TextInput label={t('ff.set.linkDays')} type="number" value={String(s.online?.linkValidDays ?? 7)} onChange={(e) => edit({ online: { ...s.online, linkValidDays: Math.max(1, Math.min(60, Number(e.target.value) || 7)) } })} />
+                <TextInput label={t('ff.set.pollAfter')} type="number" value={String(s.online?.pollAfterMinutes ?? 15)} onChange={(e) => edit({ online: { ...s.online, pollAfterMinutes: Math.max(5, Math.min(1440, Number(e.target.value) || 15)) } })} />
+              </FormGrid>
               <p className="m-0 text-sm text-muted-foreground">{t('fx.set.convenience')}</p>
               <FormGrid>
                 <TextInput label={t('fx.set.conveniencePercent')} type="number" value={String(s.convenience.percent ?? '')} onChange={(e) => edit({ convenience: { ...s.convenience, percent: Number(e.target.value) || 0 } })} />
                 <TextInput label={t('fx.set.convenienceFlat')} type="number" value={String(s.convenience.flatRupees ?? '')} onChange={(e) => edit({ convenience: { ...s.convenience, flatRupees: Number(e.target.value) || 0 } })} />
               </FormGrid>
+            </div>
+          ),
+        },
+        {
+          id: 'books',
+          title: t('ff.set.books'),
+          description: t('ff.set.booksSub'),
+          content: (
+            <div className="grid gap-3">
+              <SelectInput label={t('ff.set.basis')} value={s.basis ?? 'cash'} onChange={(e) => edit({ basis: e.target.value as 'cash' | 'accrual' })} options={[{ value: 'cash', label: t('ff.set.basis.cash') }, { value: 'accrual', label: t('ff.set.basis.accrual') }]} />
+              <p className="m-0 text-sm text-muted-foreground">{s.basis === 'accrual' ? (initial.accrualSince ? t('ff.set.accrualSince', { when: fmt.date(initial.accrualSince.slice(0, 10)) }) : t('ff.set.accrualFromNow')) : t('ff.set.cashNote')}</p>
+              <p className="m-0 text-sm">
+                <Link className="underline underline-offset-2" href="/fees/setup?tab=accounts">
+                  {t('ff.set.feeAccounts')}
+                </Link>
+              </p>
             </div>
           ),
         },
@@ -289,6 +331,52 @@ export function DeskSettings({ initial, rule, accounts }: { initial: DeskSetting
               </div>
               <p className="m-0 text-sm text-muted-foreground">{t('fx.set.templatesNote')}</p>
               <SwitchField label={t('fx.set.dailySummary')} checked={!!s.reminders.dailySummary} onChange={(v) => edit({ reminders: { ...s.reminders, dailySummary: v } })} />
+            </div>
+          ),
+        },
+        {
+          id: 'escalations',
+          title: t('ff.set.steps'),
+          description: t('ff.set.stepsSub'),
+          content: (
+            <div className="grid gap-4" data-testid="reminder-steps">
+              {(s.escalations ?? []).length === 0 ? <p className="m-0 text-sm text-muted-foreground">{t('ff.set.noSteps')}</p> : null}
+              {(s.escalations ?? []).map((st, i) => {
+                const set = (p: Partial<Escalation>) => edit({ escalations: (s.escalations ?? []).map((x, j) => (j === i ? { ...x, ...p } : x)) });
+                const toggle = (list: string[], v: string, on: boolean) => (on ? [...new Set([...list, v])] : list.filter((x) => x !== v));
+                return (
+                  <div key={i} className="grid gap-2 rounded-lg border p-3">
+                    <FormRow>
+                      <TextInput label={t('ff.set.offset')} type="number" value={String(st.offsetDays)} helperText={st.offsetDays < 0 ? t('ff.set.before', { n: -st.offsetDays }) : st.offsetDays === 0 ? t('ff.set.onDay') : t('ff.set.after', { n: st.offsetDays })} onChange={(e) => set({ offsetDays: Number(e.target.value) || 0 })} />
+                      <TextInput label={t('ff.set.minOverdue')} type="number" value={String(st.minRupees ?? '')} onChange={(e) => set({ minRupees: Number(e.target.value) || 0 })} />
+                      <Button type="button" variant="ghost" aria-label={t('fd.remove')} onClick={() => edit({ escalations: (s.escalations ?? []).filter((_, j) => j !== i) })}>
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </FormRow>
+                    <div className="flex flex-wrap gap-4">
+                      {AUDIENCES.map((a) => (
+                        <CheckboxField key={a} label={t(`ff.aud.${a}` as MessageKey)} checked={st.audience.includes(a)} onChange={(v) => set({ audience: toggle(st.audience, a, v) })} />
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-4">
+                      {STEP_CHANNELS.map((c) => (
+                        <CheckboxField key={c} label={t(`ff.ch.${c}` as MessageKey)} checked={st.channels.includes(c)} onChange={(v) => set({ channels: toggle(st.channels, c, v) })} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" onClick={() => edit({ escalations: [...(s.escalations ?? []), { offsetDays: 0, audience: ['family'], channels: ['app'] }].sort((a, b) => a.offsetDays - b.offsetDays) })}>
+                  <Plus className="size-4" /> {t('ff.set.addStep')}
+                </Button>
+                {(s.escalations ?? []).length === 0 ? (
+                  <Button type="button" variant="outline" onClick={() => edit({ escalations: SUGGESTED })}>
+                    {t('ff.set.suggested')}
+                  </Button>
+                ) : null}
+              </div>
+              <p className="m-0 text-sm text-muted-foreground">{t('ff.set.stepsNote')}</p>
             </div>
           ),
         },

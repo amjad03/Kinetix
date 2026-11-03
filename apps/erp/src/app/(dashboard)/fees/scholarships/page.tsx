@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { FeeKitTable } from '@/components/fee-depth/FeeKitTable';
 import { FeesNav } from '@/components/fees/FeesNav';
+import { PortalStatusImport } from '@/components/fee-flagship/PortalStatusImport';
 import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/shadcn/button';
 import { ErrorState } from '@/components/States';
@@ -32,8 +33,9 @@ export default async function GovtScholarshipsPage({ searchParams }: { searchPar
             <Button asChild variant="outline" className="h-9">
               <Link href="/scholarships">{t('fx.instituteSchemes')}</Link>
             </Button>
+            <PortalStatusImport />
             <Button asChild variant="outline" className="h-9">
-              <Link href="/accounts/reports/scholarships">{t('fd.rep.scholarships')}</Link>
+              <Link href="/accounts/reports/scholarship-tracker">{t('fd.rep.scholarship-tracker')}</Link>
             </Button>
           </>
         }

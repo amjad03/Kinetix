@@ -23,9 +23,9 @@ export const KIT_OF: Record<string, string> = {
 };
 
 /** The fee setup lists (Fees → Setup), in tab order. */
-export const SETUP_TABS = ['heads', 'concession-types', 'instalment-plans', 'profiles'] as const;
+export const SETUP_TABS = ['heads', 'accounts', 'concession-types', 'instalment-plans', 'profiles'] as const;
 export type SetupTab = (typeof SETUP_TABS)[number];
-export const SETUP_KIT: Record<SetupTab, string> = { heads: 'fee-heads', 'concession-types': 'fee-concession-types', 'instalment-plans': 'fee-instalment-plans', profiles: 'fee-profiles' };
+export const SETUP_KIT: Record<SetupTab, string> = { heads: 'fee-heads', accounts: 'fee-accounts', 'concession-types': 'fee-concession-types', 'instalment-plans': 'fee-instalment-plans', profiles: 'fee-profiles' };
 
 export const PAY_MODES = ['cash', 'cheque', 'dd', 'card', 'upi', 'bank_transfer'] as const;
 export type PayMode = (typeof PAY_MODES)[number];

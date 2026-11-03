@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, eq, lte, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { Clock, localParts } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
@@ -172,7 +172,8 @@ export class FeesService {
     const [paidBy] = await tx
       .select({ paise: sql<number>`coalesce(sum(${feePayments.amountPaise}), 0)::bigint`.mapWith(Number) })
       .from(feePayments)
-      .where(and(eq(feePayments.invoiceId, r.invoice.id), eq(feePayments.status, 'paid'), lte(feePayments.paidAt, r.payment.paidAt!)));
+      // Paid before this one (or at the same moment and made earlier: payments the same second keep their order).
+      .where(and(eq(feePayments.invoiceId, r.invoice.id), eq(feePayments.status, 'paid'), sql`(${feePayments.paidAt} < ${r.payment.paidAt!} or (${feePayments.paidAt} = ${r.payment.paidAt!} and ${feePayments.createdAt} <= (select x.created_at from fee_payments x where x.id = ${r.payment.id}::uuid)))`));
     return {
       paymentId: r.payment.id,
       receiptNo: r.payment.receiptNo,

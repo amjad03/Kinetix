@@ -28,15 +28,23 @@ export const LINK_EXPIRY_JOB = 'fees.payment_links_expire';
 const hashToken = (t: string) => createHash('sha256').update(t).digest('hex');
 const TOKEN = /^[A-Za-z0-9_-]{32,64}$/;
 const Channel = z.enum(['sms', 'whatsapp', 'email']);
-const LinkBody = z.object({
+const LinkBody = z
+  .object({
   invoiceId: z.uuid(),
   /** A set amount (an instalment); otherwise the balance. */
   amountPaise: z.number().int().min(100).max(100_000_000_00).optional(),
   allowPartial: z.boolean().optional(),
   validDays: z.number().int().min(1).max(60).optional(),
   channels: z.array(Channel).max(3).default([]),
-});
-const ResendBody = z.object({ channels: z.array(Channel).min(1).max(3) });
+  /** The ERP's dialog sends ticks instead of a list. */
+  sms: z.boolean().optional(),
+  whatsapp: z.boolean().optional(),
+  email: z.boolean().optional(),
+}).transform(({ sms, whatsapp, email, ...b }) => ({ ...b, channels: [...new Set([...b.channels, ...(sms ? ['sms' as const] : []), ...(whatsapp ? ['whatsapp' as const] : []), ...(email ? ['email' as const] : [])])] }));
+const ResendBody = z
+  .object({ channels: z.array(Channel).max(3).default([]), sms: z.boolean().optional(), whatsapp: z.boolean().optional(), email: z.boolean().optional() })
+  .transform(({ sms, whatsapp, email, channels }) => ({ channels: [...new Set([...channels, ...(sms ? ['sms' as const] : []), ...(whatsapp ? ['whatsapp' as const] : []), ...(email ? ['email' as const] : [])])] }))
+  .refine((b) => b.channels.length > 0, { message: 'Choose at least one way to send it', path: ['channels'] });
 const PublicCheckout = z.object({ amountPaise: z.number().int().min(100).max(100_000_000_00).optional() });
 
 /**

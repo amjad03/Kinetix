@@ -137,7 +137,9 @@ export class PaymentGateway {
 
   /** Every saved account of a provider (a webhook URL names the provider, not the fee account). */
   async allOf(tx: Tx, provider: string): Promise<{ id: string; provider: PaymentProvider }[]> {
-    if (this.mode === 'none' || this.mode === 'demo' || !this.box) return [];
+    // In demo mode the demo gateway answers to the Razorpay-shaped webhook.
+    if (this.mode === 'demo') return provider === 'razorpay' ? [{ id: 'demo', provider: new DemoPaymentProvider() }] : [];
+    if (this.mode === 'none' || !this.box) return [];
     const rows = await tx.select().from(paymentGatewayAccounts).where(eq(paymentGatewayAccounts.provider, provider));
     return rows.map((r) => ({ id: r.id, provider: this.providerOf(this.decrypt(r)) }));
   }

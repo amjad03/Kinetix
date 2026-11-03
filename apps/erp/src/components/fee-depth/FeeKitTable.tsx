@@ -1,6 +1,9 @@
 'use client';
 
-import { BadgeIndianRupee, Banknote, CalendarCheck2, CircleX, FileText, Inbox, Landmark, Printer, ReceiptText, Wallet } from 'lucide-react';
+import { ArrowRightLeft, BadgeCheck, BadgeIndianRupee, Banknote, CalendarCheck2, CircleX, FileText, Inbox, Landmark, Link2, Printer, QrCode, ReceiptText, Wallet } from 'lucide-react';
+import { CHANNEL_FIELDS } from '@/components/fee-flagship/PaymentLinks';
+import { TransferDialog } from '@/components/fee-flagship/TransferDialog';
+import { UpiQrDialog } from '@/components/fee-flagship/UpiQrDialog';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition, type ReactNode } from 'react';
 import { bulkRecords } from '@/app/(dashboard)/records-actions';
@@ -32,6 +35,8 @@ export function FeeKitTable({ meta, page, state, label, toolbar, extraParams }: 
   const word = useWord();
   const [dialog, setDialog] = useState<Pending>(null);
   const [report, setReport] = useState<{ report: BulkReport; title: string } | null>(null);
+  const [transfer, setTransfer] = useState<{ id: string; name: string } | null>(null);
+  const [upi, setUpi] = useState<{ id: string; title: string } | null>(null);
   const [, start] = useTransition();
   const e = meta.key;
 
@@ -173,6 +178,25 @@ export function FeeKitTable({ meta, page, state, label, toolbar, extraParams }: 
           c('handedTo', 'fx.col.handedTo', (r) => text(r.handedTo), { hideBelow: 'lg' }),
           c('status', 'fx.col.status', (r) => pill(r.status)),
         ];
+      case 'fee-accounts':
+        return [
+          c('code', 'fx.col.code', (r) => <b className="font-mono">{text(r.code)}</b>, { sortKey: 'code', rowHeader: true, hideable: false }),
+          c('name', 'ff.col.feeAccount', (r) => (
+            <span className="block min-w-0">
+              <b className="block truncate font-[550]">{text(r.name)}</b>
+              <small className="block truncate text-xs text-muted-foreground">{r.isDefault ? t('ff.acct.default') : word(r.kind)}</small>
+            </span>
+          ), { sortKey: 'name' }),
+          c('series', 'ff.col.series', (r) => <span className="font-mono text-[13px]">{text(r.receiptPrefix)}</span>, { hideBelow: 'sm' }),
+          c('books', 'fx.col.fund', (r) => text(r.fund), { hideBelow: 'md' }),
+          c('bank', 'fx.col.bank', (r) => text(r.bank), { hideBelow: 'lg' }),
+          c('upi', 'ff.col.upi', (r) => <span className="font-mono text-[13px]">{text(r.upiVpa)}</span>, { hideBelow: 'lg' }),
+          c('gateway', 'ff.col.gateway', (r) => text(r.gateway), { hideBelow: 'md' }),
+          c('gstin', 'ff.col.gstin', (r) => text(r.gstin), { defaultHidden: true }),
+          c('reg80g', 'ff.col.reg80g', (r) => text(r.reg80g), { defaultHidden: true }),
+          c('invoices', 'fx.col.invoices', (r) => fmt.number(Number(r.invoices ?? 0)), { ...num, hideBelow: 'sm' }),
+          c('active', 'fx.col.active', (r) => yes(r.active), { hideBelow: 'md' }),
+        ];
       case 'fee-govt-scholarships':
         return [
           c('student', 'fx.col.student', (r) => (
@@ -187,6 +211,8 @@ export function FeeKitTable({ meta, page, state, label, toolbar, extraParams }: 
           c('applied', 'fx.col.applied', (r) => money(r.appliedPaise), { sortKey: 'amount', ...num, hideBelow: 'sm' }),
           c('sanctioned', 'fx.col.sanctioned', (r) => money(r.sanctionedPaise), { ...num, hideBelow: 'md' }),
           c('received', 'fx.col.received', (r) => money(r.receivedPaise), num),
+          c('expected', 'ff.col.expected', (r) => money(r.expectedPaise), { ...num, defaultHidden: true }),
+          c('portalStatus', 'ff.col.portalStatus', (r) => text(r.portalStatus), { defaultHidden: true }),
           c('status', 'fx.col.status', (r) => pill(r.status)),
         ];
       case 'fee-challans':
@@ -294,13 +320,20 @@ export function FeeKitTable({ meta, page, state, label, toolbar, extraParams }: 
     const r = row as R;
     const out: RowAction<Row>[] = [];
     const counter = (studentId: unknown) => ({ id: 'counter', label: t('fx.collect'), icon: <BadgeIndianRupee />, onSelect: () => router.push(`/fees/counter?student=${String(studentId)}`) });
-    if (e === 'fee-invoices' && r.status === 'due') out.push(counter(r.studentId));
+    if (e === 'fee-invoices' && r.status === 'due') {
+      out.push(counter(r.studentId));
+      out.push({ id: 'link', label: t('ff.link.send'), icon: <Link2 />, onSelect: () => setDialog({ title: t('ff.link.sendTitle', { name: String(r.student ?? '') }), path: '/v1/fees/payment-links', fixed: { invoiceId: String(r.id) }, done: 'ff.link.sent', submit: 'ff.link.send', fields: [{ name: 'amountPaise', label: 'ff.link.amount', kind: 'money' }, { name: 'validDays', label: 'ff.link.validDays', kind: 'number', defaultValue: '7' }, ...CHANNEL_FIELDS] }) });
+      out.push({ id: 'upi', label: t('ff.upi.show'), icon: <QrCode />, onSelect: () => setUpi({ id: String(r.id), title: t('ff.upi.title', { name: String(r.student ?? '') }) }) });
+    }
     if (e === 'fee-profiles' && Number(r.duePaise) > 0) out.push(counter(r.id));
+    if (e === 'fee-profiles') out.push({ id: 'transfer', label: t('ff.tr.action'), icon: <ArrowRightLeft />, onSelect: () => setTransfer({ id: String(r.id), name: String(r.fullName ?? r.student ?? '') }) });
     if (e === 'fee-receipts') out.push({ id: 'pdf', label: t('fx.pdf'), icon: <Printer />, onSelect: () => window.open(`/api/fee-receipt/${String(r.id)}`, '_blank') });
     if (e === 'fee-challans') out.push({ id: 'print', label: t('fx.printChallan'), icon: <Printer />, onSelect: () => router.push(`/fees/challans/${String(r.id)}`) });
     if (e === 'fee-govt-scholarships') {
-      if (r.status === 'applied') out.push({ id: 'sanction', label: t('fx.sanction'), icon: <CalendarCheck2 />, onSelect: () => setDialog({ title: t('fx.sanctionTitle', { name: String(r.student) }), path: `/v1/fee-collect/govt-scholarships/${String(r.id)}/sanction`, fields: sanctionFields }) });
-      if (r.status === 'applied' || r.status === 'sanctioned')
+      if (r.status === 'applied') out.push({ id: 'verify', label: t('ff.ssp.verify'), icon: <BadgeCheck />, onSelect: () => setDialog({ title: t('ff.ssp.verifyTitle', { name: String(r.student) }), path: `/v1/fee-collect/govt-scholarships/${String(r.id)}/verify`, done: 'ff.ssp.verified', fields: [{ name: 'on', label: 'fx.f.on', kind: 'date', required: true, defaultValue: today() }, { name: 'portalStatus', label: 'ff.col.portalStatus', defaultValue: 'Approved by HOI' }, { name: 'expectedPaise', label: 'ff.col.expected', kind: 'money', defaultValue: r.expectedPaise ? String(Number(r.expectedPaise) / 100) : '' }] }) });
+      if (r.status === 'applied' || r.status === 'verified') out.push({ id: 'sanction', label: t('fx.sanction'), icon: <CalendarCheck2 />, onSelect: () => setDialog({ title: t('fx.sanctionTitle', { name: String(r.student) }), path: `/v1/fee-collect/govt-scholarships/${String(r.id)}/sanction`, fields: sanctionFields }) });
+      const partly = r.status === 'received' && Number(r.sanctionedPaise) > Number(r.receivedPaise);
+      if (r.status === 'applied' || r.status === 'verified' || r.status === 'sanctioned' || partly)
         out.push(
           { id: 'receive', label: t('fx.receive'), icon: <Wallet />, onSelect: () => setDialog({ title: t('fx.receiveTitle', { name: String(r.student) }), path: `/v1/fee-collect/govt-scholarships/${String(r.id)}/receive`, done: 'fx.done.received', fields: [{ name: 'amountPaise', label: 'fx.f.received', kind: 'money', required: true, defaultValue: r.sanctionedPaise ? String(Number(r.sanctionedPaise) / 100) : '' }, { name: 'on', label: 'fx.f.on', kind: 'date', required: true, defaultValue: today() }, { name: 'reference', label: 'fx.f.dbtRef', required: true }] }) },
           { id: 'reject', label: t('fx.closeScholarship'), icon: <CircleX />, tone: 'danger', onSelect: () => setDialog({ title: t('fx.closeScholarship'), path: `/v1/fee-collect/govt-scholarships/${String(r.id)}/reject`, fields: [{ name: 'status', label: 'fx.col.status', kind: 'select', options: [{ value: 'rejected', label: word('rejected') }, { value: 'lapsed', label: word('lapsed') }] }, { name: 'reason', label: 'fx.col.reason', kind: 'textarea', required: true }] }) },
@@ -332,6 +365,7 @@ export function FeeKitTable({ meta, page, state, label, toolbar, extraParams }: 
     'fee-concession-types': ['fx.empty.types', 'fx.empty.typesBody'],
     'fee-instalment-plans': ['fx.empty.plans', 'fx.empty.plansBody'],
     'fee-govt-scholarships': ['fx.empty.govt', 'fx.empty.govtBody'],
+    'fee-accounts': ['ff.empty.accounts', 'ff.empty.accountsBody'],
     'fee-challans': ['fx.empty.challans', 'fx.empty.challansBody'],
     'acct-funds': ['fx.empty.funds', 'fx.empty.fundsBody'],
     'acct-budgets': ['fx.empty.budgets', 'fx.empty.budgetsBody'],
@@ -359,6 +393,8 @@ export function FeeKitTable({ meta, page, state, label, toolbar, extraParams }: 
       />
       {dialog && <DeskDialog title={dialog.title} path={dialog.path} fields={dialog.fields} fixed={dialog.fixed} done={dialog.done} submit={dialog.submit} onClose={() => setDialog(null)} />}
       {report && <BulkReportDialog report={report.report} title={report.title} onClose={() => setReport(null)} />}
+      {transfer && <TransferDialog studentId={transfer.id} student={transfer.name} onClose={() => setTransfer(null)} />}
+      {upi && <UpiQrDialog invoiceId={upi.id} title={upi.title} onClose={() => setUpi(null)} />}
     </>
   );
 }
