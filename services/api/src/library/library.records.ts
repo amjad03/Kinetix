@@ -11,7 +11,7 @@ import { departments, libraryBooks, libraryLoans, students, users } from '../db/
 import { libraryBranches, libraryClearances, libraryCopies, libraryFineWaivers, libraryMemberCategories, libraryMembers } from '../db/schema-lht.js';
 import { EventBus } from '../events/events.js';
 import { FeesService } from '../fees/fees.service.js';
-import { sendFineToFees } from './fees-link.js';
+import { sendFineToFees, sendMemberFinesToFees } from './fees-link.js';
 import { fail, int, lc, outcome, required } from '../import/row-helpers.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { RecordRegistry, type FieldOption, type KitCtx, type RecordEntity } from '../records/entity.js';
@@ -724,6 +724,14 @@ export class LibraryRecords implements OnModuleInit {
             if (s.unpaidPaise > 0) throw new ConflictException(`Unpaid fines of ₹${(s.unpaidPaise / 100).toFixed(2)} must be cleared first`);
             await ctx.tx.update(libraryMembers).set({ depositRefundedOn: await this.today(ctx) }).where(eq(libraryMembers.id, id));
             await auditUser(ctx.tx, ctx.p, 'library_member.deposit_refunded', 'library_member', id, { amountPaise: m.depositPaise });
+          },
+        },
+        finesToFees: {
+          label: 'Collect fines with fees',
+          apply: async (ctx, id) => {
+            const r = await sendMemberFinesToFees(ctx.tx, ctx.p, this.fees, this.events, id, await this.today(ctx));
+            if (!r?.sent) throw new ConflictException(r?.results.find((x) => !x.ok)?.message ?? 'There is no unpaid fine to collect');
+            return `₹${(r.totalPaise / 100).toFixed(2)} on the fee account`;
           },
         },
         markLeft: {

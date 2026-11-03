@@ -17,7 +17,7 @@ import { EventBus } from '../events/events.js';
 import { FeesService } from '../fees/fees.service.js';
 import { addCopies, findMember, rulesFor, tenantToday } from './circulation.js';
 import { CopyCatalogue } from './copy-catalogue.js';
-import { sendFineToFees } from './fees-link.js';
+import { sendMemberFinesToFees } from './fees-link.js';
 import { LIBRARY_ROLES } from './library.controller.js';
 import { marcToBook, normaliseIsbn } from './marc.js';
 
@@ -204,24 +204,9 @@ export class LibraryPassController {
   @Auth('user', LIBRARY_ROLES)
   finesToFees(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [m] = await tx.select().from(libraryMembers).where(eq(libraryMembers.id, id));
-      if (!m) throw new NotFoundException('Member not found');
-      if (!m.studentId) throw new ConflictException('Only a student’s fines can go on the fee account');
-      const loans = await tx
-        .select({ id: libraryLoans.id })
-        .from(libraryLoans)
-        .where(and(sql`(${libraryLoans.memberId} = ${m.id} or ${libraryLoans.studentId} = ${m.studentId})`, sql`${libraryLoans.returnedAt} is not null`, isNull(libraryLoans.finePaidAt), isNull(libraryLoans.fineInvoiceTitle), sql`${libraryLoans.finePaise} > ${libraryLoans.fineWaivedPaise}`));
-      const today = await tenantToday(tx, this.clock.now());
-      const results = [];
-      for (const l of loans) {
-        try {
-          const r = await tx.transaction((sp) => sendFineToFees(sp, p, this.fees, this.events, l.id, today));
-          results.push({ loanId: l.id, ok: true, ...r });
-        } catch (e) {
-          results.push({ loanId: l.id, ok: false, message: (e as Error).message });
-        }
-      }
-      return { sent: results.filter((r) => r.ok).length, totalPaise: results.reduce((s, r) => s + ('amountPaise' in r ? (r.amountPaise as number) : 0), 0), results };
+      const out = await sendMemberFinesToFees(tx, p, this.fees, this.events, id, await tenantToday(tx, this.clock.now()));
+      if (!out) throw new NotFoundException('Member not found');
+      return out;
     });
   }
 

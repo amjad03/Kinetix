@@ -29,7 +29,7 @@ const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const ReportQuery = z.object({ from: Day.optional(), to: Day.optional(), status: z.string().trim().min(1).max(40).optional(), format: z.enum(['json', 'csv', 'xlsx', 'pdf']).default('json') });
 const ScanBody = z.object({ code: z.string().trim().min(1).max(80) });
 const StartBody = z.object({ note: z.string().trim().max(300).default(''), branchId: z.uuid().optional(), shelfPrefix: z.string().trim().max(40).default('') });
-const CloseBody = z.object({ markMissing: z.boolean().default(false) });
+const CloseBody = z.object({ markMissing: z.boolean().default(false) }).default({ markMissing: false });
 const SECRET = /hash|token|secret|password/i;
 
 function moduleOf(m: string): OpsModule {

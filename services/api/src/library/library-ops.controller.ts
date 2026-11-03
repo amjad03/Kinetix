@@ -515,7 +515,7 @@ export class LibraryOpsController {
             from academic_requests r join students s on s.id = r.student_id
             where r.kind = 'withdrawal' and r.status = 'pending'
             union all
-            select null, '', s.id, s.full_name, s.roll_no, s.status::text, false, s.created_at
+            select null, '', s.id, s.full_name, s.roll_no, s.status::text, false, s.updated_at
             from students s
             where s.status in ('transferred', 'dropped')
               and not exists (select 1 from academic_requests r where r.student_id = s.id and r.kind = 'withdrawal' and r.status = 'pending')

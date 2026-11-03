@@ -17,7 +17,7 @@ import { LIBRARY_ROLES } from './library.controller.js';
 import { copiesHeld, copiesOut, expireHolds, heldBy, promoteNext } from './reservations.js';
 import { libraryCopies, libraryMembers } from '../db/schema-lht.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
-import { ensureStudentMember, findMember, memberStanding, renewLoan, rulesFor, selfMember, settleLoan } from './circulation.js';
+import { ensureStudentMember, findMember, memberStanding, renewLoan, rulesFor, selfMember, settleLoan, type LoanRules } from './circulation.js';
 import { lateFine, openDaysLateSql } from './fines.js';
 
 const SEAT_WINDOW_MINUTES = 30;
@@ -201,6 +201,7 @@ export class LibraryDepthController {
           finePaidAt: libraryLoans.finePaidAt,
           fineInvoiceTitle: libraryLoans.fineInvoiceTitle,
           bookBank: libraryLoans.bookBank,
+          material: libraryBooks.material,
           overdue: sql<boolean>`${libraryLoans.returnedAt} is null and ${libraryLoans.dueOn} < ${today}::date`,
           lateDays: sql<number>`case when ${libraryLoans.returnedAt} is null and ${libraryLoans.dueOn} < ${today}::date then ${lateDays} else 0 end`.mapWith(Number),
         })
@@ -211,9 +212,14 @@ export class LibraryDepthController {
         .orderBy(desc(libraryLoans.issuedAt))
         .limit(100);
       const standing = await memberStanding(tx, member, today);
-      const current = loans
-        .filter((l) => !l.returnedAt)
-        .map((l) => ({ ...l, fineSoFarPaise: lateFine(l.lateDays, rules.finePerDay, rules.maxFinePaise), canRenew: !l.overdue && !l.bookBank && l.renewCount < rules.maxRenewals }));
+      // Each book out is fined and renewed under its own material's rule (the matrix cell), worked out once per material.
+      const byMaterial = new Map<string, LoanRules>();
+      const current = [];
+      for (const l of loans.filter((x) => !x.returnedAt)) {
+        if (!byMaterial.has(l.material)) byMaterial.set(l.material, await rulesFor(tx, p.tenantId, member, l.material));
+        const r = byMaterial.get(l.material)!;
+        current.push({ ...l, fineSoFarPaise: l.lateDays <= r.graceDays ? 0 : lateFine(l.lateDays, r.finePerDay, r.maxFinePaise), canRenew: !l.overdue && !l.bookBank && l.renewCount < r.maxRenewals });
+      }
       const reservations = await tx
         .select({ id: libraryReservations.id, bookId: libraryReservations.bookId, title: libraryBooks.title, status: libraryReservations.status, expiresAt: libraryReservations.expiresAt, createdAt: libraryReservations.createdAt })
         .from(libraryReservations)

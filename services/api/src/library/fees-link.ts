@@ -1,9 +1,10 @@
 import { ConflictException } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import type { Tx } from '../db/db.service.js';
 import { feeInvoices, libraryBooks, libraryLoans } from '../db/schema.js';
+import { libraryMembers } from '../db/schema-lht.js';
 import type { EventBus } from '../events/events.js';
 import { DomainEvents } from '../events/events.js';
 import type { FeesService } from '../fees/fees.service.js';
@@ -28,4 +29,28 @@ export async function sendFineToFees(tx: Tx, p: UserPrincipal, fees: FeesService
   await auditUser(tx, p, 'library.fine_sent_to_fees', 'library_loan', loanId, { finePaise: due, title, invoiceId: inv?.id ?? null });
   await events?.emit(tx, p.tenantId, { type: DomainEvents.LibraryFineCharged, aggregateType: 'library_loan', aggregateId: loanId, payload: { studentId: l.l.studentId, amountPaise: due, invoiceId: inv?.id ?? null }, actorId: p.userId });
   return { title, invoiceId: inv?.id ?? null, amountPaise: due };
+}
+
+/**
+ * Puts every unpaid fine of a student member on the fee account (one invoice per loan, each in its own savepoint so
+ * one refusal does not stop the rest). Running it again sends nothing: settled fines are left out.
+ */
+export async function sendMemberFinesToFees(tx: Tx, p: UserPrincipal, fees: FeesService, events: EventBus | null, memberId: string, today: string) {
+  const [m] = await tx.select().from(libraryMembers).where(eq(libraryMembers.id, memberId));
+  if (!m) return null;
+  if (!m.studentId) throw new ConflictException('Only a student’s fines can go on the fee account');
+  const loans = await tx
+    .select({ id: libraryLoans.id })
+    .from(libraryLoans)
+    .where(and(sql`(${libraryLoans.memberId} = ${m.id} or ${libraryLoans.studentId} = ${m.studentId})`, sql`${libraryLoans.returnedAt} is not null`, isNull(libraryLoans.finePaidAt), isNull(libraryLoans.fineInvoiceTitle), sql`${libraryLoans.finePaise} > ${libraryLoans.fineWaivedPaise}`));
+  const results: { loanId: string; ok: boolean; amountPaise?: number; title?: string; message?: string }[] = [];
+  for (const l of loans) {
+    try {
+      const r = await tx.transaction((sp) => sendFineToFees(sp, p, fees, events, l.id, today));
+      results.push({ loanId: l.id, ok: true, ...r });
+    } catch (e) {
+      results.push({ loanId: l.id, ok: false, message: (e as Error).message });
+    }
+  }
+  return { sent: results.filter((r) => r.ok).length, totalPaise: results.reduce((s, r) => s + (r.amountPaise ?? 0), 0), results };
 }

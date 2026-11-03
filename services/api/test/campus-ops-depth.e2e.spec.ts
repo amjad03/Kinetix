@@ -148,7 +148,8 @@ describe('campus operations depth: module settings, record views, reports, libra
     const closed = (await http().post(`/v1/library/stock-checks/${check.id}/close`).set(as('principal')).expect(200)).body;
     // Cost Accounting: 3 copies, 1 on loan, none scanned → 2 short. Business Law: 2 copies, 1 scanned → 1 short.
     expect(closed.summary).toMatchObject({ expected: 4, found: 1, missingTitles: 2 });
-    expect(closed.summary.missing.find((m: { bookId: string }) => m.bookId === b.id)).toMatchObject({ short: 1 });
+    // The register is by copy now: one of Business Law's two copies is missing, named by its accession number.
+    expect(closed.summary.missing.filter((m: { bookId: string }) => m.bookId === b.id)).toEqual([expect.objectContaining({ accessionNo: expect.stringMatching(/^ACC-/) })]);
     await http().post(`/v1/library/stock-checks/${check.id}/scan`).set(as('principal')).send({ code: '9781234567897' }).expect(409);
     const rec = (await http().get(`/v1/ops-records/stock-check/${check.id}`).set(as('principal')).expect(200)).body;
     expect(rec.activity.map((a: { action: string }) => a.action)).toEqual(['library.stock_check.closed', 'library.stock_check.started']);
