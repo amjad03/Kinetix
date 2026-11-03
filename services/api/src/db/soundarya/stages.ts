@@ -30,6 +30,7 @@ import { examOffice } from './exam-office.js';
 import { examFlagship } from './exam-flagship.js';
 import { gatewayBooksSamples } from './gateway-books.js';
 import { feeAccountsSamples } from './fee-accounts.js';
+import { feeFlagshipSamples } from './fee-flagship.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -100,4 +101,5 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['academics desk: settings, approval requests, locked marks and lesson plans to review', academicsCore],
   // After the fees and accounts desk: the exam fees are invoices numbered by its series.
   ['exam applications with fees on the fee account, question paper setting and marks unlock requests', examFlagship],
+  ['fee accounts for the trust and the college, gateway, online rules, reminders, fee references, SSP scholarships, payment links and a duplicate flag', feeFlagshipSamples],
 ];
