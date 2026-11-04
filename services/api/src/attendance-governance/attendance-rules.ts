@@ -17,10 +17,14 @@ export function attendanceLocked(day: string, now: Date, timeZone: string, lockH
   return now.getTime() >= dayEnd.getTime() + lockHours * 3_600_000;
 }
 
-/** Percentage of attended sessions (present or late); excused sessions are left out of the count. */
+/**
+ * Percentage of attended sessions (present or late) to one decimal; excused sessions are left out of the count.
+ * Cut off, never rounded up: 599 of 799 is 74.97%, and rounding it to 75.0 let a short student through a 75% rule.
+ * (attended × 1000 ÷ total is exact when it divides, so the cut-off has no floating point drift.)
+ */
 export function attendancePct(present: number, late: number, absent: number): number | null {
   const total = present + late + absent;
-  return total === 0 ? null : Math.round(((present + late) / total) * 1000) / 10;
+  return total === 0 ? null : Math.floor(((present + late) * 1000) / total) / 10;
 }
 
 /** The percentage after condonation, capped at 100. */
