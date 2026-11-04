@@ -682,6 +682,12 @@ export const messageTemplates = pgTable(
     subject: text('subject').notNull().default(''),
     body: text('body').notNull(),
     dltTemplateId: text('dlt_template_id'),
+    /** DLT header (sender id) the template is registered under, and its content type (migration 0212). */
+    dltHeader: text('dlt_header').notNull().default(''),
+    dltContentType: text('dlt_content_type').$type<'transactional' | 'service_implicit' | 'service_explicit' | 'promotional'>().notNull().default('service_implicit'),
+    /** The WhatsApp Business template this text is approved as, and its language code (en, hi, kn). */
+    waTemplateName: text('wa_template_name').notNull().default(''),
+    waLanguage: text('wa_language').notNull().default(''),
     active: boolean('active').notNull().default(true),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -709,7 +715,8 @@ export const messageCampaigns = pgTable(
     tenantId: tenantId(),
     title: text('title').notNull(),
     templateId: uuid('template_id').notNull().references(() => messageTemplates.id, { onDelete: 'restrict' }),
-    audienceId: uuid('audience_id').notNull().references(() => audienceRules.id, { onDelete: 'restrict' }),
+    /** Null when the campaign carries an announcement's recipients (`announcementId`). */
+    audienceId: uuid('audience_id').references(() => audienceRules.id, { onDelete: 'restrict' }),
     vars: jsonb('vars').$type<Record<string, string>>().notNull().default({}),
     sendAt: ts('send_at').notNull(),
     status: text('status').notNull().default('scheduled'), // scheduled | sending | sent | cancelled
@@ -724,6 +731,14 @@ export const messageCampaigns = pgTable(
     parentCampaignId: uuid('parent_campaign_id'),
     /** Recipients skipped because the address is on DND, bounced or opted out. */
     suppressedCount: integer('suppressed_count').notNull().default(0),
+    /** Channels to try, in order, after the template's own channel fails or cannot reach someone (migration 0212). */
+    fallback: text('fallback').array().$type<string[]>().notNull().default(sql`'{}'`),
+    /** Emergency: ignores quiet hours, caps and opt-outs (DPDP s.7 safety exemption); never bounced or invalid addresses. */
+    emergency: boolean('emergency').notNull().default(false),
+    departmentId: uuid('department_id'),
+    announcementId: uuid('announcement_id'),
+    deliveredCount: integer('delivered_count').notNull().default(0),
+    costPaise: bigint('cost_paise', { mode: 'number' }).notNull().default(0),
   },
   (t) => [index('message_campaigns_due_idx').on(t.status, t.sendAt)],
 );
@@ -743,6 +758,13 @@ export const messageDeliveries = pgTable(
     sentAt: ts('sent_at'),
     readAt: ts('read_at'),
     createdAt: createdAt(),
+    /** Position in the campaign's channel chain; `channel` is the channel of this step (migration 0212). */
+    step: smallint('step').notNull().default(0),
+    costPaise: integer('cost_paise').notNull().default(0),
+    /** The provider's delivery report said it reached the handset or inbox. */
+    deliveredAt: ts('delivered_at'),
+    /** Why it waits (quiet hours, hourly cap) when `nextAttemptAt` is set on a queued delivery. */
+    deferredReason: text('deferred_reason'),
   },
   (t) => [uniqueIndex('message_deliveries_uq').on(t.campaignId, t.userId), index('message_deliveries_retry_idx').on(t.status, t.nextAttemptAt)],
 );

@@ -1697,6 +1697,10 @@ export const conversations = pgTable(
     statusChangedAt: timestamp('status_changed_at', { withTimezone: true }),
     statusChangedBy: uuid('status_changed_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
+    /** Escalated to the teacher's head of department (by the family, or unanswered for too long; migration 0213). */
+    escalatedAt: timestamp('escalated_at', { withTimezone: true }),
+    escalatedTo: uuid('escalated_to').references(() => users.id, { onDelete: 'set null' }),
+    escalationReason: text('escalation_reason'),
   },
   (t) => [uniqueIndex('conversations_trio_uq').on(t.studentId, t.staffId, t.familyId, t.kind), index('conversations_staff_idx').on(t.staffId, t.lastMessageAt), index('conversations_family_idx').on(t.familyId, t.lastMessageAt)],
 );
@@ -1717,6 +1721,11 @@ export const messages = pgTable(
     attachmentType: text('attachment_type'),
     attachmentSize: integer('attachment_size'),
     createdAt: createdAt(),
+    /** What the language filter found (abusive language, a phone number to a student…); the message is queued for review. */
+    flag: text('flag'),
+    /** Removed by a moderator: both sides see "removed" instead of the text. */
+    hiddenAt: timestamp('hidden_at', { withTimezone: true }),
+    hiddenBy: uuid('hidden_by').references(() => users.id, { onDelete: 'set null' }),
   },
   (t) => [index('messages_conversation_idx').on(t.conversationId, t.createdAt)],
 );
@@ -1737,6 +1746,23 @@ export interface AnnouncementAudience {
   userIds?: string[];
   /** Picked students: their own account (student app) and their guardians (parent app). */
   studentIds?: string[];
+}
+
+/** A notice in Hindi or Kannada beside the English one; each reader gets their own language. */
+export type AnnouncementTranslations = Partial<Record<'hi' | 'kn', { title: string; body: string }>>;
+/** A one-question poll on a notice. */
+export interface AnnouncementPoll {
+  question: string;
+  options: string[];
+  closesAt: string | null;
+  /** Whether readers see the counts after answering. */
+  showResults: boolean;
+}
+/** Also send the notice by SMS, WhatsApp or email through a registered template, with a fallback chain. */
+export interface AnnouncementExternal {
+  templateId: string;
+  fallback: string[];
+  campaignId?: string;
 }
 
 export interface AnnouncementAttachment {
@@ -1773,6 +1799,11 @@ export const announcements = pgTable(
     lastRemindedAt: timestamp('last_reminded_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
+    /** Migration 0213: translations, a quick poll, outside channels and the sender's department (for cost reports). */
+    translations: jsonb('translations').$type<AnnouncementTranslations>().notNull().default({}),
+    poll: jsonb('poll').$type<AnnouncementPoll | null>(),
+    external: jsonb('external').$type<AnnouncementExternal | null>(),
+    departmentId: uuid('department_id').references(() => departments.id, { onDelete: 'set null' }),
   },
   (t) => [index('announcements_status_idx').on(t.tenantId, t.status, t.sendAt)],
 );
@@ -1843,6 +1874,11 @@ export const calendarEvents = pgTable(
     published: boolean('published').notNull().default(true),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
+    /** Asks the audience to reply going, maybe or not going (migration 0213), until `rsvpBy`, up to `capacity` places. */
+    rsvp: boolean('rsvp').notNull().default(false),
+    rsvpBy: date('rsvp_by'),
+    capacity: integer('capacity'),
+    venue: text('venue').notNull().default(''),
   },
   (t) => [index('calendar_events_range_idx').on(t.tenantId, t.startsOn, t.endsOn)],
 );
@@ -4156,6 +4192,9 @@ export const TENANT_TABLES = [
   'admission_seat_conversions', 'admission_programme_settings', 'admission_checklist_items', 'admission_credential_issues', 'admission_broadcasts', 'admission_broadcast_sends',
   // Academics pass: timetable versions, teacher unavailability and the teaching diary (migrations 0200-0201; schema-academics-pass.ts).
   'timetable_versions', 'timetable_version_slots', 'faculty_unavailability', 'teaching_logs',
+  // Communication production pass (migrations 0212-0213; schema-comms.ts).
+  'comm_channel_settings', 'comm_credit_ledger', 'comm_channel_prefs', 'comm_send_log', 'comm_webhook_events',
+  'announcement_poll_votes', 'calendar_event_rsvps', 'message_reports', 'chat_blocks', 'chat_availability',
 ] as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -6830,6 +6869,11 @@ export const ptmSlots = pgTable(
     bookedAt: timestamp('booked_at', { withTimezone: true }),
     reminderSentAt: timestamp('reminder_sent_at', { withTimezone: true }),
     createdAt: createdAt(),
+    /** After the meeting (migration 0213): attended | no_show, the teacher's minutes and agreed action points. */
+    attendance: text('attendance').$type<'attended' | 'no_show' | null>(),
+    minutes: text('minutes').notNull().default(''),
+    actionPoints: text('action_points').notNull().default(''),
+    minutesAt: timestamp('minutes_at', { withTimezone: true }),
   },
   (t) => [
     uniqueIndex('ptm_slots_teacher_start_uq').on(t.eventId, t.teacherId, t.startsAt),

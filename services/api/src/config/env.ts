@@ -164,6 +164,26 @@ const EnvSchema = z.object({
   /** The app name passed to the SMS template. */
   SMS_APP_NAME: z.string().default('ZYNETIX'),
   /**
+   * The SMS provider for notices and campaigns (communication engine); unset = the sign-in provider. Each needs its own
+   * credentials below; the institution's DLT entity id and header are set in the ERP (Communication > Channels).
+   */
+  COMMS_SMS_PROVIDER: z.enum(['console', 'msg91', 'kaleyra', 'gupshup']).optional(),
+  KALEYRA_SID: z.string().optional(),
+  KALEYRA_API_KEY: z.string().optional(),
+  GUPSHUP_USER_ID: z.string().optional(),
+  GUPSHUP_PASSWORD: z.string().optional(),
+  /** The default DLT header when an institution has not set its own. */
+  SMS_SENDER_ID: z.string().optional(),
+  /** WhatsApp Business: meta = the Cloud API with this system-user token (the phone number id is per institution). */
+  WHATSAPP_PROVIDER: z.enum(['none', 'meta', 'console']).default('none'),
+  WHATSAPP_TOKEN: z.string().optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  /** Email through Amazon SES (API v2) when the region is set; otherwise MAIL_WEBHOOK_URL, otherwise only logged. */
+  SES_REGION: z.preprocess((v) => (v === '' ? undefined : v), z.string().optional()),
+  SES_ACCESS_KEY_ID: z.string().optional(),
+  SES_SECRET_ACCESS_KEY: z.string().optional(),
+  SES_CONFIGURATION_SET: z.string().optional(),
+  /**
    * YouTube Data API key (Google Cloud, YouTube Data API v3), optional. Only the platform team's
    * playlist import and video durations use it (playlistItems.list and videos.list cost one
    * quota unit each). Without it, concept videos are added one link at a time.
@@ -265,6 +285,12 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   if (parsed.data.SMS_PROVIDER === 'msg91' && !(parsed.data.MSG91_AUTH_KEY && parsed.data.MSG91_TEMPLATE_ID && parsed.data.MSG91_SENDER_ID)) {
     throw new Error('Invalid environment: MSG91_AUTH_KEY, MSG91_TEMPLATE_ID and MSG91_SENDER_ID are required with SMS_PROVIDER=msg91');
   }
+  const smsVia = parsed.data.COMMS_SMS_PROVIDER;
+  if (smsVia === 'kaleyra' && !(parsed.data.KALEYRA_SID && parsed.data.KALEYRA_API_KEY)) throw new Error('Invalid environment: KALEYRA_SID and KALEYRA_API_KEY are required with COMMS_SMS_PROVIDER=kaleyra');
+  if (smsVia === 'gupshup' && !(parsed.data.GUPSHUP_USER_ID && parsed.data.GUPSHUP_PASSWORD)) throw new Error('Invalid environment: GUPSHUP_USER_ID and GUPSHUP_PASSWORD are required with COMMS_SMS_PROVIDER=gupshup');
+  if (smsVia === 'msg91' && !parsed.data.MSG91_AUTH_KEY) throw new Error('Invalid environment: MSG91_AUTH_KEY is required with COMMS_SMS_PROVIDER=msg91');
+  if (parsed.data.WHATSAPP_PROVIDER === 'meta' && !(parsed.data.WHATSAPP_TOKEN && parsed.data.WHATSAPP_PHONE_NUMBER_ID)) throw new Error('Invalid environment: WHATSAPP_TOKEN and WHATSAPP_PHONE_NUMBER_ID are required with WHATSAPP_PROVIDER=meta');
+  if (parsed.data.SES_REGION && !(parsed.data.SES_ACCESS_KEY_ID && parsed.data.SES_SECRET_ACCESS_KEY)) throw new Error('Invalid environment: SES_ACCESS_KEY_ID and SES_SECRET_ACCESS_KEY are required with SES_REGION');
   const sarvam = parsed.data.AI_FALLBACK_PROVIDER === 'sarvam' || parsed.data.ASR_FALLBACK_PROVIDER === 'sarvam';
   if (sarvam && !parsed.data.SARVAM_API_KEY) throw new Error('Invalid environment: SARVAM_API_KEY is required with AI_FALLBACK_PROVIDER=sarvam or ASR_FALLBACK_PROVIDER=sarvam');
   const problems = productionProblems(parsed.data);

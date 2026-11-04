@@ -1380,6 +1380,20 @@
       "when": 1791506082000,
       "tag": "0209_purchase_gst_books_assets",
       "breakpoints": true
+    },
+    {
+      "idx": 197,
+      "version": "7",
+      "when": 1791506202000,
+      "tag": "0212_comms_channels_compliance",
+      "breakpoints": true
+    },
+    {
+      "idx": 198,
+      "version": "7",
+      "when": 1791506242000,
+      "tag": "0213_comms_engagement_safety",
+      "breakpoints": true
     }
   ]
 }

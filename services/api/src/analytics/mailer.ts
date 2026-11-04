@@ -7,9 +7,12 @@ export interface Mail {
   attachments: { filename: string; contentType: string; content: Buffer }[];
 }
 
-/** Outgoing email for scheduled reports. Throws when the message could not be handed over. */
+/** Outgoing email for scheduled reports and the communication engine. Throws when the message could not be handed over. */
 export abstract class Mailer {
-  abstract send(mail: Mail): Promise<void>;
+  /** Which service sends the mail (for the send log). */
+  readonly provider: string = 'log';
+  /** Resolves with the service's message id when it gives one (SES), so bounces can be matched. */
+  abstract send(mail: Mail): Promise<void | { providerMessageId?: string }>;
 }
 
 /** Development default: logs what would be sent. */
@@ -24,6 +27,7 @@ export class LogMailer extends Mailer {
 
 /** POSTs `{from, to, subject, text, attachments:[{filename, contentType, contentBase64}]}` to a relay (an SES/Postmark Lambda, n8n…). */
 export class WebhookMailer extends Mailer {
+  override readonly provider: string = 'relay';
   constructor(
     private readonly url: string,
     private readonly from: string,

@@ -34,6 +34,8 @@ export function configureApp(app: NestExpressApplication): void {
   app.useBodyParser('json', { limit: '8mb' });
   // Bulk import (import/): a CSV body, kept as bytes so the import can refuse text that is not UTF-8.
   app.useBodyParser('raw', { type: ['text/csv', 'application/csv', 'application/vnd.ms-excel'], limit: '6mb' });
+  // Amazon SNS (SES bounces and complaints) posts its JSON as text/plain.
+  app.useBodyParser('text', { type: 'text/plain', limit: '256kb' });
   serveModels(app, env);
   // Every error carries a stable `code` the apps can translate.
   // Unexpected errors are reported (ERROR_WEBHOOK_URL) before Nest answers 500; the catch-all filter goes first.

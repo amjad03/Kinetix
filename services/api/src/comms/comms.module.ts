@@ -1,21 +1,18 @@
 import { Module } from '@nestjs/common';
-import { LogMailer, Mailer, WebhookMailer } from '../analytics/mailer.js';
-import { ENV, type Env } from '../config/env.js';
-import { ConsoleTextSender, Msg91TextSender, TextSender, UnconfiguredWhatsApp, WhatsAppSender } from './channels.js';
+import { CommsAdminController } from './comms-admin.controller.js';
 import { CommsController } from './comms.controller.js';
-import { CommsService } from './comms.service.js';
 import { CommsRecords } from './comms.records.js';
+import { CommsService } from './comms.service.js';
+import { CommsWebhooksController } from './comms-webhooks.controller.js';
+import { channelProviders } from './providers.js';
 
-/** The communication engine: templates, audiences, scheduled campaigns, retry and read status. */
+/**
+ * The communication engine: templates (with DLT and WhatsApp registration), audiences, scheduled campaigns with a
+ * fallback chain, consent per channel, credits, the send log, provider callbacks and the delivery and cost reports.
+ */
 @Module({
-  controllers: [CommsController],
-  providers: [
-    CommsService,
-    CommsRecords,
-    { provide: Mailer, inject: [ENV], useFactory: (env: Env) => (env.MAIL_WEBHOOK_URL ? new WebhookMailer(env.MAIL_WEBHOOK_URL, env.MAIL_FROM) : new LogMailer()) },
-    { provide: TextSender, inject: [ENV], useFactory: (env: Env) => (env.SMS_PROVIDER === 'msg91' ? new Msg91TextSender({ authKey: env.MSG91_AUTH_KEY!, senderId: env.MSG91_SENDER_ID! }) : new ConsoleTextSender()) },
-    { provide: WhatsAppSender, useClass: UnconfiguredWhatsApp },
-  ],
+  controllers: [CommsController, CommsAdminController, CommsWebhooksController],
+  providers: [CommsService, CommsRecords, ...channelProviders],
   exports: [CommsService],
 })
 export class CommsModule {}
