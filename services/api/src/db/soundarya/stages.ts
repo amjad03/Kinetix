@@ -41,6 +41,7 @@ import { inventoryPass } from './inventory-pass.js';
 import { transportPass } from './transport-pass.js';
 import { placementsPass } from './placements-pass.js';
 import { commsPass } from './comms-pass.js';
+import { researchPass } from './research-pass.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -128,6 +129,9 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['placements pass: recruiter relationship and follow-ups, stricter and women-only drives, placement documents, training with attendance and scores, AICTE internship credits, five outgoing batches for NIRF, NAAC 5.2 and AISHE, NATS apprenticeships and alumni referrals', (c) => placementsPass(c)],
   // After hostels, transport, the calendar and the operations stage's chats and PTM: channels, credits, consent, campaigns, notices, chat safety.
   ['communication pass: channels and DLT, credits, consent per channel, campaigns with fallback and cost, notices with polls and translations, an emergency, RSVPs, chat moderation and escalation, PTM minutes', commsPass],
+  // After the research, pathways (theses, supervisors) and quality stages: identifiers, centres, five years of outputs,
+  // funded projects with heads and releases, consultancy, MoUs, ethics, instruments, incentives and Ph.D. progress.
+  ['research pass: researcher identifiers, research centres, publications with indexing and citations, IPR, grants with heads, releases and UCs, consultancy, MoUs, seed money, ethics, calls, instruments, events on IPR, incentives, Ph.D. registration, coursework, committees and progress reports', researchPass],
   // Last: version 1 is the live timetable as the earlier stages left it, and the diary follows the held periods.
   ['academics: bell schedule, lab batches and an open elective, allocations, unavailability, timetable versions, the teaching diary', academicsPass],
 ];
