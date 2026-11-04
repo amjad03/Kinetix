@@ -14,6 +14,7 @@ import { committeeAgendaItems, committeeMeetingAttendance, committeeMinuteSignof
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { found, hasRole } from '../placements/placements.access.js';
 import { TASK_ROLES } from '../tasks/tasks.controller.js';
+import { qualified } from '../campus-life/kit-shared.js';
 import { CommitteeGovService, GOV_COMMITTEE_ROLES } from './committee-gov.service.js';
 import { govTexts } from './governance-texts.js';
 import { minutesPdf } from './minutes-pdf.js';
@@ -121,7 +122,7 @@ export class CommitteesGovController {
       const members = await this.svc.members(tx, [id]);
       const comp = (await this.svc.compliance(tx)).committees.find((x) => x.id === id);
       const meetings = await tx
-        .select({ m: committeeMeetings, actions: sql<number>`(select count(*)::int from committee_action_items a where a.meeting_id = ${committeeMeetings.id})`, present: sql<number>`(select count(*)::int from committee_meeting_attendance a where a.meeting_id = ${committeeMeetings.id} and a.status = 'present')` })
+        .select({ m: committeeMeetings, actions: sql<number>`(select count(*)::int from committee_action_items a where a.meeting_id = ${qualified('committee_meetings')})`, present: sql<number>`(select count(*)::int from committee_meeting_attendance a where a.meeting_id = ${qualified('committee_meetings')} and a.status = 'present')` })
         .from(committeeMeetings)
         .where(eq(committeeMeetings.committeeId, id))
         .orderBy(sql`${committeeMeetings.meetingOn} desc`)
@@ -194,9 +195,9 @@ export class CommitteesGovController {
     });
   }
 
-  /** The meeting with agenda, attendance and quorum, signatures and actions: members of the committee and the office. */
+  /** The meeting with agenda, attendance and quorum, signatures and actions: members of the committee (staff or student) and the office. */
   @Get('meetings/:meetingId')
-  @Auth('user', TASK_ROLES)
+  @Auth('user')
   meeting(@CurrentPrincipal() p: UserPrincipal, @Param('meetingId', ParseUUIDPipe) meetingId: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const m = await this.svc.meeting(tx, meetingId);
@@ -348,7 +349,7 @@ export class CommitteesGovController {
 
   /** The minutes as a PDF: attendance with quorum, each agenda item with its resolution, actions and the signatures. */
   @Get('meetings/:meetingId/minutes.pdf')
-  @Auth('user', TASK_ROLES)
+  @Auth('user')
   minutesPdf(@CurrentPrincipal() p: UserPrincipal, @Param('meetingId', ParseUUIDPipe) meetingId: string, @Res({ passthrough: true }) res: Response) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const m = await this.svc.meeting(tx, meetingId);

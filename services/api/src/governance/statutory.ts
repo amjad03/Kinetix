@@ -140,12 +140,12 @@ export function issueText(i: CompositionIssue): string {
 export const quorumNeeded = (current: number, pct: number) => Math.max(1, Math.ceil((current * pct) / 100));
 
 /** The text the members approve: everything that makes the minutes, in a fixed order, hashed with sha256. */
-export function minutesHash(m: { title: string; meetingOn: string; minutes: string; agenda: { seq: number; title: string; resolution: string; outcome: string }[]; attendance: { memberId: string; status: string }[] }): string {
+export function minutesHash(m: { title: string; meetingOn: string; minutes: string; agenda: { seq: number; title: string; resolution: string; outcome: string; discussion?: string; presenter?: string }[]; attendance: { memberId: string; status: string }[] }): string {
   const canon = JSON.stringify({
     t: m.title,
     d: m.meetingOn,
     m: m.minutes,
-    a: [...m.agenda].sort((x, y) => x.seq - y.seq).map((a) => [a.seq, a.title, a.resolution, a.outcome]),
+    a: [...m.agenda].sort((x, y) => x.seq - y.seq).map((a) => [a.seq, a.title, a.presenter ?? '', a.discussion ?? '', a.resolution, a.outcome]),
     p: [...m.attendance].sort((x, y) => x.memberId.localeCompare(y.memberId)).map((a) => [a.memberId, a.status]),
   });
   return createHash('sha256').update(canon).digest('hex');

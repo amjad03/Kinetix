@@ -74,10 +74,10 @@ export class GovernancePassRecords implements OnModuleInit {
         publishedVersion: sql<number | null>`${pub}`,
         openVersion: sql<string | null>`(select v.status from governance_policy_versions v where v.policy_id = ${qualified('governance_policies')} and v.status in ('draft', 'in_review', 'approved') order by v.version desc limit 1)`,
         acknowledged: sql<number>`(select count(*)::int from governance_policy_acks a join governance_policy_versions v on v.id = a.version_id where v.policy_id = ${qualified('governance_policies')} and v.status = 'published')`,
-        reviewDue: sql<boolean>`(${governancePolicies.nextReviewOn} is not null and ${governancePolicies.nextReviewOn} <= current_date and ${governancePolicies.status} = 'active')`,
+        reviewDue: sql<boolean>`(${governancePolicies.nextReviewOn} is not null and ${governancePolicies.nextReviewOn} <= (now() at time zone 'Asia/Kolkata')::date and ${governancePolicies.status} = 'active')`,
       },
       filters: {
-        review: { label: 'Review', options: choices(['due']), where: (v) => (v === 'due' ? sql`${governancePolicies.nextReviewOn} <= current_date and ${governancePolicies.status} = 'active'` : undefined) },
+        review: { label: 'Review', options: choices(['due']), where: (v) => (v === 'due' ? sql`${governancePolicies.nextReviewOn} <= (now() at time zone 'Asia/Kolkata')::date and ${governancePolicies.status} = 'active'` : undefined) },
         published: { label: 'Published', options: choices(['yes', 'no']), where: (v) => (v === 'yes' ? sql`${pub} is not null` : v === 'no' ? sql`${pub} is null` : undefined) },
       },
       sorts: { nextReviewOn: governancePolicies.nextReviewOn },
@@ -112,7 +112,7 @@ export class GovernancePassRecords implements OnModuleInit {
 
   private rti(): RecordEntity {
     const clock = this.clock;
-    const days = sql<number | null>`case when ${rtiRequests.status} in ('received', 'transferred') then (${rtiRequests.dueOn} - current_date) end`;
+    const days = sql<number | null>`case when ${rtiRequests.status} in ('received', 'transferred') then (${rtiRequests.dueOn} - (now() at time zone 'Asia/Kolkata')::date) end`;
     const step = (label: string, inputs: CustomAction['inputs'], params: z.ZodType, run: (ctx: KitCtx, row: typeof rtiRequests.$inferSelect, params: never, day: string) => Promise<Partial<typeof rtiRequests.$inferInsert>>, tone?: 'danger'): CustomAction => ({
       label,
       inputs,
@@ -159,7 +159,7 @@ export class GovernancePassRecords implements OnModuleInit {
         dueOn: rtiRequests.dueOn,
         status: rtiRequests.status,
         daysLeft: days,
-        overdue: sql<boolean>`(${rtiRequests.status} in ('received', 'transferred') and ${rtiRequests.dueOn} < current_date)`,
+        overdue: sql<boolean>`(${rtiRequests.status} in ('received', 'transferred') and ${rtiRequests.dueOn} < (now() at time zone 'Asia/Kolkata')::date)`,
         transferredTo: rtiRequests.transferredTo,
         transferredOn: rtiRequests.transferredOn,
         repliedOn: rtiRequests.repliedOn,
@@ -172,7 +172,7 @@ export class GovernancePassRecords implements OnModuleInit {
       },
       filters: {
         status: { label: 'Status', options: choices(['received', 'transferred', 'replied', 'rejected', 'closed']), where: (v) => (['received', 'transferred', 'replied', 'rejected', 'closed'].includes(v) ? eq(rtiRequests.status, v) : undefined) },
-        due: { label: 'Reply', options: choices(['overdue', 'week', 'open']), where: (v) => (v === 'overdue' ? sql`${rtiRequests.status} in ('received', 'transferred') and ${rtiRequests.dueOn} < current_date` : v === 'week' ? sql`${rtiRequests.status} in ('received', 'transferred') and ${rtiRequests.dueOn} between current_date and current_date + 7` : v === 'open' ? sql`${rtiRequests.status} in ('received', 'transferred')` : undefined) },
+        due: { label: 'Reply', options: choices(['overdue', 'week', 'open']), where: (v) => (v === 'overdue' ? sql`${rtiRequests.status} in ('received', 'transferred') and ${rtiRequests.dueOn} < (now() at time zone 'Asia/Kolkata')::date` : v === 'week' ? sql`${rtiRequests.status} in ('received', 'transferred') and ${rtiRequests.dueOn} between (now() at time zone 'Asia/Kolkata')::date and (now() at time zone 'Asia/Kolkata')::date + 7` : v === 'open' ? sql`${rtiRequests.status} in ('received', 'transferred')` : undefined) },
         appeal: { label: 'First appeal', options: choices(['pending', 'decided']), where: (v) => (v === 'pending' ? sql`${rtiRequests.appealFiledOn} is not null and ${rtiRequests.appealOutcome} = ''` : v === 'decided' ? sql`${rtiRequests.appealOutcome} <> ''` : undefined) },
       },
       sorts: { dueOn: rtiRequests.dueOn, requestNo: rtiRequests.requestNo, status: rtiRequests.status },
@@ -253,7 +253,7 @@ export class GovernancePassRecords implements OnModuleInit {
 
   private deadlines(): RecordEntity {
     const clock = this.clock;
-    const state = sql<string>`case when ${complianceDeadlines.status} <> 'pending' then ${complianceDeadlines.status} when ${complianceDeadlines.dueOn} < current_date then 'overdue' when ${complianceDeadlines.dueOn} <= current_date + 30 then 'due_soon' else 'upcoming' end`;
+    const state = sql<string>`case when ${complianceDeadlines.status} <> 'pending' then ${complianceDeadlines.status} when ${complianceDeadlines.dueOn} < (now() at time zone 'Asia/Kolkata')::date then 'overdue' when ${complianceDeadlines.dueOn} <= (now() at time zone 'Asia/Kolkata')::date + 30 then 'due_soon' else 'upcoming' end`;
     const e = kitEntity({
       key: 'compliance-deadlines',
       module: 'governance',
@@ -273,7 +273,7 @@ export class GovernancePassRecords implements OnModuleInit {
       extra: {
         status: complianceDeadlines.status,
         state,
-        daysLeft: sql<number>`(${complianceDeadlines.dueOn} - current_date)`,
+        daysLeft: sql<number>`(${complianceDeadlines.dueOn} - (now() at time zone 'Asia/Kolkata')::date)`,
         completedOn: complianceDeadlines.completedOn,
         remindDays: sql<string>`array_to_string(${complianceDeadlines.remindDays}, ', ')`,
         remindersSent: complianceDeadlines.remindersSent,

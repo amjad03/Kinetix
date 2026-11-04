@@ -13,6 +13,7 @@ import { complianceDeadlines, disclosureItems, disclosureSettings, governancePol
 import { SystemLookups } from '../db/system-lookups.service.js';
 import { CommitteeGovService } from './committee-gov.service.js';
 import { GOVERNANCE_ROLES } from './governance.controller.js';
+import { qualified } from '../campus-life/kit-shared.js';
 import { ruleOf } from './statutory.js';
 
 const SECTIONS = ['about', 'approvals', 'governance', 'academics', 'fees', 'infrastructure', 'other'] as const;
@@ -186,7 +187,7 @@ export class GovernanceDashboardController {
         .from(complianceDeadlines);
       const next = await tx.select({ id: complianceDeadlines.id, title: complianceDeadlines.title, dueOn: complianceDeadlines.dueOn, authority: complianceDeadlines.authority }).from(complianceDeadlines).where(eq(complianceDeadlines.status, 'pending')).orderBy(asc(complianceDeadlines.dueOn)).limit(6);
       const [pol] = await tx
-        .select({ published: sql<number>`count(*) filter (where exists (select 1 from governance_policy_versions v where v.policy_id = ${governancePolicies.id} and v.status = 'published'))::int`, reviewDue: sql<number>`count(*) filter (where ${governancePolicies.nextReviewOn} <= ${today}::date and ${governancePolicies.status} = 'active')::int`, inApproval: sql<number>`count(*) filter (where exists (select 1 from governance_policy_versions v where v.policy_id = ${governancePolicies.id} and v.status in ('in_review', 'approved')))::int` })
+        .select({ published: sql<number>`count(*) filter (where exists (select 1 from governance_policy_versions v where v.policy_id = ${qualified('governance_policies')} and v.status = 'published'))::int`, reviewDue: sql<number>`count(*) filter (where ${governancePolicies.nextReviewOn} <= ${today}::date and ${governancePolicies.status} = 'active')::int`, inApproval: sql<number>`count(*) filter (where exists (select 1 from governance_policy_versions v where v.policy_id = ${qualified('governance_policies')} and v.status in ('in_review', 'approved')))::int` })
         .from(governancePolicies)
         .where(eq(governancePolicies.status, 'active'));
       const [acks] = await tx.select({ n: sql<number>`count(*)::int` }).from(governancePolicyAcks).innerJoin(governancePolicyVersions, eq(governancePolicyVersions.id, governancePolicyAcks.versionId)).where(eq(governancePolicyVersions.status, 'published'));
