@@ -225,8 +225,11 @@ class _ResultsScreenState extends State<ResultsScreen> {
     widget.family.loadMarks(widget.child.id);
   }
 
+  /// Screenshots off while this is open (FLAG_SECURE on Android).
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => KxSecureScreen(child: _secureContent(context));
+
+  Widget _secureContent(BuildContext context) {
     final family = widget.family;
     final child = widget.child;
     return Scaffold(

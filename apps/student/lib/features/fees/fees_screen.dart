@@ -69,8 +69,11 @@ class _FeesScreenState extends State<FeesScreen> {
     if (done != null && mounted) await ReceiptScreen.open(context, widget.api, done.$2);
   }
 
+  /// Screenshots off while this is open (FLAG_SECURE on Android).
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => KxSecureScreen(child: _secureContent(context));
+
+  Widget _secureContent(BuildContext context) {
     final c = context.colors;
     final a = _account;
     return Scaffold(

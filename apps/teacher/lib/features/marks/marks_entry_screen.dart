@@ -296,8 +296,11 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
     if (result != null) controller.setRemark(r, result);
   }
 
+  /// Screenshots off while this is open (FLAG_SECURE on Android).
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => KxSecureScreen(child: _secureContent(context));
+
+  Widget _secureContent(BuildContext context) {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {

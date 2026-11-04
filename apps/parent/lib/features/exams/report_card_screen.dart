@@ -129,8 +129,11 @@ class _ReportCardScreenState extends State<ReportCardScreen> {
     }
   }
 
+  /// Screenshots off while this is open (FLAG_SECURE on Android).
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => KxSecureScreen(child: _secureContent(context));
+
+  Widget _secureContent(BuildContext context) {
     final l = context.l10n;
     final c = _card;
     return Scaffold(
