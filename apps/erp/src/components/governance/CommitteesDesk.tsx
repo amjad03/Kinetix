@@ -65,14 +65,13 @@ export function CommitteesDesk({ data }: { data: Compliance }) {
         rows={data.committees}
         cols={[
           { label: t('gp.col.committee'), cell: (r) => <Link href={`/governance/committees/${r.id}`} className="font-[550]">{r.name}</Link>, sort: (r) => r.name },
-          { label: t('gp.col.kind'), cell: (r) => t(`gp.kind.${r.kind}` as MessageKey), sort: (r) => r.kind },
+          { label: t('gp.col.status'), cell: (r) => <StatusPill tone={r.status === 'ok' ? 'success' : 'warning'}>{t(`gp.c.st.${r.status}` as MessageKey)}</StatusPill>, sort: (r) => r.status },
           { label: t('gp.col.members'), num: true, cell: (r) => `${fmt.number(r.members)} (${t('gp.c.women', { n: r.women })})`, sort: (r) => r.members },
           { label: t('gp.col.composition'), wrap: true, cell: (r) => (r.issues.length ? r.issues.map((i) => issueWords(t, i)).join('; ') : <span className="text-green-ink">{t('gp.c.compositionOk')}</span>), sort: (r) => r.issues.length },
           { label: t('gp.col.meetings'), num: true, cell: (r) => (r.meetingsNorm ? t('gp.c.meetingsOf', { held: r.meetingsHeld, expected: r.meetingsExpected, norm: r.meetingsNorm }) : fmt.number(r.meetingsHeld)), sort: (r) => r.meetingsHeld },
           { label: t('gp.col.last'), cell: (r) => (r.lastMeetingOn ? fmt.date(r.lastMeetingOn, 'short') : '-'), sort: (r) => r.lastMeetingOn ?? '' },
           { label: t('gp.col.minutesPending'), num: true, cell: (r) => fmt.number(r.minutesPending), sort: (r) => r.minutesPending },
           { label: t('gp.col.actions'), num: true, cell: (r) => (r.overdueActions ? t('gp.c.actionsOverdue', { open: r.openActions, overdue: r.overdueActions }) : fmt.number(r.openActions)), sort: (r) => r.overdueActions * 1000 + r.openActions },
-          { label: t('gp.col.status'), cell: (r) => <StatusPill tone={r.status === 'ok' ? 'success' : 'warning'}>{t(`gp.c.st.${r.status}` as MessageKey)}</StatusPill>, sort: (r) => r.status },
         ]}
       />
       {toastNode}

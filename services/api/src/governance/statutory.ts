@@ -130,7 +130,7 @@ export function issueText(i: CompositionIssue): string {
     case 'missing_category':
       return `Needs a member who is: ${i.categories.join(' or ')}`;
     case 'tenure_too_long':
-      return `${i.member} has served ${i.years} years; the limit is ${i.max}`;
+      return `${i.member}'s term runs ${i.years} years; the limit is ${i.max}`;
     case 'gender_unknown':
       return `${i.count} member(s) without a recorded gender`;
   }

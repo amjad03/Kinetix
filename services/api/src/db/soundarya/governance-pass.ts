@@ -4,7 +4,7 @@
 // published mandatory disclosure page; a grievance on UGC e-Samadhan; DPDP answer-by dates, a grievance and a nomination.
 import { createHash } from 'node:crypto';
 import { CommitteeGovService } from '../../governance/committee-gov.service.js';
-import { minutesHash, rtiDueOn, ruleOf, standardDate, STANDARD_DEADLINES, type CommitteeKind } from '../../governance/statutory.js';
+import { minutesHash, nextOccurrence, rtiDueOn, ruleOf, standardDate, STANDARD_DEADLINES, type CommitteeKind } from '../../governance/statutory.js';
 import type { Ctx } from './ctx.js';
 import { DOMAIN, INST } from './data.js';
 import { addDays, at, J } from './kit.js';
@@ -121,6 +121,35 @@ export async function governancePass(c: Ctx): Promise<void> {
     ['governing_body', -70, ['Budget 2026-27', 'New posts in Computer Applications', 'Fee structure for 2027-28']],
     ['sc_st_cell', -30, ['Post-matric scholarship applications', 'Remedial classes']],
   ];
+  const MINUTES = 'The meeting began at 3:30 pm. The minutes of the last meeting were read and confirmed.';
+  type Item = { seq: number; title: string; presenter: string; discussion: string; resolution: string; outcome: string };
+  /** Attendance (everyone but one on leave), the minutes' fingerprint, and the signatures of the chair and most of those present. */
+  const record = async (meetingId: string, committeeId: string, title: string, on: string, minutesText: string, agenda: Item[], pending: boolean) => {
+    const ms = await k.q<{ id: string; userId: string | null; role: string }>(`select id, user_id, role from committee_members where committee_id = $1 and tenure_start <= $2 and (tenure_end is null or tenure_end >= $2)`, [committeeId, on]);
+    const att = ms.map((x, n) => ({ memberId: x.id, status: n === ms.length - 1 && ms.length > 3 ? 'leave' : 'present' }));
+    if (att.length) await k.ins('committee_meeting_attendance', att.map((a) => ({ meetingId, ...a })), { returning: false });
+    const hash = minutesHash({ title, meetingOn: on, minutes: minutesText, agenda, attendance: att });
+    const present = ms.filter((x, n) => att[n].status === 'present' && x.userId);
+    const signers = pending ? present.filter((x) => x.role !== 'chair').slice(0, 1) : present.slice(0, Math.max(1, Math.ceil(present.length / 2) + 1));
+    const lead = present.find((x) => x.role === 'chair') ?? present.find((x) => x.role === 'secretary');
+    if (!pending && lead && !signers.includes(lead)) signers.push(lead);
+    const rows = signers.map((x, n) => {
+      const signedAt = at(addDays(on, 2 + n), '10:15');
+      return { meetingId, memberId: x.id, userId: x.userId, decision: 'approve', comment: '', minutesHash: hash, signature: signer.sign(hash, x.id, 'approve', signedAt), signedAt };
+    });
+    if (rows.length) await k.ins('committee_minute_signoffs', rows, { returning: false });
+    const approved = !pending && !!lead;
+    await k.q(`update committee_meetings set minutes_status = $2, minutes_hash = $3, minutes_circulated_at = $4, minutes_approved_at = $5 where id = $1`, [meetingId, approved ? 'approved' : 'circulated', hash, at(addDays(on, 1)), approved ? at(addDays(on, 2 + rows.length - 1), '10:15') : null]);
+    return present;
+  };
+  // Meetings an earlier stage recorded: one agenda item from their agenda text, attendance and signatures as above.
+  const legacy = await k.q<{ id: string; committeeId: string; title: string; meetingOn: string; minutes: string; agenda: string }>(`select id, committee_id, title, meeting_on::text, minutes, agenda from committee_meetings where tenant_id = $1 and status = 'held' and minutes_hash is null`, [t]);
+  for (const m of legacy) {
+    const item = { seq: 1, title: m.agenda.split(/\r?\n/)[0].replace(/^\d+\.\s*/, '') || 'Review', presenter: '', discussion: '', resolution: 'Recorded in the action items.', outcome: 'resolved' };
+    await k.ins('committee_agenda_items', { meetingId: m.id, ...item }, { returning: false });
+    await record(m.id, m.committeeId, m.title, m.meetingOn, m.minutes, [item], false);
+  }
+  await k.q(`update committee_action_items set action_taken = 'Completed as the committee resolved.', reported_on = (completed_at at time zone 'Asia/Kolkata')::date where tenant_id = $1 and status = 'done' and action_taken = ''`, [t]);
   const meetings: { id: string; kind: string; on: string }[] = [];
   for (const [i, [kind, off, items]] of plan.entries()) {
     const committeeId = byKind.get(kind);
@@ -131,23 +160,8 @@ export async function governancePass(c: Ctx): Promise<void> {
     meetings.push({ id: m.id, kind, on });
     const agenda = items.map((title2, n) => ({ seq: n + 1, title: title2, presenter: '', discussion: n === 0 ? 'Members reviewed the report placed before them.' : '', resolution: ['Approved as placed.', 'Resolved to complete by the end of the month.', 'Noted; the coordinator to report at the next meeting.'][n % 3], outcome: n === 2 ? 'noted' : 'resolved' }));
     await k.ins('committee_agenda_items', agenda.map((a) => ({ meetingId: m.id, ...a })), { returning: false });
-    const ms = await k.q<{ id: string; userId: string | null; role: string }>(`select id, user_id, role from committee_members where committee_id = $1 and tenure_start <= $2 and (tenure_end is null or tenure_end >= $2)`, [committeeId, on]);
-    // Everyone attends but one member (on leave).
-    const att = ms.map((x, n) => ({ memberId: x.id, status: n === ms.length - 1 && ms.length > 3 ? 'leave' : 'present' }));
-    await k.ins('committee_meeting_attendance', att.map((a) => ({ meetingId: m.id, ...a })), { returning: false });
-    const hash = minutesHash({ title, meetingOn: on, minutes: 'The meeting began at 3:30 pm. The minutes of the last meeting were read and confirmed.', agenda, attendance: att });
     // The latest IQAC meeting's minutes are still with the members; the others are approved by the chair and most present.
-    const pending = kind === 'iqac' && off === -12;
-    const present = ms.filter((x, n) => att[n].status === 'present' && x.userId);
-    const signers = pending ? present.filter((x) => x.role !== 'chair').slice(0, 1) : present.slice(0, Math.max(1, Math.ceil(present.length / 2) + 1));
-    const lead = present.find((x) => x.role === 'chair') ?? present.find((x) => x.role === 'secretary');
-    if (!pending && lead && !signers.includes(lead)) signers.push(lead);
-    const rows = signers.map((x, n) => {
-      const signedAt = at(addDays(on, 2 + n), '10:15');
-      return { meetingId: m.id, memberId: x.id, userId: x.userId, decision: 'approve', comment: '', minutesHash: hash, signature: signer.sign(hash, x.id, 'approve', signedAt), signedAt };
-    });
-    if (rows.length) await k.ins('committee_minute_signoffs', rows, { returning: false });
-    await k.q(`update committee_meetings set minutes_status = $2, minutes_hash = $3, minutes_circulated_at = $4, minutes_approved_at = $5 where id = $1`, [m.id, pending ? 'circulated' : lead ? 'approved' : 'circulated', hash, at(addDays(on, 1)), pending || !lead ? null : at(addDays(on, 2 + rows.length - 1), '10:15')]);
+    const present = await record(m.id, committeeId, title, on, MINUTES, agenda, kind === 'iqac' && off === -12);
     // Action items with the action taken (older ones done, one overdue).
     const owners = present.filter((x) => x.userId).map((x) => x.userId!);
     if (owners.length) {
@@ -211,11 +225,26 @@ export async function governancePass(c: Ctx): Promise<void> {
   }
 
   // ---- the compliance calendar ----------------------------------------------------------------------------------
+  // Each standard deadline of the year: the ones already past are done on time (with the portal's acknowledgement)
+  // except the trust's income-tax return, which is still pending; a recurring one also has its next occurrence.
   const start = Number((year?.startsOn ?? c.today).slice(0, 4));
+  const owner = (a: string) => (['naac', 'aishe', 'nirf', 'ugc'].includes(a) ? iqac : ['income_tax', 'epfo'].includes(a) ? c.byEmail.accounts?.id ?? admin : admin);
   for (const s of STANDARD_DEADLINES) {
-    const due = standardDate(s, start);
-    const done = due < c.today && s.recurrence === 'annual' && s.authority !== 'income_tax';
-    await k.ins('compliance_deadlines', { title: s.title, authority: s.authority, frameworkKey: s.frameworkKey ?? null, dueOn: due, recurrence: s.recurrence, note: s.note, ownerUserId: ['naac', 'aishe', 'nirf', 'ugc'].includes(s.authority) ? iqac : ['income_tax', 'epfo'].includes(s.authority) ? c.byEmail.accounts?.id ?? admin : admin, status: done ? 'done' : 'pending', completedOn: done ? addDays(due, -3) : null, reference: done ? `ACK-${due.replace(/-/g, '')}` : '', createdBy: iqac }, { returning: false });
+    let due = standardDate(s, start);
+    const row = { title: s.title, authority: s.authority, frameworkKey: s.frameworkKey ?? null, recurrence: s.recurrence, note: s.note, ownerUserId: owner(s.authority), createdBy: iqac };
+    // Past occurrences, oldest first, done three days early; the last ITR is left open (overdue).
+    while (due < c.today) {
+      const late = s.title.startsWith('Income-tax return');
+      if (late) break;
+      const next = nextOccurrence(due, s.recurrence);
+      await k.ins('compliance_deadlines', { ...row, dueOn: due, status: 'done', completedOn: addDays(due, -3), reference: `ACK-${due.replace(/-/g, '')}`, remindersSent: 2, lastRemindedOn: addDays(due, -7) }, { returning: false });
+      if (!next) {
+        due = '';
+        break;
+      }
+      due = next;
+    }
+    if (due) await k.ins('compliance_deadlines', { ...row, dueOn: due, status: 'pending' }, { returning: false });
   }
   // The ITR went in late (shows as overdue on the calendar if the date has passed), and one deadline of the institution's own.
   await k.ins('compliance_deadlines', { title: 'Fire safety certificate renewed', authority: 'state', dueOn: d(12), recurrence: 'annual', ownerUserId: admin, note: 'Karnataka Fire and Emergency Services', createdBy: iqac }, { returning: false });
@@ -224,7 +253,6 @@ export async function governancePass(c: Ctx): Promise<void> {
   const lines: [string, string, string][] = [
     ['approvals', 'Affiliation', `Permanently affiliated to Bengaluru City University; recognised under sections 2(f) and 12(B) of the UGC Act`],
     ['approvals', 'NAAC accreditation', 'Accredited with grade A (CGPA 3.12), second cycle, valid until 2029'],
-    ['approvals', 'AISHE code', 'C-12345'],
     ['governance', 'Ombudsperson (UGC Regulations, 2023)', 'Prof. H. N. Ramesh (retired), ombudsperson@bcu.ac.in'],
     ['governance', 'Public Information Officer', `Mahesh Gowda, Administrative Officer, admin@${DOMAIN}`],
     ['fees', 'Fee approval', 'Fees as approved by the Fee Regulation Committee, order dated 12 June 2026'],
