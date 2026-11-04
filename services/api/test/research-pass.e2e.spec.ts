@@ -200,6 +200,9 @@ describe('research pass', () => {
     const q1 = q1r.body;
     const co = (await add('teacher2', 'research-publications', { title: 'Microfinance repayment in Tumakuru', kind: 'journal', authors: `${t.teacher2.fullName}; ${name}`, venue: 'Rural Studies', year: 2026, indexedIn: 'scopus', quartile: 'Q2' }).expect(201)).body;
     const care = (await add('teacher', 'research-publications', { title: 'Cooperative credit societies', kind: 'journal', authors: name, venue: 'Commerce Today', year: 2026, indexedIn: 'ugc_care' }).expect(201)).body;
+    // The Teacher App's list of my publications includes the co-authored one recorded by teacher2.
+    expect((await http().get(`${R}/publications?ownerUserId=${t.teacher.id}`).set(as('teacher')).expect(200)).body.map((p: { title: string }) => p.title)).toContain('Microfinance repayment in Tumakuru');
+    await http().get(`${R}/publications?year=abc&ownerUserId=not-a-uuid`).set(as('teacher')).expect(200);
     const claim = (pub: string, who = 'teacher') => http().post(`${R}/incentives/claims`).set(as(who)).send({ schemeId: scheme.id, publicationId: pub });
     // First author, Scopus Q1: the full ₹25,000.
     expect((await claim(q1.id).expect(201)).body).toMatchObject({ amountPaise: L(25000), basis: 'scopus_q1', status: 'claimed' });

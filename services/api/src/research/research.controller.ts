@@ -288,11 +288,12 @@ export class ResearchController {
 
   // ---- publications, conferences, patents ---------------------------------------------------
 
+  /** Publications, by year, and a teacher's own: those they recorded and those that credit them as a co-author. */
   @Get('publications')
   @Auth('user', FACULTY_ROLES)
   listPublications(@CurrentPrincipal() p: UserPrincipal, @Query('year') year?: string, @Query('ownerUserId') owner?: string) {
     return this.db.withTenant(p.tenantId, (tx) =>
-      tx.select().from(publications).where(and(year ? eq(publications.year, Number(year)) : undefined, owner ? eq(publications.ownerUserId, owner) : undefined)).orderBy(desc(publications.year), asc(publications.title)),
+      tx.select().from(publications).where(and(year && /^\d{4}$/.test(year) ? eq(publications.year, Number(year)) : undefined, owner && z.uuid().safeParse(owner).success ? or(eq(publications.ownerUserId, owner), sql`${publications.authors} @> ${JSON.stringify([{ userId: owner }])}::jsonb`) : undefined)).orderBy(desc(publications.year), asc(publications.title)),
     );
   }
 
