@@ -46,6 +46,7 @@ export const PUBLIC_ALLOWED: [RegExp, string][] = [
   [/^\/v1\/lti\//, 'LTI 1.3 launches: OIDC state, nonce and platform JWKS signature'],
   [/^\/v1\/odata/, 'OData feed for Power BI: scoped kxo. API token (hashed, revocable)'],
   [/^\/v1\/scorm\//, 'SCORM player: signed, expiring launch token'],
+  [/^\/v1\/xapi\//, 'cmi5 xAPI for a sandboxed unit: one-use signed fetch link, then a signed credential for one learner and package (Basic auth)'],
   [/^\/v1\/fees\/gateway-return\/(:provider|cashfree)\/:tenantSlug$/, 'hosted-checkout browser return: the post is signature-checked like the webhook, Cashfree is re-queried with the account keys'],
   [/^\/v1\/transport\/gps\/:tenantSlug$/, 'GPS tracker webhook: per-institution shared secret'],
 ];
