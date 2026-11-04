@@ -144,13 +144,13 @@ export class TransportPassController {
     const nearKm = Math.min(50, Math.max(0.5, Number(nearText) || 3));
     return this.db.withTenant(p.tenantId, async (tx) => {
       const routes = await tx
-        .select({ id: transportRoutes.id, name: transportRoutes.name, vehicleId: transportRoutes.vehicleId, regNo: transportVehicles.regNo, capacity: transportVehicles.capacity, riders: sql<number>`(select count(*)::int from transport_assignments a where a.route_id = ${transportRoutes.id} and a.ended_on is null)` })
+        .select({ id: transportRoutes.id, name: transportRoutes.name, vehicleId: transportRoutes.vehicleId, regNo: transportVehicles.regNo, capacity: transportVehicles.capacity, riders: sql<number>`(select count(*)::int from transport_assignments a where a.route_id = "transport_routes"."id" and a.ended_on is null)` })
         .from(transportRoutes)
         .leftJoin(transportVehicles, eq(transportVehicles.id, transportRoutes.vehicleId))
         .where(eq(transportRoutes.active, true))
         .orderBy(asc(transportRoutes.name));
-      const stops = routes.length ? await tx.select({ id: transportStops.id, routeId: transportStops.routeId, name: transportStops.name, lat: transportStops.lat, lng: transportStops.lng, riders: sql<number>`(select count(*)::int from transport_assignments a where a.stop_id = ${transportStops.id} and a.ended_on is null)` }).from(transportStops).where(inArray(transportStops.routeId, routes.map((r) => r.id))).orderBy(asc(transportStops.sortOrder)) : [];
-      const idle = await tx.select({ id: transportVehicles.id, regNo: transportVehicles.regNo, capacity: transportVehicles.capacity }).from(transportVehicles).where(and(eq(transportVehicles.status, 'active'), sql`not exists (select 1 from transport_routes r where r.vehicle_id = ${transportVehicles.id} and r.active)`)).orderBy(asc(transportVehicles.capacity));
+      const stops = routes.length ? await tx.select({ id: transportStops.id, routeId: transportStops.routeId, name: transportStops.name, lat: transportStops.lat, lng: transportStops.lng, riders: sql<number>`(select count(*)::int from transport_assignments a where a.stop_id = "transport_stops"."id" and a.ended_on is null)` }).from(transportStops).where(inArray(transportStops.routeId, routes.map((r) => r.id))).orderBy(asc(transportStops.sortOrder)) : [];
+      const idle = await tx.select({ id: transportVehicles.id, regNo: transportVehicles.regNo, capacity: transportVehicles.capacity }).from(transportVehicles).where(and(eq(transportVehicles.status, 'active'), sql`not exists (select 1 from transport_routes r where r.vehicle_id = "transport_vehicles"."id" and r.active)`)).orderBy(asc(transportVehicles.capacity));
       const loads = routes.map((r) => ({ ...r, stops: stops.filter((s) => s.routeId === r.id) }));
       const totalSeats = routes.reduce((s, r) => s + (r.capacity ?? 0), 0);
       const totalRiders = routes.reduce((s, r) => s + r.riders, 0);

@@ -33,8 +33,8 @@ export async function transportPass(c: Ctx): Promise<void> {
   for (const s of stops) {
     const ri = routes.findIndex((x) => x.id === s.routeId);
     // The campus is the last stop (0 km); the first stop is the farthest.
-    const km = s.name.includes('Campus') ? 0 : Math.round((5 - s.seq) * (3.4 + ri * 0.9) * 10) / 10;
-    await k.q('update transport_stops set distance_km = $2, fee_paise = $3, drop_time = $4 where id = $1', [s.id, km, s.name.includes('Campus') ? null : feeFor(km), `${16 + Math.floor((20 + s.seq * 6) / 60)}:${String((20 + s.seq * 6) % 60).padStart(2, '0')}`]);
+    const km = s.name.includes('Campus') ? null : Math.round((5 - s.seq) * (3.4 + ri * 0.9) * 10) / 10;
+    await k.q('update transport_stops set distance_km = $2, fee_paise = $3, drop_time = $4 where id = $1', [s.id, km, km == null ? null : feeFor(km), `${16 + Math.floor((20 + s.seq * 6) / 60)}:${String((20 + s.seq * 6) % 60).padStart(2, '0')}`]);
   }
 
   // ---- crew and verification --------------------------------------------------------------------------------------

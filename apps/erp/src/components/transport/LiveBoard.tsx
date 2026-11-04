@@ -61,7 +61,7 @@ export function LiveBoard({ initial }: { initial: Board }) {
           <EmptyState icon={<Bus aria-hidden />} title={t('tp.live.none')} description={t('tp.live.noneHint')} />
         </Card>
       ) : (
-        <div className="grid gap-6">
+        <div className="grid min-w-0 grid-cols-1 gap-6">
           <Card title={t('tp.live.map')} subtitle={stale ? t('tp.live.stale') : t('tp.live.updated', { time: fmt.time(board.at) })}>
             <BusMap trips={trips} selected={selected} onSelect={setSelected} />
           </Card>

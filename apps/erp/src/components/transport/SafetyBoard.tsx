@@ -45,7 +45,19 @@ export function SafetyBoard({ safety, opt, slabs, initialTab }: { safety: Safety
     {
       id: 'gaps',
       header: t('tp.safe.gaps'),
-      cell: (r) => (r.gaps.length ? <span className="flex max-w-[34rem] flex-wrap gap-1">{r.gaps.map((g) => <StatusPill key={g} tone="warning">{gapWord(g)}</StatusPill>)}</span> : t('tp.safe.ok')),
+      cell: (r) =>
+        r.gaps.length ? (
+          <span className="flex min-w-[16rem] flex-wrap gap-1" title={r.gaps.map(gapWord).join(', ')}>
+            {r.gaps.slice(0, 3).map((g) => (
+              <StatusPill key={g} tone="warning">
+                {gapWord(g)}
+              </StatusPill>
+            ))}
+            {r.gaps.length > 3 && <StatusPill tone="neutral">{t('tp.safe.more', { n: r.gaps.length - 3 })}</StatusPill>}
+          </span>
+        ) : (
+          t('tp.safe.ok')
+        ),
       sort: (r) => r.gaps.length,
       csv: (r) => r.gaps.map(gapWord).join('; '),
     },
@@ -92,14 +104,14 @@ export function SafetyBoard({ safety, opt, slabs, initialTab }: { safety: Safety
       )}
       <Tabs value={tab} onChange={setTab} label={t('tp.safe.title')} items={[{ value: 'safety', label: t('tp.safe.matrix') }, { value: 'capacity', label: t('tp.occ.title'), count: opt.suggestions.length }, { value: 'fares', label: t('tp.fare.title') }]} />
       <TabPanel value="safety" active={tab}>
-        <div className="grid gap-6">
-          <Card title={t('tp.safe.matrix')} subtitle={t('tp.safe.matrixSub', { years: safety.minDriverExperienceYears })} action={<Button variant="outlined" disabled={pending} onClick={() => run('/v1/transport/expiry-reminders/run', {}, (d) => t('tp.rem.sent', { n: Number(d.sent ?? 0) }))} data-testid="tp-rem-run">{t('tp.rem.go')}</Button>}>
+        <div className="grid min-w-0 grid-cols-1 gap-6">
+          <Card title={t('tp.safe.matrix')} subtitle={t('tp.safe.matrixSub', { years: safety.minDriverExperienceYears })} action={<Button variant="outlined" className="h-auto min-h-9 whitespace-normal" disabled={pending} onClick={() => run('/v1/transport/expiry-reminders/run', {}, (d) => t('tp.rem.sent', { n: Number(d.sent ?? 0) }))} data-testid="tp-rem-run">{t('tp.rem.go')}</Button>}>
             <DataTable label={t('tp.safe.matrix')} columns={safetyCols} rows={safety.vehicles} rowId={(r) => r.vehicleId} exportName="school-bus-safety" rowTone={(r) => (r.compliant ? undefined : 'warning')} rowHref={() => '/transport/records?view=transport-safety-checks'} empty={<EmptyState icon={<ShieldCheck aria-hidden />} title={t('tp.safe.none')} />} testId="tp-safety-table" />
           </Card>
         </div>
       </TabPanel>
       <TabPanel value="capacity" active={tab}>
-        <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
+        <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[3fr_2fr]">
           <Card title={t('tp.occ.title')} padded={false}>
             <DataTable label={t('tp.occ.title')} columns={occCols} rows={opt.routes} rowId={(r) => r.id} exportName="route-occupancy" bare rowTone={(r) => (r.status === 'over' ? 'danger' : r.status === 'no_vehicle' ? 'warning' : undefined)} testId="tp-occ-table" />
           </Card>
@@ -138,7 +150,7 @@ export function SafetyBoard({ safety, opt, slabs, initialTab }: { safety: Safety
           title={t('tp.fare.title')}
           subtitle={t('tp.fare.hint')}
           action={
-            <Button variant="contained" disabled={pending || !slabs || slabs.updated === 0} onClick={() => run('/v1/transport/fare-slabs/apply', {}, (d) => t('tp.fare.done', { n: Number(d.updated ?? 0) }))} data-testid="tp-fare-apply">
+            <Button variant="contained" className="h-auto min-h-9 whitespace-normal" disabled={pending || !slabs || slabs.updated === 0} onClick={() => run('/v1/transport/fare-slabs/apply', {}, (d) => t('tp.fare.done', { n: Number(d.updated ?? 0) }))} data-testid="tp-fare-apply">
               {t('tp.fare.apply')}
             </Button>
           }
@@ -146,7 +158,7 @@ export function SafetyBoard({ safety, opt, slabs, initialTab }: { safety: Safety
           {!slabs ? (
             <EmptyState icon={<ShieldCheck aria-hidden />} title={t('tp.fare.noSlabs')} description={t('tp.fare.noSlabsHint')} />
           ) : (
-            <div className="grid gap-4">
+            <div className="grid min-w-0 grid-cols-1 gap-4">
               {slabs.changes.length === 0 ? <p className="m-0 text-sm text-muted-foreground">{t('tp.fare.nothing')}</p> : <DataTable label={t('tp.fare.title')} columns={fareCols} rows={slabs.changes} rowId={(r) => r.stopId} bare testId="tp-fare-table" />}
               {slabs.uncovered.length > 0 && <p className="m-0 text-sm text-muted-foreground">{t('tp.fare.uncovered', { n: slabs.uncovered.length, stops: slabs.uncovered.map((u) => u.stop).join(', ') })}</p>}
             </div>

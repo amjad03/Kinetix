@@ -32,12 +32,12 @@ export function BusMap({ trips, selected, onSelect, height = 420 }: { trips: Liv
   };
   const ordered = [...trips].sort((a, b) => Number(a.tripId === selected) - Number(b.tripId === selected));
   return (
-    <div ref={box} className="relative w-full overflow-hidden rounded-lg border bg-muted" style={{ height }} role="img" aria-label={t('tp.live.mapLabel')} data-testid="tp-bus-map">
+    <div ref={box} className="relative w-full min-w-0 max-w-full overflow-hidden rounded-lg border bg-muted" style={{ height }} role="img" aria-label={t('tp.live.mapLabel')} data-testid="tp-bus-map">
       {tilesFor(view, width, height).map((tile) => (
         // eslint-disable-next-line @next/next/no-img-element
-        <img key={`${tile.z}/${tile.x}/${tile.y}/${tile.px}`} src={`https://tile.openstreetmap.org/${tile.z}/${tile.x}/${tile.y}.png`} alt="" width={256} height={256} draggable={false} className="pointer-events-none absolute select-none" style={{ left: tile.px, top: tile.py }} />
+        <img key={`${tile.z}/${tile.x}/${tile.y}/${tile.px}`} src={`https://tile.openstreetmap.org/${tile.z}/${tile.x}/${tile.y}.png`} alt="" width={256} height={256} draggable={false} onError={(e) => (e.currentTarget.style.visibility = "hidden")} className="pointer-events-none absolute select-none" style={{ left: tile.px, top: tile.py }} />
       ))}
-      <svg className="absolute inset-0" width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      <svg className="absolute inset-0 h-full w-full" width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
         {ordered.map((tr) => {
           const colour = COLOURS[trips.indexOf(tr) % COLOURS.length];
           const line = tr.stops.map((s) => at(s.lat, s.lng));

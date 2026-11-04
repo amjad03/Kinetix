@@ -214,6 +214,8 @@ describe('transport pass', () => {
     expect(o.routes).toEqual([expect.objectContaining({ name: 'Route P', riders: 3, capacity: 40, occupancyPct: 8, status: 'low' })]);
     expect(o.suggestions).toEqual([{ kind: 'low', routeId: ids.route, riders: 3, capacity: 40, vehicle: { id: ids.van, regNo: 'KA01TP0002', capacity: 12 } }]);
     expect(o.totals).toMatchObject({ seats: 40, riders: 3, idleVehicles: 1 });
+    // Lake and Temple have riders; only the campus stop is unused.
+    expect(o.emptyStops.map((x: { name: string }) => x.name)).toEqual(['Campus']);
     const occ = (await get('tm', '/v1/ops-reports/transport.occupancy').expect(200)).body.rows;
     expect(occ).toEqual([expect.objectContaining({ route: 'Route P', seats: 40, riders: 3, occupancy: 8, seatsLeft: 37 })]);
   });
