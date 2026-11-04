@@ -2619,16 +2619,16 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/research/publications/import-doi` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/publications/import-orcid` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/publications/refresh-pending` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| GET | `/v1/research/reports/aishe` | hod, principal, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/faculty` | hod, principal, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/faculty-profile` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| GET | `/v1/research/reports/faculty-profile.xlsx` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| GET | `/v1/research/reports/naac-c3` | hod, principal, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/nba` | hod, principal, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/nba-aishe.xlsx` | hod, principal, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/nirf-params` | hod, principal, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/nirf-rp` | hod, principal, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/nirf-rp.xlsx` | hod, principal, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/aishe` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/faculty` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/faculty-profile` | hod, principal, quality_officer, research_coordinator, teacher, tenant_admin |  |
+| GET | `/v1/research/reports/faculty-profile.xlsx` | hod, principal, quality_officer, research_coordinator, teacher, tenant_admin |  |
+| GET | `/v1/research/reports/naac-c3` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/nba` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/nba-aishe.xlsx` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/nirf-params` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/nirf-rp` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/nirf-rp.xlsx` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/scholars` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/scholars` | principal, research_coordinator, tenant_admin |  |
 | POST | `/v1/research/scholars/:id/allocate` | principal, research_coordinator, tenant_admin |  |

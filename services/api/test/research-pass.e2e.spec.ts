@@ -78,6 +78,18 @@ describe('research pass', () => {
     await http().get(`${R}/profiles/me`).set(as('student')).expect(403);
   });
 
+  it('lets the IQAC read the research reports and nothing else', async () => {
+    const email = `iqac-${t.slug}@x.in`;
+    const [u] = (await owner.query(`insert into users (tenant_id, full_name, email, password_hash) select tenant_id, 'IQAC Officer', $2, password_hash from users where id = $1 returning id`, [t.teacher.id, email])).rows;
+    await owner.query(`insert into user_roles (tenant_id, user_id, role) values ($1, $2, 'quality_officer')`, [t.tenantId, u.id]);
+    tok.iqac = await login(t.slug, email);
+    for (const path of ['/reports/nirf-params', '/reports/nba', '/reports/aishe', '/reports/naac-c3', '/reports/nirf-rp', '/reports/faculty']) await http().get(`${R}${path}`).set(as('iqac')).expect(200);
+    await http().get(`${R}/reports/faculty-profile?userId=${t.teacher.id}`).set(as('iqac')).expect(200);
+    await http().get('/v1/records/research-publications').set(as('iqac')).expect(403);
+    await http().get(`${R}/profiles/me`).set(as('iqac')).expect(403);
+    await http().post(`${R}/incentives/claims`).set(as('iqac')).send({ schemeId: t.tenantId, publicationId: t.tenantId }).expect(403);
+  });
+
   it('keeps each teacher\'s researcher identifiers, checked and normalised, and verified by the office', async () => {
     await http().put(`${R}/profiles/me`).set(as('teacher')).send({ orcid: '0000-0002-1825-0098' }).expect(400);
     await http().put(`${R}/profiles/me`).set(as('teacher')).send({ scopusAuthorId: '12345' }).expect(400);

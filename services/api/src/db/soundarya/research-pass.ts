@@ -121,6 +121,13 @@ export async function researchPass(c: Ctx): Promise<void> {
     { projectId: proj[2].id, agency: 'Infosys Foundation', scheme: 'Industry research grant', sanctionRef: 'INF/CSR/2026/12', sanctionedPaise: rupees(800000), startsOn: '2026-06-01', endsOn: '2027-05-31', status: 'active', agencyKind: 'industry', overheadPct: 15 },
   ]);
   await k.q("update research_grants set agency_kind = 'government', overhead_pct = 5 where tenant_id = $1 and agency = 'ICSSR'", [c.tenantId]);
+  // The ICSSR minor project of the research stage: its first instalment and the heads its expenses go to.
+  const [icssr] = await k.q<{ id: string }>("select id from research_grants where tenant_id = $1 and agency = 'ICSSR' limit 1", [c.tenantId]);
+  if (icssr) {
+    await k.ins('research_grant_releases', { grantId: icssr.id, instalment: 1, releasedOn: '2026-09-04', receivedOn: '2026-09-10', amountPaise: rupees(190000), reference: 'ICSSR/REL/2026/5521', createdBy: coord.id }, { returning: false });
+    await k.ins('research_grant_heads', [['manpower', 200000], ['travel', 100000], ['contingency', 60000], ['overhead', 20000]].map(([head, amt]) => ({ grantId: icssr.id, head, sanctionedPaise: rupees(amt as number) })), { returning: false });
+    await k.q("update grant_expenses set budget_head = case when head like 'Research assistant%' then 'manpower' when head like 'Fieldwork%' then 'travel' else 'contingency' end where tenant_id = $1 and grant_id = $2", [c.tenantId, icssr.id]);
+  }
   const heads: [number, string, number][] = [
     [0, 'manpower', 600000], [0, 'equipment', 450000], [0, 'consumables', 150000], [0, 'travel', 100000], [0, 'contingency', 50000], [0, 'overhead', 150000],
     [1, 'manpower', 1200000], [1, 'equipment', 500000], [1, 'travel', 250000], [1, 'contingency', 150000], [1, 'overhead', 192000],

@@ -93,12 +93,16 @@ export default async function ResearchPage({ searchParams }: { searchParams: Pro
   const me = await requireSection('research');
   const sp = await searchParams;
   const { t } = await getI18n();
-  const view: View = VIEWS.includes(one(sp.view) as View) ? (one(sp.view) as View) : 'overview';
+  // The IQAC (quality officer) reads the reports only; the registers are the research office's and the heads'.
+  const reportsOnly = !(me?.roles ?? []).some((r) => [...RESEARCH_STAFF, 'hod'].includes(r));
+  const shown: readonly View[] = reportsOnly ? ['reports'] : VIEWS;
+  const asked = one(sp.view) as View;
+  const view: View = shown.includes(asked) ? asked : reportsOnly ? 'reports' : 'overview';
   const tabs = (
     <LinkTabs
       value={view}
       label={t('nav.research')}
-      items={VIEWS.map((v) => ({ value: v, label: t(`rsx.view.${v}` as MessageKey), href: v === 'overview' ? '/research' : `/research?view=${v}` }))}
+      items={shown.map((v) => ({ value: v, label: t(`rsx.view.${v}` as MessageKey), href: v === 'overview' ? '/research' : `/research?view=${v}` }))}
     />
   );
 

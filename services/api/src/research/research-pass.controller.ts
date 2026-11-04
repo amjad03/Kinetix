@@ -20,7 +20,7 @@ import { normalizeOrcid, validOrcid } from './orcid.js';
 import { duplicateOf } from './publication-dupes.js';
 import { financialYear, incentiveAmount, nirfRatios, overheadPaise, paperBasis, scholarIdOf, ucFigures, validScopusId, validWosId, vidwanIdOf } from './research-pass.rules.js';
 import { normalizeDoi } from './research-rules.js';
-import { FACULTY_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES } from './roles.js';
+import { FACULTY_ROLES, RESEARCH_REPORT_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES } from './roles.js';
 
 const XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 const Opt = (n: number) => z.string().trim().max(n).optional().nullable();
@@ -177,7 +177,9 @@ export class ResearchPassController {
     const heads = await tx.select().from(researchGrantHeads).where(eq(researchGrantHeads.grantId, id)).orderBy(asc(researchGrantHeads.head));
     const releases = await tx.select().from(researchGrantReleases).where(eq(researchGrantReleases.grantId, id)).orderBy(asc(researchGrantReleases.instalment));
     const expenses = await tx.select({ head: grantExpenses.head, budgetHead: grantExpenses.budgetHead, amountPaise: grantExpenses.amountPaise, spentOn: grantExpenses.spentOn }).from(grantExpenses).where(eq(grantExpenses.grantId, id));
-    const uc = ucFigures(releases.map((r) => ({ on: r.receivedOn ?? r.releasedOn, amountPaise: r.amountPaise })), expenses.map((e) => ({ on: e.spentOn, amountPaise: e.amountPaise })), from, to);
+    // A grant with no release on record is taken as received in full on its start date (as the NIRF figures do).
+    const received = releases.length ? releases.map((r) => ({ on: r.receivedOn ?? r.releasedOn, amountPaise: r.amountPaise })) : [{ on: g.g.startsOn, amountPaise: g.g.sanctionedPaise }];
+    const uc = ucFigures(received, expenses.map((e) => ({ on: e.spentOn, amountPaise: e.amountPaise })), from, to);
     const releasedPaise = releases.reduce((s, r) => s + r.amountPaise, 0);
     const spentPaise = expenses.reduce((s, e) => s + e.amountPaise, 0);
     const byHead = heads.map((h) => {
@@ -192,9 +194,10 @@ export class ResearchPassController {
       period: { from, to },
       sanctionedPaise: g.g.sanctionedPaise,
       releasedPaise,
+      releasesRecorded: releases.length > 0,
       pendingReleasePaise: g.g.sanctionedPaise - releasedPaise,
       spentPaise,
-      unspentPaise: releasedPaise - spentPaise,
+      unspentPaise: (releases.length ? releasedPaise : g.g.sanctionedPaise) - spentPaise,
       overheadPct: g.g.overheadPct,
       overheadPaise: overheadPaise(releasedPaise, g.g.overheadPct),
       heads: byHead,
@@ -280,7 +283,7 @@ export class ResearchPassController {
 
   /** The NIRF RP ratios (PU, QP, FPPP, IPR) for the three financial years ending with `toYear` (the last completed by default). */
   @Get('reports/nirf-params')
-  @Auth('user', RESEARCH_VIEW_ROLES)
+  @Auth('user', RESEARCH_REPORT_ROLES)
   nirfParams(@CurrentPrincipal() p: UserPrincipal, @Query('toYear') toQ?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const today = await tenantToday(tx, this.clock);
@@ -334,7 +337,7 @@ export class ResearchPassController {
 
   /** NBA SAR criterion 5 (faculty research and development) for CAY, CAYm1 and CAYm2, for a department or the institution. */
   @Get('reports/nba')
-  @Auth('user', RESEARCH_VIEW_ROLES)
+  @Auth('user', RESEARCH_REPORT_ROLES)
   nbaReport(@CurrentPrincipal() p: UserPrincipal, @Query('year') year?: string, @Query('departmentId') departmentId?: string) {
     return this.db.withTenant(p.tenantId, (tx) => this.nba(tx, year, departmentId));
   }
@@ -374,14 +377,14 @@ export class ResearchPassController {
 
   /** AISHE: Ph.D. enrolment as on 30 September by department, mode, category and women; Ph.D.s awarded; fellowships. */
   @Get('reports/aishe')
-  @Auth('user', RESEARCH_VIEW_ROLES)
+  @Auth('user', RESEARCH_REPORT_ROLES)
   aisheReport(@CurrentPrincipal() p: UserPrincipal, @Query('year') year?: string) {
     return this.db.withTenant(p.tenantId, (tx) => this.aishe(tx, year));
   }
 
   /** NBA criterion 5 and AISHE tables as one workbook. */
   @Get('reports/nba-aishe.xlsx')
-  @Auth('user', RESEARCH_VIEW_ROLES)
+  @Auth('user', RESEARCH_REPORT_ROLES)
   async nbaAisheXlsx(@CurrentPrincipal() p: UserPrincipal, @Res() res: Response, @Query('year') year?: string, @Query('departmentId') departmentId?: string) {
     const { n, a } = await this.db.withTenant(p.tenantId, async (tx) => ({ n: await this.nba(tx, year, departmentId), a: await this.aishe(tx, year) }));
     const sheets: Sheet[] = [

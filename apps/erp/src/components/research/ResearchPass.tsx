@@ -37,6 +37,7 @@ export interface GrantStatement {
   period: { from: string; to: string };
   sanctionedPaise: number;
   releasedPaise: number;
+  releasesRecorded: boolean;
   pendingReleasePaise: number;
   spentPaise: number;
   unspentPaise: number;
@@ -260,6 +261,7 @@ export function ResearchPassReports({ params, nba, aishe, grants, grantId, state
             <p className="m-0 mb-3 text-[13px] text-muted-foreground">
               {statement.grant.project} · {statement.grant.pi} · {t('rsp.gs.period', { from: fmt.date(statement.period.from, 'short'), to: fmt.date(statement.period.to, 'short') })}
             </p>
+            {!statement.releasesRecorded && <p className="m-0 mb-3 text-[13px] text-amber-ink">{t('rsp.gs.noReleases')}</p>}
             <StatGrid min={150}>
               <StatTile label={t('rsx.col.sanctioned')} value={fmt.rupeesShort(statement.sanctionedPaise)} />
               <StatTile label={t('rsp.col.released')} value={fmt.rupeesShort(statement.releasedPaise)} caption={t('rsp.gs.pending', { amount: fmt.rupeesShort(statement.pendingReleasePaise) })} />

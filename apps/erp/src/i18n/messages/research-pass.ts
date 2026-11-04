@@ -155,6 +155,8 @@ export default area(
     "rsp.gs.available": "Total available",
     "rsp.gs.spentPeriod": "Spent in the period",
     "rsp.gs.closing": "Unspent at the end",
+    "rsp.gs.noReleases":
+      "No release is recorded for this grant: the sanction is taken as received on its start date. Record the instalments under Fund releases.",
     "rsp.gs.period": "Period {from} to {to}",
     "rsp.gs.pending": "{amount} still to be released",
     "rsp.gs.unspent": "{amount} unspent of what was released",
@@ -533,6 +535,8 @@ export default area(
       "rsp.gs.available": "कुल उपलब्ध",
       "rsp.gs.spentPeriod": "अवधि में व्यय",
       "rsp.gs.closing": "अंत में अव्ययित",
+      "rsp.gs.noReleases":
+        "इस अनुदान का कोई विमोचन दर्ज नहीं है: स्वीकृति को आरंभ तिथि पर प्राप्त माना गया है। किस्तें निधि विमोचन में दर्ज करें।",
       "rsp.gs.period": "अवधि {from} से {to}",
       "rsp.gs.pending": "{amount} अभी विमोचित होना शेष",
       "rsp.gs.unspent": "विमोचित राशि में से {amount} अव्ययित",
@@ -912,6 +916,8 @@ export default area(
       "rsp.gs.available": "ಒಟ್ಟು ಲಭ್ಯ",
       "rsp.gs.spentPeriod": "ಅವಧಿಯಲ್ಲಿ ಖರ್ಚು",
       "rsp.gs.closing": "ಕೊನೆಯಲ್ಲಿ ಖರ್ಚಾಗದ್ದು",
+      "rsp.gs.noReleases":
+        "ಈ ಅನುದಾನಕ್ಕೆ ಯಾವುದೇ ಬಿಡುಗಡೆ ದಾಖಲಾಗಿಲ್ಲ: ಮಂಜೂರಾತಿಯನ್ನು ಆರಂಭ ದಿನದಂದು ಸ್ವೀಕರಿಸಲಾಗಿದೆ ಎಂದು ಪರಿಗಣಿಸಲಾಗಿದೆ. ಕಂತುಗಳನ್ನು ಅನುದಾನ ಬಿಡುಗಡೆಗಳಲ್ಲಿ ದಾಖಲಿಸಿ.",
       "rsp.gs.period": "ಅವಧಿ {from} ರಿಂದ {to}",
       "rsp.gs.pending": "{amount} ಇನ್ನೂ ಬಿಡುಗಡೆಯಾಗಬೇಕಿದೆ",
       "rsp.gs.unspent": "ಬಿಡುಗಡೆಯಾದದ್ದರಲ್ಲಿ {amount} ಖರ್ಚಾಗಿಲ್ಲ",

@@ -118,7 +118,8 @@ export const SECTION_ROLES: Record<Section, readonly RoleName[]> = {
   // chat.controller.ts: every staff role (not families)
   chat: ['principal', 'tenant_admin', 'hod', 'accountant', 'librarian', 'transport_manager', 'hostel_warden', 'canteen_manager', 'store_keeper', 'admissions_officer', 'hr_manager', 'placement_officer', 'research_coordinator', 'grievance_officer', 'counsellor', 'icc_member', 'exam_controller', 'examiner', 'quality_officer'],
   // research.controller.ts RESEARCH_VIEW_ROLES
-  research: ['principal', 'tenant_admin', 'research_coordinator', 'hod'],
+  // The IQAC reads the research reports (NAAC criterion 3, NIRF, NBA, AISHE) only.
+  research: ['principal', 'tenant_admin', 'research_coordinator', 'hod', 'quality_officer'],
   // welfare.access.ts GRIEVANCE_STAFF and COMMITTEE_ROLES (committee matters show only to committee members)
   grievances: ['principal', 'tenant_admin', 'grievance_officer', 'icc_member'],
   // surveys.controller.ts SURVEY_ROLES (teachers build surveys in the Teacher App; the ERP is for leaders and heads of department)

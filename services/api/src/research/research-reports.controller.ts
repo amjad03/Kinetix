@@ -18,7 +18,7 @@ import { normalizeOrcid, OrcidResolver, validOrcid } from './orcid.js';
 import { hIndex, normalizeDoi } from './research-rules.js';
 import { duplicateOf } from './publication-dupes.js';
 import { researchIncentiveClaims, researchProfiles } from '../db/schema-research.js';
-import { FACULTY_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES } from './roles.js';
+import { FACULTY_ROLES, RESEARCH_REPORT_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES } from './roles.js';
 
 const OrcidBody = z.object({ orcid: z.string().trim().min(16).max(60), ownerUserId: z.uuid().optional() });
 const KINDS: Record<string, 'journal' | 'conference' | 'book' | 'book_chapter'> = { 'journal-article': 'journal', 'conference-paper': 'conference', book: 'book', 'book-chapter': 'book_chapter' };
@@ -111,18 +111,18 @@ export class ResearchReportsController {
 
   /** One teacher's research: publications (as owner or co-author, retracted ones apart), citations and h-index, projects, grants, IPR, consultancy, recognitions and scholars. */
   @Get('reports/faculty-profile')
-  @Auth('user', FACULTY_ROLES)
+  @Auth('user', [...FACULTY_ROLES, 'quality_officer'])
   profile(@CurrentPrincipal() p: UserPrincipal, @Query('userId') userId?: string) {
     const who = userId && z.uuid().safeParse(userId).success ? userId : p.userId;
-    if (who !== p.userId && !hasRole(p, RESEARCH_VIEW_ROLES)) throw new ForbiddenException("Your account doesn't have access to this.");
+    if (who !== p.userId && !hasRole(p, RESEARCH_REPORT_ROLES)) throw new ForbiddenException("Your account doesn't have access to this.");
     return this.db.withTenant(p.tenantId, (tx) => this.profileOf(tx, who));
   }
 
   @Get('reports/faculty-profile.xlsx')
-  @Auth('user', FACULTY_ROLES)
+  @Auth('user', [...FACULTY_ROLES, 'quality_officer'])
   async profileXlsx(@CurrentPrincipal() p: UserPrincipal, @Res() res: Response, @Query('userId') userId?: string) {
     const who = userId && z.uuid().safeParse(userId).success ? userId : p.userId;
-    if (who !== p.userId && !hasRole(p, RESEARCH_VIEW_ROLES)) throw new ForbiddenException("Your account doesn't have access to this.");
+    if (who !== p.userId && !hasRole(p, RESEARCH_REPORT_ROLES)) throw new ForbiddenException("Your account doesn't have access to this.");
     const d = await this.db.withTenant(p.tenantId, (tx) => this.profileOf(tx, who));
     const sheets: Sheet[] = [
       { name: 'Summary', rows: [[`Research profile: ${d.person.name}`], [d.person.department ?? ''], [], ['Item', 'Figure'], ['Publications', d.summary.publications], ['Indexed (Scopus / Web of Science / UGC-CARE)', d.summary.indexed], ['Citations', d.summary.citations], ['h-index', d.summary.hIndex], ['i10-index', d.summary.i10], ['Retracted papers', d.summary.retracted], ['Projects as investigator', d.summary.projects], ['Grants (INR lakhs)', d.summary.grantLakhs], ['Patents filed / granted', `${d.summary.patents} / ${d.summary.patentsGranted}`], ['Consultancy (INR lakhs)', d.summary.consultancyLakhs], ['Recognitions', d.summary.recognitions], ['Scholars supervised / awarded', `${d.summary.scholars} / ${d.summary.scholarsAwarded}`]], widths: [50, 20], title: [0], header: [3] },
@@ -178,7 +178,7 @@ export class ResearchReportsController {
 
   /** Teachers with any research record, for the profile picker. */
   @Get('reports/faculty')
-  @Auth('user', RESEARCH_VIEW_ROLES)
+  @Auth('user', RESEARCH_REPORT_ROLES)
   faculty(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) =>
       (
@@ -197,13 +197,13 @@ export class ResearchReportsController {
    * and consultancy by financial year (projects, agencies or clients, amount), publications and IPR by calendar year.
    */
   @Get('reports/nirf-rp')
-  @Auth('user', RESEARCH_VIEW_ROLES)
+  @Auth('user', RESEARCH_REPORT_ROLES)
   async nirf(@CurrentPrincipal() p: UserPrincipal, @Query('toYear') toQ?: string) {
     return this.db.withTenant(p.tenantId, (tx) => this.nirfData(tx, toQ));
   }
 
   @Get('reports/nirf-rp.xlsx')
-  @Auth('user', RESEARCH_VIEW_ROLES)
+  @Auth('user', RESEARCH_REPORT_ROLES)
   async nirfXlsx(@CurrentPrincipal() p: UserPrincipal, @Res() res: Response, @Query('toYear') toQ?: string) {
     const d = await this.db.withTenant(p.tenantId, (tx) => this.nirfData(tx, toQ));
     const sheets: Sheet[] = [
@@ -247,7 +247,7 @@ export class ResearchReportsController {
 
   /** NAAC criterion 3 figures for the five academic years ending with `cycle`, from the same ERP sources the accreditation hub uses. */
   @Get('reports/naac-c3')
-  @Auth('user', RESEARCH_VIEW_ROLES)
+  @Auth('user', RESEARCH_REPORT_ROLES)
   naac(@CurrentPrincipal() p: UserPrincipal, @Query('cycle') cycleQ?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const today = await tenantToday(tx, this.clock);
