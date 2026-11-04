@@ -4934,4 +4934,103 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dndOffDone => 'Do not disturb is off';
+
+  @override
+  String get researchMine => 'My research';
+
+  @override
+  String resPublicationsCount(int n) {
+    return 'Publications ($n indexed)';
+  }
+
+  @override
+  String get resCitations => 'Citations';
+
+  @override
+  String resHIndex(int n) {
+    return 'h-index (i10: $n)';
+  }
+
+  @override
+  String get resIprCount => 'Patents filed / granted';
+
+  @override
+  String get resScholarsCount => 'Scholars guided / awarded';
+
+  @override
+  String get resIds => 'Researcher identifiers';
+
+  @override
+  String get resIdsNone =>
+      'No identifiers yet. Add your ORCID iD and the others so the office can import your work.';
+
+  @override
+  String get resIdsBody =>
+      'Links are fine: the ID is read from them. A change is verified again by the research office.';
+
+  @override
+  String get resEditIds => 'Edit identifiers';
+
+  @override
+  String get resSaveIds => 'Save';
+
+  @override
+  String get resIdOrcid => 'ORCID iD';
+
+  @override
+  String get resIdScopus => 'Scopus Author ID';
+
+  @override
+  String get resIdWos => 'Web of Science ResearcherID';
+
+  @override
+  String get resIdScholar => 'Google Scholar';
+
+  @override
+  String get resIdVidwan => 'Vidwan ID';
+
+  @override
+  String get resVerified => 'Verified';
+
+  @override
+  String get resNotVerified => 'Awaiting verification';
+
+  @override
+  String get resIpr => 'Patents and IPR';
+
+  @override
+  String get resIprEmpty => 'No patents or IPR recorded.';
+
+  @override
+  String get resClaims => 'Incentive claims';
+
+  @override
+  String get resClaimsEmpty => 'No incentive claims yet.';
+
+  @override
+  String get patentDraft => 'Draft';
+
+  @override
+  String get patentFiled => 'Filed';
+
+  @override
+  String get patentPublished => 'Published';
+
+  @override
+  String get patentGranted => 'Granted';
+
+  @override
+  String get patentRejected => 'Rejected';
+
+  @override
+  String get claimClaimed => 'Claimed';
+
+  @override
+  String get claimApproved => 'Approved';
+
+  @override
+  String get claimPaid => 'Paid';
+
+  @override
+  String get claimRejected => 'Rejected';
 }

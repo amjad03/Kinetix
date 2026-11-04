@@ -160,6 +160,7 @@ void main() {
       phone(tester);
       await tester.pumpWidget(localizedApp(home: ResearchScreen(api: api, userId: 'u1')));
       await tester.pumpAndSettle();
+      await openTab(tester, 'tabResProjects');
       expect(find.text('Water quality of the Tunga river'), findsOneWidget);
       expect(find.textContaining('PRJ-2026-001 · Research · Active'), findsOneWidget);
 
@@ -178,6 +179,49 @@ void main() {
       expect(find.textContaining('Embargoed until'), findsOneWidget);
       expect(find.textContaining('2 files'), findsOneWidget);
       expect(find.textContaining('1 file'), findsOneWidget);
+    });
+
+    testWidgets('my research shows the summary, identifiers, IPR and incentive claims, and saves identifiers', (tester) async {
+      phone(tester, size: const Size(412, 1400));
+      await tester.pumpWidget(localizedApp(home: ResearchScreen(api: api, userId: 'u1')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('resPubs')), findsOneWidget);
+      expect(find.text('Publications (4 indexed)'), findsOneWidget);
+      expect(find.text('h-index (i10: 2)'), findsOneWidget);
+      expect(find.text('58'), findsOneWidget);
+      expect(find.text('2 / 1'), findsOneWidget);
+      expect(find.text('0000-0002-1825-0097'), findsOneWidget);
+      expect(find.text('Verified'), findsOneWidget);
+      expect(find.textContaining('Granted · 202341055123'), findsOneWidget);
+      expect(find.text('₹25,000 · Paid'), findsOneWidget);
+      expect(find.text('₹15,000 · Claimed'), findsOneWidget);
+
+      await tapAndSettle(tester, find.byKey(const Key('editIds')));
+      await tester.enterText(find.byKey(const Key('id-vidwanId')), '654321');
+      await tester.enterText(find.byKey(const Key('id-wosResearcherId')), '');
+      await tapAndSettle(tester, find.byKey(const Key('saveIds')));
+      expect(api.calls.last, 'saveIds 0000-0002-1825-0097 57201234567 654321');
+      // A change to an identifier waits for the office to verify it again.
+      expect(find.text('654321'), findsOneWidget);
+      expect(find.text('Awaiting verification'), findsOneWidget);
+    });
+
+    testWidgets('a refused identifier shows the reason and keeps the old values', (tester) async {
+      phone(tester, size: const Size(412, 1400));
+      api.idsError = ApiException(400, 'That is not a valid ORCID iD (like 0000-0002-1825-0097)');
+      await tester.pumpWidget(localizedApp(home: ResearchScreen(api: api, userId: 'u1')));
+      await tester.pumpAndSettle();
+      await tapAndSettle(tester, find.byKey(const Key('editIds')));
+      await tester.enterText(find.byKey(const Key('id-orcid')), '1234');
+      await tapAndSettle(tester, find.byKey(const Key('saveIds')));
+      expect(find.text('That is not a valid ORCID iD (like 0000-0002-1825-0097)'), findsOneWidget);
+      expect(find.text('Verified'), findsOneWidget);
+    });
+
+    test('rupees are grouped the Indian way', () {
+      expect(rupees(2500000), '₹25,000');
+      expect(rupees(1234567800), '₹1,23,45,678');
+      expect(rupees(50000), '₹500');
     });
 
     testWidgets('a supervisor opens a thesis, sees events, vivas and similarity, and submits it from draft', (tester) async {
@@ -251,6 +295,12 @@ void main() {
       await tester.pumpAndSettle();
       final hi = strings('hi');
       expect(find.text(hi.researchTitle), findsOneWidget);
+      expect(find.text(hi.resIds), findsOneWidget);
+      expect(find.text(hi.resIprCount), findsOneWidget);
+      expect(claimStatusText(hi, 'paid'), isNot(claimStatusText(strings('en'), 'paid')));
+      expect(hi.resIdsNone, isNot(strings('en').resIdsNone));
+      expect(strings('kn').resEditIds, isNot(strings('en').resEditIds));
+      await openTab(tester, 'tabResProjects');
       expect(find.textContaining(resStatusText(hi, 'active')), findsOneWidget);
       expect(hi.thesisStageViva, isNot(strings('en').thesisStageViva));
       expect(hi.datasetFiles(1), isNot(hi.datasetFiles(3)));

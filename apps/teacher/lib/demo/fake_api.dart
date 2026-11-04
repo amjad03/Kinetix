@@ -1742,6 +1742,26 @@ class FakeTeacherApi implements TeacherApi {
   @override
   Future<List<ResearchDataset>> researchDatasets() async => datasetList;
 
+  MyResearch myResearchData = const MyResearch(
+    publications: 6, indexed: 4, citations: 58, hIndex: 4, i10: 2, patents: 2, patentsGranted: 1, scholars: 3, scholarsAwarded: 1, grantLakhs: 15,
+    ids: ResearcherIds(orcid: '0000-0002-1825-0097', scopus: '57201234567', scholar: 'qc6CJjYAAAAJ', vidwan: '102345', scopusHIndex: 5, verified: true),
+    patentList: [MyPatent(title: 'Low-power face matching device', kind: 'patent', status: 'granted', applicationNo: '202341055123'), MyPatent(title: 'Offline UPI settlement for merchants', kind: 'patent', status: 'published', applicationNo: '202541018822')],
+    claims: [IncentiveClaim(id: 'ic1', subject: 'Credit scoring for micro retailers', amountPaise: 2500000, status: 'paid'), IncentiveClaim(id: 'ic2', subject: 'UPI adoption among kirana stores', amountPaise: 1500000, status: 'claimed')],
+  );
+  ApiException? idsError;
+
+  @override
+  Future<MyResearch> myResearch() async => myResearchData;
+
+  @override
+  Future<void> saveResearcherIds(Map<String, String?> ids) async {
+    calls.add('saveIds ${ids['orcid']} ${ids['scopusAuthorId']} ${ids['vidwanId']}');
+    if (idsError != null) throw idsError!;
+    final d = myResearchData;
+    myResearchData = MyResearch(publications: d.publications, indexed: d.indexed, citations: d.citations, hIndex: d.hIndex, i10: d.i10, patents: d.patents, patentsGranted: d.patentsGranted, scholars: d.scholars, scholarsAwarded: d.scholarsAwarded, grantLakhs: d.grantLakhs, patentList: d.patentList, claims: d.claims,
+        ids: ResearcherIds(orcid: ids['orcid'], scopus: ids['scopusAuthorId'], wos: ids['wosResearcherId'], scholar: ids['googleScholarId'], vidwan: ids['vidwanId'], scopusHIndex: d.ids?.scopusHIndex, verified: false));
+  }
+
   // --- Project mentoring -----------------------------------------------------------------------
 
   List<MyProject> myProjectList = const [

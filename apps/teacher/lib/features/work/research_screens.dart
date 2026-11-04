@@ -64,6 +64,21 @@ String vivaOutcomeText(AppLocalizations l, String s) => switch (s) {
   _ => s,
 };
 
+String patentStatusText(AppLocalizations l, String s) => switch (s) {
+  'filed' => l.patentFiled,
+  'published' => l.patentPublished,
+  'granted' => l.patentGranted,
+  'rejected' => l.patentRejected,
+  _ => l.patentDraft,
+};
+
+String claimStatusText(AppLocalizations l, String s) => switch (s) {
+  'approved' => l.claimApproved,
+  'paid' => l.claimPaid,
+  'rejected' => l.claimRejected,
+  _ => l.claimClaimed,
+};
+
 String vivaStatusText(AppLocalizations l, String s) => switch (s) {
   'held' => l.vivaHeld,
   'cancelled' => l.vivaCancelled,
@@ -77,7 +92,8 @@ String datasetAccessText(AppLocalizations l, Fmt f, ResearchDataset d) => switch
   _ => l.accessRestricted,
 };
 
-/// My research: projects, the scholars I supervise with their theses, publications and datasets.
+/// My research: my profile (identifiers, h-index, IPR, incentives), projects, the scholars I supervise with their
+/// theses, publications and datasets.
 class ResearchScreen extends StatelessWidget {
   const ResearchScreen({super.key, required this.api, required this.userId});
 
@@ -88,13 +104,14 @@ class ResearchScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: Text(l.researchTitle),
           bottom: TabBar(
             isScrollable: true,
             tabs: [
+              Tab(key: const Key('tabResMine'), text: l.researchMine),
               Tab(key: const Key('tabResProjects'), text: l.researchProjects),
               Tab(key: const Key('tabResScholars'), text: l.researchScholars),
               Tab(key: const Key('tabResPublications'), text: l.researchPublications),
@@ -104,6 +121,7 @@ class ResearchScreen extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
+            _MineTab(api: api),
             _ProjectsTab(api: api),
             _ScholarsTab(api: api),
             _PublicationsTab(api: api, userId: userId),
@@ -113,6 +131,133 @@ class ResearchScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class _MineTab extends StatefulWidget {
+  const _MineTab({required this.api});
+
+  final TeacherApi api;
+
+  @override
+  State<_MineTab> createState() => _MineTabState();
+}
+
+class _MineTabState extends State<_MineTab> {
+  int _round = 0;
+
+  Future<void> _editIds(ResearcherIds? ids) async {
+    final l = context.l10n;
+    final c = {
+      'orcid': TextEditingController(text: ids?.orcid ?? ''),
+      'scopusAuthorId': TextEditingController(text: ids?.scopus ?? ''),
+      'wosResearcherId': TextEditingController(text: ids?.wos ?? ''),
+      'googleScholarId': TextEditingController(text: ids?.scholar ?? ''),
+      'vidwanId': TextEditingController(text: ids?.vidwan ?? ''),
+    };
+    final labels = {'orcid': l.resIdOrcid, 'scopusAuthorId': l.resIdScopus, 'wosResearcherId': l.resIdWos, 'googleScholarId': l.resIdScholar, 'vidwanId': l.resIdVidwan};
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.resEditIds),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l.resIdsBody),
+              for (final e in c.entries) ...[
+                const SizedBox(height: Kx.s12),
+                TextField(key: Key('id-${e.key}'), controller: e.value, decoration: InputDecoration(labelText: labels[e.key])),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+          FilledButton(key: const Key('saveIds'), onPressed: () => Navigator.pop(ctx, true), child: Text(l.resSaveIds)),
+        ],
+      ),
+    );
+    if (ok == true && mounted) {
+      final body = {for (final e in c.entries) e.key: e.value.text.trim().isEmpty ? null : e.value.text.trim()};
+      if (await runOrSnack(context, () => widget.api.saveResearcherIds(body)) && mounted) setState(() => _round++);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return AsyncBody<MyResearch>(
+      key: ValueKey(_round),
+      load: widget.api.myResearch,
+      builder: (context, r, reload) {
+        final ids = r.ids;
+        final idRows = <(String, String?)>[(l.resIdOrcid, ids?.orcid), (l.resIdScopus, ids?.scopus), (l.resIdWos, ids?.wos), (l.resIdScholar, ids?.scholar), (l.resIdVidwan, ids?.vidwan)];
+        Widget tile(String key, String label, String value) => SizedBox(
+          width: 150,
+          child: Card(
+            key: Key(key),
+            child: Padding(
+              padding: const EdgeInsets.all(Kx.s12),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: Theme.of(context).textTheme.titleLarge), const SizedBox(height: Kx.s4), Text(label, style: Theme.of(context).textTheme.bodySmall)]),
+            ),
+          ),
+        );
+        return ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(Kx.s16),
+          children: [
+            Wrap(
+              spacing: Kx.s8,
+              runSpacing: Kx.s8,
+              children: [
+                tile('resPubs', l.resPublicationsCount(r.indexed), '${r.publications}'),
+                tile('resCites', l.resCitations, '${r.citations}'),
+                tile('resH', l.resHIndex(r.i10), '${r.hIndex}'),
+                tile('resIpr', l.resIprCount, '${r.patents} / ${r.patentsGranted}'),
+                tile('resGuided', l.resScholarsCount, '${r.scholars} / ${r.scholarsAwarded}'),
+              ],
+            ),
+            const SizedBox(height: Kx.s16),
+            Row(
+              children: [
+                Expanded(child: Text(l.resIds, style: Theme.of(context).textTheme.titleMedium)),
+                if (ids != null) Pill(ids.verified ? l.resVerified : l.resNotVerified, background: ids.verified ? goodColors(context).$1 : context.colors.surfaceContainerHighest, foreground: ids.verified ? goodColors(context).$2 : context.colors.onSurface),
+              ],
+            ),
+            if (ids == null) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text(l.resIdsNone, key: const Key('idsNone'))),
+            for (final (label, v) in idRows)
+              if (v != null) ListTile(contentPadding: EdgeInsets.zero, dense: true, title: Text(label), subtitle: Text(v, key: Key('idValue-$label'))),
+            Align(alignment: Alignment.centerLeft, child: OutlinedButton.icon(key: const Key('editIds'), onPressed: () => _editIds(ids), icon: const Icon(Icons.badge_outlined), label: Text(l.resEditIds))),
+            const SizedBox(height: Kx.s16),
+            Text(l.resIpr, style: Theme.of(context).textTheme.titleMedium),
+            if (r.patentList.isEmpty) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text(l.resIprEmpty)),
+            for (final p in r.patentList)
+              ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.lightbulb_outline), title: Text(p.title), subtitle: Text([patentStatusText(l, p.status), if (p.applicationNo != null) p.applicationNo!].join(' · '))),
+            const SizedBox(height: Kx.s16),
+            Text(l.resClaims, style: Theme.of(context).textTheme.titleMedium),
+            if (r.claims.isEmpty) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text(l.resClaimsEmpty)),
+            for (final c in r.claims)
+              ListTile(key: Key('claim-${c.id}'), contentPadding: EdgeInsets.zero, leading: const Icon(Icons.currency_rupee), title: Text(c.subject), subtitle: Text('${rupees(c.amountPaise)} · ${claimStatusText(l, c.status)}')),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// ₹25,000 from paise, Indian digit grouping.
+String rupees(int paise) {
+  final r = (paise / 100).round().toString();
+  if (r.length <= 3) return '₹$r';
+  final last3 = r.substring(r.length - 3);
+  var rest = r.substring(0, r.length - 3);
+  final parts = <String>[];
+  while (rest.length > 2) {
+    parts.insert(0, rest.substring(rest.length - 2));
+    rest = rest.substring(0, rest.length - 2);
+  }
+  if (rest.isNotEmpty) parts.insert(0, rest);
+  return '₹${parts.join(',')},$last3';
 }
 
 class _ProjectsTab extends StatelessWidget {

@@ -4932,4 +4932,103 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get dndOffDone => '“परेशान न करें” बंद है';
+
+  @override
+  String get researchMine => 'मेरा शोध';
+
+  @override
+  String resPublicationsCount(int n) {
+    return 'प्रकाशन ($n अनुक्रमित)';
+  }
+
+  @override
+  String get resCitations => 'उद्धरण';
+
+  @override
+  String resHIndex(int n) {
+    return 'एच-सूचकांक (i10: $n)';
+  }
+
+  @override
+  String get resIprCount => 'दायर / प्रदत्त पेटेंट';
+
+  @override
+  String get resScholarsCount => 'मार्गदर्शित / उपाधि प्राप्त शोधार्थी';
+
+  @override
+  String get resIds => 'शोधकर्ता पहचान';
+
+  @override
+  String get resIdsNone =>
+      'अभी कोई पहचान नहीं। अपनी ऑर्किड आईडी और अन्य जोड़ें ताकि कार्यालय आपका कार्य आयात कर सके।';
+
+  @override
+  String get resIdsBody =>
+      'लिंक भी चलेंगे: आईडी उनसे पढ़ी जाती है। बदलाव का शोध कार्यालय फिर से सत्यापन करता है।';
+
+  @override
+  String get resEditIds => 'पहचान संपादित करें';
+
+  @override
+  String get resSaveIds => 'सहेजें';
+
+  @override
+  String get resIdOrcid => 'ऑर्किड आईडी';
+
+  @override
+  String get resIdScopus => 'स्कोपस लेखक आईडी';
+
+  @override
+  String get resIdWos => 'वेब ऑफ़ साइंस रिसर्चर आईडी';
+
+  @override
+  String get resIdScholar => 'गूगल स्कॉलर';
+
+  @override
+  String get resIdVidwan => 'विद्वान आईडी';
+
+  @override
+  String get resVerified => 'सत्यापित';
+
+  @override
+  String get resNotVerified => 'सत्यापन लंबित';
+
+  @override
+  String get resIpr => 'पेटेंट और बौद्धिक संपदा';
+
+  @override
+  String get resIprEmpty => 'कोई पेटेंट या बौद्धिक संपदा दर्ज नहीं।';
+
+  @override
+  String get resClaims => 'प्रोत्साहन दावे';
+
+  @override
+  String get resClaimsEmpty => 'अभी कोई प्रोत्साहन दावा नहीं।';
+
+  @override
+  String get patentDraft => 'मसौदा';
+
+  @override
+  String get patentFiled => 'दायर';
+
+  @override
+  String get patentPublished => 'प्रकाशित';
+
+  @override
+  String get patentGranted => 'प्रदत्त';
+
+  @override
+  String get patentRejected => 'अस्वीकृत';
+
+  @override
+  String get claimClaimed => 'दावा किया';
+
+  @override
+  String get claimApproved => 'स्वीकृत';
+
+  @override
+  String get claimPaid => 'भुगतान किया गया';
+
+  @override
+  String get claimRejected => 'अस्वीकृत';
 }

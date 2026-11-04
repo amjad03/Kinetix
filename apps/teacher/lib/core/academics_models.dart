@@ -295,6 +295,74 @@ class Publication {
   final String? doi;
 }
 
+/// The teacher's own research: identifiers, the profile summary, IPR and incentive claims (GET /v1/research/me).
+class MyResearch {
+  const MyResearch({required this.publications, required this.indexed, required this.citations, required this.hIndex, required this.i10, required this.patents, required this.patentsGranted, required this.scholars, required this.scholarsAwarded, required this.grantLakhs, required this.ids, required this.patentList, required this.claims});
+
+  factory MyResearch.fromJson(Map<String, dynamic> j) {
+    final s = (j['summary'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final ids = (j['ids'] as Map?)?.cast<String, dynamic>();
+    return MyResearch(
+      publications: _int(s['publications']),
+      indexed: _int(s['indexed']),
+      citations: _int(s['citations']),
+      hIndex: _int(s['hIndex']),
+      i10: _int(s['i10']),
+      patents: _int(s['patents']),
+      patentsGranted: _int(s['patentsGranted']),
+      scholars: _int(s['scholars']),
+      scholarsAwarded: _int(s['scholarsAwarded']),
+      grantLakhs: (s['grantLakhs'] as num?)?.toDouble() ?? 0,
+      ids: ids == null ? null : ResearcherIds.fromJson(ids),
+      patentList: [for (final p in (j['patents'] as List? ?? const [])) MyPatent.fromJson((p as Map).cast<String, dynamic>())],
+      claims: [for (final c in (j['claims'] as List? ?? const [])) IncentiveClaim.fromJson((c as Map).cast<String, dynamic>())],
+    );
+  }
+
+  final int publications, indexed, citations, hIndex, i10, patents, patentsGranted, scholars, scholarsAwarded;
+  final double grantLakhs;
+  final ResearcherIds? ids;
+  final List<MyPatent> patentList;
+  final List<IncentiveClaim> claims;
+}
+
+/// ORCID, Scopus, Web of Science, Google Scholar and Vidwan identifiers, and whether the research office verified them.
+class ResearcherIds {
+  const ResearcherIds({this.orcid, this.scopus, this.wos, this.scholar, this.vidwan, this.scopusHIndex, required this.verified});
+
+  factory ResearcherIds.fromJson(Map<String, dynamic> j) => ResearcherIds(
+    orcid: _sOrNull(j['orcid']),
+    scopus: _sOrNull(j['scopusAuthorId']),
+    wos: _sOrNull(j['wosResearcherId']),
+    scholar: _sOrNull(j['googleScholarId']),
+    vidwan: _sOrNull(j['vidwanId']),
+    scopusHIndex: j['scopusHIndex'] == null ? null : _int(j['scopusHIndex']),
+    verified: j['verifiedAt'] != null,
+  );
+
+  final String? orcid, scopus, wos, scholar, vidwan;
+  final int? scopusHIndex;
+  final bool verified;
+}
+
+class MyPatent {
+  const MyPatent({required this.title, required this.kind, required this.status, this.applicationNo});
+
+  factory MyPatent.fromJson(Map<String, dynamic> j) => MyPatent(title: _s(j['title']), kind: _s(j['kind']), status: _s(j['status']), applicationNo: _sOrNull(j['applicationNo']));
+
+  final String title, kind, status;
+  final String? applicationNo;
+}
+
+class IncentiveClaim {
+  const IncentiveClaim({required this.id, required this.subject, required this.amountPaise, required this.status});
+
+  factory IncentiveClaim.fromJson(Map<String, dynamic> j) => IncentiveClaim(id: _s(j['id']), subject: _s(j['subject']), amountPaise: _int(j['amountPaise']), status: _s(j['status']));
+
+  final String id, subject, status;
+  final int amountPaise;
+}
+
 class ResearchDataset {
   const ResearchDataset({required this.id, required this.title, required this.owner, required this.license, required this.access, required this.files, required this.canOpen, this.embargoUntil, this.doi});
 
