@@ -8,9 +8,11 @@ import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { CodeRunnerClient, RUN_LANGUAGES, type RunLanguage } from '../code/code-runner.client.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { calendarEvents, campusEvents, eventRegistrations, homework, homeworkSubmissions, lmsItems, qbQuestions, sections, students, subjects } from '../db/schema.js';
+import { assessments, calendarEvents, campusEvents, eventRegistrations, homework, homeworkSubmissions, lmsCourses, lmsItems, lmsModules, marks, qbQuestions, sections, students, subjects } from '../db/schema.js';
 import { homeworkExtensions, lmsItemProgress, lmsQuizAttempts, lmsQuizQuestions, lmsQuizzes, type QuizResult } from '../db/schema-life.js';
-import { gradeAnswer, itemAccess, itemStats } from './lms-access.js';
+import { itemAccess, itemStats } from './lms-access.js';
+import { attemptTotal, canReview, permutation, proctorVerdict, scoreAnswer } from './quiz-rules.js';
+import { lmsQuizEvents, QUIZ_EVENT_KINDS } from '../db/schema-lms.js';
 import { LMS_STAFF, LmsService } from './lms.service.js';
 
 const QuizBody = z
@@ -25,9 +27,15 @@ const QuizBody = z
     maxAttempts: z.number().int().min(1).max(10).default(1),
     drawCount: z.number().int().min(1).max(500).nullable().default(null),
     shuffle: z.boolean().default(true),
+    negativePct: z.number().int().min(0).max(100).default(0),
+    shuffleOptions: z.boolean().default(true),
+    proctoring: z.enum(['off', 'record', 'strict']).default('off'),
+    maxViolations: z.number().int().min(1).max(50).default(5),
+    review: z.enum(['never', 'after_submit', 'after_close']).default('after_close'),
+    passPct: z.number().int().min(0).max(100).default(40),
   })
   .refine((b) => b.closesAt > b.opensAt, { message: 'The quiz must close after it opens', path: ['closesAt'] });
-const QuizPatch = z.object({ title: z.string().trim().min(3).max(200).optional(), instructions: z.string().trim().max(4000).optional(), opensAt: z.coerce.date().optional(), closesAt: z.coerce.date().optional(), durationMin: z.number().int().min(1).max(600).optional(), maxAttempts: z.number().int().min(1).max(10).optional(), drawCount: z.number().int().min(1).max(500).nullable().optional(), shuffle: z.boolean().optional() });
+const QuizPatch = z.object({ title: z.string().trim().min(3).max(200).optional(), instructions: z.string().trim().max(4000).optional(), opensAt: z.coerce.date().optional(), closesAt: z.coerce.date().optional(), durationMin: z.number().int().min(1).max(600).optional(), maxAttempts: z.number().int().min(1).max(10).optional(), drawCount: z.number().int().min(1).max(500).nullable().optional(), shuffle: z.boolean().optional(), negativePct: z.number().int().min(0).max(100).optional(), shuffleOptions: z.boolean().optional(), proctoring: z.enum(['off', 'record', 'strict']).optional(), maxViolations: z.number().int().min(1).max(50).optional(), review: z.enum(['never', 'after_submit', 'after_close']).optional(), passPct: z.number().int().min(0).max(100).optional() });
 const Option = z.object({ text: z.string().trim().min(1).max(500), correct: z.boolean() });
 const QuestionBody = z
   .object({
@@ -38,6 +46,9 @@ const QuestionBody = z
     marks: z.number().positive().max(100).default(1),
     language: z.enum(RUN_LANGUAGES).optional(),
     tests: z.array(z.object({ stdin: z.string().max(4000), expected: z.string().max(4000) })).max(20).default([]),
+    /** Marks taken off a wrong choice answer (instead of the quiz's share). */
+    negativeMarks: z.number().min(0).max(100).nullable().default(null),
+    difficulty: z.enum(['easy', 'medium', 'hard']).nullable().default(null),
   })
   .superRefine((b, ctx) => {
     if ((b.kind === 'mcq' || b.kind === 'multi') && (b.options.length < 2 || !b.options.some((o) => o.correct))) ctx.addIssue({ code: 'custom', message: 'Give at least two options and mark the right one', path: ['options'] });
@@ -48,6 +59,7 @@ const QuestionBody = z
 const BankBody = z.object({ questionIds: z.array(z.uuid()).min(1).max(200) });
 const AnswersBody = z.object({ answers: z.record(z.uuid(), z.union([z.string().max(20000), z.array(z.number().int().min(0).max(20))])) });
 const MarkBody = z.object({ questionId: z.uuid(), marks: z.number().min(0).max(100) });
+const EventsBody = z.object({ events: z.array(z.object({ kind: z.enum(QUIZ_EVENT_KINDS), at: z.coerce.date(), detail: z.string().max(300).default('') })).min(1).max(100) });
 
 type Quiz = typeof lmsQuizzes.$inferSelect;
 type Question = typeof lmsQuizQuestions.$inferSelect;
@@ -62,8 +74,8 @@ function shuffled<T>(xs: T[]): T[] {
   return a;
 }
 
-/** A question as the student sees it: no answers, no tests' expected output. */
-const forStudent = (q: Question) => ({ id: q.id, kind: q.kind, text: q.text, options: q.options.map((o) => o.text), marks: q.marks, language: q.language, sampleTests: q.tests.slice(0, 1).map((t) => ({ stdin: t.stdin })) });
+/** A question as the student sees it: no answers, no tests' expected output, options in this attempt's order. */
+const forStudent = (q: Question, order?: number[]) => ({ id: q.id, kind: q.kind, text: q.text, options: (order ?? q.options.map((_, i) => i)).map((i) => q.options[i]?.text ?? ''), marks: q.marks, negativeMarks: q.negativeMarks, language: q.language, sampleTests: q.tests.slice(0, 1).map((t) => ({ stdin: t.stdin })) });
 
 /**
  * Online quizzes for a class and subject: questions written here or copied from the question bank, a pool that
@@ -108,16 +120,14 @@ export class QuizzesController {
   list(@CurrentPrincipal() p: UserPrincipal, @Query('sectionId') sectionId?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const rows = await tx
-        .select({ q: lmsQuizzes, section: sections.displayName, subject: subjects.name, questions: sql<number>`(select count(*)::int from lms_quiz_questions x where x.quiz_id = ${lmsQuizzes.id})`, attempts: sql<number>`(select count(*)::int from lms_quiz_attempts a where a.quiz_id = ${lmsQuizzes.id} and a.submitted_at is not null)`, toMark: sql<number>`(select count(*)::int from lms_quiz_attempts a where a.quiz_id = ${lmsQuizzes.id} and a.needs_marking)` })
+        .select({ q: lmsQuizzes, section: sections.displayName, subject: subjects.name, questions: sql<number>`(select count(*)::int from lms_quiz_questions x where x.quiz_id = ${lmsQuizzes.id})`, attempts: sql<number>`(select count(*)::int from lms_quiz_attempts a where a.quiz_id = ${lmsQuizzes.id} and a.submitted_at is not null)`, toMark: sql<number>`(select count(*)::int from lms_quiz_attempts a where a.quiz_id = ${lmsQuizzes.id} and a.needs_marking)`, flagged: sql<number>`(select count(*)::int from lms_quiz_attempts a where a.quiz_id = ${lmsQuizzes.id} and a.flagged)` })
         .from(lmsQuizzes)
         .innerJoin(sections, eq(sections.id, lmsQuizzes.sectionId))
         .innerJoin(subjects, eq(subjects.id, lmsQuizzes.subjectId))
         .where(sectionId && /^[0-9a-f-]{36}$/i.test(sectionId) ? eq(lmsQuizzes.sectionId, sectionId) : undefined)
         .orderBy(desc(lmsQuizzes.opensAt))
         .limit(300);
-      const out = [];
-      for (const r of rows) if (await this.lms.canManage(tx, p, r.q)) out.push({ ...r.q, section: r.section, subject: r.subject, questions: r.questions, attempts: r.attempts, toMark: r.toMark });
-      return out;
+      return this.lms.manageable(tx, p, rows.map((r) => ({ ...r.q, section: r.section, subject: r.subject, questions: r.questions, attempts: r.attempts, toMark: r.toMark, flagged: r.flagged })));
     });
   }
 
@@ -152,7 +162,7 @@ export class QuizzesController {
       const quiz = await this.quiz(tx, p, id, true);
       if (quiz.status !== 'draft') throw new ConflictException('Questions are fixed once the quiz is published');
       const [n] = await tx.select({ n: sql<number>`count(*)::int` }).from(lmsQuizQuestions).where(eq(lmsQuizQuestions.quizId, id));
-      const [row] = await tx.insert(lmsQuizQuestions).values({ tenantId: p.tenantId, quizId: id, position: n.n, kind: b.kind, text: b.text, options: b.kind === 'mcq' || b.kind === 'multi' ? b.options : [], answer: b.answer, marks: b.marks, language: b.kind === 'code' ? b.language : null, tests: b.kind === 'code' ? b.tests : [] }).returning();
+      const [row] = await tx.insert(lmsQuizQuestions).values({ tenantId: p.tenantId, quizId: id, position: n.n, kind: b.kind, text: b.text, options: b.kind === 'mcq' || b.kind === 'multi' ? b.options : [], answer: b.answer, marks: b.marks, language: b.kind === 'code' ? b.language : null, tests: b.kind === 'code' ? b.tests : [], negativeMarks: b.negativeMarks, difficulty: b.difficulty }).returning();
       await auditUser(tx, p, 'lms_quiz.question_added', 'lms_quiz', id, { questionId: row.id, kind: b.kind });
       return row;
     });
@@ -176,7 +186,7 @@ export class QuizzesController {
           fresh.map((q, i) => {
             const choice = q.options.length >= 2 && q.options.some((o) => o.correct);
             const multi = q.options.filter((o) => o.correct).length > 1;
-            return { tenantId: p.tenantId, quizId: id, position: n.n + i, qbQuestionId: q.id, kind: (choice ? (multi ? 'multi' : 'mcq') : 'short') as 'mcq', text: q.text, options: choice ? q.options : [], answer: choice ? '' : q.answer, marks: q.marks };
+            return { tenantId: p.tenantId, quizId: id, position: n.n + i, qbQuestionId: q.id, kind: (choice ? (multi ? 'multi' : 'mcq') : 'short') as 'mcq', text: q.text, options: choice ? q.options : [], answer: choice ? '' : q.answer, marks: q.marks, difficulty: q.difficulty, coId: q.coId };
           }),
         );
       await auditUser(tx, p, 'lms_quiz.questions_from_bank', 'lms_quiz', id, { added: fresh.length });
@@ -237,7 +247,7 @@ export class QuizzesController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       await this.quiz(tx, p, id);
       return tx
-        .select({ id: lmsQuizAttempts.id, studentId: students.id, fullName: students.fullName, rollNo: students.rollNo, attemptNo: lmsQuizAttempts.attemptNo, startedAt: lmsQuizAttempts.startedAt, submittedAt: lmsQuizAttempts.submittedAt, score: lmsQuizAttempts.score, maxScore: lmsQuizAttempts.maxScore, needsMarking: lmsQuizAttempts.needsMarking, answers: lmsQuizAttempts.answers, results: lmsQuizAttempts.results, questionIds: lmsQuizAttempts.questionIds })
+        .select({ id: lmsQuizAttempts.id, studentId: students.id, fullName: students.fullName, rollNo: students.rollNo, attemptNo: lmsQuizAttempts.attemptNo, startedAt: lmsQuizAttempts.startedAt, submittedAt: lmsQuizAttempts.submittedAt, score: lmsQuizAttempts.score, maxScore: lmsQuizAttempts.maxScore, needsMarking: lmsQuizAttempts.needsMarking, answers: lmsQuizAttempts.answers, results: lmsQuizAttempts.results, questionIds: lmsQuizAttempts.questionIds, optionOrders: lmsQuizAttempts.optionOrders, violations: lmsQuizAttempts.violations, flagged: lmsQuizAttempts.flagged, autoSubmitted: lmsQuizAttempts.autoSubmitted })
         .from(lmsQuizAttempts)
         .innerJoin(students, eq(students.id, lmsQuizAttempts.studentId))
         .where(eq(lmsQuizAttempts.quizId, id))
@@ -258,7 +268,7 @@ export class QuizzesController {
       const [q] = await tx.select().from(lmsQuizQuestions).where(eq(lmsQuizQuestions.id, b.questionId));
       if (b.marks > q.marks) throw new BadRequestException(`At most ${q.marks} marks`);
       const results: Record<string, QuizResult> = { ...a.results, [b.questionId]: { correct: b.marks >= q.marks, marks: b.marks, note: 'Marked by the teacher' } };
-      const score = Object.values(results).reduce((s, r) => s + r.marks, 0);
+      const score = attemptTotal(Object.values(results).map((r) => r.marks));
       const needsMarking = a.questionIds.some((qid) => results[qid]?.correct === null);
       const [row] = await tx.update(lmsQuizAttempts).set({ results, score, needsMarking }).where(eq(lmsQuizAttempts.id, attemptId)).returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'lms_quiz.answer_marked', subjectType: 'lms_quiz', subjectId: a.quizId, before: { marks: a.results[b.questionId]?.marks ?? null }, after: { marks: b.marks }, data: { attemptId, questionId: b.questionId } });
@@ -330,11 +340,14 @@ export class QuizzesController {
         const order = quiz.shuffle || quiz.drawCount ? shuffled(pool) : pool;
         const picked = (quiz.drawCount ? order.slice(0, quiz.drawCount) : order).map((q) => q.id);
         const dueAt = new Date(Math.min(now.getTime() + quiz.durationMin * 60_000, quiz.closesAt.getTime()));
-        [attempt] = await tx.insert(lmsQuizAttempts).values({ tenantId: p.tenantId, quizId: id, studentId: s.id, attemptNo: (mine[0]?.attemptNo ?? 0) + 1, questionIds: picked, startedAt: now, dueAt }).returning();
+        // Each student sees the options of a choice question in their own order (the answers are mapped back when marking).
+        const choice = quiz.shuffleOptions ? await tx.select({ id: lmsQuizQuestions.id, kind: lmsQuizQuestions.kind, options: lmsQuizQuestions.options }).from(lmsQuizQuestions).where(inArray(lmsQuizQuestions.id, picked.length ? picked : [id])) : [];
+        const optionOrders = Object.fromEntries(choice.filter((q) => (q.kind === 'mcq' || q.kind === 'multi') && q.options.length > 1).map((q) => [q.id, permutation(q.options.length)]));
+        [attempt] = await tx.insert(lmsQuizAttempts).values({ tenantId: p.tenantId, quizId: id, studentId: s.id, attemptNo: (mine[0]?.attemptNo ?? 0) + 1, questionIds: picked, startedAt: now, dueAt, optionOrders }).returning();
         await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'lms_quiz.attempt_started', subjectType: 'lms_quiz', subjectId: id, data: { attemptId: attempt.id } });
       }
       const qs = await tx.select().from(lmsQuizQuestions).where(inArray(lmsQuizQuestions.id, attempt.questionIds.length ? attempt.questionIds : [id]));
-      return { attemptId: attempt.id, title: quiz.title, instructions: quiz.instructions, dueAt: attempt.dueAt, answers: attempt.answers, questions: attempt.questionIds.map((qid) => qs.find((q) => q.id === qid)!).filter(Boolean).map(forStudent) };
+      return { attemptId: attempt.id, title: quiz.title, instructions: quiz.instructions, dueAt: attempt.dueAt, answers: attempt.answers, negativePct: quiz.negativePct, proctoring: quiz.proctoring, maxViolations: quiz.maxViolations, violations: attempt.violations, questions: attempt.questionIds.map((qid) => qs.find((q) => q.id === qid)!).filter(Boolean).map((q) => forStudent(q, attempt!.optionOrders[q.id])) };
     });
   }
 
@@ -365,7 +378,9 @@ export class QuizzesController {
       const answers = late ? a.answers : { ...a.answers, ...Object.fromEntries(Object.entries(b.answers ?? {}).filter(([k]) => a.questionIds.includes(k))) };
       const row = await this.finish(tx, { ...a, answers }, late ? a.dueAt : now);
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'lms_quiz.attempt_submitted', subjectType: 'lms_quiz', subjectId: a.quizId, data: { attemptId, score: row.score, late } });
-      return { attemptId, score: row.score, maxScore: row.maxScore, needsMarking: row.needsMarking, results: Object.fromEntries(Object.entries(row.results).map(([k, r]) => [k, { correct: r.correct, marks: r.marks }])) };
+      const [quiz] = await tx.select().from(lmsQuizzes).where(eq(lmsQuizzes.id, a.quizId));
+      const show = canReview(quiz.review, quiz, now);
+      return { attemptId, score: row.score, maxScore: row.maxScore, needsMarking: row.needsMarking, passed: row.maxScore ? (Number(row.score ?? 0) * 100) / Number(row.maxScore) >= quiz.passPct : null, results: show ? Object.fromEntries(Object.entries(row.results).map(([k, r]) => [k, { correct: r.correct, marks: r.marks }])) : {} };
     });
   }
 
@@ -377,19 +392,149 @@ export class QuizzesController {
   }
 
   /** Marks an attempt: choice and short answers here, code against its tests on the runner (or left to the teacher). */
-  private async finish(tx: Tx, a: typeof lmsQuizAttempts.$inferSelect, at: Date) {
+  private async finish(tx: Tx, a: typeof lmsQuizAttempts.$inferSelect, at: Date, extra: { autoSubmitted?: boolean } = {}) {
     const qs = await tx.select().from(lmsQuizQuestions).where(inArray(lmsQuizQuestions.id, a.questionIds.length ? a.questionIds : [a.quizId]));
+    const [quiz] = await tx.select().from(lmsQuizzes).where(eq(lmsQuizzes.id, a.quizId));
     const results: Record<string, QuizResult> = {};
     for (const q of qs) {
       const given = a.answers[q.id];
-      const g = gradeAnswer(q, given);
+      const g = scoreAnswer(q, given, a.optionOrders?.[q.id], quiz.negativePct);
       if (g) results[q.id] = g;
       else results[q.id] = await this.runCode(q, typeof given === 'string' ? given : '');
     }
-    const score = Object.values(results).reduce((s, r) => s + r.marks, 0);
+    const score = attemptTotal(Object.values(results).map((r) => r.marks));
     const maxScore = qs.reduce((s, q) => s + Number(q.marks), 0);
-    const [row] = await tx.update(lmsQuizAttempts).set({ answers: a.answers, results, score, maxScore, needsMarking: Object.values(results).some((r) => r.correct === null), submittedAt: at }).where(eq(lmsQuizAttempts.id, a.id)).returning();
+    const [row] = await tx.update(lmsQuizAttempts).set({ answers: a.answers, results, score, maxScore, needsMarking: Object.values(results).some((r) => r.correct === null), submittedAt: at, ...(extra.autoSubmitted ? { autoSubmitted: true } : {}) }).where(eq(lmsQuizAttempts.id, a.id)).returning();
+    await this.syncQuizItems(tx, quiz, a.studentId, at);
     return row;
+  }
+
+  /** Course items that show this quiz: done once the best score reaches the item's (or the quiz's) pass mark, or on any attempt under the other rules. */
+  private async syncQuizItems(tx: Tx, quiz: Quiz, studentId: string, at: Date) {
+    const items = await tx
+      .select({ id: lmsItems.id, rule: lmsItems.completionRule, passPct: lmsItems.passPct })
+      .from(lmsItems)
+      .innerJoin(lmsModules, eq(lmsModules.id, lmsItems.moduleId))
+      .innerJoin(lmsCourses, eq(lmsCourses.id, lmsModules.courseId))
+      .where(and(eq(lmsItems.kind, 'quiz'), eq(lmsItems.refId, quiz.id), eq(lmsCourses.sectionId, quiz.sectionId)));
+    if (!items.length) return;
+    const [best] = await tx.select({ pct: sql<number | null>`max(${lmsQuizAttempts.score} * 100.0 / nullif(${lmsQuizAttempts.maxScore}, 0))::float8` }).from(lmsQuizAttempts).where(and(eq(lmsQuizAttempts.quizId, quiz.id), eq(lmsQuizAttempts.studentId, studentId), isNotNull(lmsQuizAttempts.submittedAt)));
+    for (const it of items) {
+      const done = it.rule === 'view' || it.rule === 'mark_done' || (best?.pct ?? -1) >= (it.passPct ?? quiz.passPct);
+      await tx
+        .insert(lmsItemProgress)
+        .values({ tenantId: quiz.tenantId, itemId: it.id, studentId, firstViewedAt: at, lastViewedAt: at, completedAt: done ? at : null })
+        .onConflictDoUpdate({ target: [lmsItemProgress.itemId, lmsItemProgress.studentId], set: { lastViewedAt: at, ...(done ? { completedAt: sql`coalesce(${lmsItemProgress.completedAt}, ${at.toISOString()}::timestamptz)` } : {}) } });
+    }
+  }
+
+  // ---- proctoring, review and the push to internal marks --------------------------------------------
+
+  /** The quiz page or app reports proctoring signals; too many under "strict" submits the attempt as it stands. */
+  @Post('quiz-attempts/:attemptId/events')
+  @Auth('user', ['student'])
+  @HttpCode(200)
+  events(@CurrentPrincipal() p: UserPrincipal, @Param('attemptId', ParseUUIDPipe) attemptId: string, @Body(new ZodBody(EventsBody)) b: z.infer<typeof EventsBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const a = await this.ownAttempt(tx, p, attemptId);
+      const [quiz] = await tx.select().from(lmsQuizzes).where(eq(lmsQuizzes.id, a.quizId));
+      if (a.submittedAt) return { violations: a.violations, maxViolations: quiz.maxViolations, flagged: a.flagged, submitted: true };
+      if (quiz.proctoring === 'off') return { violations: 0, maxViolations: quiz.maxViolations, flagged: false, submitted: false };
+      const now = this.clock.now();
+      // Times are the device's; anything outside the attempt is pinned to now.
+      await tx.insert(lmsQuizEvents).values(b.events.map((e) => ({ tenantId: p.tenantId, attemptId, kind: e.kind, at: e.at < a.startedAt || e.at > now ? now : e.at, detail: e.detail })));
+      const v = proctorVerdict(quiz.proctoring, quiz.maxViolations, a.violations, b.events.map((e) => e.kind));
+      await tx.update(lmsQuizAttempts).set({ violations: v.violations, flagged: a.flagged || v.flagged }).where(eq(lmsQuizAttempts.id, attemptId));
+      if (v.submit) {
+        await this.finish(tx, { ...a, violations: v.violations }, now, { autoSubmitted: true });
+        await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'lms_quiz.auto_submitted', subjectType: 'lms_quiz', subjectId: a.quizId, data: { attemptId, violations: v.violations } });
+      }
+      return { violations: v.violations, maxViolations: quiz.maxViolations, flagged: a.flagged || v.flagged, submitted: v.submit };
+    });
+  }
+
+  /** The proctoring log of one attempt (teachers). */
+  @Get('quiz-attempts/:attemptId/events')
+  @Auth('user', [...LMS_STAFF])
+  attemptEvents(@CurrentPrincipal() p: UserPrincipal, @Param('attemptId', ParseUUIDPipe) attemptId: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [a] = await tx.select().from(lmsQuizAttempts).where(eq(lmsQuizAttempts.id, attemptId));
+      if (!a) throw new NotFoundException('Attempt not found');
+      await this.quiz(tx, p, a.quizId);
+      const events = await tx.select({ kind: lmsQuizEvents.kind, at: lmsQuizEvents.at, detail: lmsQuizEvents.detail }).from(lmsQuizEvents).where(eq(lmsQuizEvents.attemptId, attemptId)).orderBy(asc(lmsQuizEvents.at)).limit(1000);
+      return { attemptId, violations: a.violations, flagged: a.flagged, autoSubmitted: a.autoSubmitted, events };
+    });
+  }
+
+  /** A student's submitted attempt with the right answers, when the quiz's review policy allows it. */
+  @Get('quiz-attempts/:attemptId/review')
+  @Auth('user', ['student'])
+  review(@CurrentPrincipal() p: UserPrincipal, @Param('attemptId', ParseUUIDPipe) attemptId: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const s = await this.student(tx, p);
+      const [a] = await tx.select().from(lmsQuizAttempts).where(and(eq(lmsQuizAttempts.id, attemptId), eq(lmsQuizAttempts.studentId, s.id)));
+      if (!a) throw new NotFoundException('Attempt not found');
+      if (!a.submittedAt) throw new ConflictException('Submit the attempt first');
+      const [quiz] = await tx.select().from(lmsQuizzes).where(eq(lmsQuizzes.id, a.quizId));
+      if (!canReview(quiz.review, quiz, this.clock.now())) throw new ForbiddenException(quiz.review === 'never' ? 'Answers of this quiz are not shown' : 'Answers are shown after the quiz closes');
+      const qs = await tx.select().from(lmsQuizQuestions).where(inArray(lmsQuizQuestions.id, a.questionIds.length ? a.questionIds : [a.quizId]));
+      return {
+        attemptId,
+        title: quiz.title,
+        score: a.score,
+        maxScore: a.maxScore,
+        passPct: quiz.passPct,
+        questions: a.questionIds
+          .map((qid) => qs.find((q) => q.id === qid)!)
+          .filter(Boolean)
+          .map((q) => {
+            const order = a.optionOrders[q.id] ?? q.options.map((_, i) => i);
+            return { ...forStudent(q, a.optionOrders[q.id]), correctOptions: order.map((orig, shown) => (q.options[orig]?.correct ? shown : -1)).filter((x) => x >= 0), acceptedAnswer: q.kind === 'short' ? q.answer.split('|')[0] : null, given: a.answers[q.id] ?? null, result: a.results[q.id] ?? null };
+          }),
+      };
+    });
+  }
+
+  /**
+   * Sends each student's best score to the internal-marks register as a test (a draft the teacher submits there).
+   * Students without a submitted attempt are marked absent; pushing again updates the draft.
+   */
+  @Post('quizzes/:id/push-marks')
+  @Auth('user', [...LMS_STAFF])
+  @HttpCode(200)
+  pushMarks(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const quiz = await this.quiz(tx, p, id, true);
+      if (quiz.status === 'draft') throw new ConflictException('Publish the quiz first');
+      const [mx] = await tx.select({ m: sql<number>`coalesce(sum(${lmsQuizQuestions.marks}), 0)::float8` }).from(lmsQuizQuestions).where(eq(lmsQuizQuestions.quizId, id));
+      const [drawn] = quiz.drawCount ? await tx.select({ m: sql<number | null>`max(${lmsQuizAttempts.maxScore})::float8` }).from(lmsQuizAttempts).where(eq(lmsQuizAttempts.quizId, id)) : [{ m: null }];
+      const maxMarks = Number(drawn?.m ?? mx.m);
+      if (!maxMarks) throw new ConflictException('Add questions first');
+      const [pending] = await tx.select({ n: sql<number>`count(*)::int` }).from(lmsQuizAttempts).where(and(eq(lmsQuizAttempts.quizId, id), eq(lmsQuizAttempts.needsMarking, true)));
+      if (pending.n) throw new ConflictException(`${pending.n} attempt${pending.n === 1 ? '' : 's'} still need marking`);
+      let assessmentId = quiz.pushedAssessmentId;
+      if (assessmentId) {
+        const [a] = await tx.select({ status: assessments.markStatus, lockedAt: assessments.lockedAt }).from(assessments).where(eq(assessments.id, assessmentId));
+        if (!a) assessmentId = null;
+        else if (a.status !== 'draft' || a.lockedAt) throw new ConflictException('These marks have been submitted in the register and can no longer be replaced from here');
+      }
+      if (!assessmentId) {
+        [{ id: assessmentId }] = await tx.insert(assessments).values({ tenantId: p.tenantId, sectionId: quiz.sectionId, subjectId: quiz.subjectId, title: quiz.title.slice(0, 200), kind: 'test', maxMarks, heldOn: quiz.closesAt.toISOString().slice(0, 10), createdBy: p.userId }).returning({ id: assessments.id });
+        await tx.update(lmsQuizzes).set({ pushedAssessmentId: assessmentId }).where(eq(lmsQuizzes.id, id));
+      } else await tx.update(assessments).set({ maxMarks, title: quiz.title.slice(0, 200) }).where(eq(assessments.id, assessmentId));
+      const best = await tx.select({ studentId: lmsQuizAttempts.studentId, score: sql<number>`max(${lmsQuizAttempts.score})::float8` }).from(lmsQuizAttempts).where(and(eq(lmsQuizAttempts.quizId, id), isNotNull(lmsQuizAttempts.submittedAt))).groupBy(lmsQuizAttempts.studentId);
+      const by = new Map(best.map((x) => [x.studentId, Math.min(maxMarks, Math.round(x.score * 100) / 100)]));
+      const roster = await tx.select({ id: students.id }).from(students).where(and(eq(students.sectionId, quiz.sectionId), eq(students.status, 'active')));
+      if (roster.length) {
+        await tx
+          .insert(marks)
+          .values(roster.map((r) => ({ tenantId: p.tenantId, assessmentId: assessmentId!, studentId: r.id, marks: by.get(r.id) ?? null, absent: !by.has(r.id) })))
+          .onConflictDoUpdate({ target: [marks.assessmentId, marks.studentId], set: { marks: sql`excluded.marks`, absent: sql`excluded.absent` } });
+      }
+      const absent = roster.filter((r) => !by.has(r.id)).length;
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'lms_quiz.marks_pushed', subjectType: 'lms_quiz', subjectId: id, data: { assessmentId, students: roster.length, absent } });
+      return { assessmentId, students: roster.length, absent, maxMarks };
+    });
   }
 
   /** Runs a coding answer against every test; all must print the expected output. Without a runner, a teacher marks it. */
@@ -456,11 +601,14 @@ export class QuizzesController {
       const access = itemAccess(item.item, s.id, this.clock.now(), done);
       if (!access.visible) throw new NotFoundException('Not found');
       if (access.locked) throw new ConflictException('Finish the item before this one first');
+      // How the item counts as done: opening it, the student's "Mark as done", or (quizzes, packages) a pass mark.
+      if (b.completed && item.item.completionRule === 'pass') throw new ConflictException('This item is completed by passing it');
+      const complete = item.item.completionRule === 'view' || (b.completed && item.item.completionRule === 'mark_done');
       const now = this.clock.now();
       const [row] = await tx
         .insert(lmsItemProgress)
-        .values({ tenantId: p.tenantId, itemId: id, studentId: s.id, firstViewedAt: now, lastViewedAt: now, completedAt: b.completed ? now : null })
-        .onConflictDoUpdate({ target: [lmsItemProgress.itemId, lmsItemProgress.studentId], set: { views: sql`${lmsItemProgress.views} + 1`, lastViewedAt: now, ...(b.completed ? { completedAt: sql`coalesce(${lmsItemProgress.completedAt}, ${now.toISOString()}::timestamptz)` } : {}) } })
+        .values({ tenantId: p.tenantId, itemId: id, studentId: s.id, firstViewedAt: now, lastViewedAt: now, completedAt: complete ? now : null })
+        .onConflictDoUpdate({ target: [lmsItemProgress.itemId, lmsItemProgress.studentId], set: { views: sql`${lmsItemProgress.views} + 1`, lastViewedAt: now, ...(complete ? { completedAt: sql`coalesce(${lmsItemProgress.completedAt}, ${now.toISOString()}::timestamptz)` } : {}) } })
         .returning();
       return row;
     });

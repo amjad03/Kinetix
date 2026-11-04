@@ -81,7 +81,8 @@ resource "aws_lb_listener_rule" "api" {
   priority     = 10
   condition {
     host_header {
-      values = [var.api_domain]
+      # The content host reaches the same API, which serves only package files there (setup.ts contentHostGuard).
+      values = [var.api_domain, var.content_domain]
     }
   }
   action {

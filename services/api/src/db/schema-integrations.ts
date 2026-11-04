@@ -71,6 +71,8 @@ export const ltiStates = pgTable('lti_states', {
 export const scormPackages = pgTable('scorm_packages', {
   id: id(), tenantId: tenantId(), courseId: uuid('course_id').references(() => courses.id, { onDelete: 'set null' }), title: text('title').notNull(), version: text('version').notNull(), launchHref: text('launch_href').notNull(),
   manifest: jsonb('manifest').$type<Record<string, unknown>>().notNull().default({}), fileCount: integer('file_count').notNull().default(0), createdBy: uuid('created_by').notNull().references(() => users.id), createdAt: createdAt(),
+  /** cmi5 packages (version 'cmi5', migration 0215): the assignable unit's id, its mastery score and moveOn rule. */
+  auId: text('au_id'), masteryScore: numeric('mastery_score', { mode: 'number' }), moveOn: text('move_on'),
 });
 export const scormFiles = pgTable('scorm_files', {
   tenantId: tenantId(), packageId: uuid('package_id').notNull().references(() => scormPackages.id, { onDelete: 'cascade' }), path: text('path').notNull(), mime: text('mime').notNull(), content: bytea('content').notNull(),

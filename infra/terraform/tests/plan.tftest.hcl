@@ -45,6 +45,7 @@ variables {
   environment         = "staging"
   api_domain          = "api.staging.example.in"
   erp_domain          = "erp.staging.example.in"
+  content_domain      = "content.staging.example-usercontent.in"
   acm_certificate_arn = "arn:aws:acm:ap-south-1:111111111111:certificate/abc"
 }
 

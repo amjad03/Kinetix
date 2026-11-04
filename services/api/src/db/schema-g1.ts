@@ -401,6 +401,8 @@ export const forumThreads = pgTable(
     hidden: boolean('hidden').notNull().default(false),
     createdAt: createdAt(),
     lastPostAt: timestamp('last_post_at', { withTimezone: true }).notNull().defaultNow(),
+    /** Waiting for a teacher's approval (pre-moderation or reports; migration 0214). */
+    held: boolean('held').notNull().default(false),
   },
   (t) => [index('forum_threads_course_idx').on(t.courseId, t.lastPostAt)],
 );
@@ -415,6 +417,9 @@ export const forumPosts = pgTable(
     body: text('body').notNull(),
     hidden: boolean('hidden').notNull().default(false),
     createdAt: createdAt(),
+    /** Waiting for a teacher's approval, and when its author last edited it (migration 0214). */
+    held: boolean('held').notNull().default(false),
+    editedAt: timestamp('edited_at', { withTimezone: true }),
   },
   (t) => [index('forum_posts_thread_idx').on(t.threadId, t.createdAt)],
 );

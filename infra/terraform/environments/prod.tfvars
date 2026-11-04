@@ -3,6 +3,7 @@ environment         = "prod"
 aws_region          = "ap-south-1"
 api_domain          = "api.example.in"                                            # CHANGE
 erp_domain          = "erp.example.in"                                            # CHANGE
+content_domain      = "content.example-usercontent.in"                            # CHANGE
 acm_certificate_arn = "arn:aws:acm:ap-south-1:000000000000:certificate/CHANGE-ME" # CHANGE
 # route53_zone_id   = "Z..."
 

@@ -103,6 +103,13 @@ const EnvSchema = z.object({
    * set in production; ignored for accounts in live mode.
    */
   PAYMENT_GATEWAY_TEST_BASE: z.url().optional(),
+  /**
+   * Origin that serves teacher-uploaded SCORM and cmi5 package files (e.g. https://content.example-usercontent.in), a
+   * host name routed to this API that answers nothing else (setup.ts contentHostGuard). Package script then never runs
+   * on the API's origin; the files are also sandboxed (no same-origin) wherever they are served. Unset (development):
+   * the files come from the API's own host, sandboxed. Required with DEPLOYMENT=production.
+   */
+  SCORM_CONTENT_ORIGIN: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()).transform((v) => v?.replace(/\/+$/, '')),
   /** Public base URL of this API (for OIDC callbacks and PayU return URLs); falls back to the request's own origin. */
   API_PUBLIC_URL: z.url().optional(),
   /**
@@ -283,6 +290,8 @@ export function productionProblems(env: Env): string[] {
   if (!env.METRICS_TOKEN || env.METRICS_TOKEN.length < 24) out.push('METRICS_TOKEN (24+ characters) is required so /metrics is not public');
   if (!env.SECRETS_ENCRYPTION_KEY) out.push('SECRETS_ENCRYPTION_KEY is required (payment secrets, two-factor secrets and sensitive columns are encrypted with it)');
   if (!env.CORS_ORIGINS.length) out.push('CORS_ORIGINS must list the ERP and portal origins');
+  if (!env.SCORM_CONTENT_ORIGIN) out.push('SCORM_CONTENT_ORIGIN must name the separate host that serves SCORM and cmi5 packages');
+  else if (env.API_PUBLIC_URL && new URL(env.SCORM_CONTENT_ORIGIN).host === new URL(env.API_PUBLIC_URL).host) out.push('SCORM_CONTENT_ORIGIN must be a different host from the API');
   if (!['tenant_admin', 'principal'].every((r) => env.MFA_ENFORCED_ROLES.includes(r))) out.push('MFA_ENFORCED_ROLES must include tenant_admin and principal');
   return out;
 }

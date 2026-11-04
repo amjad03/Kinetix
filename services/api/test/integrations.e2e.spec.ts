@@ -372,16 +372,21 @@ describe('integrations: DigiLocker, devices, LTI/SCORM, feeds, retrieval and ear
       expect(pkg.launchHref).toBe('story/index.html');
       const { playerUrl } = (await post('student', `/v1/scorm/packages/${pkg.id}/launch`).expect(200)).body;
       const page = (await http().get(playerUrl).expect(200)).text;
-      expect(page).toContain('window.API');
       expect(page).toContain('/v1/scorm/content/');
       const token = playerUrl.split('/').pop();
-      const content = await http().get(`/v1/scorm/content/${token}/story/index.html`).expect(200);
+      // Package files take their own content link (which names no learner); the player's link does not open them.
+      const contentPath = new URL(JSON.parse(page.match(/window\.__S=(\{.*?\});\(function/)![1]).src).pathname;
+      const ctoken = contentPath.split('/')[4];
+      await http().get(`/v1/scorm/content/${token}/story/index.html`).expect(403);
+      const content = await http().get(`/v1/scorm/content/${ctoken}/story/index.html`).expect(200);
       expect(content.text).toContain('Hello SCO');
+      expect(content.text).toContain('window.API=api');
       expect(content.headers['content-type']).toContain('text/html');
-      await http().get(`/v1/scorm/content/${token}/story/missing.html`).expect(404);
-      await http().get(`/v1/scorm/content/${token}x/story/index.html`).expect(403);
+      expect(content.headers['content-security-policy']).toMatch(/^sandbox allow-scripts/);
+      await http().get(`/v1/scorm/content/${ctoken}/story/missing.html`).expect(404);
+      await http().get(`/v1/scorm/content/${ctoken}x/story/index.html`).expect(403);
       const saved = (await http().post(`/v1/scorm/track/${token}`).send({ cmi: { 'cmi.core.lesson_status': 'passed', 'cmi.core.score.raw': '88', 'cmi.core.total_time': '0000:12:30.00' } }).expect(200)).body;
-      expect(saved).toEqual({ saved: true, status: 'passed', score: 88 });
+      expect(saved).toEqual({ saved: true, status: 'passed', score: 88, itemsDone: 0 });
       expect((await http().get(playerUrl).expect(200)).text).toContain('"cmi.core.score.raw":"88"'); // resumes
       const rows = (await get('teacher', `/v1/scorm/packages/${pkg.id}/attempts`).expect(200)).body;
       expect(rows[0]).toMatchObject({ status: 'passed', score: 88 });
