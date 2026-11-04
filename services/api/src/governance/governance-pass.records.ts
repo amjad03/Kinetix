@@ -216,10 +216,16 @@ export class GovernancePassRecords implements OnModuleInit {
           if (day > rtiAppealWindowEnds(from)) throw new ConflictException('The 30 days for a first appeal have passed (the appellate authority may still condone the delay; record it with a note)');
           return { appealFiledOn: day, appealGrounds: p.grounds, appealDueOn: rtiAppealDueOn(day) };
         }),
-        decide: step('Appeal decided', [{ key: 'outcome', label: 'Outcome: allowed, partly_allowed or dismissed', type: 'text', required: true }, { key: 'decision', label: 'Order of the appellate authority', type: 'textarea', required: true }], z.object({ outcome: z.enum(['allowed', 'partly_allowed', 'dismissed']), decision: z.string().trim().min(5).max(4000) }), async (ctx, r, p: { outcome: string; decision: string }, day) => {
-          if (!r.appealFiledOn || r.appealOutcome) throw new ConflictException('No first appeal is waiting');
-          return { appealOutcome: p.outcome, appealDecision: p.decision, appealDecidedOn: day, faaUserId: ctx.p.userId };
-        }),
+        // The first appellate authority's order: allowed, partly allowed or dismissed, each with the order's text.
+        ...Object.fromEntries(
+          ([['appealAllowed', 'allowed', 'Appeal allowed'], ['appealPartly', 'partly_allowed', 'Appeal partly allowed'], ['appealDismissed', 'dismissed', 'Appeal dismissed']] as const).map(([key, outcome, label]) => [
+            key,
+            step(label, [{ key: 'decision', label: 'Order of the appellate authority', type: 'textarea', required: true }], z.object({ decision: z.string().trim().min(5).max(4000) }), async (ctx, r, p: { decision: string }, day) => {
+              if (!r.appealFiledOn || r.appealOutcome) throw new ConflictException('No first appeal is waiting');
+              return { appealOutcome: outcome, appealDecision: p.decision, appealDecidedOn: day, faaUserId: ctx.p.userId };
+            }),
+          ]),
+        ),
         close: step('Close', [{ key: 'note', label: 'Note', type: 'textarea' }], z.object({ note: z.string().trim().max(1000).optional() }), async (_ctx, r) => {
           if (['received', 'transferred'].includes(r.status) && r.status !== 'transferred') throw new ConflictException('Reply or transfer the request before closing it');
           return { status: 'closed' };

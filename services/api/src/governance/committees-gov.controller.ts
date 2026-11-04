@@ -1,5 +1,5 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Put, Query, Res, StreamableFile } from '@nestjs/common';
-import { and, asc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, lte, notInArray, sql } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -9,7 +9,8 @@ import { Day } from '../common/ops.js';
 import { writeXlsx } from '../common/xlsx.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
-import { committeeActionItems, committeeMeetings, committeeMembers, committees, tenants, users } from '../db/schema.js';
+import { committeeActionItems, committeeMeetings, committeeMembers, committees, students, tenants, userRoles, users } from '../db/schema.js';
+import { studentProfiles } from '../db/schema-sis.js';
 import { committeeAgendaItems, committeeMeetingAttendance, committeeMinuteSignoffs } from '../db/schema-governance-pass.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { found, hasRole } from '../placements/placements.access.js';
@@ -37,6 +38,8 @@ const Profile = z
 const MemberBody = z
   .object({
     userId: z.uuid().optional(),
+    /** A student member (SGRC, anti-ragging committee) by roll number. */
+    rollNo: Text(40).optional(),
     name: Text(160).optional(),
     role: z.enum(MEMBER_ROLES).default('member'),
     category: z.enum(MEMBER_CATEGORIES).default('internal'),
@@ -47,7 +50,7 @@ const MemberBody = z
     tenureStart: Day,
     tenureEnd: Day.nullable().optional(),
   })
-  .refine((b) => !!b.userId || !!b.name, { message: 'Choose a person or type the outside member’s name', path: ['name'] })
+  .refine((b) => !!b.userId || !!b.rollNo || !!b.name, { message: 'Choose a person or type the outside member’s name', path: ['name'] })
   .refine((b) => !b.tenureEnd || b.tenureEnd >= b.tenureStart, { message: 'The tenure cannot end before it starts', path: ['tenureEnd'] });
 const MemberPatch = z.object({ role: z.enum(MEMBER_ROLES), category: z.enum(MEMBER_CATEGORIES), gender: z.enum(['', 'female', 'male', 'other']), designation: Text(160), phone: Text(20), contactPublic: z.boolean(), tenureEnd: Day.nullable() }).partial();
 const MeetingBody = z.object({ title: z.string().trim().min(2).max(160), meetingOn: Day, startsAt: z.union([z.literal(''), z.string().regex(/^\d{2}:\d{2}$/)]).default(''), venue: Text(160).default(''), agenda: z.array(z.object({ title: z.string().trim().min(2).max(300), presenter: Text(120).default('') })).max(40).default([]) });
@@ -78,6 +81,21 @@ export class CommitteesGovController {
   @Auth('user', TASK_ROLES)
   catalogue() {
     return COMMITTEE_RULES;
+  }
+
+  /** Staff who can be members, for the pickers (students are added by roll number, outsiders by name). */
+  @Get('people')
+  @Auth('user', GOV_COMMITTEE_ROLES)
+  people(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) =>
+      tx
+        .selectDistinct({ id: users.id, name: users.fullName })
+        .from(users)
+        .innerJoin(userRoles, eq(userRoles.userId, users.id))
+        .where(and(eq(users.status, 'active'), notInArray(userRoles.role, ['student', 'guardian', 'alumni', 'external_examiner'])))
+        .orderBy(asc(users.fullName))
+        .limit(1000),
+    );
   }
 
   /** Every committee against its rule this year, and the required ones not yet constituted. */
@@ -160,9 +178,18 @@ export class CommitteesGovController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       found((await tx.select({ id: committees.id }).from(committees).where(eq(committees.id, id)))[0], 'Committee');
       if (b.userId) found((await tx.select({ id: users.id }).from(users).where(eq(users.id, b.userId)))[0], 'Person');
-      const gender = b.gender ?? (b.userId ? await this.svc.staffGender(tx, b.userId) : '');
-      const [row] = await tx.insert(committeeMembers).values({ tenantId: p.tenantId, committeeId: id, userId: b.userId ?? null, name: b.userId ? '' : (b.name ?? ''), role: b.role, category: b.category, gender, designation: b.designation, phone: b.phone, contactPublic: b.contactPublic, tenureStart: b.tenureStart, tenureEnd: b.tenureEnd ?? null }).returning();
-      await auditUser(tx, p, 'committee.member_added', 'committee', id, { memberId: row.id, role: b.role, category: b.category, outside: !b.userId });
+      let userId = b.userId ?? null;
+      if (!userId && b.rollNo) {
+        const st = await tx.select({ userId: students.userId, gender: studentProfiles.gender }).from(students).leftJoin(studentProfiles, eq(studentProfiles.studentId, students.id)).where(and(eq(students.rollNo, b.rollNo), eq(students.status, 'active')));
+        if (st.length !== 1) throw new BadRequestException(st.length ? 'Two students have this roll number; choose the person instead' : 'No student has this roll number');
+        if (!st[0].userId) throw new BadRequestException('This student has no app account yet');
+        userId = st[0].userId;
+        b.gender ??= (st[0].gender ?? '').toLowerCase().startsWith('f') ? 'female' : (st[0].gender ?? '').toLowerCase().startsWith('m') ? 'male' : undefined;
+        b.category = 'student';
+      }
+      const gender = b.gender ?? (userId ? await this.svc.staffGender(tx, userId) : '');
+      const [row] = await tx.insert(committeeMembers).values({ tenantId: p.tenantId, committeeId: id, userId, name: userId ? '' : (b.name ?? ''), role: b.role, category: b.category, gender, designation: b.designation, phone: b.phone, contactPublic: b.contactPublic, tenureStart: b.tenureStart, tenureEnd: b.tenureEnd ?? null }).returning();
+      await auditUser(tx, p, 'committee.member_added', 'committee', id, { memberId: row.id, role: b.role, category: b.category, outside: !userId });
       return row;
     });
   }

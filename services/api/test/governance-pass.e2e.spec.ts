@@ -321,8 +321,8 @@ describe('governance pass', () => {
     // First appeal: within 30 days of the reply; decided by the appellate authority.
     r = (await kitAction('admin', 'rti-requests', 'appeal', late.id, { grounds: 'Copies incomplete' }).expect(200)).body;
     expect((await get('admin', `/v1/records/rti-requests/${late.id}`).expect(200)).body).toMatchObject({ appealFiledOn: today, appealDueOn: day(30) });
-    await kitAction('admin', 'rti-requests', 'decide', late.id, { outcome: 'partly_allowed', decision: 'Supply the two missing pages within 7 days' }).expect(200);
-    r = (await kitAction('admin', 'rti-requests', 'decide', late.id, { outcome: 'allowed', decision: 'Again' })).body;
+    await kitAction('admin', 'rti-requests', 'appealPartly', late.id, { decision: 'Supply the two missing pages within 7 days' }).expect(200);
+    r = (await kitAction('admin', 'rti-requests', 'appealAllowed', late.id, { decision: 'Again, allowed' })).body;
     expect(r.rows[0].ok).toBe(false);
 
     const reg = (await get('admin', `/v1/governance/rti/register?from=${day(-60)}&to=${today}`).expect(200)).body;

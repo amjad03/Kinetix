@@ -137,6 +137,21 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    // Governance pass: the board's view, statutory committees, policies, RTI, the compliance calendar and the disclosure page.
+    id: 'governance',
+    label: 'grp.governance',
+    icon: 'academicAudit',
+    items: [
+      { href: '/governance', label: 'nav.govOverview', section: 'governance', icon: 'academicAudit' },
+      { href: '/governance/committees', label: 'nav.govCommittees', section: 'governance', icon: 'departments' },
+      { href: '/governance/policies', label: 'nav.govPolicies', section: 'governance', icon: 'documents' },
+      { href: '/governance/rti', label: 'nav.govRti', section: 'governance', icon: 'grievances' },
+      { href: '/governance/compliance', label: 'nav.govCompliance', section: 'governance', icon: 'calendar' },
+      { href: '/governance/disclosure', label: 'nav.govDisclosure', section: 'governance', icon: 'reports' },
+      { href: '/governance/mine', label: 'nav.govMine', section: 'myGovernance', icon: 'tasks' },
+    ],
+  },
+  {
     id: 'lms',
     label: 'grp.lms',
     icon: 'lms',
@@ -383,7 +398,7 @@ export const NAV_SECTIONS: readonly { id: string; label: MessageKey; groups: rea
   { id: 'exams', label: 'sec.exams', groups: ['exams'] },
   { id: 'finance', label: 'sec.finance', groups: ['finance', 'hr'] },
   { id: 'campus', label: 'sec.campus', groups: ['library', 'campus', 'inventory'] },
-  { id: 'accreditation', label: 'sec.accreditation', groups: ['obe'] },
+  { id: 'accreditation', label: 'sec.accreditation', groups: ['obe', 'governance'] },
   { id: 'admin', label: 'sec.admin', groups: ['settings'] },
 ];
 
