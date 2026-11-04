@@ -268,6 +268,25 @@ export class GrievancesController {
     });
   }
 
+  /**
+   * The same grievance on an outside portal: UGC e-Samadhan, AICTE, CPGRAMS, the university or the state. The
+   * reference is kept on the ticket (and the register) so the portal can be answered with the action taken.
+   */
+  @Post(':id/external-ref')
+  @Auth('user', [...GRIEVANCE_STAFF, ...COMMITTEE_ROLES])
+  @HttpCode(200)
+  externalRef(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(z.object({ portal: z.enum(['e_samadhan', 'aicte', 'cpgrams', 'university', 'state', 'other']).nullable(), ref: z.string().trim().max(80).default(''), on: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() }))) b: { portal: string | null; ref: string; on?: string }) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const { t, viewer } = await this.access(tx, p, id, true);
+      this.staffOnly(viewer);
+      if (b.portal && b.ref.length < 3) throw new BadRequestException('Give the reference number on the portal');
+      const [row] = await tx.update(grievanceTickets).set({ externalPortal: b.portal, externalRef: b.portal ? b.ref : null, externalRefOn: b.portal ? (b.on ?? (await this.svc.today(tx))) : null, version: t.version + 1 }).where(eq(grievanceTickets.id, id)).returning();
+      await this.event(tx, p, t, viewer, 'external_ref', b.portal ? `${b.portal} ${b.ref}` : 'Outside reference removed', 'internal');
+      await auditUser(tx, p, 'grievance.external_ref', 'grievance', id, { portal: b.portal });
+      return present(row, viewer);
+    });
+  }
+
   /** The committee's stages: received, inquiry, hearing, report, action, closed. Stages only move forward. */
   @Post(':id/committee-stage')
   @Auth('user', COMMITTEE_ROLES)

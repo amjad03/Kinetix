@@ -189,7 +189,7 @@ export class LifeExtrasController {
       const lo = from && /^\d{4}-\d{2}-\d{2}$/.test(from) ? from : `${today.slice(0, 4)}-01-01`;
       const hi = to && /^\d{4}-\d{2}-\d{2}$/.test(to) ? to : today;
       const [t] = await tx.select({ name: tenants.name }).from(tenants);
-      const members = await tx.select({ name: users.fullName, role: committeeMembers.role, start: committeeMembers.tenureStart, end: committeeMembers.tenureEnd }).from(committeeMembers).innerJoin(users, eq(users.id, committeeMembers.userId)).where(eq(committeeMembers.committeeId, id));
+      const members = await tx.select({ name: sql<string>`coalesce(nullif(${committeeMembers.name}, ''), ${users.fullName}, '')`, role: committeeMembers.role, start: committeeMembers.tenureStart, end: committeeMembers.tenureEnd }).from(committeeMembers).leftJoin(users, eq(users.id, committeeMembers.userId)).where(eq(committeeMembers.committeeId, id));
       const meetings = await tx.select().from(committeeMeetings).where(and(eq(committeeMeetings.committeeId, id), gte(committeeMeetings.meetingOn, lo), lte(committeeMeetings.meetingOn, hi))).orderBy(asc(committeeMeetings.meetingOn));
       const meetingIds = meetings.map((m) => m.id);
       const actions = meetingIds.length ? await tx.select({ title: committeeActionItems.title, owner: users.fullName, dueOn: committeeActionItems.dueOn, status: committeeActionItems.status }).from(committeeActionItems).innerJoin(users, eq(users.id, committeeActionItems.ownerUserId)).where(inArray(committeeActionItems.meetingId, meetingIds)) : [];

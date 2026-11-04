@@ -1,3 +1,4 @@
+import { COMMITTEE_KINDS, ruleOf } from '../governance/statutory.js';
 import { ConflictException, Injectable, OnModuleInit } from '@nestjs/common';
 import { and, asc, eq, sql, type AnyColumn } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
@@ -126,11 +127,12 @@ export function committeesEntity(): RecordEntity {
     roles: { read: COMMITTEE_STAFF, write: COMMITTEE_STAFF },
     label: (r) => String(r.name),
     list: {
-      select: { id: committees.id, name: committees.name, statutory: committees.statutory, description: committees.description, active: committees.active, members: committeeMembersCount, openActions: committeeOpen, createdAt: committees.createdAt },
+      select: { id: committees.id, name: committees.name, statutory: committees.statutory, kind: committees.kind, public: committees.public, meetingsPerYear: committees.meetingsPerYear, description: committees.description, active: committees.active, members: committeeMembersCount, openActions: committeeOpen, createdAt: committees.createdAt },
       search: [committees.name, committees.description],
       filters: {
         statutory: { label: 'Kind', options: [{ value: 'yes', label: 'Statutory' }, { value: 'no', label: 'Other' }], where: (v) => eq(committees.statutory, v === 'yes') },
         active: { label: 'Status', options: [{ value: 'yes', label: 'Active' }, { value: 'no', label: 'Inactive' }], where: (v) => eq(committees.active, v === 'yes') },
+        kind: { label: 'Body', options: COMMITTEE_KINDS.map((k) => ({ value: k, label: ruleOf(k)?.name ?? 'Other' })), where: (v) => ((COMMITTEE_KINDS as readonly string[]).includes(v) ? eq(committees.kind, v) : undefined) },
       },
       sorts: { name: committees.name, members: committeeMembersCount, open: committeeOpen, created: committees.createdAt },
       defaultSort: { id: 'name', dir: 'asc' },

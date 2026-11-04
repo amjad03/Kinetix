@@ -100,9 +100,10 @@ export class CommitteesController {
   @Auth('user', COMMITTEE_STAFF)
   members(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Query('current') current?: string) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const rows = await tx.select({ m: committeeMembers, fullName: users.fullName }).from(committeeMembers).innerJoin(users, eq(users.id, committeeMembers.userId)).where(eq(committeeMembers.committeeId, id)).orderBy(asc(committeeMembers.tenureStart));
+      // Outside members (migration 0218) have no account, only a name.
+      const rows = await tx.select({ m: committeeMembers, fullName: users.fullName }).from(committeeMembers).leftJoin(users, eq(users.id, committeeMembers.userId)).where(eq(committeeMembers.committeeId, id)).orderBy(asc(committeeMembers.tenureStart));
       const today = this.today();
-      const all = rows.map((r) => ({ ...r.m, fullName: r.fullName, current: r.m.tenureStart <= today && (!r.m.tenureEnd || r.m.tenureEnd >= today) }));
+      const all = rows.map((r) => ({ ...r.m, fullName: r.m.name || r.fullName || '', current: r.m.tenureStart <= today && (!r.m.tenureEnd || r.m.tenureEnd >= today) }));
       return current === 'true' ? all.filter((m) => m.current) : all;
     });
   }
@@ -137,6 +138,8 @@ export class CommitteesController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const cur = found((await tx.select().from(committeeMeetings).where(eq(committeeMeetings.id, meetingId)).for('update'))[0], 'Meeting');
       if (cur.status === 'cancelled') throw new ConflictException('A cancelled meeting cannot be changed');
+      // Circulated or approved minutes are fixed: the members sign that text (governance/committees-gov.controller.ts).
+      if (cur.minutesStatus !== 'draft' && (b.minutes !== undefined || b.title !== undefined || b.meetingOn !== undefined)) throw new ConflictException('The minutes are out for approval or approved; take them back to draft to change them');
       // Minutes mean the meeting happened.
       const status = b.status ?? (b.minutes && cur.status === 'scheduled' ? 'held' : undefined);
       const [row] = await tx.update(committeeMeetings).set({ ...b, ...(status ? { status } : {}) }).where(eq(committeeMeetings.id, meetingId)).returning();
