@@ -216,7 +216,6 @@ class AppState extends ChangeNotifier {
       await prefs.setString(_kLogin, login);
       await tokens.write(api.token!);
       await _saveRefresh();
-    await _saveRefresh();
       me = profile;
       student = null;
       notifyListeners();
