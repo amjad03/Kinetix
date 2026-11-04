@@ -13,12 +13,15 @@ abstract class TokenStore {
 /// The token in the Android Keystore (encrypted shared preferences) or the iOS Keychain, readable
 /// only after the phone is first unlocked and never copied to another device by a backup.
 class SecureTokenStore implements TokenStore {
-  const SecureTokenStore([this._storage = const FlutterSecureStorage(
-    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock_this_device),
-  )]);
+  const SecureTokenStore([this._storage = _device, this._key = 'session_token']);
+
+  /// The rotating refresh token of an app sign-in, next to the session token.
+  static const refresh = SecureTokenStore(_device, 'refresh_token');
+
+  static const _device = FlutterSecureStorage(iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock_this_device));
 
   final FlutterSecureStorage _storage;
-  static const _key = 'session_token';
+  final String _key;
 
   @override
   Future<String?> read() async {

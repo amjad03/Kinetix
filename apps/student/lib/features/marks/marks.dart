@@ -220,8 +220,11 @@ class _ResultsScreenState extends State<ResultsScreen> {
     widget.study.loadMarks();
   }
 
+  /// Screenshots off while this is open (FLAG_SECURE on Android).
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => KxSecureScreen(child: _secureContent(context));
+
+  Widget _secureContent(BuildContext context) {
     final study = widget.study;
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.results)),

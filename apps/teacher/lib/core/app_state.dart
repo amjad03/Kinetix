@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:zynetix_ui/zynetix_ui.dart' show KxTokenRefresher;
 
 import 'api.dart';
 import 'l10n.dart' show supportedLanguages;
@@ -21,10 +22,23 @@ export 'server_config.dart' show defaultServerUrl;
 /// preferences; [restore] moves it once. An app lock (biometric or OS PIN, per
 /// docs/architecture/board-pairing.md) is still to come.
 class AppState extends ChangeNotifier {
-  AppState(this.api, this._prefs, {TeacherRealtime? realtime, SecureStore? secure, PushMessaging? push})
+  AppState(this.api, this._prefs, {TeacherRealtime? realtime, SecureStore? secure, PushMessaging? push, this.refresher, this.wipeLocal})
     : realtime = realtime ?? NoRealtime(),
       _secure = secure ?? DeviceSecureStore(),
-      push = push ?? NoPush();
+      push = push ?? NoPush() {
+    refresher?.onRotated = (access, refresh) {
+      unawaited(_saveToken(access));
+      unawaited(_secure.write(_kRefresh, refresh).then((_) {}, onError: (Object e) => debugPrint('Refresh token not saved: $e')));
+    };
+  }
+
+  /// The rotating refresh token of the sign-in (kept in the key store), so the teacher stays signed in.
+  final KxTokenRefresher? refresher;
+
+  /// Removes what the app kept on the phone for this teacher (read cache, queued writes, files) on sign-out.
+  final Future<void> Function()? wipeLocal;
+
+  static const _kRefresh = 'refresh_token';
 
   final TeacherApi api;
 
@@ -164,12 +178,21 @@ class AppState extends ChangeNotifier {
     if (token != null) {
       api.token = token;
       try {
+        refresher?.refreshToken = await _secure.read(_kRefresh);
+      } catch (e) {
+        debugPrint('Refresh token not read: $e');
+      }
+      try {
         me = await api.me();
         _retryLanguage();
         unawaited(_registerPush());
       } on ApiException catch (e) {
         // Offline: stay on the sign-in screen but keep the token for the next attempt.
-        if (e.status == 401) await _deleteToken();
+        if (e.status == 401) {
+          await _deleteToken();
+          refresher?.clear();
+          await _secure.delete(_kRefresh).catchError((Object _) {});
+        }
         api.token = null;
       }
     }
@@ -214,6 +237,14 @@ class AppState extends ChangeNotifier {
     await _prefs.setString(_kServer, server);
     await _prefs.setString(_kTenant, tenant);
     await _saveToken(api.token!);
+    final refresh = refresher?.refreshToken;
+    if (refresh != null) {
+      try {
+        await _secure.write(_kRefresh, refresh);
+      } catch (e) {
+        debugPrint('Refresh token not saved: $e');
+      }
+    }
     me = profile;
     _retryLanguage();
     unawaited(_registerPush());
@@ -232,8 +263,17 @@ class AppState extends ChangeNotifier {
       // A new token next time, so this phone gets nothing more for this teacher even offline.
       unawaited(push.deleteToken().then((_) {}, onError: (Object e) => debugPrint('Push token not deleted: $e')));
     }
+    // Ends the session on the server too (the refresh token stops working), then forgets it here.
+    if (!expired) await api.signOutServer();
     api.token = null;
+    refresher?.clear();
     await _deleteToken();
+    try {
+      await _secure.delete(_kRefresh);
+    } catch (e) {
+      debugPrint('Refresh token not deleted: $e');
+    }
+    await wipeLocal?.call();
     me = null;
     notifyListeners();
   }

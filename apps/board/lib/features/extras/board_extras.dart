@@ -1,3 +1,5 @@
+import '../../l10n/l10n.dart';
+import '../screensaver/screensaver.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -223,6 +225,11 @@ List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required
     DrawerTool('organisers', Icons.hub_outlined, s['organisers'], const [ToolGroup.classroom, ToolGroup.commerce, ToolGroup.language], cls, page('organisers', Icons.hub_outlined, (_) => OrganisersPanel(wb: h.wb))),
     // Assessment
     DrawerTool('exam-room', Icons.meeting_room_outlined, examRoomStrings(context)['title'], const [ToolGroup.classroom], assess, () => run(() => h.openPage(examRoomStrings(context)['title'], Icons.meeting_room_outlined, (_) => ExamRoomPanel(board: h.board)))),
+    if (h.board.api case final api?) ...[
+      // The class's self-mark code, full screen for the Student App to scan; the screensaver between classes.
+      DrawerTool('attendance-code', Icons.qr_code_2, context.l10n.boardAttendanceCodeTitle, const [ToolGroup.classroom], cls, () => run(() => unawaited(Navigator.of(context).push(MaterialPageRoute<void>(fullscreenDialog: true, builder: (_) => BoardAttendanceCodeScreen(load: api.attendanceQr)))))),
+      DrawerTool('screensaver', Icons.slideshow_outlined, context.l10n.boardScreensaverNotices, const [ToolGroup.classroom], cls, () => run(() => unawaited(Navigator.of(context).push(MaterialPageRoute<void>(fullscreenDialog: true, builder: (c) => BoardScreensaver(load: api.idleFeed, onWake: () => Navigator.of(c).pop())))))),
+    ],
     DrawerTool('exit-ticket', Icons.logout, s['exitTicket'], const [ToolGroup.classroom], assess, page('exitTicket', Icons.logout, (_) => ExitTicketPanel(board: h.board, wb: h.wb))),
     DrawerTool(
       'worksheet',

@@ -88,8 +88,11 @@ class _AttendanceCodeScreenState extends State<AttendanceCodeScreen> {
     _ => l.qrReasonLocation,
   };
 
+  /// Screenshots off while this is open (FLAG_SECURE on Android).
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => KxSecureScreen(child: _secureContent(context));
+
+  Widget _secureContent(BuildContext context) {
     final l = context.l10n;
     final c = _code;
     final left = c == null ? 0 : c.expiresAt.difference(DateTime.now()).inSeconds.clamp(0, 30);

@@ -4,6 +4,7 @@ import 'package:zynetix_ui/zynetix_ui.dart';
 import '../../core/profile_photo.dart';
 import '../../core/app_state.dart';
 import '../../core/family.dart';
+import '../../core/mobile.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_overview_screen.dart';
@@ -321,6 +322,22 @@ class ProfileTab extends StatelessWidget {
               KxSectionHeader(l.account),
               ListTile(leading: const Icon(Icons.apartment_outlined), title: Text(l.college), subtitle: Text(me.institution)),
               ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
+              ListTile(
+                key: const Key('notificationSettings'),
+                leading: const Icon(Icons.notifications_active_outlined),
+                title: Text(l.mobileNotificationSettings),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (ctx) => KxNotificationSettingsScreen(
+                      strings: mobileStrings(AppLocalizations.of(ctx)),
+                      kinds: kNotificationKinds,
+                      load: state.api.notificationPrefs,
+                      save: state.api.setNotificationPrefs,
+                    ),
+                  ),
+                ),
+              ),
               DeviceTrustTile(api: family.api),
               Padding(
                 padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s24, Kx.s16, Kx.s32),

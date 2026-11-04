@@ -77,7 +77,7 @@ const alwaysTools = <String>{
   'toolkit-timer', 'toolkit-stopwatch', 'toolkit-picker', 'toolkit-dice', 'toolkit-spinner', 'toolkit-noise', 'toolkit-curtain', 'toolkit-spotlight', //
   'badges', 'quick-quiz', 'ask-class', 'attendance', 'todays-plan', 'read-aloud', 'second-board', 'laser', 'move', 'eye-comfort', 'screenshot', 'touch-lock', //
   'demo-classes', 'this-class', 'doc-camera', 'safe-web', 'live-captions', 'magnifier', 'seating-chart', 'group-maker', 'teacher-notes', 'scoreboard', 'buzzer', //
-  'zones', 'diagnostics', 'exam-clock', 'exam-room', 'exit-ticket', 'concept-videos', 'mindmap', 'dictionary', 'worksheet', 'voice-commands',
+  'zones', 'diagnostics', 'exam-clock', 'exam-room', 'attendance-code', 'screensaver', 'exit-ticket', 'concept-videos', 'mindmap', 'dictionary', 'worksheet', 'voice-commands',
 };
 
 const _languageTools = {'language-kit', 'phonics', 'grammar-tables', 'vocab-cards', 'live-captions'};

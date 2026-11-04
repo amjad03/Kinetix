@@ -58,8 +58,11 @@ class _PayslipsScreenState extends State<PayslipsScreen> {
     }
   }
 
+  /// Screenshots off while this is open (FLAG_SECURE on Android).
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => KxSecureScreen(child: _secureContent(context));
+
+  Widget _secureContent(BuildContext context) {
     final l = context.l10n;
     final slips = _slips;
     return Scaffold(
@@ -126,8 +129,11 @@ class _PayslipDetailScreenState extends State<PayslipDetailScreen> {
     }
   }
 
+  /// Screenshots off while this is open (FLAG_SECURE on Android).
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => KxSecureScreen(child: _secureContent(context));
+
+  Widget _secureContent(BuildContext context) {
     final l = context.l10n;
     final s = widget.payslip;
     Widget line(String a, int paise, {bool bold = false, Key? key}) => ListTile(

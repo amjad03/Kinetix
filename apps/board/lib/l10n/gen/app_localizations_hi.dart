@@ -4430,4 +4430,166 @@ class AppLocalizationsHi extends AppLocalizations {
   String setUpAgainBody(String server) {
     return 'बोर्ड $server का इस्तेमाल बंद कर देगा और शिक्षक साइन आउट हो जाएँगे। फिर सर्वर का पता और ZYNETIX ERP से नया पंजीकरण कोड (बोर्ड → नया पंजीकरण कोड) लिखें।';
   }
+
+  @override
+  String get mobileUpdateRequiredTitle => 'जारी रखने के लिए ऐप अपडेट करें';
+
+  @override
+  String get mobileUpdateRequiredBody =>
+      'यह संस्करण अब काम नहीं करता। स्टोर से नया संस्करण इंस्टॉल करें।';
+
+  @override
+  String get mobileUpdateAvailable => 'ऐप का नया संस्करण उपलब्ध है।';
+
+  @override
+  String get mobileUpdate => 'अपडेट करें';
+
+  @override
+  String get mobileLater => 'बाद में';
+
+  @override
+  String get mobileOffline =>
+      'आप ऑफ़लाइन हैं। इस फ़ोन पर सहेजी जानकारी दिख रही है।';
+
+  @override
+  String get mobileNotificationSettings => 'सूचना सेटिंग';
+
+  @override
+  String get mobileNotificationSettingsHint =>
+      'चुनें कि कौन-सी सूचनाएँ फ़ोन पर बजें। सब कुछ इनबॉक्स में फिर भी आएगा; आपात सूचनाएँ हमेशा बजेंगी।';
+
+  @override
+  String get mobileQuietHours => 'शांत समय';
+
+  @override
+  String get mobileQuietHoursHint =>
+      'शांत समय खत्म होने तक सूचनाएँ रुकी रहेंगी।';
+
+  @override
+  String get mobileQuietFrom => 'से';
+
+  @override
+  String get mobileQuietTo => 'तक';
+
+  @override
+  String get mobileSave => 'सहेजें';
+
+  @override
+  String get mobileSaved => 'सहेजा गया';
+
+  @override
+  String get mobileLoadFailed =>
+      'ZYNETIX से जुड़ नहीं सके। कनेक्शन देखें और फिर कोशिश करें।';
+
+  @override
+  String get mobileRetry => 'फिर कोशिश करें';
+
+  @override
+  String mobilePendingWrites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count बदलाव भेजे जाने बाकी',
+      one: '1 बदलाव भेजा जाना बाकी',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mobileSavedOffline =>
+      'इस फ़ोन पर सहेजा गया। ऑनलाइन होने पर भेजा जाएगा।';
+
+  @override
+  String get mobileKind_absence => 'अनुपस्थिति';
+
+  @override
+  String get mobileKind_homework => 'गृहकार्य';
+
+  @override
+  String get mobileKind_broadcast => 'प्रसारण';
+
+  @override
+  String get mobileKind_board_shared => 'साझा बोर्ड नोट्स';
+
+  @override
+  String get mobileKind_recording => 'कक्षा रिकॉर्डिंग';
+
+  @override
+  String get mobileKind_fee => 'शुल्क';
+
+  @override
+  String get mobileKind_library => 'पुस्तकालय';
+
+  @override
+  String get mobileKind_marks => 'अंक';
+
+  @override
+  String get mobileKind_message => 'संदेश';
+
+  @override
+  String get mobileKind_live => 'लाइव कक्षाएँ';
+
+  @override
+  String get mobileKind_calendar => 'कैलेंडर';
+
+  @override
+  String get mobileKind_badge => 'बैज';
+
+  @override
+  String get mobileKind_transport => 'परिवहन';
+
+  @override
+  String get mobileKind_hostel => 'छात्रावास';
+
+  @override
+  String get mobileKind_leave => 'छुट्टी';
+
+  @override
+  String get mobileKind_payslip => 'वेतन पर्ची';
+
+  @override
+  String get mobileKind_certificate => 'प्रमाणपत्र';
+
+  @override
+  String get mobileKind_placement => 'प्लेसमेंट';
+
+  @override
+  String get mobileKind_grievance => 'शिकायतें';
+
+  @override
+  String get mobileKind_welfare => 'कल्याण';
+
+  @override
+  String get mobileKind_survey => 'सर्वेक्षण';
+
+  @override
+  String get mobileKind_task => 'कार्य';
+
+  @override
+  String get mobileKind_announcement => 'घोषणाएँ';
+
+  @override
+  String get boardScreensaverNow => 'अभी';
+
+  @override
+  String get boardScreensaverNext => 'अगला';
+
+  @override
+  String get boardScreensaverFree => 'अभी कोई कक्षा नहीं';
+
+  @override
+  String get boardScreensaverNotices => 'सूचनाएँ';
+
+  @override
+  String get boardAttendanceCodeTitle => 'अपनी हाज़िरी लगाएँ';
+
+  @override
+  String get boardAttendanceCodeHint =>
+      'स्टूडेंट ऐप में यह कोड स्कैन करें। यह कुछ सेकंड में बदलता है।';
+
+  @override
+  String get boardAttendanceCodeNone => 'इस कमरे में अभी कोई कक्षा नहीं है।';
+
+  @override
+  String get boardClose => 'बंद करें';
 }

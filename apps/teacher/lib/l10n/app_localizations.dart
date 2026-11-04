@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// App name (keep in English).
   ///
@@ -9398,9 +9405,256 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Overdue'**
   String get govOverdue;
+
+  /// No description provided for @mobileUpdateRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update the app to continue'**
+  String get mobileUpdateRequiredTitle;
+
+  /// No description provided for @mobileUpdateRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This version is no longer supported. Install the latest version from the store.'**
+  String get mobileUpdateRequiredBody;
+
+  /// No description provided for @mobileUpdateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of the app is available.'**
+  String get mobileUpdateAvailable;
+
+  /// No description provided for @mobileUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get mobileUpdate;
+
+  /// No description provided for @mobileLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get mobileLater;
+
+  /// No description provided for @mobileOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'You are offline. Showing what was saved on this phone.'**
+  String get mobileOffline;
+
+  /// No description provided for @mobileNotificationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification settings'**
+  String get mobileNotificationSettings;
+
+  /// No description provided for @mobileNotificationSettingsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which alerts ring this phone. Everything still reaches your inbox; emergencies always ring.'**
+  String get mobileNotificationSettingsHint;
+
+  /// No description provided for @mobileQuietHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet hours'**
+  String get mobileQuietHours;
+
+  /// No description provided for @mobileQuietHoursHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts wait until quiet hours end.'**
+  String get mobileQuietHoursHint;
+
+  /// No description provided for @mobileQuietFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get mobileQuietFrom;
+
+  /// No description provided for @mobileQuietTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Until'**
+  String get mobileQuietTo;
+
+  /// No description provided for @mobileSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get mobileSave;
+
+  /// No description provided for @mobileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get mobileSaved;
+
+  /// No description provided for @mobileLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach ZYNETIX. Check your connection and try again.'**
+  String get mobileLoadFailed;
+
+  /// No description provided for @mobileRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get mobileRetry;
+
+  /// No description provided for @mobilePendingWrites.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change waiting to be sent} other{{count} changes waiting to be sent}}'**
+  String mobilePendingWrites(int count);
+
+  /// No description provided for @mobileSavedOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this phone. It will be sent when you are back online.'**
+  String get mobileSavedOffline;
+
+  /// No description provided for @mobileKind_absence.
+  ///
+  /// In en, this message translates to:
+  /// **'Absence'**
+  String get mobileKind_absence;
+
+  /// No description provided for @mobileKind_homework.
+  ///
+  /// In en, this message translates to:
+  /// **'Homework'**
+  String get mobileKind_homework;
+
+  /// No description provided for @mobileKind_broadcast.
+  ///
+  /// In en, this message translates to:
+  /// **'Broadcasts'**
+  String get mobileKind_broadcast;
+
+  /// No description provided for @mobileKind_board_shared.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared board notes'**
+  String get mobileKind_board_shared;
+
+  /// No description provided for @mobileKind_recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Class recordings'**
+  String get mobileKind_recording;
+
+  /// No description provided for @mobileKind_fee.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees'**
+  String get mobileKind_fee;
+
+  /// No description provided for @mobileKind_library.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get mobileKind_library;
+
+  /// No description provided for @mobileKind_marks.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks'**
+  String get mobileKind_marks;
+
+  /// No description provided for @mobileKind_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get mobileKind_message;
+
+  /// No description provided for @mobileKind_live.
+  ///
+  /// In en, this message translates to:
+  /// **'Live classes'**
+  String get mobileKind_live;
+
+  /// No description provided for @mobileKind_calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get mobileKind_calendar;
+
+  /// No description provided for @mobileKind_badge.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges'**
+  String get mobileKind_badge;
+
+  /// No description provided for @mobileKind_transport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport'**
+  String get mobileKind_transport;
+
+  /// No description provided for @mobileKind_hostel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hostel'**
+  String get mobileKind_hostel;
+
+  /// No description provided for @mobileKind_leave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get mobileKind_leave;
+
+  /// No description provided for @mobileKind_payslip.
+  ///
+  /// In en, this message translates to:
+  /// **'Payslips'**
+  String get mobileKind_payslip;
+
+  /// No description provided for @mobileKind_certificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates'**
+  String get mobileKind_certificate;
+
+  /// No description provided for @mobileKind_placement.
+  ///
+  /// In en, this message translates to:
+  /// **'Placements'**
+  String get mobileKind_placement;
+
+  /// No description provided for @mobileKind_grievance.
+  ///
+  /// In en, this message translates to:
+  /// **'Grievances'**
+  String get mobileKind_grievance;
+
+  /// No description provided for @mobileKind_welfare.
+  ///
+  /// In en, this message translates to:
+  /// **'Welfare'**
+  String get mobileKind_welfare;
+
+  /// No description provided for @mobileKind_survey.
+  ///
+  /// In en, this message translates to:
+  /// **'Surveys'**
+  String get mobileKind_survey;
+
+  /// No description provided for @mobileKind_task.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get mobileKind_task;
+
+  /// No description provided for @mobileKind_announcement.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcements'**
+  String get mobileKind_announcement;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -9409,7 +9663,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

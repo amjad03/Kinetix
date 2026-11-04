@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
+import 'package:zynetix_ui/zynetix_ui.dart' show KxNotificationPrefs;
 import 'package:flutter/painting.dart';
 import 'package:zynetix_lesson/zynetix_lesson.dart';
 import '../core/alumni.dart';
@@ -36,6 +37,20 @@ import '../core/self_service.dart';
 
 /// In-memory [StudentApi] for widget tests.
 class FakeStudentApi implements StudentApi {
+
+  @override
+  Future<void> signOutServer() async => signOutCalls++;
+
+  /// How many times the server was asked to end the session.
+  int signOutCalls = 0;
+
+  KxNotificationPrefs prefs = const KxNotificationPrefs(kinds: ['absence', 'fee', 'marks', 'homework'], pushOff: {});
+
+  @override
+  Future<KxNotificationPrefs> notificationPrefs() async => prefs;
+
+  @override
+  Future<KxNotificationPrefs> setNotificationPrefs(KxNotificationPrefs p) async => prefs = KxNotificationPrefs(kinds: prefs.kinds, pushOff: p.pushOff, quietStart: p.quietStart, quietEnd: p.quietEnd);
   /// LMS courses by student; the demo school publishes one with a grade.
   List<LmsCourseSummary> lmsCourseList = const [LmsCourseSummary(courseId: 'c1', title: 'Mathematics 7 B', subject: 'Mathematics', moduleCount: 2, overall: 82, letter: 'A')];
   ApiException? lmsError;

@@ -4440,4 +4440,166 @@ class AppLocalizationsKn extends AppLocalizations {
   String setUpAgainBody(String server) {
     return 'ಬೋರ್ಡ್ $server ಬಳಸುವುದನ್ನು ನಿಲ್ಲಿಸುತ್ತದೆ ಮತ್ತು ಶಿಕ್ಷಕರು ಸೈನ್ ಔಟ್ ಆಗುತ್ತಾರೆ. ನಂತರ ಸರ್ವರ್ ವಿಳಾಸ ಮತ್ತು ZYNETIX ERP ಯಿಂದ ಹೊಸ ನೋಂದಣಿ ಕೋಡ್ (ಬೋರ್ಡ್‌ಗಳು → ಹೊಸ ನೋಂದಣಿ ಕೋಡ್) ನಮೂದಿಸಿ.';
   }
+
+  @override
+  String get mobileUpdateRequiredTitle => 'ಮುಂದುವರಿಯಲು ಆ್ಯಪ್ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ';
+
+  @override
+  String get mobileUpdateRequiredBody =>
+      'ಈ ಆವೃತ್ತಿ ಇನ್ನು ಬೆಂಬಲಿತವಲ್ಲ. ಸ್ಟೋರ್‌ನಿಂದ ಹೊಸ ಆವೃತ್ತಿ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ.';
+
+  @override
+  String get mobileUpdateAvailable => 'ಆ್ಯಪ್‌ನ ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ.';
+
+  @override
+  String get mobileUpdate => 'ಅಪ್‌ಡೇಟ್ ಮಾಡಿ';
+
+  @override
+  String get mobileLater => 'ನಂತರ';
+
+  @override
+  String get mobileOffline =>
+      'ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದೀರಿ. ಈ ಫೋನ್‌ನಲ್ಲಿ ಉಳಿಸಿದ್ದನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ.';
+
+  @override
+  String get mobileNotificationSettings => 'ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು';
+
+  @override
+  String get mobileNotificationSettingsHint =>
+      'ಯಾವ ಎಚ್ಚರಿಕೆಗಳು ಫೋನ್‌ನಲ್ಲಿ ರಿಂಗ್ ಆಗಬೇಕು ಎಂದು ಆಯ್ಕೆಮಾಡಿ. ಎಲ್ಲವೂ ಇನ್‌ಬಾಕ್ಸ್‌ಗೆ ಬರುತ್ತದೆ; ತುರ್ತು ಸೂಚನೆಗಳು ಯಾವಾಗಲೂ ರಿಂಗ್ ಆಗುತ್ತವೆ.';
+
+  @override
+  String get mobileQuietHours => 'ನಿಶ್ಶಬ್ದ ಸಮಯ';
+
+  @override
+  String get mobileQuietHoursHint =>
+      'ನಿಶ್ಶಬ್ದ ಸಮಯ ಮುಗಿಯುವವರೆಗೆ ಎಚ್ಚರಿಕೆಗಳು ಕಾಯುತ್ತವೆ.';
+
+  @override
+  String get mobileQuietFrom => 'ಇಂದ';
+
+  @override
+  String get mobileQuietTo => 'ವರೆಗೆ';
+
+  @override
+  String get mobileSave => 'ಉಳಿಸಿ';
+
+  @override
+  String get mobileSaved => 'ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get mobileLoadFailed =>
+      'ZYNETIX ಅನ್ನು ತಲುಪಲಾಗಲಿಲ್ಲ. ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get mobileRetry => 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
+
+  @override
+  String mobilePendingWrites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ಬದಲಾವಣೆಗಳು ಕಳುಹಿಸಲು ಬಾಕಿ',
+      one: '1 ಬದಲಾವಣೆ ಕಳುಹಿಸಲು ಬಾಕಿ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mobileSavedOffline =>
+      'ಈ ಫೋನ್‌ನಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ. ಆನ್‌ಲೈನ್ ಆದಾಗ ಕಳುಹಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get mobileKind_absence => 'ಗೈರುಹಾಜರಿ';
+
+  @override
+  String get mobileKind_homework => 'ಮನೆಗೆಲಸ';
+
+  @override
+  String get mobileKind_broadcast => 'ಪ್ರಸಾರ';
+
+  @override
+  String get mobileKind_board_shared => 'ಹಂಚಿದ ಬೋರ್ಡ್ ಟಿಪ್ಪಣಿಗಳು';
+
+  @override
+  String get mobileKind_recording => 'ತರಗತಿ ರೆಕಾರ್ಡಿಂಗ್';
+
+  @override
+  String get mobileKind_fee => 'ಶುಲ್ಕ';
+
+  @override
+  String get mobileKind_library => 'ಗ್ರಂಥಾಲಯ';
+
+  @override
+  String get mobileKind_marks => 'ಅಂಕಗಳು';
+
+  @override
+  String get mobileKind_message => 'ಸಂದೇಶಗಳು';
+
+  @override
+  String get mobileKind_live => 'ಲೈವ್ ತರಗತಿಗಳು';
+
+  @override
+  String get mobileKind_calendar => 'ಕ್ಯಾಲೆಂಡರ್';
+
+  @override
+  String get mobileKind_badge => 'ಬ್ಯಾಡ್ಜ್‌ಗಳು';
+
+  @override
+  String get mobileKind_transport => 'ಸಾರಿಗೆ';
+
+  @override
+  String get mobileKind_hostel => 'ವಸತಿ ನಿಲಯ';
+
+  @override
+  String get mobileKind_leave => 'ರಜೆ';
+
+  @override
+  String get mobileKind_payslip => 'ವೇತನ ಚೀಟಿ';
+
+  @override
+  String get mobileKind_certificate => 'ಪ್ರಮಾಣಪತ್ರಗಳು';
+
+  @override
+  String get mobileKind_placement => 'ಉದ್ಯೋಗ ನೇಮಕ';
+
+  @override
+  String get mobileKind_grievance => 'ಕುಂದುಕೊರತೆಗಳು';
+
+  @override
+  String get mobileKind_welfare => 'ಕಲ್ಯಾಣ';
+
+  @override
+  String get mobileKind_survey => 'ಸಮೀಕ್ಷೆಗಳು';
+
+  @override
+  String get mobileKind_task => 'ಕಾರ್ಯಗಳು';
+
+  @override
+  String get mobileKind_announcement => 'ಪ್ರಕಟಣೆಗಳು';
+
+  @override
+  String get boardScreensaverNow => 'ಈಗ';
+
+  @override
+  String get boardScreensaverNext => 'ಮುಂದಿನದು';
+
+  @override
+  String get boardScreensaverFree => 'ಈಗ ಯಾವುದೇ ತರಗತಿ ಇಲ್ಲ';
+
+  @override
+  String get boardScreensaverNotices => 'ಸೂಚನೆಗಳು';
+
+  @override
+  String get boardAttendanceCodeTitle => 'ನಿಮ್ಮ ಹಾಜರಾತಿ ಗುರುತಿಸಿ';
+
+  @override
+  String get boardAttendanceCodeHint =>
+      'ವಿದ್ಯಾರ್ಥಿ ಆ್ಯಪ್‌ನಲ್ಲಿ ಈ ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ. ಇದು ಕೆಲವು ಸೆಕೆಂಡುಗಳಿಗೆ ಬದಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get boardAttendanceCodeNone => 'ಈ ಕೊಠಡಿಯಲ್ಲಿ ಈಗ ಯಾವುದೇ ತರಗತಿ ಇಲ್ಲ.';
+
+  @override
+  String get boardClose => 'ಮುಚ್ಚಿ';
 }

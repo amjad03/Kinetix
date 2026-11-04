@@ -91,6 +91,12 @@ class ApiClient {
   Future<Map<String, dynamic>> openClassNow() async => await _send('POST', '/v1/classroom/now/open') as Map<String, dynamic>;
 
   /// Exam room mode: the paper being sat in this board's room, or `{active: false}`.
+  /// The screensaver between classes (device token): institution, room, the period on now and next, board notices.
+  Future<Map<String, dynamic>> idleFeed() async => await _send('GET', '/v1/devices/me/idle', useDeviceToken: true) as Map<String, dynamic>;
+
+  /// The open class's self-mark code for the Student App to scan (board-session token; rotates every `ttlSeconds`).
+  Future<Map<String, dynamic>> attendanceQr() async => await _send('POST', '/v1/classroom/attendance-qr') as Map<String, dynamic>;
+
   Future<Map<String, dynamic>> examRoom() async => await _send('GET', '/v1/devices/me/exam-room', useDeviceToken: true) as Map<String, dynamic>;
 
   /// The course outcomes of the subject open on the board (a poll can be tagged with them for OBE).
