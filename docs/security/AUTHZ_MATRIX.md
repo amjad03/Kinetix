@@ -5,7 +5,7 @@ Regenerate: `cd services/api && UPDATE_AUTHZ=1 ./node_modules/.bin/vitest run te
 
 ## Summary
 
-- Routes: 2932
+- Routes: 2947
 - Public (no @Auth, no guard): 103 (all on the allow list below unless flagged)
 - Any signed-in user (no role list): 324; open to students and families, so each must scope to the caller
 - Flagged for review: 40
@@ -2587,12 +2587,18 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/research/grants/:id` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/grants/:id/close` | principal, research_coordinator, tenant_admin |  |
 | POST | `/v1/research/grants/:id/expenses` | hod, principal, research_coordinator, teacher, tenant_admin |  |
+| GET | `/v1/research/grants/:id/statement` | hod, principal, research_coordinator, teacher, tenant_admin |  |
+| GET | `/v1/research/grants/:id/statement.xlsx` | hod, principal, research_coordinator, teacher, tenant_admin |  |
+| POST | `/v1/research/incentives/claims` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | GET | `/v1/research/kpis` | hod, principal, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/me` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/milestones/:id/complete` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | GET | `/v1/research/office/summary` | hod, principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/patents` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/patents` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/patents/:id/status` | principal, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/profiles/me` | hod, principal, research_coordinator, teacher, tenant_admin |  |
+| PUT | `/v1/research/profiles/me` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | GET | `/v1/research/projects` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/projects` | principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/projects/:id` | hod, principal, research_coordinator, teacher, tenant_admin |  |
@@ -2608,12 +2614,19 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/research/proposals/:id/withdraw` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | GET | `/v1/research/publications` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/publications` | hod, principal, research_coordinator, teacher, tenant_admin |  |
+| POST | `/v1/research/publications/check-duplicate` | hod, principal, research_coordinator, teacher, tenant_admin |  |
+| GET | `/v1/research/publications/doi-lookup` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/publications/import-doi` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/publications/import-orcid` | hod, principal, research_coordinator, teacher, tenant_admin |  |
+| POST | `/v1/research/publications/refresh-pending` | hod, principal, research_coordinator, teacher, tenant_admin |  |
+| GET | `/v1/research/reports/aishe` | hod, principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/reports/faculty` | hod, principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/reports/faculty-profile` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | GET | `/v1/research/reports/faculty-profile.xlsx` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | GET | `/v1/research/reports/naac-c3` | hod, principal, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/nba` | hod, principal, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/nba-aishe.xlsx` | hod, principal, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/nirf-params` | hod, principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/reports/nirf-rp` | hod, principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/reports/nirf-rp.xlsx` | hod, principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/scholars` | hod, principal, research_coordinator, teacher, tenant_admin |  |
@@ -2628,7 +2641,9 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/research/theses/:id` | hod, principal, research_coordinator, student, teacher, tenant_admin | OWNERSHIP? reviewed |
 | PUT | `/v1/research/theses/:id` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | PUT | `/v1/research/theses/:id/examiners` | principal, research_coordinator, tenant_admin |  |
+| POST | `/v1/research/theses/:id/shodhganga` | principal, research_coordinator, tenant_admin |  |
 | POST | `/v1/research/theses/:id/similarity` | hod, principal, research_coordinator, teacher, tenant_admin |  |
+| POST | `/v1/research/theses/:id/similarity/external` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/theses/:id/stage` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/theses/:id/vivas` | principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/theses/mine` | student |  |

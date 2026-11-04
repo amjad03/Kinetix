@@ -315,12 +315,6 @@ export default area(
     "rk.o.research-publications.metadataSource.orcid": "ORCID",
     "rk.o.research-publications.metadataSource.pending":
       "Waiting for the DOI registry",
-    "rk.filter.research-publications.indexed": "Indexed in",
-    "rk.o.research-publications.indexed.scopus": "Scopus",
-    "rk.o.research-publications.indexed.wos": "Web of Science",
-    "rk.o.research-publications.indexed.ugc_care": "UGC-CARE",
-    "rk.o.research-publications.indexed.pubmed": "PubMed",
-    "rk.o.research-publications.indexed.other": "Other",
     "rk.f.research-grants.agencyKind": "Agency kind",
     "rk.help.research-grants.agencyKind":
       "NAAC 3.1 counts government and non-government grants apart",
@@ -700,12 +694,6 @@ export default area(
       "rk.o.research-publications.metadataSource.orcid": "ऑर्किड",
       "rk.o.research-publications.metadataSource.pending":
         "डीओआई रजिस्ट्री की प्रतीक्षा",
-      "rk.filter.research-publications.indexed": "अनुक्रमण",
-      "rk.o.research-publications.indexed.scopus": "स्कोपस",
-      "rk.o.research-publications.indexed.wos": "वेब ऑफ़ साइंस",
-      "rk.o.research-publications.indexed.ugc_care": "यूजीसी-केयर",
-      "rk.o.research-publications.indexed.pubmed": "पबमेड",
-      "rk.o.research-publications.indexed.other": "अन्य",
       "rk.f.research-grants.agencyKind": "एजेंसी का प्रकार",
       "rk.help.research-grants.agencyKind":
         "NAAC 3.1 सरकारी और गैर-सरकारी अनुदान अलग गिनता है",
@@ -1086,12 +1074,6 @@ export default area(
       "rk.o.research-publications.metadataSource.orcid": "ಆರ್ಕಿಡ್",
       "rk.o.research-publications.metadataSource.pending":
         "ಡಿಒಐ ನೋಂದಣಿಗಾಗಿ ಕಾಯುತ್ತಿದೆ",
-      "rk.filter.research-publications.indexed": "ಸೂಚಿಕೆ",
-      "rk.o.research-publications.indexed.scopus": "ಸ್ಕೋಪಸ್",
-      "rk.o.research-publications.indexed.wos": "ವೆಬ್ ಆಫ್ ಸೈನ್ಸ್",
-      "rk.o.research-publications.indexed.ugc_care": "ಯುಜಿಸಿ-ಕೇರ್",
-      "rk.o.research-publications.indexed.pubmed": "ಪಬ್‌ಮೆಡ್",
-      "rk.o.research-publications.indexed.other": "ಇತರ",
       "rk.f.research-grants.agencyKind": "ಸಂಸ್ಥೆಯ ಪ್ರಕಾರ",
       "rk.help.research-grants.agencyKind":
         "NAAC 3.1 ಸರ್ಕಾರಿ ಮತ್ತು ಸರ್ಕಾರೇತರ ಅನುದಾನಗಳನ್ನು ಬೇರೆಬೇರೆಯಾಗಿ ಎಣಿಸುತ್ತದೆ",
