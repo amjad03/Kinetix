@@ -3,6 +3,7 @@ import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../../auth/principal.js';
+import { csvCell as pdfCsvCell } from '../../common/pdf.js';
 import { RateLimiter } from '../../common/rate-limiter.js';
 import { ZodBody } from '../../common/zod-body.js';
 import { Day, Phone } from '../../common/zod-fields.js';
@@ -75,12 +76,8 @@ const StatusBody = z.object({ applicationNo: z.string().trim().min(3).max(40), d
 const page = (v?: string) => Math.max(1, Math.min(10_000, Number(v) || 1));
 const size = (v?: string) => Math.max(1, Math.min(200, Number(v) || 25));
 const uuidOr = (v?: string) => (v && z.uuid().safeParse(v).success ? v : undefined);
-const csvCell = (v: unknown) => {
-  const s = v === null || v === undefined ? '' : String(v);
-  // A leading =, +, - or @ would run as a formula in a spreadsheet.
-  const safe = /^[=+\-@]/.test(s) ? `'${s}` : s;
-  return /[",\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
-};
+/** Applicants type these fields on the public form: quoted and formula-neutralised (leading = + - @ tab CR). */
+const csvCell = (v: unknown) => pdfCsvCell(v);
 
 /**
  * Admissions pass for staff: the reservation matrix (seat plan, de-reservation), claims, entrance results, seats

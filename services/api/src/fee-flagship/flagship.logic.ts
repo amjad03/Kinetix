@@ -1,5 +1,6 @@
 /** Fees flagship: pure rules (programme transfer maths, the Zoho Books journal file, government scholarship status files). */
 
+import { csvCell } from '../common/pdf.js';
 import { csvCells } from '../fees/settlements.controller.js';
 import { rupeesToPaise } from '../fees/payment-provider.js';
 
@@ -28,7 +29,8 @@ export function usedPercent(start: string, end: string, on: string): number {
 }
 
 const rs = (paise: number) => (paise / 100).toFixed(2);
-const cell = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+/** Narrations and account names are typed by staff (and payer names come from parents): formula-neutralised. */
+const cell = (v: string) => csvCell(v);
 
 export interface JournalVoucher {
   date: string;

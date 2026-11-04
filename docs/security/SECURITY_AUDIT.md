@@ -110,7 +110,9 @@ rules, non-root containers (API and ERP `node`, code runner uid 10001 with secco
 | # | Sev | Item | Recommendation |
 | --- | --- | --- | --- |
 | ~~X1~~ | Fixed | SCORM packages served from the API origin: fixed as O18 (separate content host, sandboxed files, split signed links). Before go-live, point `content_domain` (ideally a separate registrable domain) at the ALB and add it to the certificate. | Done. |
-| X2 | Medium | P4 above (staff PAN/UAN, fee payee bank details). | As above. |
+| X2 | Medium | P4 above. Staff PAN/UAN are now encrypted (`pan_enc`, `uan_enc`); donor PAN and fee payee bank details remain (S8 below). | As in S8. |
+| S6 | Medium | Messaging webhooks: verify Meta `X-Hub-Signature-256` and SNS signatures, not only the URL secret. | See the final audit. |
+| S7 | Medium | DPDP erasure: delete the photo object, student DOB/address, donor PAN after retention. | See the final audit. |
 | — | Low | DNS rebinding between the address check and the request (SSRF). | Route outbound requests to tenant-typed hosts through an egress proxy or NAT with a deny list for the VPC and 169.254.0.0/16. |
 | — | Low | ERP CSP keeps `'unsafe-inline'` for scripts (Next.js bootstrap). | Move to per-request nonces (`proxy.ts`) once the pages are checked. |
 | — | Low | Access tokens live 12 hours with no refresh rotation (sessions are revocable and roles now re-read each request). | 1-hour access token plus rotating refresh token when the apps can renew silently. |
@@ -123,6 +125,24 @@ For the fees work in progress (not changed here, per the split of work): `POST /
 Tests that fail today for reasons unrelated to this audit (fixed calendar dates that are now in the past):
 `governance-access` and `hr-depth-kit` (delegation "upcoming"), `welfare` (appeal window, counselling schedule, disbursement),
 `payments-connectors` (meeting listing).
+
+## Final cross-cutting audit (November 2026)
+
+Re-check of this baseline plus the modules merged after it (communication, research, governance, chat safety). Details,
+the per-entry justification of the public allow list and the tests: [docs/audit/SECURITY_FINAL_AUDIT.md](../audit/SECURITY_FINAL_AUDIT.md).
+
+| # | Sev | Finding | Status | Test |
+| --- | --- | --- | --- | --- |
+| S1 | Medium | CSV formula injection in exam-cell reports, the university tabulation register and the Zoho journal; the shared writer missed a leading tab/CR. | Fixed: one `neutraliseFormula` rule (`common/pdf.ts`) for every exporter. | `src/common/csv-injection.spec.ts` |
+| S2 | Medium | Public route allow list unanchored (`webhook`, `verify`, `/public/`, `/v1/platform/` anywhere in a path) and three stale entries: a staff route that forgot `@Auth` could pass CI. | Fixed: anchored entries; the spec fails on stale entries and canary staff paths. | `authz-matrix.spec` |
+| S3 | Medium | Global `text/plain` parser (256 KB) on every route: drained ADMS/SIP2/xAPI bodies, capped device pushes, string bodies on a preflight-free content type. | Fixed: only the messaging webhook reads text/plain. | `communication-pass.e2e`, `attendance-pass.e2e` |
+| S4 | Low | WhatsApp verify echoed `hub.challenge` as `text/html`. | Fixed: `text/plain`, short token only. | `communication-pass.e2e` |
+| S5 | Medium | DPDP erasure kept push registrations and session IPs/browsers. | Fixed. | `roles-annotations-dpdp.e2e` |
+| S6 | Medium | Messaging webhooks trust only the URL secret; Meta `X-Hub-Signature-256` and SNS message signatures are not verified. | Open | — |
+| S7 | Medium | DPDP erasure leaves the photo object in storage, student DOB/address, donor PAN. | Open | — |
+| S8 | Medium | Donor PAN and fee-depth payee bank accounts in clear (staff PAN/UAN are now encrypted: half of X2 closed). | Open (replaces X2) | — |
+| S9 | Low | NAD batch CSV not formula-neutralised (machine file, hashed into the batch reference). | Accepted | — |
+| S10 | Low | Audit log append-only for the app role, but not tamper-evident against the owner role. | Open | — |
 
 ## Pre-go-live checklist
 

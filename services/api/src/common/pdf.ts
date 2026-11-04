@@ -189,10 +189,16 @@ export class PdfWriter {
   }
 }
 
+/**
+ * A text that a spreadsheet would run as a formula (leading = + - @, tab or carriage return, OWASP's list) gets a
+ * leading apostrophe; plain numbers ("-12.50") and the lone "-" placeholder are left alone. Every CSV the product
+ * writes goes through this.
+ */
+export const neutraliseFormula = (s: string): string => (/^[=+\-@\t\r]/.test(s) && s !== '-' && !/^[+-]?\d+(\.\d+)?$/.test(s) ? `'${s}` : s);
+
 /** Quotes one CSV cell (RFC 4180) and neutralises spreadsheet formulas. */
 export const csvCell = (v: unknown): string => {
-  let s = v === null || v === undefined ? '' : String(v);
-  if (/^[=+\-@]/.test(s) && Number.isNaN(Number(s))) s = `'${s}`;
+  const s = neutraliseFormula(v === null || v === undefined ? '' : String(v));
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 export const toCsv = (rows: unknown[][]): string => rows.map((r) => r.map(csvCell).join(',')).join('\r\n') + '\r\n';

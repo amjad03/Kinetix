@@ -6,7 +6,8 @@ import { orConflict } from '../common/ops.js';
 import { Clock } from '../common/time.js';
 import { dpdpDueAt } from '../governance/statutory.js';
 import type { Tx } from '../db/db.service.js';
-import { alumniDonations, alumniProfiles, assessments, attendanceRecords, dpdpRequests, feePayments, guardians, leaveRequests, marks, payslips, payrollRuns, students, tenants, userRoles, users } from '../db/schema.js';
+import { alumniDonations, alumniProfiles, assessments, attendanceRecords, dpdpRequests, feePayments, guardians, leaveRequests, marks, payslips, payrollRuns, pushDevices, students, tenants, userRoles, users } from '../db/schema.js';
+import { userSessions } from '../db/schema-foundation.js';
 import { ERASED_NAME, correctionProblem, retentionReasons, type CorrectableField, type RetentionFacts } from './dpdp.logic.js';
 
 export type DpdpRequest = typeof dpdpRequests.$inferSelect;
@@ -206,6 +207,10 @@ export class DpdpService {
     await tx.update(users).set({ fullName: ERASED_NAME, email: null, phone: null, passwordHash: null, photoKey: null, status: 'disabled' }).where(eq(users.id, userId));
     await tx.update(students).set({ fullName: 'Erased student' }).where(eq(students.userId, userId));
     await tx.update(alumniProfiles).set({ fullName: ERASED_NAME, email: null, phone: null, employer: null, designation: null, city: null, bio: '', directoryVisible: false, mentorAvailable: false }).where(eq(alumniProfiles.userId, userId));
+    // Pushes (which carry children's names) must not reach the erased person's phone, and the session list must not
+    // keep their IP addresses and browsers. The session rows stay, revoked, so sign-in history counts still hold.
+    await tx.delete(pushDevices).where(eq(pushDevices.userId, userId));
+    await tx.update(userSessions).set({ ip: null, userAgent: null, revokedAt: sql`coalesce(${userSessions.revokedAt}, now())` }).where(eq(userSessions.userId, userId));
   }
 
   /** A grievance is answered, a nomination recorded (or either declined with a reason). */

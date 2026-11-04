@@ -1,6 +1,8 @@
 import { timingSafeEqual } from 'node:crypto';
-import { Body, Controller, Get, HttpCode, Logger, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Header, HttpCode, Logger, NotFoundException, Param, Post, Query, Req } from '@nestjs/common';
 import { and, eq, inArray, sql } from 'drizzle-orm';
+import type { Request } from 'express';
+import { readRawBody } from '../integrations/http.js';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { NOTICE_VERSION } from '../consent/consent.controller.js';
@@ -14,6 +16,8 @@ import { CommsService } from './comms.service.js';
 import { isSnsUrl, parseSes, parseSms, parseWhatsApp, PROVIDER_CHANNEL, type ProviderEvent } from './webhooks.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** SNS notifications are at most 256 KB. */
+const SNS_MAX_BYTES = 256 * 1024;
 
 /**
  * Providers' callbacks: delivery reports (MSG91, Kaleyra, Gupshup, WhatsApp, SES), email bounces and complaints, and
@@ -32,18 +36,25 @@ export class CommsWebhooksController {
     private readonly notifications: NotificationsService,
   ) {}
 
-  /** Meta's subscription check: answers the challenge when the verify token is the institution's secret. */
+  /**
+   * Meta's subscription check: answers the challenge when the verify token is the institution's secret. The echo is
+   * plain text and only a short token (Meta sends digits), so the API never reflects caller-chosen HTML.
+   */
   @Get(':provider/:tenantId/:token')
+  @Header('content-type', 'text/plain; charset=utf-8')
   async verify(@Param('provider') provider: string, @Param('tenantId') tenantId: string, @Param('token') token: string, @Query('hub.challenge') challenge?: string) {
     await this.authenticate(provider, tenantId, token);
+    if (challenge !== undefined && !/^[\w.-]{1,200}$/.test(challenge)) throw new BadRequestException('hub.challenge must be a short token');
     return challenge ?? 'ok';
   }
 
   @Post(':provider/:tenantId/:token')
   @HttpCode(200)
-  async receive(@Param('provider') provider: string, @Param('tenantId') tenantId: string, @Param('token') token: string, @Body() body: unknown) {
+  async receive(@Param('provider') provider: string, @Param('tenantId') tenantId: string, @Param('token') token: string, @Body() parsed: unknown, @Req() req: Request) {
     await this.authenticate(provider, tenantId, token);
     const channel = PROVIDER_CHANNEL[provider];
+    // Amazon SNS posts its JSON envelope as text/plain; only this route reads such a body (no global text parser).
+    const body = /^text\/plain\b/i.test(req.headers['content-type'] ?? '') ? (await readRawBody(req, SNS_MAX_BYTES)).toString('utf8') : parsed;
     const events = channel === 'email' ? parseSes(body) : channel === 'whatsapp' ? parseWhatsApp(body) : parseSms(provider, body);
     let applied = 0;
     let unmatched = 0;

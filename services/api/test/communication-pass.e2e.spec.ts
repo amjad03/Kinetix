@@ -186,7 +186,9 @@ describe('communication pass', () => {
     expect((await hook('msg91', dlr).expect(200)).body).toEqual({ received: 1, applied: 1, unmatched: 0 });
     expect((await hook('msg91', dlr).expect(200)).body).toEqual({ received: 1, applied: 0, unmatched: 0 }); // a repeat changes nothing
     // WhatsApp says the father's message failed: at the next run it goes by SMS (one more part, 25 paise).
-    await http().get(`/v1/comms/webhooks/meta/${t.tenantId}/${ids.waToken}?hub.mode=subscribe&hub.challenge=4242`).expect(200).expect('4242');
+    await http().get(`/v1/comms/webhooks/meta/${t.tenantId}/${ids.waToken}?hub.mode=subscribe&hub.challenge=4242`).expect(200).expect('content-type', /^text\/plain/).expect('4242');
+    // The echo never reflects markup (it was text/html).
+    await http().get(`/v1/comms/webhooks/meta/${t.tenantId}/${ids.waToken}?hub.challenge=${encodeURIComponent('<script>alert(1)</script>')}`).expect(400);
     expect((await hook('meta', { entry: [{ changes: [{ value: { statuses: [{ id: 'wamid.1', status: 'failed', errors: [{ title: 'Message undeliverable' }] }] } }] }] }, ids.waToken).expect(200)).body.applied).toBe(1);
     await post('principal', '/v1/comms/run').expect(200);
     expect(sms.sent.map((m) => m.to)).toEqual(['+919800000002', '+919800000001']);
@@ -195,6 +197,9 @@ describe('communication pass', () => {
     // The student's email bounced (permanent): the address goes on the do-not-contact list.
     const sns = JSON.stringify({ Type: 'Notification', MessageId: 'sns-1', Message: JSON.stringify({ notificationType: 'Bounce', mail: { messageId: 'ses-1' }, bounce: { bounceType: 'Permanent', bouncedRecipients: [{ emailAddress: t.studentUser.email, diagnosticCode: '550 5.1.1 user unknown' }] } }) });
     await http().post(`/v1/comms/webhooks/ses/${t.tenantId}/${ids.mailToken}`).set('content-type', 'text/plain').send(sns).expect(200);
+    // text/plain is read by this webhook alone (SNS's 256 KB cap); no other route gets a parsed text body or the cap.
+    await http().post(`/v1/comms/webhooks/ses/${t.tenantId}/${ids.mailToken}`).set('content-type', 'text/plain').send('x'.repeat(300 * 1024)).expect(413);
+    await http().post('/v1/comms/run').set('content-type', 'text/plain').send('x'.repeat(300 * 1024)).expect(401);
     const [sup] = await db.select().from(contactSuppressions).where(and(eq(contactSuppressions.tenantId, t.tenantId), eq(contactSuppressions.channel, 'email')));
     expect(sup).toMatchObject({ address: t.studentUser.email!.toLowerCase(), reason: 'bounced', userId: t.studentUser.id });
     expect((await get('principal', `/v1/comms/log?sourceId=${ids.campaign}&status=bounced`).expect(200)).body.total).toBe(1);

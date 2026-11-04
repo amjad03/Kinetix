@@ -28,15 +28,14 @@ export const NON_STAFF: RoleName[] = ['student', 'guardian', 'alumni', 'external
  * Public routes and why they are public. Anything else without @Auth is a finding. Patterns match the full path.
  */
 export const PUBLIC_ALLOWED: [RegExp, string][] = [
-  [/^\/(health|ready|live|metrics)(\/|$)|^\/v1\/(health|ready)/, 'health and readiness probes'],
-  [/^\/v1\/auth\//, 'sign-in, OTP, refresh, SSO callbacks (rate limited)'],
-  [/^\/v1\/devices\/(enroll|enrol)/, 'board enrolment with a one-time code (rate limited)'],
-  [/^\/v1\/pairing\//, 'board pairing handshake with an HMAC code (rate limited)'],
-  [/webhook|\/callback|\/return/i, 'payment gateway webhooks and return pages (signature checked)'],
-  [/^\/v1\/(public|verify)\b|\/verify\//, 'public verification of certificates and public forms (rate limited)'],
-  [/^\/v1\/(admissions|enquiries|leads)\/(public|apply|forms?)|\/public\//, 'public admission enquiry and application forms (rate limited)'],
-  [/^\/v1\/(branding|institutions\/by-slug|tenants\/(by-slug|lookup))/, 'institution branding before sign-in'],
-  [/^\/v1\/platform\//, 'platform team (PlatformAdminGuard)'],
+  // Every entry is anchored to its own namespace, and each must still match a public route (authz-matrix.spec):
+  // a broad pattern (any path containing "webhook", "verify" or "/public/") would let a staff route that forgot
+  // @Auth through unreviewed. Guarded routes (PlatformAdminGuard, the device guards) are never counted as public.
+  [/^\/(health|ready|live|metrics)(\/|$)|^\/v1\/(health|ready)/, 'health and readiness probes (/metrics needs METRICS_TOKEN, constant-time)'],
+  [/^\/v1\/auth\/(login|otp\/(request|verify)|mfa\/verify|sso\/(providers|start|callback|exchange))$/, 'sign-in, OTP, the MFA step (5-minute mfa token) and SSO (state, nonce, PKCE); per-IP and per-account limits, lockout'],
+  [/^\/v1\/devices\/enroll$/, 'board enrolment with a one-time code (rate limited)'],
+  [/^\/v1\/(fees|comms)\/webhooks\//, 'payment gateway webhooks (provider signature, timing-safe) and messaging delivery reports (per-institution secret in the path, timing-safe); every event applied once'],
+  [/^\/v1\/public\//, 'public pages: certificate, degree, ID and hall-ticket verification (unguessable codes), admission forms and applicant portal (applicant token), careers, recruiters (recruiter token), disclosure, events, branding, signed pay links and BI export links; per-IP limit PUBLIC_PER_IP_PER_MINUTE'],
   [/^\/v1\/chat\/inbound$/, 'email relay and WhatsApp replies: shared x-zynetix-inbound-secret (timing-safe), signed reply address'],
   [/^\/v1\/class-notes\/:token$/, 'shared class notes: unguessable share token, revocable'],
   [/^\/v1\/content\/sims\/phet\/:id$/, 'open-licence PhET simulations (no personal data)'],
@@ -44,7 +43,7 @@ export const PUBLIC_ALLOWED: [RegExp, string][] = [
   [/^\/v1\/digilocker\/pull\/:tenantId$/, 'DigiLocker pull URI: HMAC-SHA256 signature with the client secret'],
   [/^\/v1\/library\/sip2$/, 'SIP2 self-check kiosks: SIP2 login with the kiosk credentials'],
   [/^\/v1\/lti\//, 'LTI 1.3 launches: OIDC state, nonce and platform JWKS signature'],
-  [/^\/v1\/odata/, 'OData feed for Power BI: scoped kxo. API token (hashed, revocable)'],
+  [/^\/v1\/odata(\/|$)/,'OData feed for Power BI: scoped kxo. API token (hashed, revocable)'],
   [/^\/v1\/scorm\//, 'SCORM player: signed, expiring launch token'],
   [/^\/v1\/xapi\//, 'cmi5 xAPI for a sandboxed unit: one-use signed fetch link, then a signed credential for one learner and package (Basic auth)'],
   [/^\/v1\/fees\/gateway-return\/(:provider|cashfree)\/:tenantSlug$/, 'hosted-checkout browser return: the post is signature-checked like the webhook, Cashfree is re-queried with the account keys'],
