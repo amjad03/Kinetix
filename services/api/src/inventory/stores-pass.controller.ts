@@ -131,7 +131,7 @@ export class StoresPassController {
 
   /** Batches held (what is left of each receipt) with expiry; `expiring=N` keeps those expiring within N days or expired. */
   @Get('batches')
-  @Auth('user', STORE_ROLES)
+  @Auth('user', [...STORE_ROLES, 'accountant'])
   batches(@CurrentPrincipal() p: UserPrincipal, @Query('storeId') storeId?: string, @Query('itemId') itemId?: string, @Query('expiring') expiring?: string) {
     const days = expiring === undefined ? null : Math.min(3650, Math.max(0, Number(expiring) || 0));
     return this.db.withTenant(p.tenantId, async (tx) => {

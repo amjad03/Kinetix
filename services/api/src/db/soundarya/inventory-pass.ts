@@ -61,8 +61,11 @@ export async function inventoryPass(c: Ctx): Promise<void> {
   const ageDays = [12, 45, 75, 120, 200, 260, 330, 30, 60, 95, 150, 420, 460, 18, 25];
   for (const m of moves) {
     const i = ix.get(m.itemId) ?? 0;
-    const dead = i === 11 || i === 12;
-    const days = m.kind === 'grn' ? ageDays[i % ageDays.length] : dead ? ageDays[i % ageDays.length] - 10 : Math.max(1, Math.floor(ageDays[i % ageDays.length] / 3));
+    // The sports balls (SPT-001, SPT-002) were bought over a year ago and not issued since: dead stock.
+    const sku = items[i]?.sku ?? '';
+    const dead = sku.startsWith('SPT-');
+    const age = dead ? (sku === 'SPT-001' ? 430 : 480) : ageDays[i % ageDays.length];
+    const days = m.kind === 'grn' ? age : dead ? age - 10 : Math.max(1, Math.floor(age / 3));
     await k.q('update inv_stock_moves m set created_at = $2, value_paise = m.delta * i.last_price_paise, unit_cost_paise = i.last_price_paise from inv_items i where i.id = m.item_id and m.id = $1', [m.id, at(d(-days), '11:00')]);
   }
   await k.q(
@@ -193,7 +196,7 @@ export async function inventoryPass(c: Ctx): Promise<void> {
     ['SIMS-LAB-102', 'Aircraft engine cut-section model (Lycoming O-320)', 'Lab equipment', 'Aviation Simulation Lab', 'Aerotech', 'CS-O320', 2022, 185000, -20],
     ['SIMS-LAB-103', 'Weather station with anemometer', 'Lab equipment', 'Aviation Simulation Lab', 'Davis', 'Vantage Pro2', 2023, 72000, 45],
     ['SIMS-LAB-201', 'Network training rack (switches, routers)', 'Lab equipment', 'Computer Lab 2', 'Cisco', 'CCNA kit', 2024, 310000, 200],
-    ['SIMS-LAB-202', 'Dell Precision workstations (20 nos)', 'IT', 'Computer Lab 2', 'Dell', 'Precision 3660', 2025, 1680000, 300],
+    ['SIMS-LAB-202', 'Dell Precision workstations (20 nos)', 'IT', 'Computer Lab 2', 'Dell', 'Precision 3660', 2026, 1680000, 300],
   ];
   const added = await k.ins<{ id: string; tag: string }>('assets', labAssets.map(([tag, name, category, location, make, model, year, cost, calib], i) => ({ tag, name, category, location, roomId: room(location), make, model, serialNo: `SN-${year}-${4100 + i}`, purchasedOn: `${year}-07-1${i}`, putToUseOn: `${year}-07-2${i}`, costPaise: rupees(cost), salvagePaise: rupees(Math.round(cost * 0.05)), usefulLifeYears: 10, method: 'slm', itBlock: category === 'IT' ? 'computers' : 'plant', labEquipment: true, working: i !== 1, status: i === 1 ? 'in_maintenance' : 'active', calibrationDueOn: d(calib), warrantyUntil: `${year + 3}-07-1${i}`, vendorId: elec, departmentId: c.departments[location.startsWith('Aviation') ? 'Aviation Studies' : 'Computer Applications'] ?? null })));
   const maint: [number, string, string, number, string][] = [
@@ -207,6 +210,13 @@ export async function inventoryPass(c: Ctx): Promise<void> {
     [4, 'service', 'Workstation preventive maintenance', 14_200, '2026-05-22'],
   ];
   await k.ins('asset_maintenance', maint.map(([a, kind, description, cost, doneOn]) => ({ assetId: added[a].id, kind, description, costPaise: rupees(cost), doneOn, nextDueOn: kind === 'service' ? addDays(doneOn, 365) : null, createdBy: sk })), { returning: false });
+  // The year's spending excluding salary in the books (audited totals) for NAAC 4.1 and 4.4 percentages.
+  const admin = await acct('5100', 'Administrative Expenses', 'expense');
+  const thisFy = fyOf(today);
+  for (const [fy, lakhs] of [['2022-23', 142], ['2023-24', 151], ['2024-25', 163], ['2025-26', 174], [thisFy, 96]] as [string, number][]) {
+    const on = fy === thisFy ? d(-1) : `${Number(fy.slice(0, 4)) + 1}-03-31`;
+    await voucher('payment', on, fy === thisFy ? `Revenue expenditure (non-salary) for ${fy} so far` : `Revenue expenditure (non-salary) for ${fy}, as audited`, 'seed_naac_expense', fy, [[admin, rupees(lakhs * 1_00_000), 0], [A.bank, 0, rupees(lakhs * 1_00_000)]]);
+  }
   // Last year's depreciation journal (Companies Act) for the register's posted entries.
   const [{ dep }] = await k.q<{ dep: string }>("select coalesce(sum((lines->0->>'debitPaise')::bigint), 0)::bigint as dep from asset_gl_postings where tenant_id = $1 and kind = 'depreciation' and fiscal_year = '2025-26'", [t]);
   if (Number(dep) > 0) {
