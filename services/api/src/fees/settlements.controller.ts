@@ -201,24 +201,24 @@ export class SettlementsController {
   @Post('/payments/:id/gateway-refund')
   @Auth('user', FEE_ROLES)
   async gatewayRefund(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(GatewayRefundBody)) b: z.infer<typeof GatewayRefundBody>) {
-    const { provider, pay } = await this.db.withTenant(p.tenantId, async (tx) => {
-      const [pay] = await tx.select().from(feePayments).where(eq(feePayments.id, id));
+    // One transaction holds the payment's row lock across the gateway call: two refunds sent at once (a double
+    // click, two accountants) cannot both pass the "more than was paid" check and both reach the gateway, and a
+    // gateway failure rolls back with nothing recorded.
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [pay] = await tx.select().from(feePayments).where(eq(feePayments.id, id)).for('update');
       if (!pay || pay.status !== 'paid' || pay.method !== 'online' || !pay.providerPaymentId) throw new NotFoundException('Paid online payment not found');
-      const [done] = await tx.select({ t: sql<number>`coalesce(sum(${feeRefunds.amountPaise}), 0)::bigint` }).from(feeRefunds).where(eq(feeRefunds.paymentId, id));
+      // Refunds reverted later (their money came back) no longer count, as in issueRefund.
+      const [done] = await tx.select({ t: sql<number>`coalesce(sum(${feeRefunds.amountPaise}), 0)::bigint` }).from(feeRefunds).where(and(eq(feeRefunds.paymentId, id), sql`${feeRefunds.id} not in (select refund_id from fee_refund_requests where status = 'reverted' and refund_id is not null)`));
       if (Number(done.t) + b.amountPaise > pay.amountPaise) throw new BadRequestException('That is more than was paid');
       // Refunded through the account the payment was made with.
       const provider = await this.gateway.forAccountId(tx, pay.gatewayAccountId);
       if (!provider || provider.name !== pay.provider) throw new ServiceUnavailableException(PAYMENTS_NOT_CONFIGURED);
-      return { provider, pay, paid: Number(done.t) };
-    });
-    // The gateway call happens outside the transaction.
-    let refundId: string;
-    try {
-      ({ refundId } = await provider.refund({ providerPaymentId: pay.providerPaymentId!, providerOrderId: pay.providerOrderId, amountPaise: b.amountPaise, paidPaise: pay.amountPaise + pay.conveniencePaise, refundRef: `rf_${id.slice(0, 8)}_${Date.now().toString(36)}` }));
-    } catch (e) {
-      throw new BadGatewayException((e as Error).message.slice(0, 200));
-    }
-    return this.db.withTenant(p.tenantId, async (tx) => {
+      let refundId: string;
+      try {
+        ({ refundId } = await provider.refund({ providerPaymentId: pay.providerPaymentId, providerOrderId: pay.providerOrderId, amountPaise: b.amountPaise, paidPaise: pay.amountPaise + pay.conveniencePaise, refundRef: `rf_${id.slice(0, 8)}_${Date.now().toString(36)}` }));
+      } catch (e) {
+        throw new BadGatewayException((e as Error).message.slice(0, 200));
+      }
       const row = await issueRefund(tx, { tenantId: p.tenantId, userId: p.userId }, { paymentId: id, amountPaise: b.amountPaise, reason: b.reason });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'payments.gateway_refund', subjectType: 'fee_payment', subjectId: id, data: { provider: provider.name, refundId, amountPaise: b.amountPaise } });
       return { ...row, gatewayRefundId: refundId };

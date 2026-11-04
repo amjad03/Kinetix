@@ -289,7 +289,13 @@ describe('payment gateways: Razorpay, PayU, Cashfree, Easebuzz and CCAvenue in s
     expect((await hook(sig).expect(200)).body.outcome).toBe('duplicate');
     expect((await payment(co.paymentId)).status).toBe('paid');
     expect(await events('razorpay')).toHaveLength(1);
-    await pollRefundSettle('razorpay', 'Razorpay fee 2');
+    const co = await pollRefundSettle('razorpay', 'Razorpay fee 2');
+    // Two refunds of the rest sent at once (a double click): one reaches the gateway, the other is refused.
+    const before = refunds.length;
+    const rest = { amountPaise: FEE - 500_00, reason: 'Withdrawal' };
+    const both = await Promise.all([0, 1].map(() => http().post(`/v1/fees/settlements/payments/${co.paymentId}/gateway-refund`).set(as('acc')).send(rest)));
+    expect(both.map((r) => r.status).sort()).toEqual([201, 400]);
+    expect(refunds.length).toBe(before + 1);
   });
 
   it('PayU: hosted checkout, reverse-hash webhook, verify_payment polling, refund and settlement', async () => {
