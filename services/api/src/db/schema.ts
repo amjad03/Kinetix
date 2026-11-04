@@ -3771,6 +3771,8 @@ export const TENANT_TABLES = [
   'asset_allocations',
   'asset_maintenance',
   'doc_counters',
+  // Mobile apps pass (schema-mobile.ts, 0221)
+  'user_notification_prefs',
   // Phase 00 foundation and analytics (schema-foundation.ts)
   'user_mfa',
   'user_sessions',

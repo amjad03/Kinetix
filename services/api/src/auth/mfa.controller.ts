@@ -104,6 +104,25 @@ export class MfaController {
     });
   }
 
+  /** Sign out on this device: the token and its refresh token stop working at once (the apps call it before wiping the phone's copy). */
+  @Post('sign-out')
+  @HttpCode(204)
+  @Auth('user')
+  @AllowDuringPasswordChange()
+  @AllowDuringMfaSetup()
+  async signOut(@CurrentPrincipal() p: UserPrincipal) {
+    const sid = p.sessionId;
+    if (!sid) return;
+    await this.db.withTenant(p.tenantId, async (tx) => {
+      const rows = await tx
+        .update(userSessions)
+        .set({ revokedAt: this.clock.now(), refreshHash: null, refreshPrevHash: null })
+        .where(and(eq(userSessions.id, sid), eq(userSessions.userId, p.userId), isNull(userSessions.revokedAt)))
+        .returning({ id: userSessions.id });
+      if (rows.length) await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'auth.sign_out', subjectType: 'user_session', subjectId: sid });
+    });
+  }
+
   /** "Sign out everywhere else". */
   @Post('sessions/revoke-others')
   @HttpCode(200)

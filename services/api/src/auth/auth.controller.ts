@@ -1,5 +1,5 @@
 import { noteSignInDevice } from '../trust/trust.controller.js';
-import { Body, Controller, Headers, HttpCode, Inject, Ip, Post, UnauthorizedException } from '@nestjs/common';
+import { Body, ConflictException, Controller, Headers, HttpCode, Inject, Ip, Post, UnauthorizedException } from '@nestjs/common';
 import argon2 from 'argon2';
 import { eq, or } from 'drizzle-orm';
 import { z } from 'zod';
@@ -46,6 +46,8 @@ const MfaVerifyBody =z.object({ mfaToken: z.string().min(10).max(2000), code: z.
 
 const OtpVerifyBody =OtpRequestBody.extend({ code: z.string().trim().min(1).max(10) });
 
+const RefreshBody = z.object({ refreshToken: z.string().min(40).max(300) });
+
 /**
  * Sign-in. Staff (ERP, Teacher App) can use a password; teachers, parents and students sign in
  * with their phone and a one-time code by SMS (docs/architecture/auth-otp.md).
@@ -63,7 +65,7 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  async login(@Body(new ZodBody(LoginBody)) body: z.infer<typeof LoginBody>, @Ip() ip: string, @Headers('user-agent') userAgent?: string, @Headers('x-device-name') deviceName?: string, @Headers('x-device-id') deviceId?: string) {
+  async login(@Body(new ZodBody(LoginBody)) body: z.infer<typeof LoginBody>, @Ip() ip: string, @Headers('user-agent') userAgent?: string, @Headers('x-device-name') deviceName?: string, @Headers('x-device-id') deviceId?: string, @Headers('x-zynetix-client') client?: string) {
     const account = `${body.tenant.toLowerCase()}:${body.login.trim().toLowerCase()}`;
     // Credential stuffing across many accounts from one address, then guessing one account's password.
     await this.limiter.hit(`login-ip:${ip}`, this.env.LOGIN_PER_IP_PER_MINUTE, 60_000);
@@ -92,7 +94,7 @@ export class AuthController {
       if (!(await argon2.verify(user.passwordHash, body.password))) return { refused: { userId: user.id, action: 'auth.sign_in_failed' } };
       if (passwordNeedsRehash(user.passwordHash)) await tx.update(users).set({ passwordHash: await hashPassword(body.password) }).where(eq(users.id, user.id));
       await noteSignInDevice(tx, tenant.id, user.id, deviceId);
-      return { ok: await signInResponse(tx, this.mfa, tenant.id, user, 'password', { ip, userAgent, deviceName }) };
+      return { ok: await signInResponse(tx, this.mfa, tenant.id, user, 'password', { ip, userAgent, deviceName, client }) };
     });
     if ('ok' in result) return result.ok;
     if (result.refused) {
@@ -104,10 +106,10 @@ export class AuthController {
 
   /** Second step for a user with two-factor on: the `mfaToken` from login plus an authenticator or backup code. */
   @Post('mfa/verify')
-  async verifyMfa(@Body(new ZodBody(MfaVerifyBody)) body: z.infer<typeof MfaVerifyBody>, @Ip() ip: string, @Headers('user-agent') userAgent?: string, @Headers('x-device-name') deviceName?: string) {
+  async verifyMfa(@Body(new ZodBody(MfaVerifyBody)) body: z.infer<typeof MfaVerifyBody>, @Ip() ip: string, @Headers('user-agent') userAgent?: string, @Headers('x-device-name') deviceName?: string, @Headers('x-zynetix-client') client?: string) {
     const challenge = this.mfa.tokens.verifyMfaChallenge(body.mfaToken);
     await this.limiter.hit(`mfa:${challenge.tid}:${challenge.sub}`, 10, 5 * 60_000);
-    const result = await this.db.withTenant(challenge.tid, (tx) => this.mfa.completeMfa(tx, challenge, body.code, { ip, userAgent, deviceName }, this.clock.now()));
+    const result = await this.db.withTenant(challenge.tid, (tx) => this.mfa.completeMfa(tx, challenge, body.code, { ip, userAgent, deviceName, client }, this.clock.now()));
     if (!result) throw new UnauthorizedException({ message: 'That code is wrong or expired', code: 'MFA_CODE_INVALID' });
     return result;
   }
@@ -121,7 +123,29 @@ export class AuthController {
 
   /** Exchanges the code for a session: the same body as `login`. */
   @Post('otp/verify')
-  verifyOtp(@Body(new ZodBody(OtpVerifyBody)) body: z.infer<typeof OtpVerifyBody>, @Ip() ip: string, @Headers('user-agent') userAgent?: string, @Headers('x-device-name') deviceName?: string) {
-    return this.otp.verify(body.tenant, body.phone, body.code, ip, { userAgent, deviceName });
+  verifyOtp(@Body(new ZodBody(OtpVerifyBody)) body: z.infer<typeof OtpVerifyBody>, @Ip() ip: string, @Headers('user-agent') userAgent?: string, @Headers('x-device-name') deviceName?: string, @Headers('x-zynetix-client') client?: string) {
+    return this.otp.verify(body.tenant, body.phone, body.code, ip, { userAgent, deviceName, client });
+  }
+
+  /**
+   * The apps: a new access token (and a new refresh token; the old one stops working) for the refresh token a
+   * mobile sign-in returned. Rate limited per address and per session.
+   */
+  @Post('refresh')
+  @HttpCode(200)
+  async refresh(@Body(new ZodBody(RefreshBody)) body: z.infer<typeof RefreshBody>, @Ip() ip: string) {
+    await this.limiter.hit(`refresh-ip:${ip}`, 120, 60_000);
+    const [tenantId, sessionId, secret] = body.refreshToken.split('.');
+    const uuid = z.uuid();
+    if (!uuid.safeParse(tenantId).success || !uuid.safeParse(sessionId).success || !secret) throw new UnauthorizedException({ message: 'Sign in again', code: 'REFRESH_INVALID' });
+    await this.limiter.hit(`refresh:${sessionId}`, 20, 60_000);
+    const r = await this.db.withTenant(tenantId, (tx) => this.mfa.refresh(tx, tenantId, sessionId, secret, this.clock.now(), { ip }));
+    if (!r.ok) {
+      // Two requests refreshed at once: the app re-reads its newest token. Anything else: sign in again.
+      if (r.code === 'REFRESH_RACE') throw new ConflictException({ message: 'Already refreshed', code: r.code });
+      throw new UnauthorizedException({ message: 'Sign in again', code: r.code });
+    }
+    const { ok: _ok, ...session } = r;
+    return session;
   }
 }

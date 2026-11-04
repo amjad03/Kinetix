@@ -1,6 +1,6 @@
 import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { and, eq, isNull, ne } from 'drizzle-orm';
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { audit } from '../common/audit.js';
 import { SecretBox } from '../common/secret-box.js';
 import { ENV, type Env } from '../config/env.js';
@@ -9,6 +9,7 @@ import { userRoles, users } from '../db/schema.js';
 import { tenantSecurityPolicies, userMfa, userSessions } from '../db/schema-foundation.js';
 import type { RoleName } from './principal.js';
 import { TokensService } from './tokens.service.js';
+import { Clock } from '../common/time.js';
 import { hashBackupCode, newBackupCode, newTotpSecret, otpauthUri, verifyTotp } from './totp.js';
 
 export interface SignInContext {
@@ -16,6 +17,23 @@ export interface SignInContext {
   userAgent?: string;
   /** From the `x-device-name` header the apps send ("Teacher App on Pixel 7"). */
   deviceName?: string;
+  /** From the `x-zynetix-client` header: `mobile` (the apps) gets a refresh token as well. */
+  client?: string;
+}
+
+/** How long an app stays signed in without being opened: each refresh starts this again. */
+export const REFRESH_TTL_DAYS = 60;
+/** The access token's lifetime (TokensService.signUser). */
+export const ACCESS_TTL_SECONDS = 12 * 3600;
+/** A refresh token just replaced still answers `REFRESH_RACE` (not a theft) for this long. */
+export const REFRESH_GRACE_SECONDS = 60;
+
+const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
+
+/** When a signed token expires (its `exp` claim), for the apps to refresh ahead of it. */
+export function tokenExpiry(jwt: string): string {
+  const exp = (JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString('utf8')) as { exp: number }).exp;
+  return new Date(exp * 1000).toISOString();
 }
 
 export const BACKUP_CODE_COUNT = 10;
@@ -42,6 +60,7 @@ export class MfaService {
   constructor(
     @Inject(ENV) env: Env,
     readonly tokens: TokensService,
+    private readonly clock: Clock,
   ) {
     // Without a configured secrets key (development) the box is keyed from the JWT secret.
     this.box = SecretBox.fromEnv(env) ?? new SecretBox({ 1: createHash('sha256').update(`zynetix-mfa:${env.JWT_SECRET}`).digest() }, 1);
@@ -180,15 +199,74 @@ export class MfaService {
 
   /** Creates the session row and signs the token that points at it. */
   async issue(tx: Tx, tenantId: string, user: typeof users.$inferSelect, roles: RoleName[], method: 'password' | 'otp', ctx: SignInContext, mfaVerified: boolean, mustSetUpMfa: boolean) {
+    const mustChangePassword = method === 'password' && user.passwordMustChange;
+    // The apps keep a session with a refresh token; not while a temporary password must still be changed.
+    const mobile = ctx.client === 'mobile' && !mustChangePassword;
+    const secret = mobile ? randomBytes(32).toString('base64url') : null;
+    const now = this.clock.now();
     const [session] = await tx
       .insert(userSessions)
-      .values({ tenantId, userId: user.id, label: deviceLabel(ctx), ip: ctx.ip ?? null, userAgent: ctx.userAgent?.slice(0, 300) ?? null, mfaVerified })
+      .values({
+        tenantId,
+        userId: user.id,
+        label: deviceLabel(ctx),
+        ip: ctx.ip ?? null,
+        userAgent: ctx.userAgent?.slice(0, 300) ?? null,
+        mfaVerified,
+        client: mobile ? 'mobile' : 'web',
+        refreshHash: secret ? sha256(secret) : null,
+        refreshExpiresAt: secret ? new Date(now.getTime() + REFRESH_TTL_DAYS * 86_400_000) : null,
+      })
       .returning({ id: userSessions.id });
-    const mustChangePassword = method === 'password' && user.passwordMustChange;
-    await audit(tx, { tenantId, actorType: 'user', actorId: user.id, action: 'auth.sign_in', subjectType: 'user', subjectId: user.id, data: { method, mfa: mfaVerified, sessionId: session.id } });
+    await audit(tx, { tenantId, actorType: 'user', actorId: user.id, action: 'auth.sign_in', subjectType: 'user', subjectId: user.id, data: { method, mfa: mfaVerified, sessionId: session.id, client: mobile ? 'mobile' : 'web' } });
+    const accessToken = this.tokens.signUser({ sub: user.id, tid: tenantId, roles, sid: session.id, ...(mustChangePassword ? { pwc: true as const } : {}), ...(mustSetUpMfa ? { mfe: true as const } : {}) });
     return {
-      accessToken: this.tokens.signUser({ sub: user.id, tid: tenantId, roles, sid: session.id, ...(mustChangePassword ? { pwc: true as const } : {}), ...(mustSetUpMfa ? { mfe: true as const } : {}) }),
+      accessToken,
+      expiresAt: tokenExpiry(accessToken),
+      ...(secret ? { refreshToken: `${tenantId}.${session.id}.${secret}` } : {}),
       mustChangePassword,
+      mustSetUpMfa,
+      user: { id: user.id, fullName: user.fullName, preferredLanguage: user.preferredLanguage, roles },
+    };
+  }
+
+  /**
+   * Swaps a refresh token for a new access token and a new refresh token (rotation). The token is
+   * `<tenantId>.<sessionId>.<secret>`; only a SHA-256 of the secret is kept. A signed-out session, a
+   * disabled account or an expired token answer 401. The token replaced less than a minute ago answers
+   * `REFRESH_RACE` (two requests at once); presented later it was copied, so the session is signed out.
+   */
+  async refresh(tx: Tx, tenantId: string, sessionId: string, secret: string, now: Date, ctx: SignInContext = {}) {
+    // Refusals are returned, not thrown, so signing out a reused token is not rolled back with the transaction.
+    const refused = (code: 'REFRESH_INVALID' | 'REFRESH_REUSED' | 'REFRESH_RACE' = 'REFRESH_INVALID') => ({ ok: false as const, code });
+    const [s] = await tx.select().from(userSessions).where(eq(userSessions.id, sessionId));
+    if (!s || s.client !== 'mobile' || s.revokedAt || !s.refreshHash || !s.refreshExpiresAt || s.refreshExpiresAt <= now) return refused();
+    const given = Buffer.from(sha256(secret));
+    if (!timingSafeEqual(given, Buffer.from(s.refreshHash))) {
+      const recent = s.refreshedAt && now.getTime() - s.refreshedAt.getTime() < REFRESH_GRACE_SECONDS * 1000;
+      if (s.refreshPrevHash && timingSafeEqual(given, Buffer.from(s.refreshPrevHash))) {
+        if (recent) return refused('REFRESH_RACE');
+        await tx.update(userSessions).set({ revokedAt: now, refreshHash: null, refreshPrevHash: null }).where(eq(userSessions.id, s.id));
+        await audit(tx, { tenantId, actorType: 'system', action: 'auth.refresh_reused', subjectType: 'user', subjectId: s.userId, data: { sessionId: s.id, ip: ctx.ip ?? null } });
+        return refused('REFRESH_REUSED');
+      }
+      return refused();
+    }
+    const [user] = await tx.select().from(users).where(eq(users.id, s.userId));
+    if (!user || user.status !== 'active') return refused();
+    const roles = await this.roleNames(tx, user.id);
+    const mustSetUpMfa = !(await this.enrolled(tx, user.id)) && (await this.isRequired(tx, tenantId, roles));
+    const next = randomBytes(32).toString('base64url');
+    await tx
+      .update(userSessions)
+      .set({ refreshPrevHash: s.refreshHash, refreshHash: sha256(next), refreshExpiresAt: new Date(now.getTime() + REFRESH_TTL_DAYS * 86_400_000), refreshedAt: now, lastSeenAt: now, ...(ctx.ip ? { ip: ctx.ip } : {}) })
+      .where(eq(userSessions.id, s.id));
+    const accessToken = this.tokens.signUser({ sub: user.id, tid: tenantId, roles, sid: s.id, ...(mustSetUpMfa ? { mfe: true as const } : {}) });
+    return {
+      ok: true as const,
+      accessToken,
+      expiresAt: tokenExpiry(accessToken),
+      refreshToken: `${tenantId}.${s.id}.${next}`,
       mustSetUpMfa,
       user: { id: user.id, fullName: user.fullName, preferredLanguage: user.preferredLanguage, roles },
     };

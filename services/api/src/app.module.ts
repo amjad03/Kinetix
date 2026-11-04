@@ -45,6 +45,7 @@ import { CodeModule } from './code/code.module.js';
 import { ConsentModule } from './consent/consent.module.js';
 import { PlansModule } from './plans/plans.module.js';
 import { PlatformModule } from './platform/platform.module.js';
+import { MobileModule } from './mobile/mobile.module.js';
 import { CoverageModule } from './coverage/coverage.module.js';
 import { HrModule } from './hr/hr.module.js';
 import { LmsModule } from './lms/lms.module.js';
@@ -242,6 +243,7 @@ import { AccessModule } from './access/access.module.js';
     TimetableStudioModule,
     TeachingLogModule,
     AccessModule,
+    MobileModule,
   ],
 })
 export class AppModule {}
