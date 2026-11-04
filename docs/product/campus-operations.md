@@ -7,6 +7,9 @@ Every write is tenant-scoped (RLS), role-checked, validated with zod and audited
 `transport_manager`, `driver`, `hostel_warden`, `canteen_manager`, `store_keeper` (plus `tenant_admin` and `principal`, who can do everything and are the approvers). A driver gets the `driver` role when a driver record is created with a `userId`; it opens driver mode in the Teacher App.
 
 ## Transport (`/v1/transport`)
+
+The transport user guide (crew verification, the school-bus safety checklist, fare slabs, fees after billing, boarding,
+the live map, occupancy, reports and the apps) is `docs/product/transport.md`.
 - Masters: vehicles (registration, capacity, insurance/fitness/PUC expiry), drivers and conductors, routes (vehicle, driver, monthly fee), ordered stops with coordinates and pickup time. `GET compliance` lists papers and licences expiring within 30 days.
 - Seats: `POST assignments` (one active seat per student, capacity enforced, moving replaces the old seat), `POST fees` charges the route fee.
 - Trips: the driver starts a trip (`pickup` or `drop`; drop visits stops in reverse) and posts `{lat,lng,speedKmh}` to `POST trips/:id/position`. The server marks stops reached (within 120 m), tells the families riding from the next stop once when the bus is within 500 m (notification kind `transport`), and emits `transport.position` (`TransportPositionEvent` in `@zynetix/shared`, with next stop and ETA) over the realtime gateway to the route's guardians, students and transport staff only. `GET trips/:id` is the trip log (started, approaching, stop_reached, ended).
