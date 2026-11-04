@@ -224,6 +224,9 @@ describe('placements pass', () => {
     expect((await action('placement-interactions', 'followedUp', i.id).expect(200)).body.succeeded).toBe(1);
     expect((await get('officer', '/v1/records/placement-companies?f.followUp=due').expect(200)).body.total).toBe(0);
     expect((await get('officer', `/v1/records/placement-interactions?f.company=${co.id}`).expect(200)).body.rows[0]).toMatchObject({ kind: 'call', followUpDone: true, recordedBy: 'Placement Officer' });
+    // The recruiter portal key's hash is never sent, even to the cell.
+    const list = (await get('officer', '/v1/placements/companies').expect(200)).body;
+    expect(list.every((c: Record<string, unknown>) => !('portalTokenHash' in c) && 'hasPortalKey' in c)).toBe(true);
     await get('teacher', '/v1/records/placement-interactions').expect(403);
     expect((await get('outsider', '/v1/records/placement-interactions').expect(200)).body.total).toBe(0);
   });

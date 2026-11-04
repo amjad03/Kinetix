@@ -64,6 +64,9 @@ const ResultsBody = z.object({ results: z.array(z.object({ registrationId: z.uui
 const OfferBody = z.object({ registrationId: z.uuid(), roleTitle: Opt(120), ctcLpa: z.number().min(0).max(1000).optional(), respondBy: Day.optional() });
 const RespondBody = z.object({ response: z.enum(['accepted', 'declined']), reason: Opt(300) });
 
+/** A company as staff see it: whether it has a recruiter portal key, never the key's hash. */
+const withoutKey = ({ portalTokenHash, ...c }: typeof placementCompanies.$inferSelect) => ({ ...c, hasPortalKey: !!portalTokenHash });
+
 /** Companies, drives, registrations, rounds, offers and statistics (docs/architecture/placements.md). */
 @Controller('v1/placements')
 export class PlacementsController {
@@ -78,7 +81,8 @@ export class PlacementsController {
   @Get('companies')
   @Auth('user', PLACEMENT_VIEW_ROLES)
   companies(@CurrentPrincipal() p: UserPrincipal) {
-    return this.db.withTenant(p.tenantId, (tx) => tx.select().from(placementCompanies).orderBy(asc(placementCompanies.name)));
+    // The recruiter portal key's hash never leaves the server; the list is capped.
+    return this.db.withTenant(p.tenantId, async (tx) => (await tx.select().from(placementCompanies).orderBy(asc(placementCompanies.name)).limit(2000)).map(withoutKey));
   }
 
   @Post('companies')
@@ -87,7 +91,7 @@ export class PlacementsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [row] = await orConflict('A company with that name already exists', () => tx.insert(placementCompanies).values({ tenantId: p.tenantId, ...b }).returning());
       await auditUser(tx, p, 'placement.company_created', 'company', row.id, { name: b.name });
-      return row;
+      return withoutKey(row);
     });
   }
 
@@ -97,7 +101,7 @@ export class PlacementsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [row] = await orConflict('A company with that name already exists', () => tx.update(placementCompanies).set(b).where(eq(placementCompanies.id, id)).returning());
       await auditUser(tx, p, 'placement.company_updated', 'company', id, b);
-      return found(row, 'Company');
+      return withoutKey(found(row, 'Company'));
     });
   }
 
@@ -112,7 +116,8 @@ export class PlacementsController {
         .from(placementDrives)
         .innerJoin(placementCompanies, eq(placementCompanies.id, placementDrives.companyId))
         .where(and(status ? eq(placementDrives.status, status) : undefined, kind ? eq(placementDrives.kind, kind) : undefined))
-        .orderBy(desc(placementDrives.createdAt));
+        .orderBy(desc(placementDrives.createdAt))
+        .limit(2000);
       return rows.map((r) => ({ ...r.d, company: r.company, registrations: r.registrations }));
     });
   }
@@ -280,6 +285,7 @@ export class PlacementsController {
         .innerJoin(students, eq(students.id, placementOffers.studentId))
         .where(driveId ? eq(placementOffers.driveId, driveId) : undefined)
         .orderBy(desc(placementOffers.createdAt))
+        .limit(5000)
         .then((rows) => rows.map((r) => ({ ...r.o, fullName: r.fullName, rollNo: r.rollNo }))),
     );
   }
