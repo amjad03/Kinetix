@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zynetix_parent/core/models.dart';
 import 'package:zynetix_parent/core/realtime.dart';
@@ -168,6 +170,88 @@ void main() {
       await tester.tap(find.byKey(const Key('notification-nb')));
       await tester.pumpAndSettle();
       expect(find.text("Aarav's bus"), findsOneWidget);
+    });
+  });
+
+  group('pass, fee, crew and today', () {
+    Map<String, dynamic> full({bool valid = true, int due = 0, int overdue = 0}) => {
+          ..._json(bus: {'tripId': 't1', 'lat': 12.95, 'lng': 77.6, 'speedKmh': 20, 'at': null, 'etaMinutes': 9, 'stopsAway': 1, 'lateMinutes': 14}),
+          'dropTime': '16:20',
+          'crew': {'driver': 'Manjunath Urs', 'driverPhone': '+919000022001', 'attendant': 'Pushpa', 'attendantPhone': null},
+          'today': [
+            {'kind': 'board', 'at': '2026-11-04T01:52:00.000Z', 'method': 'qr', 'direction': 'pickup', 'stopName': 'Defence Colony'},
+          ],
+          'pass': {'seatId': 'a1', 'from': '2026-08-03', 'until': valid ? '2027-08-03' : '2026-10-01', 'valid': valid, 'pdf': '/v1/transport/passes/c1.pdf'},
+          'fee': {'duePaise': due, 'overduePaise': overdue, 'nextDueOn': due > 0 ? '2026-11-10' : null, 'paidPaise': 0},
+        };
+
+    test('parses the crew, today, the pass and the fee, and keeps them through a live position', () {
+      final b = StudentBus.fromJson(full(due: 230000));
+      expect((b.details.driver, b.details.driverPhone, b.details.attendant), ('Manjunath Urs', '+919000022001', 'Pushpa'));
+      expect(b.details.dropTime!.label, '16:20');
+      expect(b.details.today.single.kind, 'board');
+      expect((b.details.passValid, b.details.passUntil, b.details.feeDuePaise), (true, '2027-08-03', 230000));
+      expect(b.bus!.lateMinutes, 14);
+      final moved = b.withEvent(BusPositionEvent.fromJson({'tripId': 't1', 'routeId': 'r1', 'lat': 12.96, 'lng': 77.63, 'nextStop': {'id': 's2', 'name': 'x', 'seq': 2}, 'etaMinutes': 2, 'lateMinutes': 6}));
+      expect(moved.bus!.lateMinutes, 6);
+      expect(identical(moved.details, b.details), isTrue);
+    });
+
+    Future<FakeParentApi> pumpScreen(WidgetTester tester, Map<String, dynamic> json, {Locale locale = const Locale('en'), List<String>? opened, List<String>? dialled}) async {
+      final api = FakeParentApi()..buses = {'c1': StudentBus.fromJson(json)};
+      await tester.pumpWidget(MaterialApp(
+        locale: locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: BusScreen(
+          api: api,
+          child: Child(id: 'c1', fullName: 'Aarav Rao', rollNo: '1', sectionId: 'sec1', sectionName: '5A'),
+          positions: const Stream.empty(),
+          mapBuilder: (context, data) => const SizedBox(key: Key('fakeMap')),
+          openFile: (bytes, name, mime) async {
+            opened?.add(name);
+            return true;
+          },
+          call: (phone) async {
+            dialled?.add(phone);
+            return true;
+          },
+        ),
+      ));
+      await tester.pumpAndSettle();
+      return api;
+    }
+
+    testWidgets('shows lateness, today on the bus, the crew, the pass and the fee; opens the pass and calls the driver', (tester) async {
+      final opened = <String>[];
+      final dialled = <String>[];
+      final api = await pumpScreen(tester, full(due: 230000), opened: opened, dialled: dialled);
+      expect(find.text('Running about 14 min late'), findsOneWidget);
+      expect(find.byKey(const Key('busToday')), findsOneWidget);
+      expect(find.textContaining('Defence Colony · Bus pass QR'), findsOneWidget);
+      await tester.scrollUntilVisible(find.byKey(const Key('busCallDriver')), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.text('16:20'), findsOneWidget);
+      expect(find.text('Manjunath Urs'), findsOneWidget);
+      expect(find.byKey(const Key('busCallAttendant')), findsNothing); // no phone for the attendant
+      await tester.scrollUntilVisible(find.byKey(const Key('busPassOpen')), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.textContaining('Valid until'), findsOneWidget);
+      expect(find.textContaining('₹2,300 due'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('busPassOpen')));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('busPassPdf c1'));
+      expect(opened, ['bus-pass.pdf']);
+      await tester.scrollUntilVisible(find.byKey(const Key('busCallDriver')), -100, scrollable: find.byType(Scrollable).first);
+      await tester.tap(find.byKey(const Key('busCallDriver')));
+      expect(dialled, ['+919000022001']);
+    });
+
+    testWidgets('an expired pass, an overdue fee and nothing marked today, in Kannada', (tester) async {
+      final j = full(valid: false, due: 180000, overdue: 180000)..['today'] = <Object>[];
+      await pumpScreen(tester, j, locale: const Locale('kn'));
+      expect(find.text('ಇಂದು ಇನ್ನೂ ಬಸ್‌ನಲ್ಲಿ ದಾಖಲಾಗಿಲ್ಲ'), findsOneWidget);
+      await tester.scrollUntilVisible(find.byKey(const Key('busFee')), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.textContaining('ಮುಗಿದಿದೆ'), findsOneWidget);
+      expect(find.textContaining('ಅವಧಿ ಮೀರಿದೆ'), findsOneWidget);
     });
   });
 }

@@ -1821,6 +1821,12 @@ class FakeParentApi implements ParentApi {
     return buses[childId] ?? const StudentBus(assigned: false);
   }
 
+  @override
+  Future<Uint8List> busPassPdf(String childId) async {
+    calls.add('busPassPdf $childId');
+    return Uint8List.fromList('%PDF-1.4 bus pass'.codeUnits);
+  }
+
   // ── Marks ─────────────────────────────────────────────────────────────────────────────────
 
   late Map<String, ChildMarks> childMarks = {

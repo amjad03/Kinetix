@@ -282,6 +282,9 @@ abstract class ParentApi implements AnnouncementSource {
   /// The child's school bus: route, stop, pickup time and the bus now (`GET /v1/transport/students/:id`).
   Future<StudentBus> bus(String childId);
 
+  /// The child's bus pass (name, photo, route, stop, timings and the QR the conductor scans).
+  Future<Uint8List> busPassPdf(String childId);
+
   /// The child's published marks with class averages and per-subject percentages.
   Future<ChildMarks> marks(String childId);
 
@@ -639,6 +642,9 @@ class HttpParentApi implements ParentApi {
   @override
   Future<StudentBus> bus(String childId) async =>
       StudentBus.fromJson(await _send('GET', '/v1/transport/students/$childId') as Map<String, dynamic>);
+
+  @override
+  Future<Uint8List> busPassPdf(String childId) => _download('/v1/transport/passes/$childId.pdf');
 
   @override
   Future<LibraryAccount> library(String childId) async =>
