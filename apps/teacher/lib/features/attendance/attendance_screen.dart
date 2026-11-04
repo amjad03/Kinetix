@@ -49,6 +49,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       messenger.showSnackBar(SnackBar(content: Text(l.errorText(error))));
       return;
     }
+    if (controller.queued) {
+      messenger.showSnackBar(SnackBar(content: Text(l.mobileSavedOffline)));
+      Navigator.of(context).pop(true);
+      return;
+    }
     final summary = attendanceSummary(l, controller);
     messenger.showSnackBar(SnackBar(content: Text(wasTaken ? l.attendanceUpdated(summary) : l.attendanceSaved(summary))));
     Navigator.of(context).pop(true);

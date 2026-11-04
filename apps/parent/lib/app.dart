@@ -1,16 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'core/app_state.dart';
+import 'core/mobile.dart';
 import 'demo/demo.dart';
 import 'features/shell/shell.dart';
 import 'features/sign_in/sign_in_screen.dart';
 import 'l10n/l10n.dart';
 
 class ParentApp extends StatelessWidget {
-  const ParentApp({super.key, required this.state});
+  const ParentApp({super.key, required this.state, this.versionCheck, this.openStore, this.offline});
 
   final AppState state;
+
+  /// The start-up version check (forced or recommended update); null skips it (tests, demo builds).
+  final Future<KxVersionCheck?> Function()? versionCheck;
+  final void Function(String url)? openStore;
+
+  /// True while screens show saved answers because the server cannot be reached.
+  final ValueListenable<bool>? offline;
 
   static final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -30,8 +39,18 @@ class ParentApp extends StatelessWidget {
       darkTheme: ZynetixTheme.dark(),
       themeMode: ThemeMode.system,
       navigatorKey: navigatorKey,
-      builder: demoAppBuilder,
-      home: ListenableBuilder(
+      builder: (context, child) {
+        final app = demoAppBuilder(context, child);
+        final off = offline;
+        if (off == null) return app;
+        return Column(
+          children: [
+            Expanded(child: app),
+            SafeArea(top: false, child: KxOfflineBanner(offline: off, text: AppLocalizations.of(context).mobileOffline)),
+          ],
+        );
+      },
+      home: _gate(ListenableBuilder(
         listenable: state,
         builder: (context, _) {
           if (state.restoring) return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -42,8 +61,12 @@ class ParentApp extends StatelessWidget {
           // Keyed by user so signing out and in again starts from a clean home.
           return state.signedIn ? ParentShell(key: ValueKey(state.me!.id), state: state) : SignInScreen(state: state);
         },
-      ),
+      )),
     ),
     );
   }
+
+  Widget _gate(Widget home) => versionCheck == null
+      ? home
+      : KxVersionGate(check: versionCheck!, strings: (c) => mobileStrings(AppLocalizations.of(c)), openStore: openStore, child: home);
 }

@@ -5,6 +5,7 @@ export 'src/badges.dart';
 export 'src/count_chips.dart';
 export 'src/home_widgets.dart';
 export 'src/lesson_minutes.dart';
+export 'src/mobile_core.dart';
 export 'src/online_classes.dart';
 export 'src/online_widgets.dart';
 export 'src/photo.dart';

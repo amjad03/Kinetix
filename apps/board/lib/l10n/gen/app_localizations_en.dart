@@ -4452,4 +4452,165 @@ class AppLocalizationsEn extends AppLocalizations {
   String setUpAgainBody(String server) {
     return 'The board stops using $server and the teacher is signed out. Then enter the server address and a new enrolment code from ZYNETIX ERP (Boards → New enrolment code).';
   }
+
+  @override
+  String get mobileUpdateRequiredTitle => 'Update the app to continue';
+
+  @override
+  String get mobileUpdateRequiredBody =>
+      'This version is no longer supported. Install the latest version from the store.';
+
+  @override
+  String get mobileUpdateAvailable => 'A new version of the app is available.';
+
+  @override
+  String get mobileUpdate => 'Update';
+
+  @override
+  String get mobileLater => 'Later';
+
+  @override
+  String get mobileOffline =>
+      'You are offline. Showing what was saved on this phone.';
+
+  @override
+  String get mobileNotificationSettings => 'Notification settings';
+
+  @override
+  String get mobileNotificationSettingsHint =>
+      'Choose which alerts ring this phone. Everything still reaches your inbox; emergencies always ring.';
+
+  @override
+  String get mobileQuietHours => 'Quiet hours';
+
+  @override
+  String get mobileQuietHoursHint => 'Alerts wait until quiet hours end.';
+
+  @override
+  String get mobileQuietFrom => 'From';
+
+  @override
+  String get mobileQuietTo => 'Until';
+
+  @override
+  String get mobileSave => 'Save';
+
+  @override
+  String get mobileSaved => 'Saved';
+
+  @override
+  String get mobileLoadFailed =>
+      'Could not reach ZYNETIX. Check your connection and try again.';
+
+  @override
+  String get mobileRetry => 'Try again';
+
+  @override
+  String mobilePendingWrites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes waiting to be sent',
+      one: '1 change waiting to be sent',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mobileSavedOffline =>
+      'Saved on this phone. It will be sent when you are back online.';
+
+  @override
+  String get mobileKind_absence => 'Absence';
+
+  @override
+  String get mobileKind_homework => 'Homework';
+
+  @override
+  String get mobileKind_broadcast => 'Broadcasts';
+
+  @override
+  String get mobileKind_board_shared => 'Shared board notes';
+
+  @override
+  String get mobileKind_recording => 'Class recordings';
+
+  @override
+  String get mobileKind_fee => 'Fees';
+
+  @override
+  String get mobileKind_library => 'Library';
+
+  @override
+  String get mobileKind_marks => 'Marks';
+
+  @override
+  String get mobileKind_message => 'Messages';
+
+  @override
+  String get mobileKind_live => 'Live classes';
+
+  @override
+  String get mobileKind_calendar => 'Calendar';
+
+  @override
+  String get mobileKind_badge => 'Badges';
+
+  @override
+  String get mobileKind_transport => 'Transport';
+
+  @override
+  String get mobileKind_hostel => 'Hostel';
+
+  @override
+  String get mobileKind_leave => 'Leave';
+
+  @override
+  String get mobileKind_payslip => 'Payslips';
+
+  @override
+  String get mobileKind_certificate => 'Certificates';
+
+  @override
+  String get mobileKind_placement => 'Placements';
+
+  @override
+  String get mobileKind_grievance => 'Grievances';
+
+  @override
+  String get mobileKind_welfare => 'Welfare';
+
+  @override
+  String get mobileKind_survey => 'Surveys';
+
+  @override
+  String get mobileKind_task => 'Tasks';
+
+  @override
+  String get mobileKind_announcement => 'Announcements';
+
+  @override
+  String get boardScreensaverNow => 'Now';
+
+  @override
+  String get boardScreensaverNext => 'Next';
+
+  @override
+  String get boardScreensaverFree => 'No class right now';
+
+  @override
+  String get boardScreensaverNotices => 'Notices';
+
+  @override
+  String get boardAttendanceCodeTitle => 'Mark your attendance';
+
+  @override
+  String get boardAttendanceCodeHint =>
+      'Scan this code in the Student App. It changes every few seconds.';
+
+  @override
+  String get boardAttendanceCodeNone => 'No class is on in this room now.';
+
+  @override
+  String get boardClose => 'Close';
 }

@@ -10,6 +10,7 @@ import 'dart:typed_data';
 import 'package:flutter/painting.dart';
 
 import 'package:zynetix_lesson/zynetix_lesson.dart';
+import 'package:zynetix_ui/zynetix_ui.dart' show KxNotificationPrefs;
 import '../core/academics_models.dart';
 import '../core/api.dart';
 import '../core/exam_work_models.dart';
@@ -195,6 +196,35 @@ class FakeTeacherApi implements TeacherApi {
   Future<void> unregisterPushDevice(String token) async {
     calls.add('push unregister $token');
     pushDevices.remove(token);
+  }
+
+  @override
+  Future<void> signOutServer() async => calls.add('sign out');
+
+  KxNotificationPrefs prefs = const KxNotificationPrefs(kinds: ['absence', 'message', 'leave', 'payslip', 'task', 'announcement'], pushOff: {});
+
+  @override
+  Future<KxNotificationPrefs> notificationPrefs() async => prefs;
+
+  @override
+  Future<KxNotificationPrefs> setNotificationPrefs(KxNotificationPrefs p) async => prefs = KxNotificationPrefs(kinds: prefs.kinds, pushOff: p.pushOff, quietStart: p.quietStart, quietEnd: p.quietEnd);
+
+  /// Writes kept for later (when [queueOffline] is set).
+  final queued = <String>[];
+  bool queueOffline = false;
+
+  @override
+  Future<bool> queueAttendance({required String slotId, required String date, required Map<String, AttendanceStatus> marks}) async {
+    if (!queueOffline) return false;
+    queued.add('attendance $slotId $date');
+    return true;
+  }
+
+  @override
+  Future<bool> queueMarks(String assessmentId, List<MarkInput> entries) async {
+    if (!queueOffline) return false;
+    queued.add('marks $assessmentId');
+    return true;
   }
 
   List<AppNotification> notificationItems = [];

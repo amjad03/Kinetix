@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show Locale;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:zynetix_ui/zynetix_ui.dart' show KxTokenRefresher;
 
 import '../l10n/l10n.dart';
 import 'api.dart';
@@ -23,12 +24,37 @@ class AppState extends ChangeNotifier {
     this.api,
     this.prefs, {
     TokenStore? tokens,
+    TokenStore? refreshTokens,
+    this.refresher,
+    this.wipeLocal,
     PushMessaging messaging = const NoPushMessaging(),
     LiveConnector? live,
   }) : tokens = tokens ?? const SecureTokenStore(),
+       refreshTokens = refreshTokens ?? (tokens == null ? SecureTokenStore.refresh : MemoryTokenStore()),
        push = PushRegistrar(api, messaging),
        liveConnector = live ?? SocketLiveConnection.new {
     _taps = messaging.onTap.listen((t) => pendingPushTap.value = t);
+    refresher?.onRotated = (access, refresh) {
+      unawaited(this.tokens.write(access).then((_) {}, onError: (Object e) => debugPrint('Token not saved: $e')));
+      unawaited(this.refreshTokens.write(refresh).then((_) {}, onError: (Object e) => debugPrint('Refresh token not saved: $e')));
+    };
+  }
+
+  /// The rotating refresh token (kept in [refreshTokens]), so a phone stays signed in past the access token.
+  final KxTokenRefresher? refresher;
+  final TokenStore refreshTokens;
+
+  /// Removes what the app kept on the phone for this person (read cache, downloads, offline lessons) on sign-out.
+  final Future<void> Function()? wipeLocal;
+
+  Future<void> _saveRefresh() async {
+    final r = refresher?.refreshToken;
+    if (r == null) return;
+    try {
+      await refreshTokens.write(r);
+    } catch (e) {
+      debugPrint('Refresh token not saved: $e');
+    }
   }
 
   final StudentApi api;
@@ -117,6 +143,7 @@ class AppState extends ChangeNotifier {
     final token = await migrateLegacyToken(prefs, tokens);
     if (token != null) {
       api.token = token;
+      refresher?.refreshToken = await refreshTokens.read();
       try {
         final profile = await api.me();
         if (profile.isStudent) {
@@ -185,6 +212,8 @@ class AppState extends ChangeNotifier {
       await prefs.setString(_kTenant, tenant);
       await prefs.setString(_kLogin, login);
       await tokens.write(api.token!);
+      await _saveRefresh();
+    await _saveRefresh();
       me = profile;
       student = null;
       notifyListeners();
@@ -219,6 +248,7 @@ class AppState extends ChangeNotifier {
     await prefs.setString(_kTenant, tenant);
     await prefs.setString(_kLogin, login);
     await tokens.write(api.token!);
+    await _saveRefresh();
     me = profile;
     student = record;
     notifyListeners();
@@ -230,8 +260,13 @@ class AppState extends ChangeNotifier {
   Future<void> signOut() async {
     // Stop pushes to this phone before the token goes.
     if (api.token != null) await push.unregister();
+    // Ends the session on the server too (the refresh token stops working), then forgets it here.
+    await api.signOutServer();
     api.token = null;
+    refresher?.clear();
     await tokens.delete();
+    await refreshTokens.delete();
+    await wipeLocal?.call();
     me = null;
     student = null;
     notifyListeners();

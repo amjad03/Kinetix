@@ -86,16 +86,26 @@ class AttendanceController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Returns null on success, or the error to show.
+  /// The last [submit] was kept on the phone (offline) to be sent later.
+  bool queued = false;
+
+  /// Returns null on success (or queued offline, see [queued]), or the error to show.
   Future<ApiException?> submit() async {
     submitting = true;
     notifyListeners();
     try {
+      queued = false;
       final sheet = await api.submitAttendance(slotId: slotId, date: date, marks: Map.of(marks));
       alreadyTaken = sheet.taken;
       dirty = false;
       return null;
     } on ApiException catch (e) {
+      // Offline: keep the register on the phone and send it when the server answers again.
+      if (e.status == 0 && await api.queueAttendance(slotId: slotId, date: date, marks: Map.of(marks))) {
+        queued = true;
+        dirty = false;
+        return null;
+      }
       return e;
     } finally {
       submitting = false;

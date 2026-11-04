@@ -1,17 +1,27 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'core/app_state.dart';
 import 'core/l10n.dart';
+import 'core/mobile.dart';
 import 'demo/demo.dart';
 import 'features/home/home_screen.dart';
 import 'features/sign_in/sign_in_screen.dart';
 
 class TeacherApp extends StatelessWidget {
-  const TeacherApp({super.key, required this.state});
+  const TeacherApp({super.key, required this.state, this.versionCheck, this.openStore, this.offline, this.pendingWrites});
 
   final AppState state;
+
+  /// The start-up version check (forced or recommended update); null skips it (tests, demo builds).
+  final Future<KxVersionCheck?> Function()? versionCheck;
+  final void Function(String url)? openStore;
+
+  /// True while screens show saved answers because the server cannot be reached; writes waiting to be sent.
+  final ValueListenable<bool>? offline;
+  final ValueListenable<List<KxQueuedWrite>>? pendingWrites;
 
   static final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -43,8 +53,25 @@ class TeacherApp extends StatelessWidget {
       darkTheme: ZynetixTheme.dark(),
       themeMode: ThemeMode.system,
       navigatorKey: navigatorKey,
-      builder: demoAppBuilder,
-      home: ListenableBuilder(
+      builder: (context, child) {
+        final app = demoAppBuilder(context, child);
+        final off = offline;
+        if (off == null) return app;
+        return Column(
+          children: [
+            Expanded(child: app),
+            SafeArea(
+              top: false,
+              child: KxOfflineBanner(offline: off, text: context.l10n.mobileOffline, pending: pendingWrites, pendingText: context.l10n.mobilePendingWrites),
+            ),
+          ],
+        );
+      },
+      home: versionCheck == null ? _home() : KxVersionGate(check: versionCheck!, strings: (c) => mobileStrings(c.l10n), openStore: openStore, child: _home()),
+    );
+  }
+
+  Widget _home() => ListenableBuilder(
         listenable: state,
         builder: (context, _) {
           if (state.restoring) return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -55,7 +82,5 @@ class TeacherApp extends StatelessWidget {
           // Keyed by user so signing out and in again starts from a clean home.
           return state.signedIn ? HomeScreen(key: ValueKey(state.me!.id), state: state) : SignInScreen(state: state);
         },
-      ),
-    );
-  }
+      );
 }

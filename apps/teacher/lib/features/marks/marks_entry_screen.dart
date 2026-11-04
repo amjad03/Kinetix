@@ -122,21 +122,28 @@ class MarksEntryController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The last [save] was kept on the phone (offline) to be sent later.
+  bool queued = false;
+
   /// Saves the rows that changed (call only when [invalid] is 0). Returns the error, or null.
   Future<ApiException?> save() async {
     final changed = rows.where((r) => r.changed).toList();
     if (changed.isEmpty) return null;
     saving = true;
+    queued = false;
     notifyListeners();
+    final entries = [
+      for (final r in changed) MarkInput(studentId: r.student.id, marks: r.marks, absent: r.absent, remark: r.remark.isEmpty ? null : r.remark),
+    ];
     try {
-      _apply(
-        await api.saveMarks(a.id, [
-          for (final r in changed)
-            MarkInput(studentId: r.student.id, marks: r.marks, absent: r.absent, remark: r.remark.isEmpty ? null : r.remark),
-        ]),
-      );
+      _apply(await api.saveMarks(a.id, entries));
       return null;
     } on ApiException catch (e) {
+      // Offline: keep the marks on the phone and send them when the server answers again.
+      if (e.status == 0 && await api.queueMarks(a.id, entries)) {
+        queued = true;
+        return null;
+      }
       return e;
     } finally {
       saving = false;
@@ -231,6 +238,10 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
     if (!mounted) return;
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(l.errorText(error))));
+      return;
+    }
+    if (controller.queued) {
+      messenger.showSnackBar(SnackBar(content: Text(l.mobileSavedOffline)));
       return;
     }
     widget.onChanged?.call(controller.a);

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatf
 import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:zynetix_lesson/zynetix_lesson.dart';
+import 'package:zynetix_ui/zynetix_ui.dart' show KxNotificationPrefs, KxQueuedWrite, KxReadCache, KxSendFailure, KxTokenRefresher, KxWriteQueue, kMobileClientHeaders;
 
 import 'course_file_models.dart';
 import 'desk_models.dart';
@@ -90,6 +91,19 @@ abstract class TeacherApi implements AnnouncementSource {
 
   /// Stops pushes to this phone's token (DELETE /v1/push/devices).
   Future<void> unregisterPushDevice(String token);
+
+  /// Ends this sign-in on the server (`POST /v1/me/sign-out`): the access and refresh tokens stop at once.
+  /// Quiet when offline.
+  Future<void> signOutServer();
+
+  /// Profile → Notifications (`/v1/me/notification-preferences`).
+  Future<KxNotificationPrefs> notificationPrefs();
+  Future<KxNotificationPrefs> setNotificationPrefs(KxNotificationPrefs prefs);
+
+  /// Keeps [submitAttendance] / [saveMarks] on the phone to send when the server answers again.
+  /// False when this build keeps no queue (the caller shows the offline error).
+  Future<bool> queueAttendance({required String slotId, required String date, required Map<String, AttendanceStatus> marks});
+  Future<bool> queueMarks(String assessmentId, List<MarkInput> entries);
 
   /// The teacher's latest notifications, newest first.
   Future<List<AppNotification>> notifications();
@@ -665,7 +679,18 @@ class TeacherLessonSource implements LessonSource {
 }
 
 class HttpTeacherApi implements TeacherApi {
-  HttpTeacherApi({required this.baseUrl, http.Client? client}) : _http = client ?? http.Client();
+  HttpTeacherApi({required this.baseUrl, http.Client? client, this.cache, this.writes}) : _http = client ?? http.Client() {
+    refresher = KxTokenRefresher(_http);
+  }
+
+  /// The rotating refresh token of this sign-in; a 401 is retried once after a refresh.
+  late final KxTokenRefresher refresher;
+
+  /// Last answers of the core screens' GETs, used when the server cannot be reached (null: nothing kept).
+  final KxReadCache? cache;
+
+  /// Attendance and marks that could not be sent offline (null: such writes fail as before).
+  final KxWriteQueue? writes;
 
   @override
   String baseUrl;
@@ -683,6 +708,45 @@ class HttpTeacherApi implements TeacherApi {
   Future<void> login({required String tenant, required String login, required String password}) async {
     final j = await _send('POST', '/v1/auth/login', body: {'tenant': tenant, 'login': login, 'password': password}, auth: false);
     token = j['accessToken'] as String;
+    refresher.take(j);
+  }
+
+  @override
+  Future<KxNotificationPrefs> notificationPrefs() async => KxNotificationPrefs.fromJson((await _send('GET', '/v1/me/notification-preferences') as Map).cast<String, dynamic>());
+
+  @override
+  Future<KxNotificationPrefs> setNotificationPrefs(KxNotificationPrefs prefs) async =>
+      KxNotificationPrefs.fromJson((await _send('PUT', '/v1/me/notification-preferences', body: prefs.toJson()) as Map).cast<String, dynamic>());
+
+  @override
+  Future<bool> queueAttendance({required String slotId, required String date, required Map<String, AttendanceStatus> marks}) async {
+    final q = writes;
+    if (q == null) return false;
+    await q.add('POST', '/v1/attendance', {
+      'slotId': slotId,
+      'date': date,
+      'records': [for (final e in marks.entries) {'studentId': e.key, 'status': e.value.name}],
+    }, label: 'attendance $date');
+    return true;
+  }
+
+  @override
+  Future<bool> queueMarks(String assessmentId, List<MarkInput> entries) async {
+    final q = writes;
+    if (q == null) return false;
+    await q.add('PUT', '/v1/assessments/$assessmentId/marks', {'entries': [for (final e in entries) e.toJson()]}, label: 'marks');
+    return true;
+  }
+
+  @override
+  Future<void> signOutServer() async {
+    if (token == null) return;
+    try {
+      // Straight to the client: a 401 here must not start another sign-out.
+      await _http.post(Uri.parse('$baseUrl/v1/me/sign-out'), headers: {'authorization': 'Bearer $token', ...kMobileClientHeaders}).timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // Offline or already ended: the phone forgets the session anyway.
+    }
   }
 
   @override
@@ -694,6 +758,7 @@ class HttpTeacherApi implements TeacherApi {
   Future<void> verifyOtp({required String tenant, required String phone, required String code}) async {
     final j = await _send('POST', '/v1/auth/otp/verify', body: {'tenant': tenant, 'phone': phone, 'code': code}, auth: false);
     token = j['accessToken'] as String;
+    refresher.take(j);
   }
 
   @override
@@ -1667,9 +1732,39 @@ class HttpTeacherApi implements TeacherApi {
     await _send('POST', '/v1/me/devices/trust', body: {'deviceId': id, 'label': label, 'platform': defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android'});
   }
 
-  Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, Duration timeout = const Duration(seconds: 20)}) async {
-    final res = await _request(method, path, body: body, auth: auth, timeout: timeout);
+  /// Core screens whose last answer is kept for offline use.
+  static bool _cached(String path) => const ['/v1/me', '/v1/notifications', '/v1/teacher/', '/v1/attendance-desk/', '/v1/timetable', '/v1/hr/leave', '/v1/conversations'].any(path.startsWith);
+
+  Future<dynamic> _send(String method, String path, {Object? body, bool auth = true, Duration timeout = const Duration(seconds: 20), bool retry = true}) async {
+    final c = method == 'GET' && auth ? cache : null;
+    final http.Response res;
+    try {
+      res = await _request(method, path, body: body, auth: auth, timeout: timeout, retry: retry);
+    } on ApiException catch (e) {
+      if (c != null && e.status == 0 && _cached(path)) {
+        final saved = await c.get(path);
+        if (saved != null) {
+          c.offline.value = true;
+          return jsonDecode(saved);
+        }
+      }
+      rethrow;
+    }
+    if (c != null) {
+      c.offline.value = false;
+      if (_cached(path) && res.body.isNotEmpty) unawaited(c.put(path, res.body));
+    }
+    if (writes != null && writes!.pending.value.isNotEmpty) unawaited(writes!.flush());
     return res.body.isEmpty ? null : jsonDecode(res.body);
+  }
+
+  /// Sends one queued write (attendance, marks); offline failures keep it queued.
+  Future<void> sendQueued(KxQueuedWrite w) async {
+    try {
+      await _request(w.method, w.path, body: w.body);
+    } on ApiException catch (e) {
+      throw KxSendFailure(offline: e.status == 0, status: e.status);
+    }
   }
 
   /// Sends a request; throws [ApiException] for network failures and error statuses.
@@ -1679,10 +1774,12 @@ class HttpTeacherApi implements TeacherApi {
     Object? body,
     bool auth = true,
     Duration timeout = const Duration(seconds: 20),
+    bool retry = true,
   }) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))
       ..headers['content-type'] = 'application/json'
-      ..headers['accept'] = 'application/json';
+      ..headers['accept'] = 'application/json'
+      ..headers.addAll(kMobileClientHeaders);
     if (auth && token != null) req.headers['authorization'] = 'Bearer $token';
     if (deviceId != null) req.headers['x-device-id'] = deviceId!;
     if (body != null) req.body = jsonEncode(body);
@@ -1697,7 +1794,15 @@ class HttpTeacherApi implements TeacherApi {
     }
 
     if (res.statusCode >= 400) {
-      if (res.statusCode == 401 && auth) onUnauthorized?.call();
+      if (res.statusCode == 401 && auth && token != null) {
+        // The access token ran out: rotate the refresh token and try once more.
+        final fresh = retry ? await refresher.refresh(baseUrl) : null;
+        if (fresh != null) {
+          token = fresh;
+          return _request(method, path, body: body, auth: auth, timeout: timeout, retry: false);
+        }
+        onUnauthorized?.call();
+      }
       final m = _message(res);
       final code = _code(res);
       throw m == null

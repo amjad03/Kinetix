@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
+import 'package:zynetix_ui/zynetix_ui.dart' show KxNotificationPrefs;
 import 'package:flutter/painting.dart';
 import 'package:zynetix_lesson/zynetix_lesson.dart';
 import '../core/academic_docs.dart';
@@ -28,6 +29,20 @@ import '../core/school_life.dart';
 
 /// In-memory [ParentApi] for widget tests.
 class FakeParentApi implements ParentApi {
+
+  @override
+  Future<void> signOutServer() async => signOutCalls++;
+
+  /// How many times the server was asked to end the session.
+  int signOutCalls = 0;
+
+  KxNotificationPrefs prefs = const KxNotificationPrefs(kinds: ['absence', 'fee', 'marks', 'homework'], pushOff: {});
+
+  @override
+  Future<KxNotificationPrefs> notificationPrefs() async => prefs;
+
+  @override
+  Future<KxNotificationPrefs> setNotificationPrefs(KxNotificationPrefs p) async => prefs = KxNotificationPrefs(kinds: prefs.kinds, pushOff: p.pushOff, quietStart: p.quietStart, quietEnd: p.quietEnd);
   List<RepairRequest> repairList = [
     RepairRequest(id: 'w1', title: 'Fix the leaking tap', status: 'in_progress', complaint: 'The tap in room 12 drips all night', dueOn: DateTime(2026, 10, 14)),
     RepairRequest(id: 'w2', title: 'Replace the tube light', status: 'verified', complaint: 'Light in the corridor is out', completedAt: DateTime(2026, 10, 6)),

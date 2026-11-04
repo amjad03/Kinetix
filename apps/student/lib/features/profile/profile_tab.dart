@@ -7,6 +7,7 @@ import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/profile_photo.dart';
 import '../../core/study.dart';
+import '../../core/mobile.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
 import '../attendance/attendance_overview_screen.dart';
@@ -597,6 +598,22 @@ class ProfileTabState extends State<ProfileTab> {
                 ),
                 KxSectionHeader(l.account),
                 ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
+                ListTile(
+                  key: const Key('notificationSettings'),
+                  leading: const Icon(Icons.notifications_active_outlined),
+                  title: Text(l.mobileNotificationSettings),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (ctx) => KxNotificationSettingsScreen(
+                        strings: mobileStrings(AppLocalizations.of(ctx)),
+                        kinds: kNotificationKinds,
+                        load: state.api.notificationPrefs,
+                        save: state.api.setNotificationPrefs,
+                      ),
+                    ),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s16, Kx.s16, Kx.s32),
                   child: OutlinedButton.icon(

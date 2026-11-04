@@ -1,10 +1,18 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:zynetix_ui/zynetix_ui.dart';
 
 import 'app.dart';
 import 'core/api.dart';
 import 'core/app_state.dart';
 import 'core/device_id.dart';
+import 'core/mobile.dart';
 import 'core/push.dart';
 import 'core/realtime.dart';
 import 'core/secure_store.dart';
@@ -28,9 +36,39 @@ Future<void> main() async {
   }
   // Firebase only when the build was given its options (see FirebaseConfig).
   final push = await startPush();
-  final api = HttpTeacherApi(baseUrl: defaultServerUrl)..deviceId = installId(prefs);
-  final state = AppState(api, prefs, realtime: SocketRealtime(), secure: DeviceSecureStore(), push: push);
+  final client = http.Client();
+  // Kept for this teacher only, wiped on sign-out: the core screens' last answers and writes made offline.
+  Future<Directory> support() async => Directory('${(await getApplicationSupportDirectory()).path}/zynetix');
+  final cache = KxReadCache(() async => Directory('${(await support()).path}/reads'));
+  late final HttpTeacherApi api;
+  final writes = KxWriteQueue(file: () async => File('${(await support()).path}/outbox.json'), send: (w) => api.sendQueued(w));
+  api = HttpTeacherApi(baseUrl: defaultServerUrl, client: client, cache: cache, writes: writes)..deviceId = installId(prefs);
+  late final AppState state;
+  state = AppState(
+    api,
+    prefs,
+    realtime: SocketRealtime(),
+    secure: DeviceSecureStore(),
+    push: push,
+    refresher: api.refresher,
+    wipeLocal: () async {
+      await writes.clear();
+      await kxWipeLocalFiles([await support(), await getTemporaryDirectory()]);
+    },
+  );
   api.onUnauthorized = () => state.signOut(expired: true);
-  runApp(TeacherApp(state: state));
+  KxCrashReporter(app: kAppName, appVersion: kAppVersion, send: KxCrashReporter.httpSender(client, () => state.serverUrl))
+    ..tenant = (() => state.signedIn ? state.rememberedTenant : null)
+    ..install();
+  runApp(
+    TeacherApp(
+      state: state,
+      versionCheck: () => kxCheckVersion(client, state.serverUrl, app: kAppName, version: kAppVersion),
+      openStore: (url) => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+      offline: cache.offline,
+      pendingWrites: writes.pending,
+    ),
+  );
   await state.restore();
+  unawaited(writes.flush());
 }

@@ -8,6 +8,7 @@ import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:zynetix_lesson/zynetix_lesson.dart';
+import 'package:zynetix_ui/zynetix_ui.dart' show KxNotificationPrefs, KxReadCache, KxTokenRefresher, kMobileClientHeaders;
 
 import '../l10n/l10n.dart';
 import 'academic_docs.dart';
@@ -74,6 +75,14 @@ class OtpChallenge {
 
 /// Everything the Student App asks of the ZYNETIX Cloud API. Tests use a fake.
 abstract class StudentApi implements AnnouncementSource, ChannelPrefSource {
+
+  /// Ends this sign-in on the server (`POST /v1/me/sign-out`): the access and refresh tokens stop at once.
+  /// Quiet when offline.
+  Future<void> signOutServer();
+
+  /// Profile → Notifications (`/v1/me/notification-preferences`).
+  Future<KxNotificationPrefs> notificationPrefs();
+  Future<KxNotificationPrefs> setNotificationPrefs(KxNotificationPrefs prefs);
   String get baseUrl;
   set baseUrl(String value);
 
@@ -711,7 +720,38 @@ class StudentLessonSource implements LessonSource {
 }
 
 class HttpStudentApi implements StudentApi {
-  HttpStudentApi({required this.baseUrl, http.Client? client}) : _http = client ?? http.Client();
+  HttpStudentApi({required this.baseUrl, http.Client? client, this.cache}) : _http = client ?? http.Client() {
+    refresher = KxTokenRefresher(_http);
+  }
+
+  static const _cachedPrefixes = ['/v1/me', '/v1/notifications', '/v1/student/', '/v1/timetable', '/v1/lms/', '/v1/homework', '/v1/conversations'];
+
+  /// The rotating refresh token of this sign-in; a 401 is retried once after a refresh.
+  late final KxTokenRefresher refresher;
+
+  /// Last answers of the core screens' GETs, used when the server cannot be reached (null: nothing kept).
+  final KxReadCache? cache;
+
+  @override
+  Future<void> signOutServer() async {
+    if (token == null) return;
+    try {
+      // Straight to the client: a 401 here must not start another sign-out.
+      await _http.post(Uri.parse('$baseUrl/v1/me/sign-out'), headers: {'authorization': 'Bearer $token', ...kMobileClientHeaders}).timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // Offline or already ended: the phone forgets the session anyway.
+    }
+  }
+
+  @override
+  Future<KxNotificationPrefs> notificationPrefs() async => KxNotificationPrefs.fromJson((await _send('GET', '/v1/me/notification-preferences') as Map).cast<String, dynamic>());
+
+  @override
+  Future<KxNotificationPrefs> setNotificationPrefs(KxNotificationPrefs prefs) async =>
+      KxNotificationPrefs.fromJson((await _send('PUT', '/v1/me/notification-preferences', body: prefs.toJson()) as Map).cast<String, dynamic>());
+
+  /// Core screens whose last answer is kept for offline use.
+  static bool _cached(String path) => _cachedPrefixes.any(path.startsWith);
 
   @override
   String baseUrl;
@@ -735,6 +775,7 @@ class HttpStudentApi implements StudentApi {
       rethrow;
     }
     token = j['accessToken'] as String;
+    refresher.take(j);
   }
 
   @override
@@ -751,6 +792,7 @@ class HttpStudentApi implements StudentApi {
       rethrow;
     }
     token = j['accessToken'] as String;
+    refresher.take(j);
   }
 
   @override
@@ -1277,17 +1319,46 @@ class HttpStudentApi implements StudentApi {
     Object? body,
     bool auth = true,
     Duration timeout = const Duration(seconds: 20),
+    bool retry = true,
   }) async {
     final req = http.Request(method, Uri.parse('$baseUrl$path'))
       ..headers['content-type'] = 'application/json'
-      ..headers['accept'] = 'application/json';
+      ..headers['accept'] = 'application/json'
+      ..headers.addAll(kMobileClientHeaders);
     if (auth && token != null) req.headers['authorization'] = 'Bearer $token';
     if (deviceId != null) req.headers['x-device-id'] = deviceId!;
     if (body != null) req.body = jsonEncode(body);
-    return _receive(req, auth: auth, timeout: timeout);
+    final c = method == 'GET' && auth && _cached(path) ? cache : null;
+    final dynamic result;
+    try {
+      result = await _receive(req, auth: auth, timeout: timeout, refreshable: retry && auth && token != null && refresher.refreshToken != null);
+    } on _NeedsRefresh {
+      // The access token ran out: rotate the refresh token and try once more.
+      final fresh = await refresher.refresh(baseUrl);
+      if (fresh == null) {
+        onUnauthorized?.call();
+        throw ApiException(401, 'Your session has ended. Sign in again.', code: 'UNAUTHORIZED');
+      }
+      token = fresh;
+      return _send(method, path, body: body, auth: auth, timeout: timeout, retry: false);
+    } on ApiException catch (e) {
+      if (c != null && e.status == 0) {
+        final saved = await c.get(path);
+        if (saved != null) {
+          c.offline.value = true;
+          return jsonDecode(saved);
+        }
+      }
+      rethrow;
+    }
+    if (c != null) {
+      c.offline.value = false;
+      if (result != null) unawaited(c.put(path, jsonEncode(result)));
+    }
+    return result;
   }
 
-  Future<dynamic> _receive(http.BaseRequest req, {required bool auth, required Duration timeout}) async {
+  Future<dynamic> _receive(http.BaseRequest req, {required bool auth, required Duration timeout, bool refreshable = false}) async {
     final http.Response res;
     try {
       res = await http.Response.fromStream(await _http.send(req)).timeout(timeout);
@@ -1298,7 +1369,10 @@ class HttpStudentApi implements StudentApi {
     }
 
     if (res.statusCode >= 400) {
-      if (res.statusCode == 401 && auth) onUnauthorized?.call();
+      if (res.statusCode == 401 && auth) {
+        if (refreshable) throw const _NeedsRefresh();
+        onUnauthorized?.call();
+      }
       throw ApiException(res.statusCode, _message(res), code: _code(res), retryAfterSeconds: _retryAfter(res));
     }
     return res.body.isEmpty ? null : jsonDecode(res.body);
@@ -1876,4 +1950,9 @@ class AttendanceScan {
         alreadyMarked: j['alreadyMarked'] == true,
         reasons: [for (final r in (j['reasons'] as List? ?? const [])) r as String],
       );
+}
+
+/// A 401 that a refresh may fix (see `_send`).
+class _NeedsRefresh implements Exception {
+  const _NeedsRefresh();
 }

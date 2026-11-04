@@ -7,6 +7,7 @@ import '../../core/api.dart';
 import '../../core/app_state.dart';
 import '../../core/files.dart';
 import '../../core/l10n.dart';
+import '../../core/mobile.dart';
 import '../attendance/attendance_desk_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../hr/interviews_screen.dart';
@@ -191,6 +192,22 @@ class ProfileTab extends StatelessWidget {
             ),
             ListTile(leading: const Icon(Icons.dns_outlined), title: Text(l.server), subtitle: Text(state.serverUrl)),
             DeviceTrustTile(api: state.api),
+            ListTile(
+              key: const Key('notificationSettings'),
+              leading: const Icon(Icons.notifications_active_outlined),
+              title: Text(l.mobileNotificationSettings),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (ctx) => KxNotificationSettingsScreen(
+                    strings: mobileStrings(ctx.l10n),
+                    kinds: kNotificationKinds,
+                    load: state.api.notificationPrefs,
+                    save: state.api.setNotificationPrefs,
+                  ),
+                ),
+              ),
+            ),
             KxSectionHeader(l.teaching),
             ...teachingTiles,
             ListTile(
