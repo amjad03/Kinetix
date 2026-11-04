@@ -251,7 +251,9 @@ export async function researchPass(c: Ctx): Promise<void> {
     { fullName: 'Suresh Babu', programme: 'phd', supervisorUserId: rag.id, enrolledOn: '2020-01-20', thesisTitle: 'Employer branding in Indian higher education', registrationNo: 'BCU/PHD/2020/002', mode: 'part_time', departmentId: dept['Management Studies'], centreId: centres[1].id, entrance: 'exempt', gender: 'male', category: 'st', courseworkCompletedOn: '2020-08-01', synopsisApprovedOn: '2021-03-10', status: 'awarded', completedOn: '2026-02-14' },
   ]);
   const [ananth] = await k.q<{ id: string }>("select id from research_scholars where tenant_id = $1 and full_name = 'Ananth Prabhu'", [c.tenantId]);
-  const S = (n: string) => (n === 'Ananth Prabhu' ? ananth.id : sch.find((s) => s.fullName === n)!.id);
+  const S = (n: string) => (n === 'Ananth Prabhu' ? ananth?.id : sch.find((s) => s.fullName === n)!.id);
+  // Rows for a scholar the research stage did not create (a partial seed) are left out.
+  const known = <T extends { scholarId: string | undefined }>(rows: T[]) => rows.filter((r) => r.scholarId);
   await k.ins('scholar_coursework', [
     ...['Divya Shankar', 'Fathima Banu', 'Pooja Naik', 'Karthik Gowda'].flatMap((n, i) => [
       { scholarId: S(n), course: 'Research methodology', credits: 4, grade: i === 3 ? null : 'A', status: i === 3 ? 'enrolled' : 'passed', completedOn: i === 3 ? null : ['2024-02-15', '2025-02-10', '2026-02-28'][i] },
@@ -259,20 +261,20 @@ export async function researchPass(c: Ctx): Promise<void> {
       { scholarId: S(n), course: n === 'Pooja Naik' ? 'Advanced machine learning' : 'Advanced financial economics', credits: 4, grade: i === 3 ? null : 'B+', status: i === 3 ? 'enrolled' : 'passed', completedOn: i === 3 ? null : ['2024-02-15', '2025-02-10', '2026-02-28'][i] },
     ]),
   ], { returning: false });
-  await k.ins('scholar_dc_meetings', [
+  await k.ins('scholar_dc_meetings', known([
     { scholarId: S('Divya Shankar'), heldOn: '2025-11-20', members: 'Dr. Kavitha Murthy (guide), Dr. N. Rao (external), Prof. Sudhir Kamath', progress: 'satisfactory', recommendations: 'Complete the second field round before the pre-submission seminar', nextDueOn: '2026-05-20' },
     { scholarId: S('Fathima Banu'), heldOn: '2025-12-02', members: 'Prof. Latha Gowda (guide), Dr. S. Iyer (external)', progress: 'needs_improvement', recommendations: 'Narrow the sample to two districts; submit a review paper', nextDueOn: '2026-06-02' },
     { scholarId: S('Pooja Naik'), heldOn: '2026-03-10', members: 'Prof. Sowmya Reddy (guide), Dr. Srinivas Rao', progress: 'satisfactory', recommendations: 'Synopsis by December', nextDueOn: '2026-09-10' },
     { scholarId: S('Ananth Prabhu'), heldOn: '2026-01-15', members: 'Dr. Kavitha Murthy (guide), Dr. M. Shetty (external)', progress: 'satisfactory', recommendations: 'Proceed to data collection', nextDueOn: '2026-07-15' },
-  ], { returning: false });
-  await k.ins('scholar_progress_reports', [
+  ]), { returning: false });
+  await k.ins('scholar_progress_reports', known([
     { scholarId: S('Divya Shankar'), periodFrom: '2025-02-01', periodTo: '2025-07-31', submittedOn: '2025-08-06', summary: 'First field round in 4 villages (186 households); data cleaned.', outputs: 'Paper presented at the National Conference on Fintech for Bharat', rating: 'satisfactory', supervisorRemarks: 'On schedule', status: 'accepted', reviewedBy: kav.id },
     { scholarId: S('Divya Shankar'), periodFrom: '2025-08-01', periodTo: '2026-01-31', submittedOn: '2026-02-04', summary: 'Second field round started; econometric model drafted.', rating: 'satisfactory', supervisorRemarks: 'Add robustness checks', status: 'accepted', reviewedBy: kav.id },
     { scholarId: S('Divya Shankar'), periodFrom: '2026-02-01', periodTo: '2026-07-31', submittedOn: d(-60), summary: 'Two chapters drafted; review paper submitted to the Journal of Rural Studies.', status: 'submitted' },
     { scholarId: S('Fathima Banu'), periodFrom: '2025-08-05', periodTo: '2026-02-04', submittedOn: '2026-02-12', summary: 'Literature review; questionnaire validated with 40 students.', supervisorRemarks: 'Add the pilot results and the reliability figures before resubmitting', status: 'returned', reviewedBy: lat.id },
     { scholarId: S('Pooja Naik'), periodFrom: '2025-08-18', periodTo: '2026-02-17', submittedOn: '2026-02-25', summary: 'Coursework completed; adaptive quiz engine prototype.', rating: 'satisfactory', status: 'accepted', reviewedBy: sow.id },
     { scholarId: S('Ananth Prabhu'), periodFrom: '2025-07-10', periodTo: '2026-01-09', submittedOn: '2026-01-14', summary: 'Synopsis approved; sampling frame of 300 shops.', rating: 'needs_improvement', supervisorRemarks: 'Data collection is behind; plan two field weeks in March', status: 'accepted', reviewedBy: kav.id },
-  ], { returning: false });
+  ]), { returning: false });
   await k.ins('supervisor_allocations', [
     { scholarId: S('Divya Shankar'), supervisorUserId: kav.id, role: 'supervisor', allocatedOn: '2023-08-01' },
     { scholarId: S('Fathima Banu'), supervisorUserId: lat.id, role: 'supervisor', allocatedOn: '2024-08-05' },
