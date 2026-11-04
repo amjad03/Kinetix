@@ -16,6 +16,7 @@ import 'growth_models.dart';
 import 'hr_models.dart';
 import 'insights_models.dart';
 import 'library_models.dart';
+import 'lms_models.dart';
 import 'models.dart';
 import 'obe_models.dart';
 import 'offline_key.dart';
@@ -114,6 +115,35 @@ abstract class TeacherApi implements AnnouncementSource {
   Future<EvidenceInfo> addMyEvidence({required String kind, required String title, int? year, String venue = '', String? fileName, Uint8List? fileBytes, String? contentType});
   Future<List<CourseFileOption>> courseFileOptions();
   Future<List<CourseFileVersion>> courseFiles();
+
+  // ── LMS (services/api/src/lms) ───────────────────────────────────────────────────────────────
+  /// The LMS courses of the classes I teach (`GET /v1/lms/courses`), one with its content, and publishing it.
+  Future<List<TeacherCourse>> lmsCourses();
+  Future<TeacherCourseDetail> lmsCourse(String id);
+  Future<void> setLmsCoursePublished(String id, bool published);
+
+  /// Adds a lesson page (text) or a web link to a module (`POST /v1/lms/modules/:id/items`).
+  Future<void> addLessonPage(String moduleId, {required String title, required String body});
+  Future<void> addCourseLink(String moduleId, {required String title, required String url});
+
+  /// Students at risk in a course (`GET /v1/lms/courses/:id/at-risk`).
+  Future<List<RiskStudent>> courseAtRisk(String courseId);
+
+  /// Live classes of a course, scheduling one, and the attendance suggested by the joins (`/v1/lms/.../live`).
+  Future<List<TeacherLive>> courseLive(String courseId);
+  Future<void> scheduleLive(String courseId, {required String title, required DateTime startsAt, required int durationMin, required String joinUrl});
+  Future<List<LiveJoinRow>> liveAttendance(String liveId);
+  Future<void> confirmLiveAttendance(String liveId, List<({String studentId, String status})> entries);
+
+  /// Held and reported discussions and replies (`GET /v1/lms/courses/:id/forum/queue`) and the decision on one.
+  Future<List<ModerationRow>> forumQueue(String courseId);
+  Future<void> moderateForum(String kind, String id, String action);
+
+  /// My quizzes with attempts to mark and flagged attempts, an attempt list, marking one answer and the push to internal marks.
+  Future<List<TeacherQuiz>> lmsQuizzes();
+  Future<List<TeacherQuizAttempt>> quizAttempts(String quizId);
+  Future<void> markQuizAnswer(String attemptId, String questionId, double marks);
+  Future<({int students, int absent})> pushQuizMarks(String quizId);
   Future<CourseFileVersion> buildCourseFile(String sectionId, String subjectId);
   Future<Uint8List> courseFilePdf(String id);
 
@@ -740,6 +770,59 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<List<CourseFileOption>> courseFileOptions() async =>
       [for (final e in await _send('GET', '/v1/course-files/options') as List) CourseFileOption.fromJson(e as Map<String, dynamic>)];
+
+  @override
+  Future<List<TeacherCourse>> lmsCourses() async => [for (final r in await _send('GET', '/v1/lms/courses') as List) TeacherCourse.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<TeacherCourseDetail> lmsCourse(String id) async => TeacherCourseDetail.fromJson((await _send('GET', '/v1/lms/courses/$id') as Map).cast<String, dynamic>());
+
+  @override
+  Future<void> setLmsCoursePublished(String id, bool published) => _send('PATCH', '/v1/lms/courses/$id', body: {'status': published ? 'published' : 'draft'});
+
+  @override
+  Future<void> addLessonPage(String moduleId, {required String title, required String body}) => _send('POST', '/v1/lms/modules/$moduleId/items', body: {'kind': 'page', 'title': title, 'body': body});
+
+  @override
+  Future<void> addCourseLink(String moduleId, {required String title, required String url}) => _send('POST', '/v1/lms/modules/$moduleId/items', body: {'kind': 'link', 'title': title, 'url': url});
+
+  @override
+  Future<List<RiskStudent>> courseAtRisk(String courseId) async => [for (final r in ((await _send('GET', '/v1/lms/courses/$courseId/at-risk') as Map)['students'] as List)) RiskStudent.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<List<TeacherLive>> courseLive(String courseId) async => [for (final r in await _send('GET', '/v1/lms/courses/$courseId/live') as List) TeacherLive.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> scheduleLive(String courseId, {required String title, required DateTime startsAt, required int durationMin, required String joinUrl}) =>
+      _send('POST', '/v1/lms/courses/$courseId/live', body: {'title': title, 'startsAt': startsAt.toUtc().toIso8601String(), 'durationMin': durationMin, 'joinUrl': joinUrl});
+
+  @override
+  Future<List<LiveJoinRow>> liveAttendance(String liveId) async => [for (final r in ((await _send('GET', '/v1/lms/live/$liveId/attendance') as Map)['rows'] as List)) LiveJoinRow.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> confirmLiveAttendance(String liveId, List<({String studentId, String status})> entries) =>
+      _send('POST', '/v1/lms/live/$liveId/attendance', body: {'entries': [for (final e in entries) {'studentId': e.studentId, 'status': e.status}]});
+
+  @override
+  Future<List<ModerationRow>> forumQueue(String courseId) async => ModerationRow.fromQueue((await _send('GET', '/v1/lms/courses/$courseId/forum/queue') as Map).cast<String, dynamic>());
+
+  @override
+  Future<void> moderateForum(String kind, String id, String action) => _send('POST', '/v1/lms/forum/moderation', body: {'kind': kind, 'id': id, 'action': action});
+
+  @override
+  Future<List<TeacherQuiz>> lmsQuizzes() async => [for (final r in await _send('GET', '/v1/lms/quizzes') as List) TeacherQuiz.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<List<TeacherQuizAttempt>> quizAttempts(String quizId) async => [for (final r in await _send('GET', '/v1/lms/quizzes/$quizId/attempts') as List) TeacherQuizAttempt.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> markQuizAnswer(String attemptId, String questionId, double marks) => _send('PUT', '/v1/lms/quiz-attempts/$attemptId/mark', body: {'questionId': questionId, 'marks': marks});
+
+  @override
+  Future<({int students, int absent})> pushQuizMarks(String quizId) async {
+    final r = (await _send('POST', '/v1/lms/quizzes/$quizId/push-marks') as Map).cast<String, dynamic>();
+    return (students: (r['students'] as num).toInt(), absent: (r['absent'] as num).toInt());
+  }
 
   @override
   Future<List<CourseFileVersion>> courseFiles() async =>

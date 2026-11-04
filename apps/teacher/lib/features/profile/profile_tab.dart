@@ -23,6 +23,7 @@ import '../insights/section_insights_screen.dart';
 import '../roster/roster_screen.dart';
 import '../syllabus/syllabus_screen.dart';
 import '../work/course_files_screen.dart';
+import '../work/lms_screens.dart';
 import '../work/duties_screens.dart';
 import '../work/paper_setting_screen.dart';
 import '../work/evaluation_screens.dart';
@@ -317,6 +318,7 @@ class ProfileTab extends StatelessWidget {
               ('openIndents', Icons.add_shopping_cart, l.indentsTitle, l.indentsBody, () => IndentsScreen(api: state.api, userId: me.id)),
               ('openBookings', Icons.meeting_room_outlined, l.bookingsTitle, l.bookingsBody, () => RoomBookingsScreen(api: state.api)),
               ('openInterviews', Icons.person_search_outlined, l.ivTitle, l.ivBody, () => InterviewsScreen(api: state.api, userId: me.id)),
+              ('openLms', Icons.school_outlined, l.lmsTitle, l.lmsBody, () => LmsCoursesScreen(api: state.api)),
               ('openTasks', Icons.task_alt_outlined, l.tasksTitle, l.tasksBody, () => TasksScreen(api: state.api)),
               ('openRequests', Icons.approval_outlined, l.requestsTitle, l.requestsBody, () => RequestsScreen(api: state.api)),
               ('openSubstitutions', Icons.swap_horiz, l.subsTitle, l.subsBody, () => SubstitutionsScreen(api: state.api)),
