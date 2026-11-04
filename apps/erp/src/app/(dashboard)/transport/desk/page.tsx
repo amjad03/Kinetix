@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { LhtDesk, type DeskTask } from '@/components/lht/LhtDesk';
 import { LhtLinks } from '@/components/lht/LhtRecordsPage';
+import { TransportLinks } from '@/components/transport/TransportLinks';
 import { PassLinks } from '@/components/lht/PassLinks';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
@@ -55,7 +56,7 @@ export default async function TransportDeskPage() {
   if (data.error !== undefined)
     return (
       <>
-        <PageHeader title={t('lht.desk.transport')} actions={<LhtLinks module="transport" here="desk" />} />
+        <PageHeader title={t('lht.desk.transport')} actions={<><TransportLinks /><LhtLinks module="transport" here="desk" /></>} />
         <ErrorState message={data.error} />
       </>
     );
@@ -134,7 +135,7 @@ export default async function TransportDeskPage() {
 
   return (
     <>
-      <PageHeader title={t('lht.desk.transport')} subtitle={t('lht.desk.transport.sub')} actions={<LhtLinks module="transport" here="desk" />} />
+      <PageHeader title={t('lht.desk.transport')} subtitle={t('lht.desk.transport.sub')} actions={<><TransportLinks /><LhtLinks module="transport" here="desk" /></>} />
       <StatGrid min={140}>
         <StatTile label={t('lht.s.routes')} value={fmt.number(d.routes)} caption={t('lht.s.vehiclesN', { n: d.vehicles })} testId="lht-tr-routes" href="/transport/records?view=transport-routes" />
         <StatTile label={t('lht.s.riders')} value={fmt.number(d.studentRiders)} caption={t('lht.s.staffN', { n: d.staffRiders })} href="/transport/records?view=transport-riders" />
