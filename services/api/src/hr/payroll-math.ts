@@ -30,9 +30,13 @@ export function providentFund(pfWagePaise: number, cfg: PfConfig = DEFAULT_PF) {
   return { wage, epsWage, employee, eps, epf: employerTotal - eps };
 }
 
-/** ESI: on gross wages up to the limit (₹21,000); employee 0.75%, employer 3.25%, rounded up. */
-export function esi(grossPaise: number, limitPaise = R(21_000)) {
-  if (grossPaise <= 0 || grossPaise > limitPaise) return { applicable: false, employee: 0, employer: 0 };
+/**
+ * ESI: employee 0.75%, employer 3.25% of the month's wages, rounded up. Cover is decided on the monthly wage
+ * rate (up to ₹21,000), not on what the month paid: overtime does not take a covered employee out, and loss of
+ * pay does not bring an uncovered one in. `coverageWagePaise` defaults to the gross.
+ */
+export function esi(grossPaise: number, limitPaise = R(21_000), coverageWagePaise = grossPaise) {
+  if (grossPaise <= 0 || coverageWagePaise > limitPaise) return { applicable: false, employee: 0, employer: 0 };
   return { applicable: true, employee: ceilRupee(grossPaise * 0.0075), employer: ceilRupee(grossPaise * 0.0325) };
 }
 
@@ -163,15 +167,26 @@ export function monthlyTds(regime: TaxRegime, p: {
   ytdTdsPaise: number;
   declared80cPaise: number;
   otherDeductionsPaise: number;
+  /**
+   * One-off taxable pay this month (bonus, arrears, overtime, encashment): it is not projected over the months
+   * left, and the extra tax it adds to the year is deducted in full now.
+   */
+  oneOffTaxablePaise?: number;
 }): { annualTaxPaise: number; tdsPaise: number } {
   const left = monthsLeftInFy(p.month);
-  const tax = annualTax(regime, {
-    grossPaise: p.ytdGrossTaxablePaise + p.monthGrossTaxablePaise * left,
-    professionalTaxPaise: p.ytdPtPaise + p.monthPtPaise * left,
-    section80cPaise: p.declared80cPaise + p.ytdEmployeePfPaise + p.monthEmployeePfPaise * left,
-    otherDeductionsPaise: p.otherDeductionsPaise,
-  });
-  return { annualTaxPaise: tax, tdsPaise: roundRupee(Math.max(0, tax - p.ytdTdsPaise) / left) };
+  const yearTax = (extra: number) =>
+    annualTax(regime, {
+      grossPaise: p.ytdGrossTaxablePaise + p.monthGrossTaxablePaise * left + extra,
+      professionalTaxPaise: p.ytdPtPaise + p.monthPtPaise * left,
+      section80cPaise: p.declared80cPaise + p.ytdEmployeePfPaise + p.monthEmployeePfPaise * left,
+      otherDeductionsPaise: p.otherDeductionsPaise,
+    });
+  const tax = yearTax(0);
+  const regular = roundRupee(Math.max(0, tax - p.ytdTdsPaise) / left);
+  const oneOff = p.oneOffTaxablePaise ?? 0;
+  if (oneOff <= 0) return { annualTaxPaise: tax, tdsPaise: regular };
+  const withOneOff = yearTax(oneOff);
+  return { annualTaxPaise: withOneOff, tdsPaise: regular + roundRupee(Math.max(0, withOneOff - tax)) };
 }
 
 /**
@@ -275,12 +290,16 @@ export function computePayslip(i: PayslipInput): ComputedPayslip {
   const earnings = [...earnLines.map((l) => ({ code: l.code, name: l.name, amountPaise: prorate(l.monthlyPaise) })), ...extraEarn.map((x) => ({ code: x.code, name: x.name, amountPaise: x.amountPaise }))];
   const gross = earnings.reduce((s, e) => s + e.amountPaise, 0);
   const taxableGross = earnings.filter((_, k) => (k < earnLines.length ? earnLines[k].taxable : extraEarn[k - earnLines.length].taxable)).reduce((s, e) => s + e.amountPaise, 0);
+  // The structure's taxable pay recurs every month; the extras are paid once.
+  const regularTaxable = earnings.filter((_, k) => k < earnLines.length && earnLines[k].taxable).reduce((s, e) => s + e.amountPaise, 0);
   const pfWage = earnings.filter((_, k) => k < earnLines.length && earnLines[k].pfWage).reduce((s, e) => s + e.amountPaise, 0);
 
   // Reimbursements against bills are paid but are not wages: ESI and professional tax look at the rest.
   const wageGross = gross - extraEarn.filter((x) => x.wage === false).reduce((n, x) => n + x.amountPaise, 0);
   const pf = i.staff.pfEnabled ? providentFund(pfWage, i.pf) : { employee: 0, eps: 0, epf: 0 };
-  const e = i.staff.esiEnabled ? esi(wageGross, i.esiLimitPaise) : { employee: 0, employer: 0 };
+  // ESI cover follows the full-month wage rate of the structure (hourly staff without one: what they were paid).
+  const wageRate = earnLines.length ? earnLines.reduce((s, l) => s + l.monthlyPaise, 0) : wageGross;
+  const e = i.staff.esiEnabled ? esi(wageGross, i.esiLimitPaise, wageRate) : { employee: 0, employer: 0 };
   const month = Number(i.month.slice(5, 7));
   const supp = i.supplementary ?? null;
   const pt = i.staff.ptEnabled && !supp ? professionalTax(wageGross, month, i.ptSlabs) : 0;
@@ -298,7 +317,8 @@ export function computePayslip(i: PayslipInput): ComputedPayslip {
       })
     : monthlyTds(i.staff.regime, {
     month,
-    monthGrossTaxablePaise: taxableGross,
+    monthGrossTaxablePaise: regularTaxable,
+    oneOffTaxablePaise: taxableGross - regularTaxable,
     monthPtPaise: pt,
     monthEmployeePfPaise: pf.employee,
     ytdGrossTaxablePaise: i.ytd.grossTaxablePaise,

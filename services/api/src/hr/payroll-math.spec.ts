@@ -139,6 +139,27 @@ describe('computePayslip', () => {
     expect(tiny.netPaise).toBe(0);
   });
 
+  it('taxes a one-off bonus once, not as if it were paid every month left in the year', () => {
+    // ₹50,000 a month is ₹6 lakh a year, under the 87A rebate; a ₹1 lakh April bonus makes it ₹7 lakh, still nil.
+    // Projecting the bonus over the 12 months left would have assumed ₹18 lakh and deducted TDS.
+    const bonus = { code: 'BONUS', name: 'Bonus', amountPaise: R(1_00_000), taxable: true };
+    expect(computePayslip(input({ lines: lines(25_000, 12_500, 12_500), extras: [bonus] })).tdsPaise).toBe(0);
+    // ₹2 lakh a month (₹24 lakh, TDS 24,375 a month) and the bonus's own tax in full: 3,19,800 - 2,92,500.
+    const p = computePayslip(input({ extras: [bonus] }));
+    expect(p.tdsPaise).toBe(R(24_375 + 27_300));
+    expect(p.annualTaxPaise).toBe(annualTax('new', { grossPaise: R(25_00_000) }));
+  });
+
+  it('decides ESI cover on the monthly wage rate: overtime does not end it, loss of pay does not start it', () => {
+    const esiOn = { regime: 'new' as const, pfEnabled: false, esiEnabled: true, ptEnabled: false, tax80cPaise: 0, taxOtherDeductionsPaise: 0 };
+    const ot = computePayslip(input({ lines: lines(20_000, 0, 0), staff: esiOn, extras: [{ code: 'OT', name: 'Overtime', amountPaise: R(3_000), taxable: true }] }));
+    expect(ot.esiPaise).toBe(R(173)); // 0.75% of ₹23,000 (overtime is ESI wages), rounded up
+    expect(ot.employer.esiPaise).toBe(R(748));
+    const lop = computePayslip(input({ lines: lines(24_000, 0, 0), lopDays: 8, staff: esiOn }));
+    expect(lop.grossPaise).toBe(R(17_600));
+    expect(lop.esiPaise).toBe(0);
+  });
+
   it('honours switches: no PF, no PT', () => {
     const p = computePayslip(input({ staff: { regime: 'new', pfEnabled: false, esiEnabled: false, ptEnabled: false, tax80cPaise: 0, taxOtherDeductionsPaise: 0 } }));
     expect(p.employeePfPaise).toBe(0);
