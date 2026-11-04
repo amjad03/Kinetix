@@ -32,6 +32,14 @@ export interface DriveDetail {
   status: 'draft' | 'open' | 'closed' | 'completed' | 'cancelled';
   postedByRecruiter: boolean;
   rounds: Round[];
+  /** Placement pass: further criteria (empty genders = everyone). */
+  genders?: string[];
+  minTenthPct?: number | null;
+  minTwelfthPct?: number | null;
+  maxGapYears?: number | null;
+  maxBacklogHistory?: number | null;
+  requireVerifiedDocs?: boolean;
+  notifiedAt?: string | null;
 }
 
 export interface Registration {
@@ -46,7 +54,7 @@ export interface Registration {
 }
 
 export interface EligibleList {
-  students: { studentId: string; fullName: string; rollNo: string; className: string; program: string; batchYear: number | null; cgpa: number | null; backlogs: number; eligible: boolean; reasons: string[]; registration: { id: string; status: string } | null }[];
+  students: { studentId: string; fullName: string; rollNo: string; className: string; program: string; batchYear: number | null; cgpa: number | null; backlogs: number; tenthPct?: number | null; twelfthPct?: number | null; gapYears?: number | null; docsVerified?: boolean; eligible: boolean; reasons: string[]; registration: { id: string; status: string } | null }[];
   summary: { total: number; eligible: number; registered: number };
 }
 
@@ -96,6 +104,8 @@ export interface CompanyDetail {
   selfRegistered: boolean;
   hasPortalKey: boolean;
   portalTokenAt: string | null;
+  /** prospect | contacted | engaged | recruiting | dormant */
+  crmStage?: string;
   contacts: { id: string; name: string; designation: string; email: string | null; phone: string | null; isPrimary: boolean }[];
   drives: { id: string; title: string; kind: string; status: string; driveDate: string | null; ctcLpa: number | null; registrations: number; offers: number }[];
 }
@@ -157,3 +167,39 @@ export interface Shortlist {
   rounds: { id: string; seq: number; name: string; kind: string }[];
   rows: { rollNo: string; fullName: string; program: string; className: string; cgpaAt: number; backlogsAt: number; status: string; rounds: Record<string, string> }[];
 }
+
+/** A call, email, meeting or visit with a recruiter (record kit `placement-interactions`). */
+export interface Interaction {
+  id: string;
+  kind: string;
+  happenedOn: string;
+  summary: string;
+  outcome: string;
+  nextAction: string;
+  followUpOn: string | null;
+  followUpDone: boolean;
+  contactName: string | null;
+  recordedBy: string | null;
+}
+
+/** An apprenticeship's months: the stipend due and the Government share, with what was paid and credited (paise). */
+export interface StipendSheet {
+  apprenticeship: { id: string; establishment: string; stipendPaise: number; govtSharePaise: number; category: string };
+  months: { month: string; duePaise: number; govtSharePaise: number; employerPaidPaise: number | null; dbtPaise: number | null; dbtReference: string; paidOn: string | null }[];
+  totals: { employerPaidPaise: number; dbtPaise: number; monthsUnpaid: number };
+}
+
+/** Criteria beyond CGPA and backlogs, as short phrases keys: the drive page lists them. */
+export function extraCriteria(d: Pick<DriveDetail, 'genders' | 'minTenthPct' | 'minTwelfthPct' | 'maxGapYears' | 'maxBacklogHistory' | 'requireVerifiedDocs'>): { key: string; vars?: Record<string, string | number> }[] {
+  const out: { key: string; vars?: Record<string, string | number> }[] = [];
+  if (d.genders?.length === 1) out.push({ key: d.genders[0] === 'female' ? 'pp.crit.women' : 'pp.crit.men' });
+  if (d.minTenthPct) out.push({ key: 'pp.crit.tenth', vars: { pct: d.minTenthPct } });
+  if (d.minTwelfthPct) out.push({ key: 'pp.crit.twelfth', vars: { pct: d.minTwelfthPct } });
+  if (d.maxGapYears != null) out.push({ key: 'pp.crit.gap', vars: { n: d.maxGapYears } });
+  if (d.maxBacklogHistory != null) out.push({ key: 'pp.crit.history', vars: { n: d.maxBacklogHistory } });
+  if (d.requireVerifiedDocs) out.push({ key: 'pp.crit.docs' });
+  return out;
+}
+
+/** Reads CSV text from a chosen file (UTF-8; a spreadsheet saved as CSV). */
+export const csvFromFile = (f: File): Promise<string> => f.text();

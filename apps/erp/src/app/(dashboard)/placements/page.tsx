@@ -6,11 +6,11 @@ import { PageHeader } from '@/components/PageHeader';
 import { InternshipsDesk } from '@/components/placements/InternshipsDesk';
 import { StudentStanding, type OptinRow } from '@/components/placements/StudentStanding';
 import { KitList, type ColSpec, type RowActionSpec } from '@/components/procurement/KitList';
-import { options } from '@/components/records/text';
+import { options, tr } from '@/components/records/text';
 import { StatTile } from '@/components/StatTile';
 import { ErrorState } from '@/components/States';
 import { LinkTabs } from '@/components/ui';
-import { approveInternship, cancelInternship, completeInternship, recordJoining, recordOfferResponse, revokeOffer, startInternship, uploadOfferLetter, verifyCompany } from '@/app/(dashboard)/placements/actions';
+import { approveInternship, cancelInternship, closeReferral, completeApprenticeship, completeInternship, endApprenticeship, followedUp, markHired, markReferred, recordJoining, recordOfferResponse, registerContract, rejectDocument, revokeOffer, startApprenticeship, startInternship, uploadOfferLetter, verifyCompany, verifyDocument } from '@/app/(dashboard)/placements/actions';
 import { getI18n } from '@/i18n/server';
 import { api, load, requireSection } from '@/lib/api';
 import { lakhs, type PlacementStats } from '@/lib/campus-life';
@@ -27,9 +27,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Roles that run the placement cell (a head of department reads), placements.access.ts PLACEMENT_ROLES. */
 const PLACEMENT_STAFF = ['principal', 'tenant_admin', 'placement_officer'];
-const VIEWS = ['overview', 'drives', 'companies', 'offers', 'internships', 'log', 'training', 'progression', 'feedback', 'students'] as const;
+const VIEWS = ['overview', 'drives', 'companies', 'crm', 'documents', 'offers', 'internships', 'log', 'apprenticeships', 'training', 'progression', 'referrals', 'feedback', 'students'] as const;
 type View = (typeof VIEWS)[number];
-const ENTITY: Partial<Record<View, string>> = { drives: 'placement-drives', companies: 'placement-companies', offers: 'placement-offers', internships: 'internships', training: 'placement-trainings', progression: 'progressions', feedback: 'placement-feedback' };
+const ENTITY: Partial<Record<View, string>> = { drives: 'placement-drives', companies: 'placement-companies', crm: 'placement-interactions', documents: 'placement-documents', offers: 'placement-offers', internships: 'internships', apprenticeships: 'apprenticeships', training: 'placement-trainings', progression: 'progressions', referrals: 'placement-referrals', feedback: 'placement-feedback' };
 
 /**
  * The placement cell: recruiters (verified, with contacts and a recruiter portal key), drives (eligibility, rounds,
@@ -85,7 +85,9 @@ export default async function PlacementsPage({ searchParams }: { searchParams: P
       { id: 'contact', label: t('pd.hrContact'), key: 'contactName', sub: 'contactEmail', hideBelow: 'lg' },
       { id: 'drives', label: t('pd.drives'), key: 'drives', kind: 'number', sortKey: 'drives' },
       { id: 'placed', label: t('pl.stat.placed'), key: 'placed', kind: 'number', sortKey: 'placed' },
-      { id: 'portal', label: t('pd.portalKey'), key: 'hasPortalKey', kind: 'yesno', hideBelow: 'md' },
+      { id: 'stage', label: t('pp.crm.stage'), key: 'crmStage', kind: 'status', labels: opt('crmStage'), sortKey: 'stage', hideBelow: 'sm' },
+      { id: 'follow', label: t('pp.crm.nextFollowUp'), key: 'followUp', kind: 'date', sortKey: 'followUp', hideBelow: 'md', sub: 'ownerName' },
+      { id: 'portal', label: t('pd.portalKey'), key: 'hasPortalKey', kind: 'yesno', hideBelow: 'md', defaultHidden: true },
       { id: 'status', label: t('pl.col.status'), key: 'status', kind: 'status', labels: st },
     ],
     offers: [
@@ -99,12 +101,50 @@ export default async function PlacementsPage({ searchParams }: { searchParams: P
       { id: 'conditional', label: t('pd.conditional'), key: 'conditionNote', defaultHidden: true },
       { id: 'status', label: t('pl.col.status'), key: 'status', kind: 'status', labels: st },
     ],
+    crm: [
+      { id: 'on', label: t('ivd.date'), key: 'happenedOn', kind: 'date', sortKey: 'happened', rowHeader: true },
+      { id: 'company', label: t('pl.col.company'), key: 'companyName', sortKey: 'company', href: '/placements/companies/{companyId}', sub: 'contactName' },
+      { id: 'kind', label: t('pd.kind'), key: 'kind', kind: 'status', labels: opt('kind') },
+      { id: 'summary', label: t('pp.crm.summary'), key: 'summary', sub: 'outcome', hideBelow: 'sm' },
+      { id: 'next', label: t('pp.crm.next'), key: 'nextAction', hideBelow: 'md' },
+      { id: 'follow', label: t('pp.crm.followUpOn'), key: 'followUpOn', kind: 'date', sortKey: 'followUp' },
+      { id: 'done', label: t('pp.crm.done'), key: 'followUpDone', kind: 'yesno', hideBelow: 'md' },
+      { id: 'by', label: t('pp.crm.by'), key: 'recordedBy', defaultHidden: true },
+    ],
+    documents: [
+      { id: 'student', label: t('ops.f.student'), key: 'fullName', sortKey: 'student', rowHeader: true, sub: 'rollNo' },
+      { id: 'kind', label: t('pp.doc.kind'), key: 'kind', kind: 'status', labels: opt('kind'), sortKey: 'kind', sub: 'title' },
+      { id: 'program', label: t('pd.programme'), key: 'programName', hideBelow: 'md' },
+      { id: 'uploaded', label: t('pp.doc.uploaded'), key: 'createdAt', kind: 'date', sortKey: 'uploaded', hideBelow: 'sm' },
+      { id: 'reason', label: t('ho.reason'), key: 'rejectReason', hideBelow: 'lg' },
+      { id: 'by', label: t('pp.doc.reviewedBy'), key: 'reviewedBy', defaultHidden: true },
+      { id: 'status', label: t('pl.col.status'), key: 'status', kind: 'status', labels: opt('status') },
+    ],
+    apprenticeships: [
+      { id: 'student', label: t('ops.f.student'), key: 'fullName', sortKey: 'student', rowHeader: true, sub: 'rollNo' },
+      { id: 'establishment', label: t('pp.ap.establishment'), key: 'establishment', sortKey: 'establishment', sub: 'role' },
+      { id: 'nats', label: t('pp.ap.enrolment'), key: 'natsEnrolmentNo', sub: 'contractNo', hideBelow: 'md' },
+      { id: 'from', label: t('ops.f.startsOn'), key: 'startsOn', kind: 'date', sortKey: 'starts', hideBelow: 'sm' },
+      { id: 'stipend', label: t('pp.ap.stipend'), key: 'stipendPaise', kind: 'paise', sortKey: 'stipend' },
+      { id: 'govt', label: t('pp.ap.govtShare'), key: 'govtSharePaise', kind: 'paise', hideBelow: 'md' },
+      { id: 'dbt', label: t('pp.ap.dbt'), key: 'dbtPaise', kind: 'paise', hideBelow: 'lg' },
+      { id: 'status', label: t('pl.col.status'), key: 'status', kind: 'status', labels: opt('status') },
+    ],
+    referrals: [
+      { id: 'student', label: t('ops.f.student'), key: 'fullName', sortKey: 'student', rowHeader: true, sub: 'rollNo' },
+      { id: 'alumni', label: t('pp.ref.alumnus'), key: 'alumniName', sub: 'alumniEmployer' },
+      { id: 'company', label: t('pl.col.company'), key: 'company', sortKey: 'company', sub: 'role', hideBelow: 'sm' },
+      { id: 'note', label: t('ops.f.note'), key: 'note', hideBelow: 'md' },
+      { id: 'asked', label: t('pp.ref.asked'), key: 'createdAt', kind: 'date', sortKey: 'created', hideBelow: 'lg' },
+      { id: 'status', label: t('pl.col.status'), key: 'status', kind: 'status', labels: opt('status') },
+    ],
     internships: [
       { id: 'student', label: t('ops.f.student'), key: 'fullName', sortKey: 'student', rowHeader: true, sub: 'rollNo' },
       { id: 'org', label: t('pd.organisation'), key: 'orgName', sortKey: 'org', sub: 'title' },
       { id: 'starts', label: t('ops.f.startsOn'), key: 'startsOn', kind: 'date', sortKey: 'starts', hideBelow: 'sm' },
       { id: 'ends', label: t('pd.endsOn'), key: 'endsOn', kind: 'date', hideBelow: 'md' },
       { id: 'mentor', label: t('pd.mentor'), key: 'mentorName', hideBelow: 'lg' },
+      { id: 'hours', label: t('pp.col.hours'), key: 'hours', kind: 'number', hideBelow: 'lg' },
       { id: 'credits', label: t('pd.credits'), key: 'credits', kind: 'number', hideBelow: 'lg', sub: 'creditSubject' },
       { id: 'confirmed', label: t('pd.confirmed'), key: 'companyConfirmed', kind: 'yesno', hideBelow: 'md' },
       { id: 'score', label: t('pd.score'), key: 'evaluationScore', kind: 'number', sortKey: 'score', defaultHidden: true },
@@ -142,6 +182,24 @@ export default async function PlacementsPage({ searchParams }: { searchParams: P
   const rowActions: Record<string, RowActionSpec[]> = canEdit
     ? {
         companies: [{ id: 'verify', label: t('pd.co.verify'), when: [{ key: 'status', in: ['pending'] }], confirm: t('pd.co.verifyHelp'), done: t('pd.co.verified'), run: verifyCompany }],
+        crm: [{ id: 'done', label: t('pp.crm.markDone'), when: [{ key: 'followUpDone', in: [false] }, { key: 'followUpOn', not: [null] }], done: t('ops.saved'), run: followedUp }],
+        documents: [
+          { id: 'open', label: t('pp.doc.open'), href: '/api/download?kind=placement-document&id={id}' },
+          { id: 'verify', label: t('pp.doc.verify'), when: [{ key: 'status', in: ['pending', 'rejected'] }], confirm: t('pp.doc.verifyHelp'), done: t('pp.doc.verified'), run: verifyDocument },
+          { id: 'reject', label: t('pp.doc.reject'), danger: true, when: [{ key: 'status', in: ['pending', 'verified'] }], fields: [{ name: 'reason', label: t('ho.reason'), kind: 'multiline', required: true }], done: t('pp.doc.rejected'), run: rejectDocument },
+        ],
+        apprenticeships: [
+          { id: 'stipends', label: t('pp.ap.stipends'), href: '/placements/apprenticeships/{id}' },
+          { id: 'contract', label: t('pp.ap.contract'), when: [{ key: 'status', in: ['enrolled'] }], fields: [{ name: 'contractNo', label: t('pp.ap.contractNo'), required: true }], done: t('ops.saved'), run: registerContract },
+          { id: 'start', label: t('pp.ap.start'), when: [{ key: 'status', in: ['contract_registered'] }], confirm: t('pp.ap.startHelp'), done: t('ops.saved'), run: startApprenticeship },
+          { id: 'complete', label: t('pp.ap.complete'), when: [{ key: 'status', in: ['ongoing'] }], fields: [{ name: 'certificateNo', label: t('pp.ap.certificateNo'), required: true }, { name: 'certificateOn', label: t('ivd.date'), kind: 'date' }], done: t('ops.saved'), run: completeApprenticeship },
+          { id: 'end', label: t('pp.ap.end'), danger: true, when: [{ key: 'status', in: ['enrolled', 'contract_registered', 'ongoing'] }], confirm: t('pp.ap.endHelp'), done: t('ops.saved'), run: endApprenticeship },
+        ],
+        referrals: [
+          { id: 'referred', label: t('pp.ref.referred'), when: [{ key: 'status', in: ['requested'] }], fields: [{ name: 'note', label: t('ops.f.note') }], done: t('ops.saved'), run: markReferred },
+          { id: 'hired', label: t('pp.ref.hired'), when: [{ key: 'status', in: ['referred', 'interviewing'] }], confirm: t('pp.ref.hiredHelp'), done: t('ops.saved'), run: markHired },
+          { id: 'close', label: t('pp.ref.close'), when: [{ key: 'status', in: ['requested', 'referred', 'interviewing'] }], confirm: t('pp.ref.closeHelp'), done: t('ops.saved'), run: closeReferral },
+        ],
         offers: [
           {
             id: 'respond',
@@ -209,10 +267,10 @@ export default async function PlacementsPage({ searchParams }: { searchParams: P
           label={t(`pd.view.${view}`)}
           cols={cols[view]}
           extraParams={extraParams}
-          rowHref={view === 'drives' ? '/placements/drives/{id}' : view === 'companies' ? '/placements/companies/{id}' : view === 'training' ? '/placements/trainings/{id}' : undefined}
+          rowHref={view === 'drives' ? '/placements/drives/{id}' : view === 'companies' ? '/placements/companies/{id}' : view === 'training' ? '/placements/trainings/{id}' : view === 'apprenticeships' ? '/placements/apprenticeships/{id}' : undefined}
           rowActions={rowActions[view] ?? []}
-          emptyTitle={t(`pd.empty.${view as 'drives'}`)}
-          emptyBody={t(`pd.emptyHelp.${view as 'drives'}`)}
+          emptyTitle={tr(t, `pd.empty.${view}`, t(`pp.empty.${view as 'crm'}`))}
+          emptyBody={tr(t, `pd.emptyHelp.${view}`, t(`pp.emptyHelp.${view as 'crm'}`))}
           testId={`pl-${view}`}
         />
       ) : log?.data ? (
