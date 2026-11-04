@@ -3,6 +3,7 @@
  * normalisation and moderation, grace marks, pass rules and class, then the register as a grid in the
  * university's column layout. Every number a university may change is configuration (TemplateConfig).
  */
+import { csvCell } from '../common/pdf.js';
 
 export interface SubjectMark {
   code: string;
@@ -213,10 +214,7 @@ export function registerGrid(config: TemplateConfig, label: string, reg: Registe
   return grid;
 }
 
-const csvCell = (v: string | number) => {
-  const s = String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
+/** Student names and subject titles are typed by staff: quoted and formula-neutralised like every other export. */
 export const gridToCsv = (grid: (string | number)[][]) => '﻿' + grid.map((r) => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
 
 // ---- the two sample templates -------------------------------------------------------------

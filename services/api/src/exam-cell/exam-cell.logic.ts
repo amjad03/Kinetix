@@ -4,6 +4,7 @@
  * repeaters, gold medals, remuneration, the invigilation roster and the hall's answer-book balance.
  * No database here, so each rule is tested on its own (exam-cell.logic.spec.ts).
  */
+import { csvCell as pdfCsvCell } from '../common/pdf.js';
 
 const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
@@ -280,9 +281,6 @@ export function bookProblem(a: BookAccount, seated: number | null): string | nul
 
 // ---- CSV -------------------------------------------------------------------------------------
 
-/** Quotes a CSV cell when it has a comma, quote or line break. */
-export const csvCell = (v: unknown) => {
-  const s = v === null || v === undefined ? '' : String(v);
-  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
+/** Quotes a CSV cell when it has a comma, quote or line break, and neutralises spreadsheet formulas (common/pdf.ts). */
+export const csvCell = (v: unknown) => pdfCsvCell(v);
 export const csv = (rows: unknown[][]) => rows.map((r) => r.map(csvCell).join(',')).join('\n') + '\n';
