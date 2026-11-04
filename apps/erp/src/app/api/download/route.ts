@@ -20,6 +20,7 @@ const TARGETS: Record<string, (id: string) => string> = {
   tds: (id) => `/v1/payroll/runs/${id}/statutory.csv?kind=tds`,
   'asset-tags': (id) => `/v1/assets/tags.pdf?ids=${id}`,
   gradebook: (id) => `/v1/lms/courses/${id}/gradebook.csv`,
+  'lms-certificate': (id) => `/v1/lms/lms-certificates/${id}/pdf`,
   'course-file': (id) => `/v1/course-files/${id}/download`,
   'qb-paper': (id) => `/v1/question-bank/papers/${id}/paper.pdf`,
   'qb-key': (id) => `/v1/question-bank/papers/${id}/answer-key.pdf`,
@@ -134,6 +135,15 @@ export async function GET(req: NextRequest) {
     const app = req.nextUrl.searchParams.get('app') ?? '';
     if (!UUID.test(test) || !UUID.test(app)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/admissions/entrance-tests/${test}/hall-ticket/${app}`;
+  }
+  // NAAC 2.3.2 LMS evidence: ?kind=lms-evidence&from=&to= (both optional)
+  if (kind === 'lms-evidence') {
+    const q = new URLSearchParams({ format: 'csv' });
+    for (const [k, d] of [['from', range[0]], ['to', range[1]]] as const) {
+      if (d && !/^\d{4}-\d{2}-\d{2}$/.test(d)) return new Response('Not found', { status: 404 });
+      if (d) q.set(k, d);
+    }
+    FIXED[kind] = `/v1/lms/reports/evidence?${q.toString()}`;
   }
   // A degree certificate: ?kind=degree&id=<convocation>&candidate=<candidate>
   if (kind === 'degree') {

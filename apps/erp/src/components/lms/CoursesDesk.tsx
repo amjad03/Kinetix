@@ -7,6 +7,7 @@ import { useI18n } from '@/i18n/client';
 import type { LmsCourseRow } from '@/lib/lms';
 
 import { Button } from '@/components/kx';
+import { LinkButton } from '@/components/LinkButton';
 export function CoursesDesk({ courses, offerings }: { courses: LmsCourseRow[]; offerings: { value: string; label: string }[] }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -15,6 +16,7 @@ export function CoursesDesk({ courses, offerings }: { courses: LmsCourseRow[]; o
     <>
       <Bar>
         <Button variant="contained" onClick={() => setOpen(true)} data-testid="new-course">{t('lms.new')}</Button>
+        <LinkButton href="/courses/insights" variant="outlined">{t('lp.insights')}</LinkButton>
       </Bar>
       <Grid
         testId="courses-table"
@@ -25,6 +27,8 @@ export function CoursesDesk({ courses, offerings }: { courses: LmsCourseRow[]; o
           { label: t('lms.col.class'), cell: (c) => c.section },
           { label: t('lms.col.subject'), cell: (c) => c.subject },
           { label: t('lms.col.status'), cell: (c) => <Pill label={t(`lms.status.${c.status}`)} warn={c.status === 'draft'} />, sort: (c) => c.status },
+          { label: t('lp.col.items'), cell: (c) => c.items ?? 0, num: true },
+          { label: t('lp.col.active'), cell: (c) => c.activeLearners ?? 0, num: true },
           { label: '', cell: (c) => <Link href={`/courses/${c.id}/gradebook`}>{t('lms.gradebook')}</Link> },
         ]}
       />

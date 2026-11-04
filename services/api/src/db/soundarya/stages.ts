@@ -40,6 +40,7 @@ import { libraryPass } from './library-pass.js';
 import { inventoryPass } from './inventory-pass.js';
 import { transportPass } from './transport-pass.js';
 import { placementsPass } from './placements-pass.js';
+import { lmsPass } from './lms-pass.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -125,6 +126,7 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['transport pass: fare slabs, crew and driver verification, safety checks, trip sheets and the boarding log, a late bus this morning, an SOS, transport fees and a cancelled seat', transportPass],
   // After the placements, alumni, quality settings, internships and the convocation's 2025-26 graduates.
   ['placements pass: recruiter relationship and follow-ups, stricter and women-only drives, placement documents, training with attendance and scores, AICTE internship credits, five outgoing batches for NIRF, NAAC 5.2 and AISHE, NATS apprenticeships and alumni referrals', (c) => placementsPass(c)],
+  ['LMS pass: settings, lesson pages, a SCORM package, quizzes with negative marking and proctoring, live classes with joins, engagement, forum moderation, a learning path and course certificates', (c) => lmsPass(c)],
   // Last: version 1 is the live timetable as the earlier stages left it, and the diary follows the held periods.
   ['academics: bell schedule, lab batches and an open elective, allocations, unavailability, timetable versions, the teaching diary', academicsPass],
 ];
