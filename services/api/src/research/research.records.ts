@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, OnModuleInit } from '@nestjs/common';
-import { and, asc, desc, eq, ne, sql, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, ne, sql, type SQL, type SQLWrapper } from 'drizzle-orm';
 import { z } from 'zod';
 import { auditUser } from '../common/audit.js';
 import { nextNumber } from '../common/ops.js';
@@ -27,6 +27,14 @@ const staff = (ctx: KitCtx) => hasRole(ctx.p, R);
 /** A teacher sees the records that name them; research staff and heads see all. */
 const mine = (cond: (me: string) => SQL) => (ctx: KitCtx) => (staff(ctx) ? undefined : cond(ctx.p.userId));
 const after = (a: unknown, b: unknown) => !!a && !!b && String(a) < String(b);
+
+/** The application clock (a fixed clock in tests); set when the registers are registered. */
+let clockRef: Clock = { now: () => new Date() } as Clock;
+/**
+ * Today in the institution's time zone, read from the application clock each time a query is built (the database's
+ * `current_date` is the server's UTC day and ignores the clock).
+ */
+export const TODAY: SQLWrapper = { getSQL: () => sql`((${clockRef.now().toISOString()}::timestamptz) at time zone coalesce((select t.timezone from tenants t limit 1), 'Asia/Kolkata'))::date` };
 
 const projectOptions = async (ctx: KitCtx): Promise<FieldOption[]> => (await ctx.tx.select({ id: researchProjects.id, code: researchProjects.code, title: researchProjects.title }).from(researchProjects).orderBy(desc(researchProjects.startsOn))).map((r) => ({ value: r.id, label: `${r.code} ${r.title}` }));
 const projectLookup = async (ctx: KitCtx, text: string) => (await ctx.tx.select({ id: researchProjects.id }).from(researchProjects).where(sql`lower(${researchProjects.code}) = ${text.toLowerCase()} or lower(${researchProjects.title}) = ${text.toLowerCase()}`).limit(1))[0]?.id ?? null;
@@ -481,7 +489,7 @@ function mousEntity() {
       validity: {
         label: 'Validity',
         options: choices(['current', 'expiring', 'expired']),
-        where: (v) => (v === 'current' ? sql`${researchMous.status} = 'active' and (${researchMous.validUntil} is null or ${researchMous.validUntil} >= current_date)` : v === 'expiring' ? sql`${researchMous.status} = 'active' and ${researchMous.validUntil} between current_date and current_date + 90` : v === 'expired' ? sql`(${researchMous.validUntil} < current_date or ${researchMous.status} = 'terminated')` : undefined),
+        where: (v) => (v === 'current' ? sql`${researchMous.status} = 'active' and (${researchMous.validUntil} is null or ${researchMous.validUntil} >= ${TODAY})` : v === 'expiring' ? sql`${researchMous.status} = 'active' and ${researchMous.validUntil} between ${TODAY} and ${TODAY} + 90` : v === 'expired' ? sql`(${researchMous.validUntil} < ${TODAY} or ${researchMous.status} = 'terminated')` : undefined),
       },
     },
     search: [researchMous.partner, researchMous.purpose],
@@ -596,7 +604,7 @@ function recognitionsEntity() {
 }
 
 function ethicsEntity() {
-  const validity = sql<string>`case when ${researchEthicsApprovals.status} <> 'approved' then ${researchEthicsApprovals.status} when ${researchEthicsApprovals.expiresOn} < current_date then 'expired' when ${researchEthicsApprovals.expiresOn} <= current_date + 60 then 'expiring' else 'valid' end`;
+  const validity = sql<string>`case when ${researchEthicsApprovals.status} <> 'approved' then ${researchEthicsApprovals.status} when ${researchEthicsApprovals.expiresOn} < ${TODAY} then 'expired' when ${researchEthicsApprovals.expiresOn} <= ${TODAY} + 60 then 'expiring' else 'valid' end`;
   return kitEntity({
     key: 'research-ethics',
     module: MODULE,
@@ -659,9 +667,9 @@ function callsEntity() {
     },
     extra: {
       proposals: sql<number>`(select count(*)::int from research_proposals p where p.call_id = "research_calls"."id")`,
-      daysLeft: sql<number | null>`case when ${researchCalls.status} = 'open' then (${last} - current_date)::int end`,
+      daysLeft: sql<number | null>`case when ${researchCalls.status} = 'open' then (${last} - ${TODAY})::int end`,
     },
-    filters: { due: { label: 'Due', options: choices(['next_14_days', 'next_30_days', 'past']), where: (v) => (v === 'next_14_days' ? sql`${last} between current_date and current_date + 14` : v === 'next_30_days' ? sql`${last} between current_date and current_date + 30` : v === 'past' ? sql`${last} < current_date` : undefined) } },
+    filters: { due: { label: 'Due', options: choices(['next_14_days', 'next_30_days', 'past']), where: (v) => (v === 'next_14_days' ? sql`${last} between ${TODAY} and ${TODAY} + 14` : v === 'next_30_days' ? sql`${last} between ${TODAY} and ${TODAY} + 30` : v === 'past' ? sql`${last} < ${TODAY}` : undefined) } },
     search: [researchCalls.title, researchCalls.agency, researchCalls.scheme],
     defaultSort: { id: 'deadline', dir: 'asc' },
     importKey: ['title'],
@@ -676,7 +684,7 @@ function callsEntity() {
 }
 
 function equipmentEntity() {
-  const used = (col: SQL) => sql`coalesce((select ${col} from research_equipment_usage u where u.equipment_id = "research_equipment"."id" and u.status <> 'cancelled' and u.starts_at >= date_trunc('year', now())), 0)`;
+  const used = (col: SQL) => sql`coalesce((select ${col} from research_equipment_usage u where u.equipment_id = "research_equipment"."id" and u.status <> 'cancelled' and u.starts_at >= date_trunc('year', ${TODAY}::timestamp)), 0)`;
   return kitEntity({
     key: 'research-equipment',
     module: MODULE,
@@ -804,7 +812,7 @@ function scholarsEntity() {
       nextDcDue: sql<string | null>`(select d.next_due_on::text from scholar_dc_meetings d where d.scholar_id = "research_scholars"."id" order by d.held_on desc limit 1)`,
       courseworkDone: sql<string>`(select count(*) filter (where c.status in ('passed', 'exempted'))::text || ' / ' || count(*)::text from scholar_coursework c where c.scholar_id = "research_scholars"."id")`,
     },
-    filters: { dcDue: { label: 'Doctoral committee', options: choices(['overdue', 'never_met']), where: (v) => (v === 'overdue' ? sql`(select d.next_due_on from scholar_dc_meetings d where d.scholar_id = "research_scholars"."id" order by d.held_on desc limit 1) < current_date` : v === 'never_met' ? sql`not exists (select 1 from scholar_dc_meetings d where d.scholar_id = "research_scholars"."id")` : undefined) } },
+    filters: { dcDue: { label: 'Doctoral committee', options: choices(['overdue', 'never_met']), where: (v) => (v === 'overdue' ? sql`(select d.next_due_on from scholar_dc_meetings d where d.scholar_id = "research_scholars"."id" order by d.held_on desc limit 1) < ${TODAY}` : v === 'never_met' ? sql`not exists (select 1 from scholar_dc_meetings d where d.scholar_id = "research_scholars"."id")` : undefined) } },
     search: [researchScholars.fullName, researchScholars.thesisTitle],
     defaultSort: { id: 'fullName', dir: 'asc' },
     scope: mine((me) => eq(researchScholars.supervisorUserId, me)),
@@ -882,6 +890,7 @@ export class ResearchRecords implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
+    clockRef = this.clock;
     for (const e of [publicationsEntity(), patentsEntity(), proposalsEntity(this.clock), projectsEntity(), grantsEntity(), ucsEntity(), conferencesEntity(), consultanciesEntity(), mousEntity(), mouActivitiesEntity(), seedEntity(), recognitionsEntity(), ethicsEntity(), callsEntity(), equipmentEntity(), usageEntity(), scholarsEntity(), dcEntity(), courseworkEntity()]) this.registry.register(e);
   }
 }
