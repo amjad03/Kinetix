@@ -9,7 +9,9 @@ import { toCsv } from '../common/pdf.js';
 import { writeXlsx } from '../common/xlsx.js';
 import { DbService } from '../db/db.service.js';
 import { ctcSummary, FEEDBACK_CRITERIA } from './eligibility.js';
+import { aicteCredits, creditStanding, naac52 } from './placement-pass.logic.js';
 import { PLACEMENT_VIEW_ROLES } from './placements.access.js';
+import { type PlacementRules, PlacementsService } from './placements.service.js';
 
 /** The year a student graduates, from their class (semesters two to a year, school grades one). */
 const BATCH = sql`(extract(year from ay.ends_on)::int + case when p.level = 'k12' then p.term_count - s.term else floor((p.term_count - s.term) / 2.0)::int end)`;
@@ -19,11 +21,27 @@ type Col = [key: string, header: string];
 interface Report {
   columns: Col[];
   rows: (year: number) => SQL;
-  /** Rows computed in code (medians) from the query's rows. */
-  shape?: (rows: Record<string, unknown>[]) => Record<string, unknown>[];
+  /** Rows computed in code (medians) from the query's rows, with the placement rules. */
+  shape?: (rows: Record<string, unknown>[], ctx: { rules: PlacementRules; year: number }) => Record<string, unknown>[];
 }
 
 const num = (v: unknown) => (v === null || v === undefined ? null : Number(v));
+
+/** Students who left the rolls without finishing: not counted as outgoing. */
+const LEFT = sql.raw(`('dropped', 'transferred', 'expelled', 'deceased')`);
+/** The batch: every student with the year they graduate, programme, gender and how they were admitted. */
+const BATCHES = (from: number, to: number) => sql`
+  select st.id, st.status, p.name as program, ${BATCH} as batch, coalesce(sp.gender, '') as gender, coalesce(sp.admission_type, 'regular') as adm
+  from students st join sections s on s.id = st.section_id join programs p on p.id = s.program_id join academic_years ay on ay.id = s.academic_year_id
+  left join student_profiles sp on sp.student_id = st.id
+  where ${BATCH} between ${from} and ${to}`;
+const PLACED = sql.raw(`exists (select 1 from placement_offers o join placement_drives d on d.id = o.drive_id where o.student_id = b.id and o.status = 'accepted' and d.kind = 'placement')`);
+const PROGRESSED = (kind: string) => sql.raw(`exists (select 1 from student_progressions g where g.student_id = b.id and g.kind = '${kind}')`);
+const BEST_CTC = sql.raw(`(select max(o.ctc_lpa) from placement_offers o join placement_drives d on d.id = o.drive_id where o.student_id = b.id and o.status = 'accepted' and d.kind = 'placement')`);
+/** No subject whose latest published result is a fail: on course to graduate in the minimum time. */
+const CLEAR = sql.raw(`not exists (select 1 from (select distinct on (l.subject_id) l.passed from exam_result_lines l join exam_results r on r.id = l.result_id join exam_sessions es on es.id = r.session_id where r.student_id = b.id and es.status in ('published', 'locked') order by l.subject_id, es.starts_on desc, r.computed_at desc) x where not x.passed)`);
+const academicYear = (y: number) => `${y - 1}-${String(y % 100).padStart(2, '0')}`;
+const salary = (lpa: number | null) => (lpa === null ? null : Math.round(lpa * 100_000));
 
 /**
  * Placement reports for NIRF, NAAC (criterion 5.2) and NBA, for a year (a graduating batch, or offers made in the
@@ -33,7 +51,7 @@ const num = (v: unknown) => (v === null || v === undefined ? null : Number(v));
  */
 const REPORTS: Record<string, Report> = {
   branch: {
-    columns: [['program', 'Programme'], ['students', 'Graduating students'], ['optedOut', 'Opted out'], ['registered', 'Registered for drives'], ['placed', 'Placed'], ['placementPct', 'Placement %'], ['higherStudies', 'Higher studies'], ['medianCtc', 'Median CTC (LPA)'], ['highestCtc', 'Highest CTC (LPA)']],
+    columns: [['program', 'Programme'], ['students', 'Graduating students'], ['optedOut', 'Opted out'], ['registered', 'Registered for drives'], ['placed', 'Placed'], ['placementPct', 'Placement %'], ['higherStudies', 'Higher studies'], ['medianCtc', 'Median CTC (LPA)'], ['averageCtc', 'Average CTC (LPA)'], ['highestCtc', 'Highest CTC (LPA)']],
     rows: (year) => sql`
       with batch as (select st.id, p.name as program from students st join sections s on s.id = st.section_id join programs p on p.id = s.program_id join academic_years ay on ay.id = s.academic_year_id where st.status <> 'dropped' and ${BATCH} = ${year})
       select b.program,
@@ -50,35 +68,107 @@ const REPORTS: Record<string, Report> = {
         const s = ctcSummary(ctcs);
         const base = Number(r.students) - Number(r.optedOut);
         const { ctcs: _c, ...rest } = r;
-        return { ...rest, placementPct: base > 0 ? Math.round((Number(r.placed) / base) * 1000) / 10 : 0, medianCtc: s.median, highestCtc: s.highest };
+        return { ...rest, placementPct: base > 0 ? Math.round((Number(r.placed) / base) * 1000) / 10 : 0, medianCtc: s.median, averageCtc: s.average, highestCtc: s.highest };
       }),
   },
+  // NIRF graduation outcome (GPH, GMS): per programme, the three batches graduating up to the year, each with the
+  // first-year intake, lateral entries, those graduating in the minimum time, placed, median salary and higher studies.
   nirf: {
-    columns: [['program', 'Programme'], ['graduating', 'Graduating in minimum time'], ['placed', 'Placed'], ['medianSalary', 'Median salary (₹ a year)'], ['higherStudies', 'Selected for higher studies'], ['entrepreneurs', 'Entrepreneurs']],
+    columns: [['program', 'Programme'], ['academicYear', 'Graduating academic year'], ['intake', 'Admitted in first year'], ['lateral', 'Lateral entry'], ['graduating', 'Graduating in minimum time'], ['placed', 'Placed'], ['medianSalary', 'Median salary of placed graduates (₹)'], ['higherStudies', 'Selected for higher studies'], ['entrepreneurs', 'Entrepreneurs']],
     rows: (year) => sql`
-      with batch as (select st.id, p.name as program from students st join sections s on s.id = st.section_id join programs p on p.id = s.program_id join academic_years ay on ay.id = s.academic_year_id where st.status <> 'dropped' and ${BATCH} = ${year})
-      select b.program, count(*)::int as graduating,
-        count(*) filter (where exists (select 1 from placement_offers o join placement_drives d on d.id = o.drive_id where o.student_id = b.id and o.status = 'accepted' and d.kind = 'placement'))::int as placed,
-        count(*) filter (where exists (select 1 from student_progressions g where g.student_id = b.id and g.kind = 'higher_studies'))::int as "higherStudies",
-        count(*) filter (where exists (select 1 from student_progressions g where g.student_id = b.id and g.kind = 'entrepreneurship'))::int as entrepreneurs,
-        array_remove(array_agg((select max(o.ctc_lpa) from placement_offers o join placement_drives d on d.id = o.drive_id where o.student_id = b.id and o.status = 'accepted' and d.kind = 'placement')), null)::float8[] as ctcs
-      from batch b group by b.program order by b.program`,
+      with b as (${BATCHES(year - 2, year)})
+      select b.program, b.batch,
+        count(*) filter (where b.adm <> 'lateral')::int as intake,
+        count(*) filter (where b.adm = 'lateral')::int as lateral,
+        count(*) filter (where b.status not in ${LEFT} and b.status <> 'detained' and ${CLEAR})::int as graduating,
+        count(*) filter (where b.status not in ${LEFT} and ${PLACED})::int as placed,
+        count(*) filter (where b.status not in ${LEFT} and ${PROGRESSED('higher_studies')})::int as "higherStudies",
+        count(*) filter (where b.status not in ${LEFT} and ${PROGRESSED('entrepreneurship')})::int as entrepreneurs,
+        array_remove(array_agg(${BEST_CTC}) filter (where b.status not in ${LEFT}), null)::float8[] as ctcs
+      from b group by b.program, b.batch order by b.program, b.batch`,
     shape: (rows) =>
       rows.map((r) => {
         const s = ctcSummary(((r.ctcs as unknown[]) ?? []).map(Number));
-        const { ctcs: _c, ...rest } = r;
-        return { ...rest, medianSalary: s.median === null ? null : Math.round(s.median * 100_000) };
+        const { ctcs: _c, batch, ...rest } = r;
+        return { ...rest, academicYear: academicYear(Number(batch)), medianSalary: salary(s.median) };
       }),
+  },
+  // NAAC 5.2.1, 5.2.2 and 5.2.3 for the five outgoing batches up to the year, with the five-year averages last.
+  naac52: {
+    columns: [['year', 'Outgoing batch'], ['outgoing', 'Outgoing students'], ['placed', 'Placed (5.2.1)'], ['placedPct', 'Placed %'], ['higherStudies', 'Progressed to higher education (5.2.2)'], ['higherStudiesPct', 'Higher education %'], ['qualified', 'Qualified NET, GATE, CAT and the like (5.2.3)'], ['qualifiedPct', 'Qualified %']],
+    rows: (year) => sql`
+      with b as (${BATCHES(year - 4, year)})
+      select y.batch as year,
+        count(b.id) filter (where b.status not in ${LEFT})::int as outgoing,
+        count(b.id) filter (where b.status not in ${LEFT} and (${PLACED} or ${PROGRESSED('off_campus_job')}))::int as placed,
+        count(b.id) filter (where b.status not in ${LEFT} and ${PROGRESSED('higher_studies')})::int as "higherStudies",
+        count(b.id) filter (where b.status not in ${LEFT} and ${PROGRESSED('competitive_exam')})::int as qualified
+      from generate_series(${year - 4}::int, ${year}::int) y(batch) left join b on b.batch = y.batch group by y.batch order by y.batch`,
+    shape: (rows) => {
+      const r = naac52(rows.map((x) => ({ year: Number(x.year), outgoing: Number(x.outgoing), placed: Number(x.placed), higherStudies: Number(x.higherStudies), qualified: Number(x.qualified) })));
+      return [...r.rows.map((x) => ({ ...x, year: academicYear(x.year) })), { year: 'Average of the years', outgoing: null, placed: null, placedPct: r.averages.m521, higherStudies: null, higherStudiesPct: r.averages.m522, qualified: null, qualifiedPct: r.averages.m523 }];
+    },
+  },
+  // AISHE: the outgoing batch by programme, all and women, placed and gone on to higher studies, with the median salary.
+  aishe: {
+    columns: [['program', 'Programme'], ['passedOut', 'Final-year students'], ['passedOutFemale', 'of whom women'], ['placed', 'Placed'], ['placedFemale', 'Women placed'], ['higherStudies', 'Higher studies'], ['higherStudiesFemale', 'Women to higher studies'], ['medianSalary', 'Median salary (₹ a year)']],
+    rows: (year) => sql`
+      with b as (${BATCHES(year, year)})
+      select b.program,
+        count(*) filter (where b.status not in ${LEFT})::int as "passedOut",
+        count(*) filter (where b.status not in ${LEFT} and b.gender = 'female')::int as "passedOutFemale",
+        count(*) filter (where b.status not in ${LEFT} and ${PLACED})::int as placed,
+        count(*) filter (where b.status not in ${LEFT} and b.gender = 'female' and ${PLACED})::int as "placedFemale",
+        count(*) filter (where b.status not in ${LEFT} and ${PROGRESSED('higher_studies')})::int as "higherStudies",
+        count(*) filter (where b.status not in ${LEFT} and b.gender = 'female' and ${PROGRESSED('higher_studies')})::int as "higherStudiesFemale",
+        array_remove(array_agg(${BEST_CTC}) filter (where b.status not in ${LEFT}), null)::float8[] as ctcs
+      from b group by b.program order by b.program`,
+    shape: (rows) =>
+      rows.map((r) => {
+        const { ctcs, ...rest } = r;
+        return { ...rest, medianSalary: salary(ctcSummary(((ctcs as unknown[]) ?? []).map(Number)).median) };
+      }),
+  },
+  // AICTE internship credits of the batch: hours and credits of completed internships against what the programme asks.
+  credits: {
+    columns: [['rollNo', 'Roll no'], ['student', 'Student'], ['program', 'Programme'], ['internships', 'Internships completed'], ['hours', 'Hours'], ['credits', 'Credits earned'], ['required', 'Credits required'], ['short', 'Credits short']],
+    rows: (year) => sql`
+      with b as (${BATCHES(year, year)})
+      select st.roll_no as "rollNo", st.full_name as student, b.program,
+        count(i.id) filter (where i.status = 'completed')::int as internships,
+        coalesce(sum(i.hours) filter (where i.status = 'completed'), 0)::float8 as hours,
+        coalesce(json_agg(json_build_object('credits', i.credits, 'hours', i.hours)) filter (where i.status = 'completed'), '[]'::json) as items
+      from b join students st on st.id = b.id left join internships i on i.student_id = b.id
+      where b.status not in ${LEFT} group by st.id, st.roll_no, st.full_name, b.program order by b.program, st.roll_no`,
+    shape: (rows, { rules }) =>
+      rows.map((r) => {
+        const { items, ...rest } = r;
+        const earned = ((items as { credits: number | null; hours: number | null }[]) ?? []).reduce((s, x) => s + (x.credits != null ? Number(x.credits) : aicteCredits(x.hours, rules.hoursPerCredit)), 0);
+        const c = creditStanding(earned, rules.creditsRequired);
+        return { ...rest, credits: c.earned, required: c.required, short: c.short };
+      }),
+  },
+  // The apprenticeship register (NATS): enrolment, contract, stipend, Government share, paid and credited.
+  apprenticeships: {
+    columns: [['rollNo', 'Roll no'], ['student', 'Student'], ['program', 'Programme'], ['establishment', 'Establishment'], ['enrolment', 'NATS enrolment'], ['contract', 'Contract no'], ['category', 'Category'], ['from', 'From'], ['to', 'To'], ['stipend', 'Stipend (₹ a month)'], ['govtShare', 'Government share (₹ a month)'], ['paid', 'Stipend paid (₹)'], ['dbt', 'DBT credited (₹)'], ['status', 'Status'], ['certificate', 'Certificate']],
+    rows: (year) => sql`
+      select st.roll_no as "rollNo", st.full_name as student, p.name as program, a.establishment, a.nats_enrolment_no as enrolment, a.contract_no as contract, a.category, a.starts_on::text as "from", a.ends_on::text as "to",
+        (a.stipend_paise / 100.0)::float8 as stipend, (a.govt_share_paise / 100.0)::float8 as "govtShare",
+        (select coalesce(sum(x.employer_paid_paise), 0) / 100.0 from apprenticeship_stipends x where x.apprenticeship_id = a.id)::float8 as paid,
+        (select coalesce(sum(x.dbt_paise), 0) / 100.0 from apprenticeship_stipends x where x.apprenticeship_id = a.id)::float8 as dbt,
+        a.status, coalesce(a.certificate_no, '') as certificate
+      from apprenticeships a join students st on st.id = a.student_id join sections s on s.id = st.section_id join programs p on p.id = s.program_id
+      where extract(year from a.starts_on) = ${year} or extract(year from a.ends_on) = ${year} order by p.name, st.roll_no`,
   },
   companies: {
     columns: [['company', 'Company'], ['sector', 'Sector'], ['drives', 'Drives'], ['registered', 'Registered'], ['offers', 'Offers'], ['accepted', 'Accepted'], ['joined', 'Joined'], ['highestCtc', 'Highest CTC (LPA)'], ['medianCtc', 'Median CTC (LPA)']],
     rows: (year) => sql`
       select c.name as company, c.sector, count(distinct d.id)::int as drives,
-        (select count(*)::int from drive_registrations r join placement_drives dd on dd.id = r.drive_id where dd.company_id = c.id and r.status <> 'withdrawn' and extract(year from r.created_at) = ${year}) as registered,
+        (select count(*)::int from drive_registrations r join placement_drives dd on dd.id = r.drive_id where dd.company_id = c.id and r.status <> 'withdrawn' and extract(year from r.created_at at time zone 'Asia/Kolkata') = ${year}) as registered,
         count(o.id)::int as offers, count(o.id) filter (where o.status = 'accepted')::int as accepted, count(o.id) filter (where o.joining_status = 'joined')::int as joined,
         array_remove(array_agg(o.ctc_lpa) filter (where o.status = 'accepted'), null)::float8[] as ctcs
       from placement_companies c join placement_drives d on d.company_id = c.id left join placement_offers o on o.drive_id = d.id and extract(year from o.offered_on) = ${year}
-      where extract(year from coalesce(d.drive_date, d.created_at::date)) = ${year} or o.id is not null
+      where extract(year from coalesce(d.drive_date, (d.created_at at time zone 'Asia/Kolkata')::date)) = ${year} or o.id is not null
       group by c.id order by accepted desc, c.name`,
     shape: (rows) =>
       rows.map((r) => {
@@ -127,7 +217,10 @@ const REPORTS: Record<string, Report> = {
 
 @Controller('v1/placements/reports')
 export class PlacementReportsController {
-  constructor(private readonly db: DbService) {}
+  constructor(
+    private readonly db: DbService,
+    private readonly svc: PlacementsService,
+  ) {}
 
   /** The reports, with their columns (and what each feedback criterion means). */
   @Get()
@@ -143,11 +236,12 @@ export class PlacementReportsController {
     if (!def) throw new NotFoundException('Unknown report');
     const parsed = Query_.safeParse(q);
     if (!parsed.success) throw new BadRequestException(parsed.error.issues[0]?.message ?? 'Bad filters');
-    const year = parsed.data.year ?? new Date().getFullYear();
-    const rows = await this.db.withTenant(p.tenantId, async (tx) => {
+    const { rows, year } = await this.db.withTenant(p.tenantId, async (tx) => {
+      // The year defaults to the institution's (IST) calendar year, not the server's.
+      const year = parsed.data.year ?? Number((await this.svc.today(tx)).slice(0, 4));
       const raw = (await tx.execute<Record<string, unknown>>(def.rows(year))).rows;
       if (parsed.data.format !== 'json') await auditUser(tx, p, 'placement.report_exported', 'placement_report', undefined, { report: id, year, format: parsed.data.format });
-      return def.shape ? def.shape(raw) : raw;
+      return { year, rows: def.shape ? def.shape(raw, { rules: await this.svc.rules(tx, p.tenantId), year }) : raw };
     });
     if (parsed.data.format === 'json') return { id, year, columns: def.columns.map(([key, header]) => ({ key, header })), rows };
     const grid = [def.columns.map(([, h]) => h), ...rows.map((r) => def.columns.map(([k]) => (r[k] === null || r[k] === undefined ? '' : typeof r[k] === 'number' ? (r[k] as number) : num(r[k]) !== null && /^-?\d+(\.\d+)?$/.test(String(r[k])) ? Number(r[k]) : String(r[k]))))];

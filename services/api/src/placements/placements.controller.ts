@@ -1,6 +1,7 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { qualitySettings } from '../quality-hub/settings.catalogue.js';
-import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm';
+import { placementDocuments } from '../db/schema-placements-pass.js';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
@@ -12,7 +13,7 @@ import { DbService } from '../db/db.service.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import { promoteToAlumni } from './alumni-promotion.js';
 import { driveRegistrations, driveRounds, internships, placementCompanies, placementDrives, placementOffers, programs, roundResults, sections, students } from '../db/schema.js';
-import { canMoveDrive, checkEligibility, ctcSummary, standingReasons } from './eligibility.js';
+import { canMoveDrive, categoryForCtc, checkEligibility, ctcSummary, standingReasons } from './eligibility.js';
 import { PLACEMENT_ROLES, PLACEMENT_VIEW_ROLES, checkVersion, found } from './placements.access.js';
 import { PlacementsService } from './placements.service.js';
 
@@ -44,8 +45,15 @@ const DriveBody = z.object({
   minCgpa: z.number().min(0).max(10).optional(),
   maxBacklogs: z.number().int().min(0).max(50).optional(),
   programIds: z.array(z.uuid()).max(50).default([]),
-  category: z.enum(['regular', 'dream', 'super_dream']).default('regular'),
+  /** Left out: from the package and the settings' dream and super-dream lines. */
+  category: z.enum(['regular', 'dream', 'super_dream']).optional(),
   batchYears: z.array(z.number().int().min(2000).max(2100)).max(10).default([]),
+  genders: z.array(z.enum(['male', 'female', 'other'])).max(3).default([]),
+  minTenthPct: z.number().min(0).max(100).nullish(),
+  minTwelfthPct: z.number().min(0).max(100).nullish(),
+  maxGapYears: z.number().int().min(0).max(20).nullish(),
+  maxBacklogHistory: z.number().int().min(0).max(50).nullish(),
+  requireVerifiedDocs: z.boolean().default(false),
   registrationOpensOn: Day.nullish(),
   venue: z.string().trim().max(160).default(''),
   skills: z.string().trim().max(500).default(''),
@@ -120,7 +128,8 @@ export class PlacementsController {
       const { expectedVersion: _v, ...values } = b;
       // Eligibility limits left out of the form come from the placement settings.
       const set = await qualitySettings(tx, p.tenantId, 'placements');
-      const [row] = await tx.insert(placementDrives).values({ tenantId: p.tenantId, createdBy: p.userId, ...values, minCgpa: b.minCgpa ?? Number(set.defaults.minCgpa), maxBacklogs: b.maxBacklogs ?? Number(set.defaults.maxBacklogs) }).returning();
+      const category = b.category ?? categoryForCtc(b.kind === 'placement' ? b.ctcLpa : null, await this.svc.rules(tx, p.tenantId));
+      const [row] = await tx.insert(placementDrives).values({ tenantId: p.tenantId, createdBy: p.userId, ...values, category, minCgpa: b.minCgpa ?? Number(set.defaults.minCgpa), maxBacklogs: b.maxBacklogs ?? Number(set.defaults.maxBacklogs) }).returning();
       await auditUser(tx, p, 'placement.drive_created', 'drive', row.id, { title: b.title });
       return row;
     });
@@ -160,6 +169,7 @@ export class PlacementsController {
       if (!canMoveDrive(cur.status, b.status)) throw new ConflictException(`A ${cur.status} drive cannot become ${b.status}`);
       const [row] = await tx.update(placementDrives).set({ status: b.status, version: cur.version + 1 }).where(eq(placementDrives.id, id)).returning();
       await auditUser(tx, p, `placement.drive_${b.status}`, 'drive', id, { from: cur.status });
+      if (b.status === 'open') await this.svc.notifyDriveOpened(tx, p.tenantId, id);
       return row;
     });
   }
@@ -331,7 +341,9 @@ export class PlacementsController {
       if (why.includes('already_placed')) throw new ConflictException({ statusCode: 409, error: 'Conflict', code: 'ALREADY_PLACED', message: 'You have already accepted an offer; only a drive of a higher category is open to you', reasons: why });
       if (why.includes('debarred')) throw new ConflictException({ statusCode: 409, error: 'Conflict', code: 'DEBARRED', message: 'You are debarred from placement drives for now; ask the placement cell', reasons: why });
       if (why.length) throw new ConflictException({ statusCode: 409, error: 'Conflict', code: 'NOT_OPTED_IN', message: 'Opt in to placements first', reasons: why });
-      const values = { cgpaAt: a.cgpa ?? 0, backlogsAt: a.backlogs, status: 'registered', createdAt: this.svc.now() };
+      // The registration keeps the resume the student has on file now (verified first, else the latest not rejected).
+      const [resume] = await tx.select({ id: placementDocuments.id }).from(placementDocuments).where(and(eq(placementDocuments.studentId, studentId), eq(placementDocuments.kind, 'resume'), ne(placementDocuments.status, 'rejected'))).orderBy(sql`(${placementDocuments.status} = 'verified') desc`, desc(placementDocuments.createdAt)).limit(1);
+      const values = { cgpaAt: a.cgpa ?? 0, backlogsAt: a.backlogs, status: 'registered', createdAt: this.svc.now(), resumeDocumentId: resume?.id ?? null };
       const [row] = existing
         ? await tx.update(driveRegistrations).set(values).where(eq(driveRegistrations.id, existing.id)).returning()
         : await tx.insert(driveRegistrations).values({ tenantId: p.tenantId, driveId, studentId, ...values }).returning();
@@ -401,7 +413,7 @@ export class PlacementsController {
         .innerJoin(programs, eq(programs.id, sections.programId))
         .where(sql`extract(year from ${placementOffers.offeredOn}) = ${year}`);
       const [{ total }] = await tx.select({ total: sql<number>`count(*)::int` }).from(students).where(eq(students.status, 'active'));
-      const [{ registered }] = await tx.select({ registered: sql<number>`count(distinct ${driveRegistrations.studentId})::int` }).from(driveRegistrations).innerJoin(placementDrives, eq(placementDrives.id, driveRegistrations.driveId)).where(sql`${driveRegistrations.status} <> 'withdrawn' and extract(year from ${driveRegistrations.createdAt}) = ${year}`);
+      const [{ registered }] = await tx.select({ registered: sql<number>`count(distinct ${driveRegistrations.studentId})::int` }).from(driveRegistrations).innerJoin(placementDrives, eq(placementDrives.id, driveRegistrations.driveId)).where(sql`${driveRegistrations.status} <> 'withdrawn' and extract(year from ${driveRegistrations.createdAt} at time zone 'Asia/Kolkata') = ${year}`);
       const placements = offers.filter((x) => x.o.status === 'accepted' && x.kind === 'placement');
       const placed = new Set(placements.map((x) => x.o.studentId));
       const group = (key: (x: (typeof offers)[number]) => string) => {

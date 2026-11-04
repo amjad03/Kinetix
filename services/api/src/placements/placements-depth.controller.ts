@@ -228,15 +228,17 @@ export class PlacementsDepthController {
       const inBatch = rows.filter((r) => !drive.batchYears.length || drive.batchYears.includes(graduationYear(String(r.yearEnds), r.termCount, r.term, String(r.level))));
       const regs = new Map((await tx.select().from(driveRegistrations).where(eq(driveRegistrations.driveId, id))).map((r) => [r.studentId, r]));
       const [today, rules] = [await this.svc.today(tx), await this.svc.rules(tx, p.tenantId)];
-      const out = [];
-      for (const r of inBatch.slice(0, 2000)) {
-        const a = await this.svc.academics(tx, r.id);
+      const pool = inBatch.slice(0, 2000);
+      // Two batched reads for the whole roll, not two per student.
+      const [acad, stand] = [await this.svc.academicsMany(tx, pool.map((r) => r.id)), await this.svc.standingMany(tx, pool.map((r) => r.id))];
+      const out = pool.map((r) => {
+        const a = acad.get(r.id)!;
         const e = checkEligibility({ ...drive, status: 'open', registrationClosesOn: null, registrationOpensOn: null }, a, today);
-        const more = standingReasons(drive.kind, drive.category, await this.svc.standing(tx, r.id), rules, today);
+        const more = standingReasons(drive.kind, drive.category, stand.get(r.id)!, rules, today);
         const reg = regs.get(r.id);
-        out.push({ studentId: r.id, fullName: r.fullName, rollNo: r.rollNo, className: r.className, program: r.program, batchYear: a.batchYear, cgpa: a.cgpa, backlogs: a.backlogs, eligible: e.eligible && !more.length, reasons: [...e.reasons, ...more], registration: reg ? { id: reg.id, status: reg.status } : null });
-      }
-      return { drive: { id: drive.id, title: drive.title, minCgpa: drive.minCgpa, maxBacklogs: drive.maxBacklogs, batchYears: drive.batchYears, programIds: drive.programIds }, students: out, summary: { total: out.length, eligible: out.filter((x) => x.eligible).length, registered: out.filter((x) => x.registration && x.registration.status !== 'withdrawn').length } };
+        return { studentId: r.id, fullName: r.fullName, rollNo: r.rollNo, className: r.className, program: r.program, batchYear: a.batchYear, cgpa: a.cgpa, backlogs: a.backlogs, backlogHistory: a.backlogHistory ?? 0, gender: a.gender ?? null, tenthPct: a.tenthPct ?? null, twelfthPct: a.twelfthPct ?? null, gapYears: a.gapYears ?? null, docsVerified: a.docsVerified ?? false, eligible: e.eligible && !more.length, reasons: [...e.reasons, ...more], registration: reg ? { id: reg.id, status: reg.status } : null };
+      });
+      return { drive: { id: drive.id, title: drive.title, minCgpa: drive.minCgpa, maxBacklogs: drive.maxBacklogs, batchYears: drive.batchYears, programIds: drive.programIds, genders: drive.genders, minTenthPct: drive.minTenthPct, minTwelfthPct: drive.minTwelfthPct, maxGapYears: drive.maxGapYears, maxBacklogHistory: drive.maxBacklogHistory, requireVerifiedDocs: drive.requireVerifiedDocs }, students: out, summary: { total: out.length, eligible: out.filter((x) => x.eligible).length, registered: out.filter((x) => x.registration && x.registration.status !== 'withdrawn').length } };
     });
   }
 
@@ -568,7 +570,7 @@ export class PlacementsDepthController {
       const all = [...b.present.map((x) => [x, true] as const), ...b.absent.map((x) => [x, false] as const)];
       if (new Set(all.map(([x]) => x)).size !== all.length) throw new BadRequestException('A student is marked twice');
       if (all.some(([x]) => !roster.has(x))) throw new BadRequestException('A student is not part of this training');
-      for (const [studentId, present] of all) await tx.insert(placementTrainingAttendance).values({ tenantId: p.tenantId, sessionId: id, studentId, present }).onConflictDoUpdate({ target: [placementTrainingAttendance.sessionId, placementTrainingAttendance.studentId], set: { present } });
+      if (all.length) await tx.insert(placementTrainingAttendance).values(all.map(([studentId, present]) => ({ tenantId: p.tenantId, sessionId: id, studentId, present }))).onConflictDoUpdate({ target: [placementTrainingAttendance.sessionId, placementTrainingAttendance.studentId], set: { present: sql`excluded.present` } });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'placement.training_attendance', subjectType: 'placement_training', subjectId: t.id, data: { sessionId: id, present: b.present.length, absent: b.absent.length } });
       return { present: b.present.length, absent: b.absent.length };
     });
@@ -583,7 +585,8 @@ export class PlacementsDepthController {
       const roster = new Set((await this.roster(tx, t)).map((r) => r.id));
       if (b.scores.some((s) => !roster.has(s.studentId))) throw new BadRequestException('A student is not part of this training');
       if (b.scores.some((s) => s.score > b.maxScore)) throw new BadRequestException(`A score is above the maximum of ${b.maxScore}`);
-      for (const s of b.scores) await tx.insert(placementTrainingScores).values({ tenantId: p.tenantId, trainingId: id, studentId: s.studentId, testName: b.testName, score: s.score, maxScore: b.maxScore, takenOn: b.takenOn ?? null }).onConflictDoUpdate({ target: [placementTrainingScores.trainingId, placementTrainingScores.studentId, placementTrainingScores.testName], set: { score: s.score, maxScore: b.maxScore, takenOn: b.takenOn ?? null } });
+      if (new Set(b.scores.map((s) => s.studentId)).size !== b.scores.length) throw new BadRequestException('A student is listed twice');
+      await tx.insert(placementTrainingScores).values(b.scores.map((s) => ({ tenantId: p.tenantId, trainingId: id, studentId: s.studentId, testName: b.testName, score: s.score, maxScore: b.maxScore, takenOn: b.takenOn ?? null }))).onConflictDoUpdate({ target: [placementTrainingScores.trainingId, placementTrainingScores.studentId, placementTrainingScores.testName], set: { score: sql`excluded.score`, maxScore: sql`excluded.max_score`, takenOn: sql`excluded.taken_on` } });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'placement.training_scores', subjectType: 'placement_training', subjectId: id, data: { testName: b.testName, count: b.scores.length } });
       return { recorded: b.scores.length };
     });

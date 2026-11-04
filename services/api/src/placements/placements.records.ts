@@ -10,7 +10,9 @@ import { fail, int, lc, outcome, required } from '../import/row-helpers.js';
 import { RecordRegistry, type FieldOption, type KitCtx, type RecordEntity } from '../records/entity.js';
 import { copyName, DateText, OptionalRef, OptionalText, Ref, Text, uuidEq } from '../records/helpers.js';
 import { eachRow } from '../records/import.js';
-import { canMoveDrive, FEEDBACK_CRITERIA } from './eligibility.js';
+import { canMoveDrive, categoryForCtc, FEEDBACK_CRITERIA } from './eligibility.js';
+import { aicteCredits } from './placement-pass.logic.js';
+import { PlacementsService } from './placements.service.js';
 import { MENTOR_ROLES, PLACEMENT_ROLES, PLACEMENT_VIEW_ROLES } from './placements.access.js';
 
 /**
@@ -41,6 +43,12 @@ const FEEDBACK_KIND = opt([['employer', 'Employer'], ['alumni', 'Alumni']]);
 const JOB_STATUS = opt([['pending', 'Waiting for review'], ['published', 'Published'], ['closed', 'Closed'], ['rejected', 'Rejected']]);
 const JOB_KIND = opt([['job', 'Job'], ['internship', 'Internship']]);
 const EVENT_STATUS = opt([['scheduled', 'Scheduled'], ['completed', 'Held'], ['cancelled', 'Cancelled']]);
+const GENDER_RULE = opt([['', 'Everyone'], ['female', 'Women only'], ['male', 'Men only']]);
+const NullablePct = z.union([z.coerce.number().min(0).max(100), z.literal(''), z.null()]).transform((v) => (v === '' ? null : v));
+const NullableInt = (min: number, max: number) => z.union([z.coerce.number().int().min(min).max(max), z.literal(''), z.null()]).transform((v) => (v === '' ? null : v));
+const CRM_STAGE = opt([['prospect', 'Prospect'], ['contacted', 'Contacted'], ['engaged', 'In talks'], ['recruiting', 'Recruiting'], ['dormant', 'Dormant']]);
+const INTERN_CATEGORY = opt([['industry', 'Industry'], ['research', 'Research'], ['in_house', 'In-house (college)'], ['rural', 'Rural / social'], ['virtual', 'Virtual']]);
+const INTERN_MODE = opt([['onsite', 'On site'], ['remote', 'Remote'], ['hybrid', 'Hybrid']]);
 const MENTORING_STATUS = opt([['pending', 'Waiting'], ['accepted', 'Accepted'], ['declined', 'Declined'], ['completed', 'Completed']]);
 
 async function companyOptions(ctx: KitCtx): Promise<FieldOption[]> {
@@ -54,6 +62,10 @@ export async function studentOptions(ctx: KitCtx): Promise<FieldOption[]> {
 }
 async function mentorOptions(ctx: KitCtx): Promise<FieldOption[]> {
   return (await ctx.tx.selectDistinct({ id: users.id, name: users.fullName }).from(users).where(and(eq(users.status, 'active'), sql`exists (select 1 from user_roles r where r.user_id = "users"."id" and r.role in ('teacher', 'hod', 'principal'))`)).orderBy(asc(users.fullName))).map((r) => ({ value: r.id, label: r.name }));
+}
+/** The people who run the placement cell, to look after a company. */
+export async function officerOptions(ctx: KitCtx): Promise<FieldOption[]> {
+  return (await ctx.tx.selectDistinct({ id: users.id, name: users.fullName }).from(users).where(and(eq(users.status, 'active'), sql`exists (select 1 from user_roles r where r.user_id = "users"."id" and r.role in ('placement_officer', 'principal', 'tenant_admin'))`)).orderBy(asc(users.fullName))).map((r) => ({ value: r.id, label: r.name }));
 }
 async function subjectOptions(ctx: KitCtx): Promise<FieldOption[]> {
   return (await ctx.tx.select({ id: subjects.id, code: subjects.code, name: subjects.name, program: programs.name }).from(subjects).innerJoin(programs, eq(programs.id, subjects.programId)).orderBy(asc(programs.name), asc(subjects.code))).map((r) => ({ value: r.id, label: `${r.code} ${r.name}`, group: r.program }));
@@ -73,7 +85,10 @@ const dateCol = (k: string) => (r: Record<string, unknown>) => (r[k] instanceof 
 
 @Injectable()
 export class PlacementsRecords implements OnModuleInit {
-  constructor(private readonly registry: RecordRegistry) {}
+  constructor(
+    private readonly registry: RecordRegistry,
+    private readonly svc: PlacementsService,
+  ) {}
 
   onModuleInit(): void {
     for (const e of [this.companies(), this.drives(), this.offers(), this.internships(), this.trainings(), this.progressions(), this.feedback(), this.alumni(), this.events(), this.jobs(), this.mentoring()]) this.registry.register(e);
@@ -84,6 +99,9 @@ export class PlacementsRecords implements OnModuleInit {
   private companies(): RecordEntity {
     const drives = sql<number>`(select count(*)::int from placement_drives d where d.company_id = "placement_companies"."id")`;
     const placed = sql<number>`(select count(*)::int from placement_offers o join placement_drives d on d.id = o.drive_id where d.company_id = "placement_companies"."id" and o.status = 'accepted')`;
+    const lastContact = sql<string | null>`(select max(i.happened_on)::text from placement_interactions i where i.company_id = "placement_companies"."id")`;
+    const followUp = sql<string | null>`(select min(i.follow_up_on)::text from placement_interactions i where i.company_id = "placement_companies"."id" and not i.follow_up_done and i.follow_up_on is not null)`;
+    const owner = alias(users, 'owner');
     return {
       key: 'placement-companies',
       module: 'placements',
@@ -92,13 +110,16 @@ export class PlacementsRecords implements OnModuleInit {
       roles: { read: PLACEMENT_VIEW_ROLES, write: PLACEMENT_ROLES },
       label: (r) => String(r.name),
       list: {
-        select: { id: placementCompanies.id, name: placementCompanies.name, sector: placementCompanies.sector, groupName: placementCompanies.groupName, city: placementCompanies.city, website: placementCompanies.website, contactName: placementCompanies.contactName, contactEmail: placementCompanies.contactEmail, contactPhone: placementCompanies.contactPhone, status: placementCompanies.status, selfRegistered: placementCompanies.selfRegistered, hasPortalKey: sql<boolean>`${placementCompanies.portalTokenHash} is not null`, drives, placed, createdAt: placementCompanies.createdAt },
+        select: { id: placementCompanies.id, name: placementCompanies.name, sector: placementCompanies.sector, groupName: placementCompanies.groupName, city: placementCompanies.city, website: placementCompanies.website, contactName: placementCompanies.contactName, contactEmail: placementCompanies.contactEmail, contactPhone: placementCompanies.contactPhone, status: placementCompanies.status, selfRegistered: placementCompanies.selfRegistered, hasPortalKey: sql<boolean>`${placementCompanies.portalTokenHash} is not null`, drives, placed, crmStage: placementCompanies.crmStage, ownerUserId: placementCompanies.ownerUserId, ownerName: owner.fullName, lastContact, followUp, createdAt: placementCompanies.createdAt },
+        joins: (q) => q.leftJoin(owner, eq(owner.id, placementCompanies.ownerUserId)),
         search: [placementCompanies.name, placementCompanies.sector, placementCompanies.groupName, placementCompanies.city, placementCompanies.contactName],
         filters: {
           status: { label: 'Status', options: COMPANY_STATUS, where: (v) => (pick(COMPANY_STATUS)(v) ? eq(placementCompanies.status, v) : undefined) },
+          stage: { label: 'Stage', options: CRM_STAGE, where: (v) => (pick(CRM_STAGE)(v) ? eq(placementCompanies.crmStage, v) : undefined) },
+          followUp: { label: 'Follow-up', options: opt([['due', 'Due by today'], ['none', 'None planned']]), where: (v) => (v === 'due' ? sql`exists (select 1 from placement_interactions i where i.company_id = ${placementCompanies.id} and not i.follow_up_done and i.follow_up_on <= (now() at time zone 'Asia/Kolkata')::date)` : v === 'none' ? sql`not exists (select 1 from placement_interactions i where i.company_id = ${placementCompanies.id} and not i.follow_up_done and i.follow_up_on is not null)` : undefined) },
           sector: { label: 'Sector', options: async (ctx) => (await ctx.tx.selectDistinct({ s: placementCompanies.sector }).from(placementCompanies).where(sql`${placementCompanies.sector} <> ''`).orderBy(asc(placementCompanies.sector))).map((r) => ({ value: r.s, label: r.s })), where: (v) => eq(placementCompanies.sector, v) },
         },
-        sorts: { name: placementCompanies.name, sector: placementCompanies.sector, drives, placed, created: placementCompanies.createdAt },
+        sorts: { name: placementCompanies.name, sector: placementCompanies.sector, drives, placed, stage: placementCompanies.crmStage, lastContact, followUp, created: placementCompanies.createdAt },
         defaultSort: { id: 'name', dir: 'asc' },
       },
       fields: {
@@ -113,6 +134,8 @@ export class PlacementsRecords implements OnModuleInit {
         address: { label: 'Address', type: 'textarea', schema: z.string().trim().max(300), column: placementCompanies.address },
         description: { label: 'About the company', type: 'textarea', schema: z.string().trim().max(2000), column: placementCompanies.description },
         status: { label: 'Status', type: 'select', schema: z.enum(['active', 'blacklisted']), column: placementCompanies.status, options: COMPANY_STATUS.filter((o) => o.value !== 'pending'), bulk: true, create: false, help: 'Verify a self-registered company with the Verify action' },
+        crmStage: { label: 'Stage', type: 'select', schema: z.enum(['prospect', 'contacted', 'engaged', 'recruiting', 'dormant']), column: placementCompanies.crmStage, options: CRM_STAGE, bulk: true, help: 'Where the relationship stands' },
+        ownerUserId: { label: 'Looked after by', type: 'select', schema: OptionalRef, column: placementCompanies.ownerUserId, options: officerOptions, bulk: true },
       },
       duplicate: async (ctx, row) => ({ name: await copyName(ctx.tx, placementCompanies, placementCompanies.name, String(row.name)), portal_token_hash: null, portal_token_at: null, self_registered: false }),
       actions: {
@@ -136,6 +159,10 @@ export class PlacementsRecords implements OnModuleInit {
         { key: 'contactPhone', header: 'Phone' },
         { key: 'drives', header: 'Drives' },
         { key: 'placed', header: 'Placed' },
+        { key: 'crmStage', header: 'Stage', value: (r) => CRM_STAGE.find((o) => o.value === r.crmStage)?.label ?? String(r.crmStage) },
+        { key: 'ownerName', header: 'Looked after by' },
+        { key: 'lastContact', header: 'Last contact' },
+        { key: 'followUp', header: 'Next follow-up' },
         { key: 'status', header: 'Status', value: (r) => COMPANY_STATUS.find((o) => o.value === r.status)?.label ?? String(r.status) },
       ],
       import: {
@@ -182,6 +209,8 @@ export class PlacementsRecords implements OnModuleInit {
       if (!d || !canMoveDrive(d.status, to)) throw new ConflictException(`A ${d?.status ?? 'missing'} drive cannot become ${to}`);
       await ctx.tx.update(placementDrives).set({ status: to, version: d.version + 1 }).where(eq(placementDrives.id, id));
       await audit(ctx.tx, { tenantId: ctx.p.tenantId, actorType: 'user', actorId: ctx.p.userId, action: `placement.drive_${to}`, subjectType: 'drive', subjectId: id, before: { status: d.status }, after: { status: to } });
+      // Opening tells the eligible students (once per drive).
+      if (to === 'open') await this.svc.notifyDriveOpened(ctx.tx, ctx.p.tenantId, id);
     };
     return {
       key: 'placement-drives',
@@ -191,7 +220,7 @@ export class PlacementsRecords implements OnModuleInit {
       roles: { read: PLACEMENT_VIEW_ROLES, write: PLACEMENT_ROLES },
       label: (r) => `${r.title} (${r.companyName})`,
       list: {
-        select: { id: placementDrives.id, title: placementDrives.title, kind: placementDrives.kind, category: placementDrives.category, companyId: placementDrives.companyId, companyName: placementCompanies.name, roleTitle: placementDrives.roleTitle, ctcLpa: placementDrives.ctcLpa, stipendMonthly: placementDrives.stipendMonthly, location: placementDrives.location, venue: placementDrives.venue, description: placementDrives.description, skills: placementDrives.skills, bond: placementDrives.bond, driveDate: placementDrives.driveDate, registrationOpensOn: placementDrives.registrationOpensOn, registrationClosesOn: placementDrives.registrationClosesOn, minCgpa: placementDrives.minCgpa, maxBacklogs: placementDrives.maxBacklogs, status: placementDrives.status, postedByRecruiter: placementDrives.postedByRecruiter, registrations, offers, createdAt: placementDrives.createdAt },
+        select: { id: placementDrives.id, title: placementDrives.title, kind: placementDrives.kind, category: placementDrives.category, companyId: placementDrives.companyId, companyName: placementCompanies.name, roleTitle: placementDrives.roleTitle, ctcLpa: placementDrives.ctcLpa, stipendMonthly: placementDrives.stipendMonthly, location: placementDrives.location, venue: placementDrives.venue, description: placementDrives.description, skills: placementDrives.skills, bond: placementDrives.bond, driveDate: placementDrives.driveDate, registrationOpensOn: placementDrives.registrationOpensOn, registrationClosesOn: placementDrives.registrationClosesOn, minCgpa: placementDrives.minCgpa, maxBacklogs: placementDrives.maxBacklogs, genderRule: sql<string>`array_to_string(${placementDrives.genders}, ',')`, minTenthPct: placementDrives.minTenthPct, minTwelfthPct: placementDrives.minTwelfthPct, maxGapYears: placementDrives.maxGapYears, maxBacklogHistory: placementDrives.maxBacklogHistory, requireVerifiedDocs: placementDrives.requireVerifiedDocs, notifiedAt: placementDrives.notifiedAt, status: placementDrives.status, postedByRecruiter: placementDrives.postedByRecruiter, registrations, offers, createdAt: placementDrives.createdAt },
         joins: (q) => q.innerJoin(placementCompanies, eq(placementCompanies.id, placementDrives.companyId)),
         search: [placementDrives.title, placementDrives.roleTitle, placementCompanies.name, placementDrives.location],
         filters: {
@@ -219,6 +248,12 @@ export class PlacementsRecords implements OnModuleInit {
         registrationClosesOn: { label: 'Registration closes', type: 'date', schema: DateText, column: placementDrives.registrationClosesOn, bulk: true },
         minCgpa: { label: 'Minimum CGPA', type: 'number', schema: z.coerce.number().min(0).max(10), column: placementDrives.minCgpa, bulk: true },
         maxBacklogs: { label: 'Most backlogs allowed', type: 'number', schema: z.coerce.number().int().min(0).max(50), column: placementDrives.maxBacklogs, bulk: true },
+        maxBacklogHistory: { label: 'Most subjects ever failed', type: 'number', schema: NullableInt(0, 50), column: placementDrives.maxBacklogHistory, help: 'Backlogs cleared since count too; leave empty for no limit' },
+        genderRule: { label: 'Open to', type: 'select', schema: z.enum(['', 'female', 'male']).nullable().transform((v) => v ?? ''), options: GENDER_RULE, apply: async (ctx, id, v) => void (await ctx.tx.update(placementDrives).set({ genders: v ? [String(v)] : [] }).where(eq(placementDrives.id, id))), help: 'For a drive open only to women, say' },
+        minTenthPct: { label: 'Minimum class 10 %', type: 'number', schema: NullablePct, column: placementDrives.minTenthPct, bulk: true },
+        minTwelfthPct: { label: 'Minimum class 12 / PUC %', type: 'number', schema: NullablePct, column: placementDrives.minTwelfthPct, bulk: true },
+        maxGapYears: { label: 'Most gap years', type: 'number', schema: NullableInt(0, 20), column: placementDrives.maxGapYears, bulk: true, help: 'Years out of education after class 10; leave empty for no limit' },
+        requireVerifiedDocs: { label: 'Documents verified first', type: 'boolean', schema: z.boolean(), column: placementDrives.requireVerifiedDocs, bulk: true, help: 'Students register only once the cell has verified their placement documents' },
         description: { label: 'Job description', type: 'textarea', schema: z.string().trim().max(4000), column: placementDrives.description },
         skills: { label: 'Skills wanted', type: 'text', schema: z.string().trim().max(500), column: placementDrives.skills },
         bond: { label: 'Service agreement', type: 'text', schema: z.string().trim().max(300), column: placementDrives.bond, help: 'Bond or service agreement terms, if any' },
@@ -226,13 +261,15 @@ export class PlacementsRecords implements OnModuleInit {
       create: async (ctx, v) => {
         const [c] = await ctx.tx.select({ status: placementCompanies.status }).from(placementCompanies).where(eq(placementCompanies.id, String(v.companyId)));
         if (!c || c.status !== 'active') throw new ConflictException('Choose an active, verified company');
+        // No category given: from the package and the settings' dream and super-dream lines.
+        const category = v.category ? String(v.category) : categoryForCtc(v.kind === 'placement' ? ((v.ctcLpa as number | null) ?? null) : null, await this.svc.rules(ctx.tx, ctx.p.tenantId));
         const [row] = await ctx.tx
           .insert(placementDrives)
-          .values({ tenantId: ctx.p.tenantId, companyId: String(v.companyId), title: String(v.title), kind: String(v.kind), category: String(v.category ?? 'regular'), roleTitle: String(v.roleTitle), ctcLpa: (v.ctcLpa as number | null) ?? null, stipendMonthly: (v.stipendMonthly as number | null) ?? null, location: String(v.location ?? ''), driveDate: (v.driveDate as string | null) ?? null, venue: String(v.venue ?? ''), registrationOpensOn: (v.registrationOpensOn as string | null) ?? null, registrationClosesOn: (v.registrationClosesOn as string | null) ?? null, minCgpa: Number(v.minCgpa ?? 0), maxBacklogs: Number(v.maxBacklogs ?? 0), description: String(v.description ?? ''), skills: String(v.skills ?? ''), bond: String(v.bond ?? ''), createdBy: ctx.p.userId })
+          .values({ tenantId: ctx.p.tenantId, companyId: String(v.companyId), title: String(v.title), kind: String(v.kind), category, roleTitle: String(v.roleTitle), ctcLpa: (v.ctcLpa as number | null) ?? null, stipendMonthly: (v.stipendMonthly as number | null) ?? null, location: String(v.location ?? ''), driveDate: (v.driveDate as string | null) ?? null, venue: String(v.venue ?? ''), registrationOpensOn: (v.registrationOpensOn as string | null) ?? null, registrationClosesOn: (v.registrationClosesOn as string | null) ?? null, minCgpa: Number(v.minCgpa ?? 0), maxBacklogs: Number(v.maxBacklogs ?? 0), description: String(v.description ?? ''), skills: String(v.skills ?? ''), bond: String(v.bond ?? ''), genders: v.genderRule ? [String(v.genderRule)] : [], minTenthPct: (v.minTenthPct as number | null) ?? null, minTwelfthPct: (v.minTwelfthPct as number | null) ?? null, maxGapYears: (v.maxGapYears as number | null) ?? null, maxBacklogHistory: (v.maxBacklogHistory as number | null) ?? null, requireVerifiedDocs: Boolean(v.requireVerifiedDocs ?? false), createdBy: ctx.p.userId })
           .returning({ id: placementDrives.id });
         return row.id;
       },
-      duplicate: (_ctx, row) => ({ title: `${row.title} (copy)`, status: 'draft', version: 0, drive_date: null, posted_by_recruiter: false }),
+      duplicate: (_ctx, row) => ({ title: `${row.title} (copy)`, status: 'draft', version: 0, drive_date: null, posted_by_recruiter: false, notified_at: null }),
       remove: {
         guard: async (ctx, id) => {
           const [n] = await ctx.tx.select({ n: sql<number>`count(*)::int` }).from(placementOffers).where(eq(placementOffers.driveId, id));
@@ -256,6 +293,10 @@ export class PlacementsRecords implements OnModuleInit {
         { key: 'registrationClosesOn', header: 'Registration closes' },
         { key: 'minCgpa', header: 'Min CGPA' },
         { key: 'maxBacklogs', header: 'Max backlogs' },
+        { key: 'genderRule', header: 'Open to', value: (r) => (r.genderRule ? (GENDER_RULE.find((o) => o.value === r.genderRule)?.label ?? String(r.genderRule)) : 'Everyone') },
+        { key: 'minTenthPct', header: 'Min class 10 %' },
+        { key: 'minTwelfthPct', header: 'Min class 12 %' },
+        { key: 'maxGapYears', header: 'Max gap years' },
         { key: 'registrations', header: 'Registered' },
         { key: 'offers', header: 'Offers' },
         { key: 'status', header: 'Status', value: (r) => DRIVE_STATUS.find((o) => o.value === r.status)?.label ?? String(r.status) },
@@ -334,7 +375,7 @@ export class PlacementsRecords implements OnModuleInit {
       roles: { read: MENTOR_ROLES, write: PLACEMENT_ROLES },
       label: (r) => `${r.rollNo} ${r.fullName} · ${r.orgName}`,
       list: {
-        select: { id: internships.id, studentId: internships.studentId, rollNo: students.rollNo, fullName: students.fullName, className: sections.displayName, programName: programs.name, companyId: internships.companyId, orgName: internships.orgName, title: internships.title, startsOn: internships.startsOn, endsOn: internships.endsOn, stipendMonthly: internships.stipendMonthly, industryMentor: internships.industryMentor, mentorUserId: internships.mentorUserId, mentorName: mentor.fullName, status: internships.status, evaluationScore: internships.evaluationScore, supervisorRating: internships.supervisorRating, employerFeedback: internships.employerFeedback, credits: internships.credits, creditSubjectId: internships.creditSubjectId, creditSubject: subjects.name, companyConfirmed: internships.companyConfirmed, appliedOn: internships.appliedOn },
+        select: { id: internships.id, studentId: internships.studentId, rollNo: students.rollNo, fullName: students.fullName, className: sections.displayName, programName: programs.name, companyId: internships.companyId, orgName: internships.orgName, title: internships.title, startsOn: internships.startsOn, endsOn: internships.endsOn, stipendMonthly: internships.stipendMonthly, industryMentor: internships.industryMentor, mentorUserId: internships.mentorUserId, mentorName: mentor.fullName, status: internships.status, evaluationScore: internships.evaluationScore, supervisorRating: internships.supervisorRating, employerFeedback: internships.employerFeedback, credits: internships.credits, hours: internships.hours, category: internships.category, mode: internships.mode, creditSubjectId: internships.creditSubjectId, creditSubject: subjects.name, companyConfirmed: internships.companyConfirmed, appliedOn: internships.appliedOn },
         joins: (q) => q.innerJoin(students, eq(students.id, internships.studentId)).innerJoin(sections, eq(sections.id, students.sectionId)).innerJoin(programs, eq(programs.id, sections.programId)).leftJoin(mentor, eq(mentor.id, internships.mentorUserId)).leftJoin(subjects, eq(subjects.id, internships.creditSubjectId)),
         search: [students.fullName, students.rollNo, internships.orgName, internships.title],
         filters: {
@@ -358,6 +399,22 @@ export class PlacementsRecords implements OnModuleInit {
         stipendMonthly: { label: 'Stipend (₹ a month)', type: 'number', schema: z.coerce.number().int().min(0).max(1_000_000).nullable(), column: internships.stipendMonthly },
         industryMentor: { label: 'Industry supervisor', type: 'text', schema: OptionalText(120), column: internships.industryMentor },
         companyConfirmed: { label: 'Company confirmed', type: 'boolean', schema: z.boolean(), column: internships.companyConfirmed, bulk: true, help: 'The offer or acceptance letter is in' },
+        category: { label: 'Kind of internship', type: 'select', schema: z.enum(['industry', 'research', 'in_house', 'rural', 'virtual']), column: internships.category, options: INTERN_CATEGORY, bulk: true, help: 'AICTE internship policy categories' },
+        mode: { label: 'Mode', type: 'select', schema: z.enum(['onsite', 'remote', 'hybrid']), column: internships.mode, options: INTERN_MODE, bulk: true },
+        hours: {
+          label: 'Hours worked',
+          type: 'number',
+          schema: z.union([z.coerce.number().min(0).max(5000), z.literal(''), z.null()]).transform((v) => (v === '' ? null : v)),
+          help: 'Credits follow from the hours (AICTE: one credit for each 45 hours, set in Settings) unless you enter them',
+          apply: async (ctx, id, v) => {
+            const hours = (v as number | null) ?? null;
+            const [cur] = await ctx.tx.select({ credits: internships.credits, hours: internships.hours }).from(internships).where(eq(internships.id, id));
+            const per = (await this.svc.rules(ctx.tx, ctx.p.tenantId)).hoursPerCredit;
+            // Credits that were worked out from the old hours follow the new hours; credits entered by hand stay.
+            const derived = cur && (cur.credits === null || cur.credits === aicteCredits(cur.hours, per));
+            await ctx.tx.update(internships).set({ hours, ...(derived ? { credits: hours === null ? null : aicteCredits(hours, per) } : {}) }).where(eq(internships.id, id));
+          },
+        },
         credits: { label: 'Credits', type: 'number', schema: z.coerce.number().min(0).max(40).nullable(), column: internships.credits, bulk: true },
         creditSubjectId: { label: 'Counts for course', type: 'select', schema: OptionalRef, column: internships.creditSubjectId, options: subjectOptions, help: 'The course whose credits it earns' },
         supervisorRating: { label: 'Supervisor rating (1 to 5)', type: 'number', schema: z.coerce.number().int().min(1).max(5).nullable(), column: internships.supervisorRating },
@@ -365,7 +422,9 @@ export class PlacementsRecords implements OnModuleInit {
       },
       create: async (ctx, v) => {
         if (String(v.endsOn) < String(v.startsOn)) throw new BadRequestException({ formErrors: [], fieldErrors: { endsOn: ['The end date is before the start date'] } });
-        const [row] = await ctx.tx.insert(internships).values({ tenantId: ctx.p.tenantId, studentId: String(v.studentId), companyId: (v.companyId as string | null) ?? null, orgName: String(v.orgName), title: String(v.title), startsOn: String(v.startsOn), endsOn: String(v.endsOn), appliedOn: (v.appliedOn as string | null) ?? null, stipendMonthly: (v.stipendMonthly as number | null) ?? null, industryMentor: (v.industryMentor as string | null) ?? null, companyConfirmed: Boolean(v.companyConfirmed ?? false), credits: (v.credits as number | null) ?? null, creditSubjectId: (v.creditSubjectId as string | null) ?? null }).returning({ id: internships.id });
+        const hours = (v.hours as number | null | undefined) ?? null;
+        const credits = (v.credits as number | null | undefined) ?? (hours === null ? null : aicteCredits(hours, (await this.svc.rules(ctx.tx, ctx.p.tenantId)).hoursPerCredit));
+        const [row] = await ctx.tx.insert(internships).values({ tenantId: ctx.p.tenantId, studentId: String(v.studentId), companyId: (v.companyId as string | null) ?? null, orgName: String(v.orgName), title: String(v.title), startsOn: String(v.startsOn), endsOn: String(v.endsOn), appliedOn: (v.appliedOn as string | null) ?? null, stipendMonthly: (v.stipendMonthly as number | null) ?? null, industryMentor: (v.industryMentor as string | null) ?? null, companyConfirmed: Boolean(v.companyConfirmed ?? false), hours, credits, category: String(v.category ?? 'industry'), mode: String(v.mode ?? 'onsite'), creditSubjectId: (v.creditSubjectId as string | null) ?? null }).returning({ id: internships.id });
         return row.id;
       },
       move: { label: 'Assign faculty mentor', options: mentorOptions, column: internships.mentorUserId },
@@ -387,6 +446,9 @@ export class PlacementsRecords implements OnModuleInit {
         { key: 'mentorName', header: 'Faculty mentor' },
         { key: 'industryMentor', header: 'Industry supervisor' },
         { key: 'companyConfirmed', header: 'Confirmed', value: (r) => (r.companyConfirmed ? 'Yes' : 'No') },
+        { key: 'category', header: 'Kind', value: (r) => INTERN_CATEGORY.find((o) => o.value === r.category)?.label ?? String(r.category) },
+        { key: 'mode', header: 'Mode', value: (r) => INTERN_MODE.find((o) => o.value === r.mode)?.label ?? String(r.mode) },
+        { key: 'hours', header: 'Hours' },
         { key: 'credits', header: 'Credits' },
         { key: 'creditSubject', header: 'Course' },
         { key: 'evaluationScore', header: 'Score' },

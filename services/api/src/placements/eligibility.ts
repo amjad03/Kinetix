@@ -10,6 +10,13 @@ export interface DriveRules {
   registrationOpensOn?: string | null;
   /** Graduation years eligible; empty = any. */
   batchYears?: number[];
+  /** Genders eligible (male, female, other); empty = any. */
+  genders?: string[];
+  minTenthPct?: number | null;
+  minTwelfthPct?: number | null;
+  maxGapYears?: number | null;
+  maxBacklogHistory?: number | null;
+  requireVerifiedDocs?: boolean;
 }
 export interface Academics {
   /** Latest published CGPA; null when the student has no published result yet. */
@@ -18,8 +25,19 @@ export interface Academics {
   programId: string;
   /** The year the student is expected to graduate (their batch). */
   batchYear?: number | null;
+  /** From the student profile and prior education (placement pass): null = not on record. */
+  gender?: string | null;
+  tenthPct?: number | null;
+  twelfthPct?: number | null;
+  gapYears?: number | null;
+  /** Subjects ever failed, cleared since or not. */
+  backlogHistory?: number;
+  /** Every required placement document is verified. */
+  docsVerified?: boolean;
 }
-export type IneligibleReason = 'not_open' | 'not_yet_open' | 'deadline_passed' | 'no_results' | 'cgpa_below' | 'backlogs_exceeded' | 'program_not_eligible' | 'batch_not_eligible';
+export type IneligibleReason =
+  | 'not_open' | 'not_yet_open' | 'deadline_passed' | 'no_results' | 'cgpa_below' | 'backlogs_exceeded' | 'program_not_eligible' | 'batch_not_eligible'
+  | 'gender_not_eligible' | 'tenth_below' | 'twelfth_below' | 'no_prior_marks' | 'gap_exceeded' | 'backlog_history_exceeded' | 'documents_not_verified';
 
 export function checkEligibility(drive: DriveRules, a: Academics, today: string): { eligible: boolean; reasons: IneligibleReason[] } {
   const reasons: IneligibleReason[] = [];
@@ -33,7 +51,60 @@ export function checkEligibility(drive: DriveRules, a: Academics, today: string)
     else if (a.cgpa < drive.minCgpa) reasons.push('cgpa_below');
   }
   if (a.backlogs > drive.maxBacklogs) reasons.push('backlogs_exceeded');
+  if (drive.genders?.length && (!a.gender || !drive.genders.includes(a.gender))) reasons.push('gender_not_eligible');
+  // A percentage the drive asks for but the student has not recorded keeps them out until the office records it.
+  const pct = (min: number | null | undefined, have: number | null | undefined, below: IneligibleReason) => {
+    if (!min) return;
+    if (have == null) {
+      if (!reasons.includes('no_prior_marks')) reasons.push('no_prior_marks');
+    } else if (have < min) reasons.push(below);
+  };
+  pct(drive.minTenthPct, a.tenthPct, 'tenth_below');
+  pct(drive.minTwelfthPct, a.twelfthPct, 'twelfth_below');
+  if (drive.maxGapYears != null && (a.gapYears ?? 0) > drive.maxGapYears) reasons.push('gap_exceeded');
+  if (drive.maxBacklogHistory != null && (a.backlogHistory ?? 0) > drive.maxBacklogHistory) reasons.push('backlog_history_exceeded');
+  if (drive.requireVerifiedDocs && a.docsVerified !== true) reasons.push('documents_not_verified');
   return { eligible: reasons.length === 0, reasons };
+}
+
+/** Subjects failed at least once, whether cleared since or not (the "history of backlogs"). */
+export function countBacklogHistory(lines: { subjectId: string; passed: boolean }[]): number {
+  return new Set(lines.filter((l) => !l.passed).map((l) => l.subjectId)).size;
+}
+
+/** A prior qualification: its level (secondary = class 10, puc = class 12 or pre-university), passing year and percentage. */
+export interface Prior {
+  level: string;
+  passingYear: number | null;
+  percentage: number | null;
+}
+
+/**
+ * Class 10 and 12 percentages and the years of gap in the student's education: the years between class 10 and 12
+ * beyond the usual two, plus the years between the last qualifying exam (class 12, diploma or a degree) and joining
+ * this programme. A missing year leaves that stretch out.
+ */
+export function priorProfile(prior: Prior[], joinedYear: number | null): { tenthPct: number | null; twelfthPct: number | null; gapYears: number | null } {
+  const best = (level: string) => prior.filter((p) => p.level === level).sort((a, b) => (b.passingYear ?? 0) - (a.passingYear ?? 0))[0];
+  const tenth = best('secondary');
+  const twelfth = best('puc');
+  const last = [...prior].filter((p) => p.level !== 'primary' && p.passingYear != null).sort((a, b) => (b.passingYear ?? 0) - (a.passingYear ?? 0))[0];
+  if (!prior.length) return { tenthPct: null, twelfthPct: null, gapYears: null };
+  let gap = 0;
+  if (tenth?.passingYear && twelfth?.passingYear) gap += Math.max(0, twelfth.passingYear - tenth.passingYear - 2);
+  if (last?.passingYear && joinedYear) gap += Math.max(0, joinedYear - last.passingYear);
+  return { tenthPct: tenth?.percentage ?? null, twelfthPct: twelfth?.percentage ?? null, gapYears: gap };
+}
+
+/**
+ * The offer category a package falls in when the drive leaves it unset: at or above the super-dream line it is super
+ * dream, at or above the dream line dream, else regular. A line of 0 is switched off.
+ */
+export function categoryForCtc(ctcLpa: number | null | undefined, lines: { dreamMinLpa: number; superDreamMinLpa: number }): Category {
+  if (ctcLpa == null) return 'regular';
+  if (lines.superDreamMinLpa > 0 && ctcLpa >= lines.superDreamMinLpa) return 'super_dream';
+  if (lines.dreamMinLpa > 0 && ctcLpa >= lines.dreamMinLpa) return 'dream';
+  return 'regular';
 }
 
 /** Subjects whose most recent published result is a fail. `lines` are in chronological order. */
