@@ -170,6 +170,8 @@ export interface BookAsset {
 
 /** The WDV rate that brings cost down to the residual value over the useful life: 1 − (residual / cost)^(1 / life). */
 export function scheduleIiWdvRate(a: Pick<BookAsset, 'costPaise' | 'salvagePaise' | 'usefulLifeYears'>): number {
+  // A donated asset at no cost, or one with no useful life recorded, has nothing to write down (and no NaN rate).
+  if (!(a.costPaise > 0) || !(a.usefulLifeYears > 0)) return 0;
   const residual = Math.max(a.salvagePaise, 1);
   return Math.round((1 - Math.pow(residual / a.costPaise, 1 / a.usefulLifeYears)) * 10_000) / 100;
 }

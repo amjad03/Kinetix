@@ -13,7 +13,8 @@ Migrations reserved: 0228, 0229 (not needed: every fix is in code). Test DB: `zy
 | --- | --- | --- | --- |
 | High | 2 | 2 | 0 |
 | Medium | 6 | 5 | 1 |
-| Low | 7 | 1 | 6 |
+| Low | 7 | 2 | 5 |
+| QA sweep | 1 | 0 | 1 |
 
 The main class of defect in these modules was **the date in the wrong time zone**: code that took
 `new Date().toISOString().slice(0, 10)` or SQL `current_date` / `timestamptz::date`, which is the UTC date on our
@@ -39,7 +40,7 @@ hosts and is still yesterday from 00:00 to 05:30 IST. Each affected path now use
 | D-12 | Low | Hostel | `hostel/allotment.ts:95` | `vacate` accepts a future `on` date and closes the allotment immediately (bed shows free while the student is still in it). | Open: refuse `on > today`, or keep a scheduled vacate that closes on the day | - |
 | D-13 | Low | Hostel | `hostel/hostel-rules.ts:65` | `settle` counts days used from the 1st of the vacate month even when the student moved in that month; the unused-fee refund is right only if the joining month was charged in full. | Open: pass `startsOn` and pro-rate from `max(startsOn, month start)` | - |
 | D-14 | Low | Hostel | `hostel/hostel-ops.controller.ts:256-264` | Occupancy desk `occupied` counts allotments that start in the future, and a bed with two active holds counts twice in `held`. | Open: `a.starts_on <= today`, `count(distinct hd.bed_id)` | - |
-| D-15 | Low | Inventory | `inventory/stores.logic.ts:172` | `scheduleIiWdvRate` divides by `costPaise`: a zero-cost asset (donated) gives `NaN`/`Infinity` rate. | Open: return 0 when cost is 0 | - |
+| D-15 | Low | Inventory | `inventory/stores.logic.ts:172` | `scheduleIiWdvRate` divided by `costPaise`: a zero-cost (donated) asset or a zero useful life gave a `NaN`/`Infinity` WDV rate. | Fixed: rate 0 | `src/inventory/stores.logic.spec.ts` "zero-cost" |
 | D-16 | Low | Inventory exports | `inventory/inventory.records.ts:549,591,1064,1112` | "Raised on" / "Date" export columns take the UTC date of `createdAt`. | Open: format with the tenant zone | - |
 
 Checked and found correct: library late fine (closed weekdays and calendar holidays skipped, grace in open days,
@@ -69,9 +70,134 @@ date, hostel vacate settlement arithmetic (deposit less damages and dues, negati
 | IQAC / NAAC | SSR / AQAR criterion metrics, DVV | Yes (flagship) | Built, official-template match unverified | Behind |
 | NIRF | Data capture and score estimate | Yes | Built (indicative, benchmarks settable) | Par |
 
-Closed in this pass: D-01 to D-10. No new feature surface was added; the gaps marked Behind need real vendors or a
+Closed in this pass: D-01 to D-10 and D-15. Tests run: `transport-rules.spec.ts` (8 pass; the 2 new cases failed first), e2e `hostel-pass` and `transport-pass` (21 pass), e2e `governance-pass`, `inventory-pass`, `hostel-depth`, `governance-access` (37 pass), API build `tsc -p tsconfig.build.json` clean. No new feature surface was added; the gaps marked Behind need real vendors or a
 domain reviewer.
 
 ## ERP-wide QA sweep
 
-QA_RESULTS_PLACEHOLDER
+Status at the hard stop: the sweep ran on the demo DB `zynetix_audit_qa_demo` (API :4471, ERP dev :3471). The
+server-side route x role matrix had covered **97 of the ~350 static routes** when the session was stopped; the
+Playwright browser pass (console errors, failed requests, error states, blank pages, sideways scroll, raw i18n keys,
+broken links at 1280px and 390px) did not start. Re-run in full with:
+
+```
+ERP_URL=http://localhost:3471 API_URL=http://localhost:4471 OUT=/tmp/final-qa CONCURRENCY=3 \
+PW_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome node apps/erp/scripts/final-qa.mjs
+```
+
+(`BROWSER=0` for the matrix only, `MATRIX_FROM=<matrix.json>` to go straight to the browser pass; the report lands in
+`OUT/report.md` with the full table and every browser issue.)
+
+Findings so far:
+- No route returned a server error, a Next error page, a 403 or a 404 for any role in the part of the matrix that ran
+  (0 error / denied / not-found cells).
+- Teacher (`deepa.nair`), student and parent are redirected on every ERP route (`/auth/end?reason=denied`): by design,
+  they use the Teacher, Student and Parent apps (`canUseErp`, `apps/erp/src/lib/access.ts:199`). The HoD is the
+  teaching role the ERP serves.
+- Role gating matches the menu: the accountant opens Accounts but is redirected from Academic audit, Academic
+  planning and Accreditation; the HoD is redirected from Accounts and from Academic structure and settings.
+- Setup notes: the API build needs `NODE_OPTIONS=--max-old-space-size=6144` and a built `packages/shared`; the
+  Soundarya seed needs `SECRETS_ENCRYPTION_KEY` (it stores connector settings) or it stops with a 503.
+- Open (QA-01, Medium): finish the remaining matrix routes and the browser pass; fix what it reports.
+
+Route x role matrix (server-side request with each role's session; ok = 200, redir = redirected, 403/404/ERR as shown):
+
+| Route | admin | principal | hod | teacher | accountant | student | parent |
+|---|---|---|---|---|---|---|---|
+| `/` | ok | ok | ok | redir | ok | redir | redir |
+| `/academics` | ok | ok | ok | redir | ok | redir | redir |
+| `/academic-audit` | ok | ok | ok | redir | redir | redir | redir |
+| `/academics/planning` | ok | ok | ok | redir | redir | redir | redir |
+| `/academics/structure` | ok | ok | redir | redir | redir | redir | redir |
+| `/academics/settings` | ok | ok | redir | redir | redir | redir | redir |
+| `/account/password` | ok | ok | ok | redir | ok | redir | redir |
+| `/account/security` | ok | ok | ok | redir | ok | redir | redir |
+| `/accounts` | ok | ok | redir | redir | ok | redir | redir |
+| `/accounts/bank` | ok | ok | redir | redir | ok | redir | redir |
+| `/accounts/reports` | ok | ok | redir | redir | ok | redir | redir |
+| `/accounts/settings` | ok | ok | redir | redir | ok | redir | redir |
+| `/accreditation` | ok | ok | ok | redir | redir | redir | redir |
+| `/accreditation/iqac` | ok | ok | ok | redir | redir | redir | redir |
+| `/accreditation/my-evidence` | ok | ok | ok | redir | redir | redir | redir |
+| `/accreditation/my-tasks` | ok | ok | ok | redir | redir | redir | redir |
+| `/admissions` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions-tools` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/applications` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/broadcasts` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/cycles` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/campaigns` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/depth` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/enquiries` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/enrolment` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/entrance` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/office` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/interviews` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/online-test` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/returns` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/partners` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/reports` | ok | ok | redir | redir | redir | redir | redir |
+| `/admissions/seats` | ok | ok | redir | redir | redir | redir | redir |
+| `/ai/audit` | ok | ok | redir | redir | redir | redir | redir |
+| `/ai` | ok | ok | redir | redir | redir | redir | redir |
+| `/analytics` | ok | ok | ok | redir | ok | redir | redir |
+| `/ai/evals` | ok | ok | redir | redir | redir | redir | redir |
+| `/alumni` | ok | ok | redir | redir | ok | redir | redir |
+| `/analytics/campaigns` | ok | ok | redir | redir | redir | redir | redir |
+| `/assets` | ok | ok | redir | redir | redir | redir | redir |
+| `/assessment-tools` | ok | ok | ok | redir | redir | redir | redir |
+| `/assets/amc` | ok | ok | redir | redir | redir | redir | redir |
+| `/attendance/eligibility` | ok | ok | ok | redir | redir | redir | redir |
+| `/attendance` | ok | ok | ok | redir | redir | redir | redir |
+| `/attendance/governance` | ok | ok | ok | redir | redir | redir | redir |
+| `/attendance/leave` | ok | ok | ok | redir | redir | redir | redir |
+| `/attendance/mark` | ok | ok | ok | redir | redir | redir | redir |
+| `/attendance/qr-review` | ok | ok | ok | redir | redir | redir | redir |
+| `/attendance/register` | ok | ok | ok | redir | redir | redir | redir |
+| `/attendance/reports` | ok | ok | ok | redir | redir | redir | redir |
+| `/attendance/student` | ok | ok | ok | redir | redir | redir | redir |
+| `/attendance/unmarked` | ok | ok | ok | redir | redir | redir | redir |
+| `/audit` | ok | ok | redir | redir | redir | redir | redir |
+| `/billing` | ok | ok | redir | redir | redir | redir | redir |
+| `/books` | ok | ok | redir | redir | ok | redir | redir |
+| `/budgets` | ok | ok | redir | redir | ok | redir | redir |
+| `/boards` | ok | ok | ok | redir | redir | redir | redir |
+| `/canteen` | ok | ok | redir | redir | redir | redir | redir |
+| `/campus-life` | ok | ok | ok | redir | redir | redir | redir |
+| `/calendar` | ok | ok | ok | redir | ok | redir | redir |
+| `/canteen/operations` | ok | ok | redir | redir | redir | redir | redir |
+| `/careers` | ok | ok | ok | redir | redir | redir | redir |
+| `/cast` | ok | ok | ok | ok | ok | ok | ok |
+| `/classes` | ok | ok | ok | redir | redir | redir | redir |
+| `/chat` | ok | ok | ok | redir | ok | redir | redir |
+| `/communication` | ok | ok | ok | redir | redir | redir | redir |
+| `/communication/credits` | ok | ok | redir | redir | ok | redir | redir |
+| `/communication/consent` | ok | ok | ok | redir | redir | redir | redir |
+| `/communication/log` | ok | ok | ok | redir | redir | redir | redir |
+| `/connectors` | ok | ok | redir | redir | redir | redir | redir |
+| `/communication/suppressions` | ok | ok | ok | redir | redir | redir | redir |
+| `/conversations` | ok | ok | redir | redir | ok | redir | redir |
+| `/course-files` | ok | ok | ok | redir | redir | redir | redir |
+| `/courses` | ok | ok | ok | redir | redir | redir | redir |
+| `/course-registration` | ok | ok | ok | redir | redir | redir | redir |
+| `/courses/insights` | ok | ok | ok | redir | redir | redir | redir |
+| `/curriculum` | ok | ok | ok | redir | redir | redir | redir |
+| `/curriculum/equivalences` | ok | ok | ok | redir | redir | redir | redir |
+| `/curriculum/readmission` | ok | ok | ok | redir | redir | redir | redir |
+| `/department` | ok | ok | ok | redir | redir | redir | redir |
+| `/delegations` | ok | ok | ok | redir | ok | redir | redir |
+| `/department/plan` | ok | ok | ok | redir | redir | redir | redir |
+| `/department/syllabus` | ok | ok | ok | redir | redir | redir | redir |
+| `/departments` | ok | ok | redir | redir | redir | redir | redir |
+| `/devices` | ok | ok | redir | redir | redir | redir | redir |
+| `/diary` | ok | ok | ok | redir | redir | redir | redir |
+| `/documents` | ok | ok | redir | redir | ok | redir | redir |
+| `/documents/id-cards` | ok | ok | redir | redir | ok | redir | redir |
+| `/documents/issued` | ok | ok | redir | redir | ok | redir | redir |
+| `/documents/templates/wording` | ok | ok | redir | redir | ok | redir | redir |
+| `/documents/templates` | ok | ok | redir | redir | ok | redir | redir |
+| `/documents/vault` | ok | ok | redir | redir | ok | redir | redir |
+| `/early-alerts` | ok | ok | ok | redir | redir | redir | redir |
+| `/dpdp` | ok | ok | redir | redir | redir | redir | redir |
+| `/early-years` | ok | ok | ok | redir | redir | redir | redir |
+| `/evaluation` | ok | ok | redir | redir | redir | redir | redir |
+| `/evaluation/desk` | redir | ok | ok | redir | redir | redir | redir |

@@ -12,7 +12,7 @@
 // Env: ROLES=admin,principal,hod,teacher,accountant,student,parent  WIDTHS=1280,390  CONCURRENCY=3
 //      ONLY=<route substring>  BROWSER=0 (matrix only)  MAX_PAGES=<cap per role for the browser pass>
 // Writes OUT/matrix.json, OUT/browser.json and OUT/report.md (the route x role table and the issues).
-import { mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
 
@@ -135,7 +135,7 @@ async function visit(page, route) {
   try {
     const res = await page.goto(ERP + route, { waitUntil: 'domcontentloaded', timeout: 90000 });
     await page.locator('main h1').first().waitFor({ timeout: 12000 }).catch(() => {});
-    await page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
+    await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
     finalPath = new URL(page.url()).pathname;
     if ((res?.status() ?? 0) >= 500) issues.push({ check: 'http', detail: `status ${res.status()}` });
     const html = await page.content();
@@ -168,8 +168,10 @@ for (const r of roles) tokens[r] = await signIn(ROLES[r]);
 
 // ---- 1. matrix -------------------------------------------------------------------------------------------------
 const staticRoutes = ALL.filter((p) => !isDynamic(p)).filter((p) => !ONLY || p.includes(ONLY));
-const matrix = {};
+// MATRIX_FROM=<matrix.json>: reuse an earlier matrix pass and go straight to the browser pass.
+const matrix = process.env.MATRIX_FROM ? JSON.parse(readFileSync(process.env.MATRIX_FROM, 'utf8')) : {};
 const harvested = new Set();
+if (!process.env.MATRIX_FROM) {
 // Warm the dev server's compile of each route once (as the first role), then probe all roles.
 await pool(staticRoutes, CONCURRENCY, async (route) => {
   for (const role of roles) {
@@ -196,6 +198,7 @@ await pool(Object.entries(dynamicFilled).filter(([p]) => !ONLY || p.includes(ONL
   process.stdout.write(`matrix ${p} (${urls[0]}) ${roles.map((x) => `${x}:${matrix[p][x].cell}`).join(' ')}\n`);
 });
 writeFileSync(path.join(OUT, 'matrix.json'), JSON.stringify(matrix, null, 1));
+}
 
 // ---- 2. browser ------------------------------------------------------------------------------------------------
 const browserResults = [];
@@ -203,10 +206,12 @@ const known = ALL.map((p) => toRegex(p === '/' ? '/' : p));
 if (process.env.BROWSER !== '0') {
   const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM_PATH || undefined, args: ['--disable-dev-shm-usage'] });
   for (const role of roles) {
-    const open = Object.entries(matrix)
+    let open = Object.entries(matrix)
       .filter(([, cells]) => cells[role]?.cell === 'ok')
       .map(([p, cells]) => cells[role].sample ?? p)
       .slice(0, Number(process.env.MAX_PAGES ?? 1e9));
+    // A role the ERP does not serve (it uses its own app): check where it lands, and that the page there works.
+    if (!open.length) open = ['/'];
     for (const width of WIDTHS) {
       const ctxs = [];
       await pool(open, CONCURRENCY, async (route) => {
