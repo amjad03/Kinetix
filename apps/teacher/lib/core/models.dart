@@ -1178,12 +1178,13 @@ class DriverStop {
 
 /// A route the driver drives, with its stops in order.
 class DriverRoute {
-  const DriverRoute({required this.id, required this.name, this.regNo, this.stops = const []});
+  const DriverRoute({required this.id, required this.name, this.regNo, this.stops = const [], this.role = 'driver'});
 
   factory DriverRoute.fromJson(Map<String, dynamic> j) => DriverRoute(
     id: j['id'] as String,
     name: j['name'] as String,
     regNo: j['regNo'] as String?,
+    role: j['role'] as String? ?? 'driver',
     stops: [for (final s in (j['stops'] as List? ?? const [])) DriverStop.fromJson(s as Map<String, dynamic>)]..sort((a, b) => a.seq.compareTo(b.seq)),
   );
 
@@ -1191,6 +1192,10 @@ class DriverRoute {
   final String name;
   final String? regNo;
   final List<DriverStop> stops;
+
+  /// The signed-in person's part on this route: driver, conductor or attendant (only the driver runs the trip).
+  final String role;
+  bool get drives => role == 'driver';
 
   /// The stops in the order this run visits them: forwards to pick up, backwards to drop.
   List<DriverStop> ordered(TripDirection d) => d == TripDirection.drop ? stops.reversed.toList() : stops;
@@ -1231,6 +1236,44 @@ class DriverHome {
 
   final List<DriverRoute> routes;
   final DriverTrip? trip;
+}
+
+/// One student on a trip's manifest: their stop, and when they got on and off on this trip.
+class ManifestRider {
+  const ManifestRider({required this.studentId, required this.name, required this.rollNo, required this.stopName, this.boardedAt, this.alightedAt});
+
+  factory ManifestRider.fromJson(Map<String, dynamic> j) => ManifestRider(
+    studentId: j['studentId'] as String,
+    name: j['name'] as String,
+    rollNo: j['rollNo'] as String? ?? '',
+    stopName: j['stopName'] as String? ?? '',
+    boardedAt: j['boardedAt'] == null ? null : DateTime.parse(j['boardedAt'] as String).toLocal(),
+    alightedAt: j['alightedAt'] == null ? null : DateTime.parse(j['alightedAt'] as String).toLocal(),
+  );
+
+  final String studentId;
+  final String name;
+  final String rollNo;
+  final String stopName;
+  final DateTime? boardedAt;
+  final DateTime? alightedAt;
+}
+
+/// Who rides a trip (`GET /v1/transport/trips/:id/manifest`), in the order of the run.
+class TripManifest {
+  const TripManifest({required this.tripId, required this.direction, required this.riders});
+
+  factory TripManifest.fromJson(Map<String, dynamic> j) => TripManifest(
+    tripId: j['tripId'] as String,
+    direction: TripDirection.parse(j['direction']),
+    riders: [for (final r in (j['riders'] as List? ?? const [])) ManifestRider.fromJson(r as Map<String, dynamic>)],
+  );
+
+  final String tripId;
+  final TripDirection direction;
+  final List<ManifestRider> riders;
+  int get boarded => riders.where((r) => r.boardedAt != null).length;
+  int get onBoard => riders.where((r) => r.boardedAt != null && r.alightedAt == null).length;
 }
 
 /// A video a teacher added to a topic for their classes (`GET /v1/content/topics/:id/videos/mine`).

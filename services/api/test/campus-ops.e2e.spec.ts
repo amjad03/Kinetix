@@ -104,11 +104,12 @@ describe('transport, hostel, canteen, inventory and assets', () => {
       const far = await http().post(`/v1/transport/trips/${tripId}/position`).set(as('driver')).send({ lat: 12.96, lng: 77.59, speedKmh: 40 }).expect(200);
       expect(far.body.nextStop.name).toBe('Market');
       expect(far.body.etaMinutes).toBe(2);
-      const ev = await got;
+      const ev = await Promise.race([got, new Promise<never>((_, no) => setTimeout(() => no(new Error('no live position within 5 s')), 5000))]);
       expect(ev).toMatchObject({ tripId, routeId, nextStop: { name: 'Market' } });
       expect(strangerHeard).toBe(false);
 
-      const kinds = async () => (await db.select().from(s.notifications).where(eq(s.notifications.kind, 'transport'))).length;
+      // This institution's notices only: other test files share the database and leave transport notices of their own.
+      const kinds = async () => (await db.select().from(s.notifications).where(and(eq(s.notifications.kind, 'transport'), eq(s.notifications.tenantId, t.tenantId)))).length;
       expect(await kinds()).toBe(0);
       await http().post(`/v1/transport/trips/${tripId}/position`).set(as('driver')).send({ lat: 12.9675, lng: 77.59, speedKmh: 20 }).expect(200);
       const arriving = await kinds();

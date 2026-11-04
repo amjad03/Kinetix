@@ -2,6 +2,7 @@
 // into tabs), the inputs the lists' actions ask for, and the API paths the desks may call.
 
 import { isLibraryPassPost, isLibraryPassRead } from './library-pass';
+import { isTransportPassPost } from './transport-pass';
 
 export type LhtModule = 'library' | 'hostel' | 'transport';
 
@@ -29,10 +30,10 @@ export const LHT_GROUPS: Record<LhtModule, LhtGroup[]> = {
     { key: 'mess', entities: ['mess-plans', 'mess-subscriptions', 'mess-leaves', 'mess-bills', 'mess-expenses', 'mess-inspections'] },
   ],
   transport: [
-    { key: 'fleet', entities: ['transport-vehicles', 'transport-drivers', 'transport-maintenance', 'transport-expenses'] },
-    { key: 'routes', entities: ['transport-routes', 'transport-stops', 'transport-overrides'] },
-    { key: 'riders', entities: ['transport-riders', 'transport-change-requests', 'transport-pickup-persons', 'transport-handovers'] },
-    { key: 'operations', entities: ['transport-duty', 'transport-trips', 'transport-alerts', 'transport-incidents'] },
+    { key: 'fleet', entities: ['transport-vehicles', 'transport-drivers', 'transport-safety-checks', 'transport-maintenance', 'transport-expenses'] },
+    { key: 'routes', entities: ['transport-routes', 'transport-stops', 'transport-fare-slabs', 'transport-overrides'] },
+    { key: 'riders', entities: ['transport-riders', 'transport-change-requests', 'transport-fee-adjustments', 'transport-pickup-persons', 'transport-handovers'] },
+    { key: 'operations', entities: ['transport-duty', 'transport-trips', 'transport-boardings', 'transport-alerts', 'transport-incidents'] },
   ],
 };
 
@@ -116,7 +117,7 @@ export const PARAM_ACTIONS: Record<string, Record<string, ParamField[]>> = {
   'hostel-room-assets': { chargeDamage: [{ name: 'amount', type: 'number', required: true }, { name: 'student', type: 'text' }, note] },
   'hostel-committees': { addMember: [{ name: 'person', type: 'text', required: true }, { name: 'role', type: 'select', values: ['chair', 'secretary', 'member', 'external'], initial: 'member' }] },
   'mess-inspections': { close: [{ name: 'actionTaken', type: 'textarea', required: true }] },
-  'transport-riders': { end: [{ name: 'on', type: 'date' }] },
+  'transport-riders': { end: [{ name: 'on', type: 'date' }, { name: 'reason', type: 'text' }] },
   'transport-change-requests': { reject: [note] },
   'transport-maintenance': { done: [{ name: 'doneOn', type: 'date' }, { name: 'odometerKm', type: 'number' }, { name: 'cost', type: 'number' }] },
   'transport-incidents': {
@@ -163,7 +164,7 @@ export const LHT_PATHS =
 /** The hostel pass's desk paths: a gate QR scan and bringing the kitchen purchases into the mess spending. */
 export const HOSTEL_DESK_PATHS = /^\/v1\/hostel\/(gate\/scan|mess\/expenses\/import-stock)$/;
 
-export const isLhtPath = (path: string) => LHT_PATHS.test(path) || HOSTEL_DESK_PATHS.test(path) || isLibraryPassPost(path);
+export const isLhtPath = (path: string) => LHT_PATHS.test(path) || HOSTEL_DESK_PATHS.test(path) || isLibraryPassPost(path) || isTransportPassPost(path);
 
 /** The lookups the desks may read (GET): a scanned code, an ISBN, a student's no-dues in each module. */
 export const LHT_READS = /^\/v1\/(library\/(desk\/lookup\?code=[A-Za-z0-9%._-]{1,80}|isbn\/[0-9Xx-]{10,17}|no-dues\/[0-9a-f-]{36})|hostel\/no-dues\/[0-9a-f-]{36}|transport\/no-dues\/[0-9a-f-]{36})$/;

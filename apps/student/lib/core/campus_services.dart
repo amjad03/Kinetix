@@ -206,13 +206,14 @@ class BusStop {
 
 /// Where the bus is now and how far from the student's stop.
 class BusPosition {
-  const BusPosition({this.speedKmh, this.at, this.etaMinutes, this.stopsAway = 0});
+  const BusPosition({this.speedKmh, this.at, this.etaMinutes, this.stopsAway = 0, this.lateMinutes});
 
   factory BusPosition.fromJson(Map<String, dynamic> j) => BusPosition(
     speedKmh: (j['speedKmh'] as num?)?.toDouble(),
     at: _at(j['at']),
     etaMinutes: (j['etaMinutes'] as num?)?.toInt(),
     stopsAway: (j['stopsAway'] as num?)?.toInt() ?? 0,
+    lateMinutes: (j['lateMinutes'] as num?)?.toInt(),
   );
 
   final double? speedKmh;
@@ -221,10 +222,25 @@ class BusPosition {
   /// Null once the bus has passed the student's stop.
   final int? etaMinutes;
   final int stopsAway;
+
+  /// Minutes behind the stop's timetable (0 on time).
+  final int? lateMinutes;
+}
+
+/// Getting on or off the bus today.
+class BusMark {
+  const BusMark({required this.kind, required this.at, this.stopName});
+
+  factory BusMark.fromJson(Map<String, dynamic> j) => BusMark(kind: j['kind'] as String, at: DateTime.parse(j['at'] as String).toLocal(), stopName: j['stopName'] as String?);
+
+  /// board | alight
+  final String kind;
+  final DateTime at;
+  final String? stopName;
 }
 
 class StudentBus {
-  const StudentBus({required this.assigned, this.routeName, this.regNo, this.stopId, this.stopName, this.pickupTime, this.stops = const [], this.bus});
+  const StudentBus({required this.assigned, this.routeName, this.regNo, this.stopId, this.stopName, this.pickupTime, this.stops = const [], this.bus, this.dropTime, this.driver, this.attendant, this.today = const [], this.passUntil, this.passValid = false, this.feeDuePaise = 0, this.feeOverduePaise = 0});
 
   factory StudentBus.fromJson(Map<String, dynamic> j) {
     if (j['assigned'] != true) return const StudentBus(assigned: false);
@@ -237,6 +253,14 @@ class StudentBus {
       pickupTime: j['pickupTime'] == null ? null : ClockTime.parse(j['pickupTime'] as String),
       stops: [for (final s in (j['stops'] as List? ?? const [])) BusStop.fromJson((s as Map).cast<String, dynamic>())],
       bus: j['bus'] == null ? null : BusPosition.fromJson((j['bus'] as Map).cast<String, dynamic>()),
+      dropTime: j['dropTime'] == null ? null : ClockTime.parse(j['dropTime'] as String),
+      driver: (j['crew'] as Map?)?['driver'] as String?,
+      attendant: (j['crew'] as Map?)?['attendant'] as String?,
+      today: [for (final m in (j['today'] as List? ?? const [])) BusMark.fromJson((m as Map).cast<String, dynamic>())],
+      passUntil: (j['pass'] as Map?)?['until'] as String?,
+      passValid: (j['pass'] as Map?)?['valid'] == true,
+      feeDuePaise: ((j['fee'] as Map?)?['duePaise'] as num?)?.toInt() ?? 0,
+      feeOverduePaise: ((j['fee'] as Map?)?['overduePaise'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -250,6 +274,16 @@ class StudentBus {
 
   /// Null when the bus is not running.
   final BusPosition? bus;
+  final ClockTime? dropTime;
+  final String? driver;
+  final String? attendant;
+
+  /// Getting on and off today.
+  final List<BusMark> today;
+  final String? passUntil;
+  final bool passValid;
+  final int feeDuePaise;
+  final int feeOverduePaise;
 }
 
 // ── Hostel gate passes (GET /v1/hostel/students/:id, POST /v1/hostel/gate-passes/requests) ────

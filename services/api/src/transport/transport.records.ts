@@ -14,7 +14,9 @@ import { copyName, DateText, Int, OptionalRef, Text, uuidEq } from '../records/h
 import { fail, int, outcome, required } from '../import/row-helpers.js';
 import { eachRow } from '../records/import.js';
 import { TRANSPORT_ROLES } from './transport.controller.js';
-import { changeDelta } from './transport-rules.js';
+import { changeDelta, slabFee } from './transport-rules.js';
+import { TransportPassService } from './transport-pass.service.js';
+import { transportFareSlabs } from '../db/schema-transport.js';
 
 /**
  * Transport's lists as record kit entities: vehicles, drivers and conductors, routes, stops (in their running order),
@@ -25,18 +27,21 @@ import { changeDelta } from './transport-rules.js';
 const VEHICLE_STATUSES = choices(['active', 'Running'], ['maintenance', 'In the workshop'], ['retired', 'Retired']);
 const FUELS = choices(['diesel', 'Diesel'], ['petrol', 'Petrol'], ['cng', 'CNG'], ['electric', 'Electric']);
 const OWNERSHIP = choices(['own', 'Own'], ['contract', 'On contract']);
-const DRIVER_ROLES = choices(['driver', 'Driver'], ['conductor', 'Conductor']);
+const DRIVER_ROLES = choices(['driver', 'Driver'], ['conductor', 'Conductor'], ['attendant', 'Attendant']);
 const RIDER_KINDS = choices(['student', 'Student'], ['staff', 'Staff']);
 const REQUEST_STATUSES = choices(['pending', 'Pending'], ['approved', 'Approved'], ['rejected', 'Rejected'], ['cancelled', 'Cancelled']);
 const MAINT_KINDS = choices(['service', 'Service'], ['tyres', 'Tyres'], ['battery', 'Battery'], ['brakes', 'Brakes'], ['insurance_renewal', 'Insurance renewal'], ['fitness', 'Fitness certificate'], ['permit', 'Permit'], ['other', 'Other']);
 const MAINT_STATUSES = choices(['scheduled', 'Scheduled'], ['done', 'Done'], ['cancelled', 'Cancelled']);
 const EXPENSE_KINDS = choices(['fuel', 'Fuel'], ['repair', 'Repair'], ['toll', 'Toll'], ['other', 'Other']);
-const INCIDENT_KINDS = choices(['accident', 'Accident'], ['breakdown', 'Breakdown'], ['delay', 'Delay'], ['behaviour', 'Behaviour'], ['other', 'Other']);
+const INCIDENT_KINDS = choices(['accident', 'Accident'], ['breakdown', 'Breakdown'], ['delay', 'Delay'], ['behaviour', 'Behaviour'], ['sos', 'SOS'], ['other', 'Other']);
 const SEVERITIES = choices(['low', 'Low'], ['medium', 'Medium'], ['high', 'High']);
 const CLAIM_STATUSES = choices(['none', 'No claim'], ['filed', 'Filed'], ['settled', 'Settled'], ['rejected', 'Rejected']);
 const OVERRIDE_KINDS = choices(['timing', 'Different timing'], ['vehicle', 'Substitute vehicle'], ['driver', 'Substitute driver'], ['cancelled', 'Not running']);
 const DUTY_STATUSES = choices(['present', 'Present'], ['absent', 'Absent'], ['leave', 'On leave']);
 const ALERT_KINDS = choices(['overspeed', 'Over-speed'], ['deviation', 'Off the route']);
+const GENDERS = choices(['female', 'Woman'], ['male', 'Man'], ['other', 'Other']);
+/** Today in India: lists filter by the local day, not the database server's. */
+const IST = sql`(now() at time zone 'Asia/Kolkata')::date`;
 
 async function vehicleOptions(ctx: KitCtx): Promise<FieldOption[]> {
   return (await ctx.tx.select({ id: transportVehicles.id, regNo: transportVehicles.regNo, cap: transportVehicles.capacity }).from(transportVehicles).where(sql`${transportVehicles.status} <> 'retired'`).orderBy(asc(transportVehicles.regNo))).map((v) => ({ value: v.id, label: `${v.regNo} (${v.cap} seats)` }));
@@ -83,10 +88,11 @@ export async function stopFee(ctx: KitCtx, stopId: string): Promise<number> {
 
 /**
  * Moves a rider to another stop (on the same or another route) from `on`: the old seat ends, the new one starts after a
- * capacity check, and the fee difference for the rest of the month is charged to the student (a smaller fee is
- * reported for the fees office to credit).
+ * capacity check. A month already billed is charged or credited the difference (credits come off unpaid transport
+ * fees, the rest is a refund due); a month not billed yet is charged pro rata by the month's run. `deltaPaise` is the
+ * difference for the rest of the effective month, for the family to see.
  */
-export async function moveRider(ctx: KitCtx, fees: FeesService, now: Date, assignmentId: string, stopId: string, on?: string, reason?: string): Promise<{ deltaPaise: number; charged: boolean }> {
+export async function moveRider(ctx: KitCtx, pass: TransportPassService, now: Date, assignmentId: string, stopId: string, on?: string, reason?: string): Promise<{ deltaPaise: number; charged: boolean; chargedPaise: number; creditedPaise: number; refundDuePaise: number }> {
   const [a] = await ctx.tx.select().from(transportAssignments).where(eq(transportAssignments.id, assignmentId)).for('update');
   if (!a) throw new NotFoundException('Seat not found');
   if (a.endedOn) throw new ConflictException('This seat has ended');
@@ -107,13 +113,9 @@ export async function moveRider(ctx: KitCtx, fees: FeesService, now: Date, assig
   await ctx.tx.update(transportAssignments).set({ endedOn: from }).where(eq(transportAssignments.id, assignmentId));
   await ctx.tx.insert(transportAssignments).values({ tenantId: ctx.p.tenantId, studentId: a.studentId, staffUserId: a.staffUserId, kind: a.kind, routeId: stop.routeId, stopId, startsOn: from });
   const delta = changeDelta(from, before, after);
-  let charged = false;
-  if (a.studentId && delta > 0) {
-    const r = await fees.chargeStudents(ctx.tx, ctx.p, `Transport fee change ${from} (${assignmentId.slice(0, 8)})`, from, [{ studentId: a.studentId, amountPaise: delta }]);
-    charged = r.charged > 0;
-  }
-  await auditUser(ctx.tx, ctx.p, 'transport_assignment.moved', 'transport_assignment', assignmentId, { reason, from, deltaPaise: delta, changes: { stopId: { before: a.stopId, after: stopId }, routeId: { before: a.routeId, after: stop.routeId } } });
-  return { deltaPaise: delta, charged };
+  const adj = await pass.adjustBilled(ctx, a, from, before, after, reason ? `Moved: ${reason}` : 'Moved to another stop');
+  await auditUser(ctx.tx, ctx.p, 'transport_assignment.moved', 'transport_assignment', assignmentId, { reason, from, deltaPaise: delta, ...adj, changes: { stopId: { before: a.stopId, after: stopId }, routeId: { before: a.routeId, after: stop.routeId } } });
+  return { deltaPaise: delta, charged: adj.chargedPaise > 0, ...adj };
 }
 
 @Injectable()
@@ -123,6 +125,7 @@ export class TransportRecords implements OnModuleInit {
     private readonly clock: Clock,
     private readonly fees: FeesService,
     private readonly notifications: NotificationsService,
+    private readonly pass: TransportPassService,
   ) {}
 
   onModuleInit(): void {
@@ -162,7 +165,7 @@ export class TransportRecords implements OnModuleInit {
         filters: {
           status: choiceFilter('Status', transportVehicles.status, VEHICLE_STATUSES),
           ownership: choiceFilter('Ownership', transportVehicles.ownership, OWNERSHIP),
-          expiring: { label: 'Papers', options: choices(['expired', 'Something expired'], ['soon', 'Expiring in 30 days']), where: (v) => (v === 'expired' ? sql`${nextExpiry}::date < current_date` : v === 'soon' ? sql`${nextExpiry}::date < current_date + 30` : undefined) },
+          expiring: { label: 'Papers', options: choices(['expired', 'Something expired'], ['soon', 'Expiring in 30 days']), where: (v) => (v === 'expired' ? sql`${nextExpiry}::date < ${IST}` : v === 'soon' ? sql`${nextExpiry}::date < ${IST} + 30` : undefined) },
         },
         sorts: { regNo: transportVehicles.regNo, capacity: transportVehicles.capacity, expiry: sql`${nextExpiry}` },
         defaultSort: { id: 'regNo', dir: 'asc' },
@@ -231,6 +234,8 @@ export class TransportRecords implements OnModuleInit {
   }
 
   drivers(): RecordEntity {
+    // Verified: police verification on record, medical fitness and the licence in force.
+    const verified = sql`(${transportDrivers.policeVerifiedOn} is not null and ${transportDrivers.medicalValidUntil} >= ${IST} and ${transportDrivers.licenseExpiresOn} >= ${IST})`;
     const route = sql<string | null>`(select string_agg(r.name, ', ') from transport_routes r where r.driver_id = ${qual(transportDrivers.id)})`;
     return {
       key: 'transport-drivers',
@@ -240,13 +245,15 @@ export class TransportRecords implements OnModuleInit {
       roles: { read: TRANSPORT_ROLES, write: TRANSPORT_ROLES },
       label: (r) => String(r.fullName),
       list: {
-        select: { id: transportDrivers.id, fullName: transportDrivers.fullName, phone: transportDrivers.phone, role: transportDrivers.role, licenseNo: transportDrivers.licenseNo, licenseExpiresOn: transportDrivers.licenseExpiresOn, badgeNo: transportDrivers.badgeNo, policeVerifiedOn: transportDrivers.policeVerifiedOn, isSpare: transportDrivers.isSpare, active: transportDrivers.active, userId: transportDrivers.userId, hasLogin: sql<boolean>`${transportDrivers.userId} is not null`, route },
+        select: { id: transportDrivers.id, fullName: transportDrivers.fullName, phone: transportDrivers.phone, role: transportDrivers.role, licenseNo: transportDrivers.licenseNo, licenseExpiresOn: transportDrivers.licenseExpiresOn, badgeNo: transportDrivers.badgeNo, policeVerifiedOn: transportDrivers.policeVerifiedOn, isSpare: transportDrivers.isSpare, active: transportDrivers.active, userId: transportDrivers.userId, hasLogin: sql<boolean>`${transportDrivers.userId} is not null`, route, gender: transportDrivers.gender, dateOfBirth: transportDrivers.dateOfBirth, licenceClass: transportDrivers.licenceClass, licenceIssuedOn: transportDrivers.licenceIssuedOn, licenceYears: sql<number | null>`floor((${IST} - ${transportDrivers.licenceIssuedOn}) / 365.25)::int`, policeVerificationRef: transportDrivers.policeVerificationRef, medicalValidUntil: transportDrivers.medicalValidUntil, trainedOn: transportDrivers.trainedOn, verificationNote: transportDrivers.verificationNote, verified: sql<boolean>`${verified}` },
         search: [transportDrivers.fullName, transportDrivers.phone, transportDrivers.licenseNo, transportDrivers.badgeNo],
         filters: {
           role: choiceFilter('Role', transportDrivers.role, DRIVER_ROLES),
           spare: yesNo('Spare pool', eq(transportDrivers.isSpare, true), eq(transportDrivers.isSpare, false), ['Spare', 'On a route']),
           active: yesNo('Working', eq(transportDrivers.active, true), eq(transportDrivers.active, false), ['Working', 'Left']),
-          licence: { label: 'Licence', options: choices(['expired', 'Expired'], ['soon', 'Expiring in 30 days']), where: (v) => (v === 'expired' ? sql`${transportDrivers.licenseExpiresOn} < current_date` : v === 'soon' ? sql`${transportDrivers.licenseExpiresOn} < current_date + 30` : undefined) },
+          licence: { label: 'Licence', options: choices(['expired', 'Expired'], ['soon', 'Expiring in 30 days']), where: (v) => (v === 'expired' ? sql`${transportDrivers.licenseExpiresOn} < ${IST}` : v === 'soon' ? sql`${transportDrivers.licenseExpiresOn} < ${IST} + 30` : undefined) },
+          verification: { label: 'Verification', options: choices(['complete', 'Complete'], ['gaps', 'Something missing']), where: (v) => (v === 'complete' ? verified : v === 'gaps' ? sql`not (${verified})` : undefined) },
+          gender: choiceFilter('Gender', transportDrivers.gender, GENDERS),
         },
         sorts: { name: transportDrivers.fullName, licence: transportDrivers.licenseExpiresOn },
         defaultSort: { id: 'name', dir: 'asc' },
@@ -259,6 +266,14 @@ export class TransportRecords implements OnModuleInit {
         licenseExpiresOn: { label: 'Licence until', type: 'date', schema: DateText, column: transportDrivers.licenseExpiresOn },
         badgeNo: { label: 'Badge number', type: 'text', schema: z.string().trim().max(40), column: transportDrivers.badgeNo },
         policeVerifiedOn: { label: 'Police verification on', type: 'date', schema: DateText, column: transportDrivers.policeVerifiedOn },
+        policeVerificationRef: { label: 'Police verification reference', type: 'text', schema: z.string().trim().max(80), column: transportDrivers.policeVerificationRef },
+        gender: { label: 'Gender', type: 'select', schema: z.union([z.literal(''), oneOf(GENDERS)]), options: GENDERS, column: transportDrivers.gender, help: 'A woman attendant rides every school bus' },
+        dateOfBirth: { label: 'Date of birth', type: 'date', schema: DateText, column: transportDrivers.dateOfBirth },
+        licenceClass: { label: 'Licence class', type: 'text', schema: z.string().trim().max(40), column: transportDrivers.licenceClass, help: 'Like HMV or HPMV with a transport badge' },
+        licenceIssuedOn: { label: 'Licence held since', type: 'date', schema: DateText, column: transportDrivers.licenceIssuedOn, help: 'School-bus drivers need at least five years' },
+        medicalValidUntil: { label: 'Medical fitness until', type: 'date', schema: DateText, column: transportDrivers.medicalValidUntil },
+        trainedOn: { label: 'Safety and first-aid training on', type: 'date', schema: DateText, column: transportDrivers.trainedOn },
+        verificationNote: { label: 'Verification note', type: 'textarea', schema: z.string().trim().max(500), column: transportDrivers.verificationNote },
         isSpare: { label: 'In the spare pool', type: 'boolean', schema: Bool, column: transportDrivers.isSpare, bulk: true },
         active: { label: 'Working', type: 'boolean', schema: Bool, column: transportDrivers.active, create: false, bulk: true },
         userId: {
@@ -282,6 +297,13 @@ export class TransportRecords implements OnModuleInit {
         { key: 'licenseExpiresOn', header: 'Licence until' },
         { key: 'badgeNo', header: 'Badge' },
         { key: 'policeVerifiedOn', header: 'Police verified' },
+        { key: 'policeVerificationRef', header: 'Verification reference' },
+        { key: 'gender', header: 'Gender' },
+        { key: 'licenceClass', header: 'Licence class' },
+        { key: 'licenceYears', header: 'Years with licence' },
+        { key: 'medicalValidUntil', header: 'Medical until' },
+        { key: 'trainedOn', header: 'Trained on' },
+        { key: 'verified', header: 'Verified' },
         { key: 'isSpare', header: 'Spare' },
         { key: 'active', header: 'Working' },
       ],
@@ -290,6 +312,8 @@ export class TransportRecords implements OnModuleInit {
 
   routes(): RecordEntity {
     const riders = ridersOf(transportRoutes.id);
+    const conductor = alias(transportDrivers, 'conductor');
+    const attendant = alias(transportDrivers, 'attendant');
     const stops = sql<number>`(select count(*)::int from transport_stops s where s.route_id = ${qual(transportRoutes.id)})`;
     return {
       key: 'transport-routes',
@@ -299,8 +323,8 @@ export class TransportRecords implements OnModuleInit {
       roles: { read: TRANSPORT_ROLES, write: TRANSPORT_ROLES },
       label: (r) => String(r.name),
       list: {
-        select: { id: transportRoutes.id, name: transportRoutes.name, code: transportRoutes.code, vehicleId: transportRoutes.vehicleId, regNo: transportVehicles.regNo, capacity: transportVehicles.capacity, driverId: transportRoutes.driverId, driverName: transportDrivers.fullName, feeRupees: rupeesOf(transportRoutes.monthlyFeePaise), active: transportRoutes.active, stops, riders, seatsLeft: sql<number | null>`${transportVehicles.capacity} - ${riders}`, live: sql<boolean>`exists (select 1 from transport_trips t where t.route_id = ${qual(transportRoutes.id)} and t.status = 'running')` },
-        joins: (q) => q.leftJoin(transportVehicles, eq(transportVehicles.id, transportRoutes.vehicleId)).leftJoin(transportDrivers, eq(transportDrivers.id, transportRoutes.driverId)),
+        select: { id: transportRoutes.id, name: transportRoutes.name, code: transportRoutes.code, vehicleId: transportRoutes.vehicleId, regNo: transportVehicles.regNo, capacity: transportVehicles.capacity, driverId: transportRoutes.driverId, driverName: transportDrivers.fullName, feeRupees: rupeesOf(transportRoutes.monthlyFeePaise), active: transportRoutes.active, stops, riders, conductorId: transportRoutes.conductorId, conductorName: conductor.fullName, attendantId: transportRoutes.attendantId, attendantName: attendant.fullName, attendantGender: attendant.gender, occupancyPct: sql<number | null>`case when ${transportVehicles.capacity} > 0 then round(${riders} * 100.0 / ${transportVehicles.capacity})::int end`, seatsLeft: sql<number | null>`${transportVehicles.capacity} - ${riders}`, live: sql<boolean>`exists (select 1 from transport_trips t where t.route_id = ${qual(transportRoutes.id)} and t.status = 'running')` },
+        joins: (q) => q.leftJoin(transportVehicles, eq(transportVehicles.id, transportRoutes.vehicleId)).leftJoin(transportDrivers, eq(transportDrivers.id, transportRoutes.driverId)).leftJoin(conductor, eq(conductor.id, transportRoutes.conductorId)).leftJoin(attendant, eq(attendant.id, transportRoutes.attendantId)),
         search: [transportRoutes.name, transportRoutes.code, transportVehicles.regNo, transportDrivers.fullName],
         filters: { active: yesNo('Running', eq(transportRoutes.active, true), eq(transportRoutes.active, false), ['Running', 'Stopped']), full: yesNo('Seats', sql`${transportVehicles.capacity} <= ${riders}`, sql`${transportVehicles.capacity} > ${riders}`, ['Full', 'Seats free']) },
         sorts: { name: transportRoutes.name, riders, fee: transportRoutes.monthlyFeePaise, stops },
@@ -311,19 +335,24 @@ export class TransportRecords implements OnModuleInit {
         code: { label: 'Code', type: 'text', schema: z.string().trim().max(20), column: transportRoutes.code },
         vehicleId: { label: 'Vehicle', type: 'select', schema: OptionalRef, options: vehicleOptions, column: transportRoutes.vehicleId, bulk: true },
         driverId: { label: 'Driver', type: 'select', schema: OptionalRef, options: driverOptions, column: transportRoutes.driverId, bulk: true },
+        conductorId: { label: 'Conductor', type: 'select', schema: OptionalRef, options: driverOptions, column: transportRoutes.conductorId, bulk: true },
+        attendantId: { label: 'Attendant (woman)', type: 'select', schema: OptionalRef, options: driverOptions, column: transportRoutes.attendantId, bulk: true, help: 'The school-bus guidelines ask for a woman attendant on every bus' },
         fee: { label: 'Fee a month (₹)', type: 'number', schema: Rupees, column: transportRoutes.monthlyFeePaise, rowKey: 'feeRupees', bulk: true, help: 'Stops may have their own fee' },
         active: { label: 'Running', type: 'boolean', schema: Bool, column: transportRoutes.active, create: false, bulk: true },
       },
-      duplicate: async (ctx, row) => ({ name: await copyName(ctx.tx, transportRoutes, transportRoutes.name, String(row.name)), vehicle_id: null, driver_id: null }),
+      duplicate: async (ctx, row) => ({ name: await copyName(ctx.tx, transportRoutes, transportRoutes.name, String(row.name)), vehicle_id: null, driver_id: null, conductor_id: null, attendant_id: null }),
       columns: [
         { key: 'name', header: 'Route' },
         { key: 'code', header: 'Code' },
         { key: 'regNo', header: 'Vehicle' },
         { key: 'driverName', header: 'Driver' },
+        { key: 'conductorName', header: 'Conductor' },
+        { key: 'attendantName', header: 'Attendant' },
         { key: 'stops', header: 'Stops' },
         { key: 'riders', header: 'Riders' },
         { key: 'capacity', header: 'Seats' },
         { key: 'seatsLeft', header: 'Seats left' },
+        { key: 'occupancyPct', header: 'Occupancy (%)' },
         { key: 'feeRupees', header: 'Fee a month (₹)' },
         { key: 'active', header: 'Running' },
       ],
@@ -340,7 +369,7 @@ export class TransportRecords implements OnModuleInit {
       roles: { read: TRANSPORT_ROLES, write: TRANSPORT_ROLES },
       label: (r) => `${r.routeName} · ${r.name}`,
       list: {
-        select: { id: transportStops.id, routeId: transportStops.routeId, routeName: transportRoutes.name, seq: transportStops.seq, sortOrder: transportStops.sortOrder, name: transportStops.name, landmark: transportStops.landmark, lat: transportStops.lat, lng: transportStops.lng, pickupTime: transportStops.pickupTime, dropTime: transportStops.dropTime, feeRupees: rupeesOf(transportStops.feePaise), effectiveFeeRupees: rupeesOf(sql`coalesce(${transportStops.feePaise}, ${transportRoutes.monthlyFeePaise})`), riders },
+        select: { id: transportStops.id, routeId: transportStops.routeId, routeName: transportRoutes.name, seq: transportStops.seq, sortOrder: transportStops.sortOrder, name: transportStops.name, landmark: transportStops.landmark, lat: transportStops.lat, lng: transportStops.lng, pickupTime: transportStops.pickupTime, dropTime: transportStops.dropTime, feeRupees: rupeesOf(transportStops.feePaise), effectiveFeeRupees: rupeesOf(sql`coalesce(${transportStops.feePaise}, ${transportRoutes.monthlyFeePaise})`), riders, distanceKm: transportStops.distanceKm },
         joins: (q) => q.innerJoin(transportRoutes, eq(transportRoutes.id, transportStops.routeId)),
         search: [transportStops.name, transportStops.landmark, transportRoutes.name],
         filters: { route: { label: 'Route', options: routeOptions, where: (v) => uuidEq(transportStops.routeId, v) } },
@@ -355,12 +384,15 @@ export class TransportRecords implements OnModuleInit {
         lng: { label: 'Longitude', type: 'number', schema: z.coerce.number().min(-180).max(180), column: transportStops.lng, required: true },
         pickupTime: { label: 'Pick-up time', type: 'text', schema: Hhmm, column: transportStops.pickupTime, help: 'Like 07:15' },
         dropTime: { label: 'Drop time', type: 'text', schema: Hhmm, column: transportStops.dropTime, help: 'Like 16:20' },
-        fee: { label: 'Fee a month (₹)', type: 'number', schema: OptionalRupees, column: transportStops.feePaise, rowKey: 'feeRupees', bulk: true, help: 'Empty takes the route’s fee' },
+        distanceKm: { label: 'Distance from the campus (km)', type: 'number', schema: OptionalDecimal(0, 500), column: transportStops.distanceKm, help: 'Sets the fee from the fare slabs when the fee is empty' },
+        fee: { label: 'Fee a month (₹)', type: 'number', schema: OptionalRupees, column: transportStops.feePaise, rowKey: 'feeRupees', bulk: true, help: 'Empty takes the fare slab for the distance, else the route’s fee' },
       },
       create: async (ctx, v) => {
         const routeId = String(v.routeId);
+        const km = (v.distanceKm as number | null) ?? null;
+        const fee = (v.fee as number | null) ?? (km == null ? null : slabFee(await ctx.tx.select().from(transportFareSlabs), km));
         const [{ seq, ord }] = await ctx.tx.select({ seq: sql<number>`coalesce(max(${transportStops.seq}), 0)::int`, ord: sql<number>`coalesce(max(${transportStops.sortOrder}), 0)::int` }).from(transportStops).where(eq(transportStops.routeId, routeId));
-        const [s] = await ctx.tx.insert(transportStops).values({ tenantId: ctx.p.tenantId, routeId, name: String(v.name), landmark: String(v.landmark ?? ''), lat: Number(v.lat), lng: Number(v.lng), pickupTime: (v.pickupTime as string | null) ?? null, dropTime: (v.dropTime as string | null) ?? null, feePaise: (v.fee as number | null) ?? null, seq: seq + 1, sortOrder: ord + 10 }).returning({ id: transportStops.id });
+        const [s] = await ctx.tx.insert(transportStops).values({ tenantId: ctx.p.tenantId, routeId, name: String(v.name), landmark: String(v.landmark ?? ''), lat: Number(v.lat), lng: Number(v.lng), pickupTime: (v.pickupTime as string | null) ?? null, dropTime: (v.dropTime as string | null) ?? null, feePaise: fee, distanceKm: km, seq: seq + 1, sortOrder: ord + 10 }).returning({ id: transportStops.id });
         return s.id;
       },
       order: { column: transportStops.sortOrder, scope: [transportStops.routeId] },
@@ -373,12 +405,14 @@ export class TransportRecords implements OnModuleInit {
           { key: 'pickup', header: 'Pick-up time', example: '07:15' },
           { key: 'drop', header: 'Drop time', example: '16:20' },
           { key: 'landmark', header: 'Landmark' },
-          { key: 'fee', header: 'Fee a month (₹)', help: 'Empty takes the route’s fee' },
+          { key: 'fee', header: 'Fee a month (₹)', help: 'Empty takes the fare slab for the distance, else the route’s fee' },
+          { key: 'distance', header: 'Distance (km)', example: '6.5' },
         ],
         key: ['route', 'stop'],
         exists: async (ctx, r) => !!(await ctx.tx.select({ id: transportStops.id }).from(transportStops).innerJoin(transportRoutes, eq(transportRoutes.id, transportStops.routeId)).where(and(sql`lower(${transportRoutes.name}) = ${r.get('route').toLowerCase()}`, sql`lower(${transportStops.name}) = ${r.get('stop').toLowerCase()}`)).limit(1))[0],
         run: async (ctx, rows) => {
           const routes = await routeOptions(ctx);
+          const slabs = await ctx.tx.select().from(transportFareSlabs);
           return eachRow(ctx.tx, rows, async (tx, r) => {
             const routeId = routes.find((o) => o.label.toLowerCase() === required(r, 'route').toLowerCase())?.value ?? fail('No route with this name', r.get('route'));
             const name = required(r, 'stop');
@@ -386,9 +420,11 @@ export class TransportRecords implements OnModuleInit {
             const lng = Number(required(r, 'lng'));
             if (!(lat >= -90 && lat <= 90) || !(lng >= -180 && lng <= 180)) fail('This value is not valid', `${r.get('lat')}, ${r.get('lng')}`);
             const time = (k: string) => (r.get(k) ? (/^([01]\d|2[0-3]):[0-5]\d$/.test(r.get(k)) ? r.get(k) : fail('Use a time like 07:30', r.get(k))) : null);
-            const fee = r.get('fee') ? Math.round(Number(r.get('fee')) * 100) : null;
+            const km = r.get('distance') ? Number(r.get('distance')) : null;
+            if (km !== null && !(km >= 0 && km <= 500)) fail('This value is not valid', r.get('distance'));
+            const fee = r.get('fee') ? Math.round(Number(r.get('fee')) * 100) : km == null ? null : slabFee(slabs, km);
             if (fee !== null && !(fee >= 0)) fail('This value is not valid', r.get('fee'));
-            const values = { lat, lng, pickupTime: time('pickup'), dropTime: time('drop'), landmark: r.get('landmark'), feePaise: fee };
+            const values = { lat, lng, pickupTime: time('pickup'), dropTime: time('drop'), landmark: r.get('landmark'), feePaise: fee, distanceKm: km };
             const [found] = await tx.select({ id: transportStops.id }).from(transportStops).where(and(eq(transportStops.routeId, routeId), sql`lower(${transportStops.name}) = ${name.toLowerCase()}`));
             if (found) {
               await tx.update(transportStops).set(values).where(eq(transportStops.id, found.id));
@@ -407,6 +443,7 @@ export class TransportRecords implements OnModuleInit {
         { key: 'pickupTime', header: 'Pick-up' },
         { key: 'dropTime', header: 'Drop' },
         { key: 'effectiveFeeRupees', header: 'Fee a month (₹)' },
+        { key: 'distanceKm', header: 'Distance (km)' },
         { key: 'riders', header: 'Riders' },
         { key: 'lat', header: 'Latitude' },
         { key: 'lng', header: 'Longitude' },
@@ -478,7 +515,7 @@ export class TransportRecords implements OnModuleInit {
         options: stopOptions,
         reason: true,
         apply: async (ctx, id, to, reason) => {
-          await moveRider(ctx, this.fees, this.clock.now(), id, to, undefined, reason);
+          await moveRider(ctx, this.pass, this.clock.now(), id, to, undefined, reason);
         },
       },
       columns: [
@@ -531,7 +568,7 @@ export class TransportRecords implements OnModuleInit {
             const [cur] = await tx.select().from(transportAssignments).where(and(studentId ? eq(transportAssignments.studentId, studentId) : eq(transportAssignments.staffUserId, staffUserId!), isNull(transportAssignments.endedOn)));
             if (cur?.stopId === stop!.id) return outcome(false, false, [who]);
             if (cur) {
-              await moveRider(kc, this.fees, this.clock.now(), cur.id, stop!.id, from, 'Import');
+              await moveRider(kc, this.pass, this.clock.now(), cur.id, stop!.id, from, 'Import');
               return outcome(false, true, [who]);
             }
             const left = await seatsLeft(kc, stop!.routeId);
@@ -545,12 +582,13 @@ export class TransportRecords implements OnModuleInit {
         end: {
           label: 'End the seat',
           tone: 'danger',
-          params: z.object({ on: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() }).default({}),
+          params: z.object({ on: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), reason: z.string().trim().max(300).optional() }).default({}),
+          // A month already billed is credited the days given up (off unpaid transport fees; the rest is a refund due).
           apply: async (ctx, id, raw) => {
-            const on = (raw as { on?: string }).on ?? (await this.today(ctx));
-            const [a] = await ctx.tx.update(transportAssignments).set({ endedOn: on }).where(and(eq(transportAssignments.id, id), isNull(transportAssignments.endedOn), lte(transportAssignments.startsOn, on))).returning();
-            if (!a) throw new ConflictException('This seat has ended, or the date is before it began');
-            await auditUser(ctx.tx, ctx.p, 'transport.unassigned', 'transport_assignment', id, { on });
+            const p = raw as { on?: string; reason?: string };
+            const r = await this.pass.endSeat(ctx, id, p.on, p.reason ?? '');
+            const back = r.creditedPaise + r.refundDuePaise;
+            return back > 0 ? `₹${(back / 100).toFixed(2)}` : undefined;
           },
         },
       },
@@ -608,7 +646,7 @@ export class TransportRecords implements OnModuleInit {
             const on = r.effectiveOn < today ? today : r.effectiveOn;
             const [cur] = await ctx.tx.select().from(transportAssignments).where(and(eq(transportAssignments.studentId, r.studentId), isNull(transportAssignments.endedOn)));
             let delta = 0;
-            if (cur) delta = (await moveRider(ctx, this.fees, this.clock.now(), cur.id, r.toStopId, on, r.reason)).deltaPaise;
+            if (cur) delta = (await moveRider(ctx, this.pass, this.clock.now(), cur.id, r.toStopId, on, r.reason)).deltaPaise;
             else {
               const left = await seatsLeft(ctx, r.toRouteId);
               if (left !== null && left <= 0) throw new ConflictException('The vehicle on that route is full');
@@ -627,7 +665,7 @@ export class TransportRecords implements OnModuleInit {
   // ---- upkeep ----------------------------------------------------------------------------------------------------------
 
   maintenance(): RecordEntity {
-    const overdue = sql`${transportMaintenance.status} = 'scheduled' and ${transportMaintenance.dueOn} < current_date`;
+    const overdue = sql`${transportMaintenance.status} = 'scheduled' and ${transportMaintenance.dueOn} < ${IST}`;
     return {
       key: 'transport-maintenance',
       module: 'transport',
@@ -820,10 +858,10 @@ export class TransportRecords implements OnModuleInit {
       roles: { read: TRANSPORT_ROLES, write: TRANSPORT_ROLES },
       label: (r) => `${r.routeName} · ${r.fromOn}`,
       list: {
-        select: { id: transportRouteOverrides.id, routeId: transportRouteOverrides.routeId, routeName: transportRoutes.name, fromOn: transportRouteOverrides.fromOn, untilOn: transportRouteOverrides.untilOn, kind: transportRouteOverrides.kind, substituteVehicleId: transportRouteOverrides.substituteVehicleId, substituteRegNo: subVehicle.regNo, substituteDriverId: transportRouteOverrides.substituteDriverId, substituteDriver: subDriver.fullName, shiftMinutes: transportRouteOverrides.shiftMinutes, reason: transportRouteOverrides.reason, notifiedAt: transportRouteOverrides.notifiedAt, current: sql<boolean>`current_date between ${transportRouteOverrides.fromOn} and ${transportRouteOverrides.untilOn}` },
+        select: { id: transportRouteOverrides.id, routeId: transportRouteOverrides.routeId, routeName: transportRoutes.name, fromOn: transportRouteOverrides.fromOn, untilOn: transportRouteOverrides.untilOn, kind: transportRouteOverrides.kind, substituteVehicleId: transportRouteOverrides.substituteVehicleId, substituteRegNo: subVehicle.regNo, substituteDriverId: transportRouteOverrides.substituteDriverId, substituteDriver: subDriver.fullName, shiftMinutes: transportRouteOverrides.shiftMinutes, reason: transportRouteOverrides.reason, notifiedAt: transportRouteOverrides.notifiedAt, current: sql<boolean>`${IST} between ${transportRouteOverrides.fromOn} and ${transportRouteOverrides.untilOn}` },
         joins: (q) => q.innerJoin(transportRoutes, eq(transportRoutes.id, transportRouteOverrides.routeId)).leftJoin(subVehicle, eq(subVehicle.id, transportRouteOverrides.substituteVehicleId)).leftJoin(subDriver, eq(subDriver.id, transportRouteOverrides.substituteDriverId)),
         search: [transportRoutes.name, transportRouteOverrides.reason],
-        filters: { route: { label: 'Route', options: routeOptions, where: (v) => uuidEq(transportRouteOverrides.routeId, v) }, kind: choiceFilter('Change', transportRouteOverrides.kind, OVERRIDE_KINDS), when: { label: 'When', options: choices(['now', 'In force now'], ['coming', 'Coming up'], ['past', 'Past']), where: (v) => (v === 'now' ? sql`current_date between ${transportRouteOverrides.fromOn} and ${transportRouteOverrides.untilOn}` : v === 'coming' ? sql`${transportRouteOverrides.fromOn} > current_date` : v === 'past' ? sql`${transportRouteOverrides.untilOn} < current_date` : undefined) } },
+        filters: { route: { label: 'Route', options: routeOptions, where: (v) => uuidEq(transportRouteOverrides.routeId, v) }, kind: choiceFilter('Change', transportRouteOverrides.kind, OVERRIDE_KINDS), when: { label: 'When', options: choices(['now', 'In force now'], ['coming', 'Coming up'], ['past', 'Past']), where: (v) => (v === 'now' ? sql`${IST} between ${transportRouteOverrides.fromOn} and ${transportRouteOverrides.untilOn}` : v === 'coming' ? sql`${transportRouteOverrides.fromOn} > ${IST}` : v === 'past' ? sql`${transportRouteOverrides.untilOn} < ${IST}` : undefined) } },
         sorts: { from: transportRouteOverrides.fromOn, route: transportRoutes.name },
         defaultSort: { id: 'from', dir: 'desc' },
       },
@@ -974,7 +1012,7 @@ export class TransportRecords implements OnModuleInit {
         select: { id: transportDriverDuty.id, driverId: transportDriverDuty.driverId, driverName: transportDrivers.fullName, dutyOn: transportDriverDuty.dutyOn, routeId: transportDriverDuty.routeId, routeName: transportRoutes.name, status: transportDriverDuty.status, substituteDriverId: transportDriverDuty.substituteDriverId, substituteName: subDriver.fullName, note: transportDriverDuty.note, uncovered: sql<boolean>`${transportDriverDuty.status} <> 'present' and ${transportDriverDuty.routeId} is not null and ${transportDriverDuty.substituteDriverId} is null` },
         joins: (q) => q.innerJoin(transportDrivers, eq(transportDrivers.id, transportDriverDuty.driverId)).leftJoin(transportRoutes, eq(transportRoutes.id, transportDriverDuty.routeId)).leftJoin(subDriver, eq(subDriver.id, transportDriverDuty.substituteDriverId)),
         search: [transportDrivers.fullName, transportRoutes.name],
-        filters: { status: choiceFilter('Status', transportDriverDuty.status, DUTY_STATUSES), day: { label: 'Day', options: choices(['today', 'Today'], ['week', 'Last 7 days']), where: (v) => (v === 'today' ? sql`${transportDriverDuty.dutyOn} = current_date` : v === 'week' ? sql`${transportDriverDuty.dutyOn} > current_date - 7` : undefined) }, uncovered: yesNo('Route uncovered', sql`${transportDriverDuty.status} <> 'present' and ${transportDriverDuty.routeId} is not null and ${transportDriverDuty.substituteDriverId} is null`, sql`not (${transportDriverDuty.status} <> 'present' and ${transportDriverDuty.routeId} is not null and ${transportDriverDuty.substituteDriverId} is null)`, ['Needs a substitute', 'Covered']) },
+        filters: { status: choiceFilter('Status', transportDriverDuty.status, DUTY_STATUSES), day: { label: 'Day', options: choices(['today', 'Today'], ['week', 'Last 7 days']), where: (v) => (v === 'today' ? sql`${transportDriverDuty.dutyOn} = ${IST}` : v === 'week' ? sql`${transportDriverDuty.dutyOn} > ${IST} - 7` : undefined) }, uncovered: yesNo('Route uncovered', sql`${transportDriverDuty.status} <> 'present' and ${transportDriverDuty.routeId} is not null and ${transportDriverDuty.substituteDriverId} is null`, sql`not (${transportDriverDuty.status} <> 'present' and ${transportDriverDuty.routeId} is not null and ${transportDriverDuty.substituteDriverId} is null)`, ['Needs a substitute', 'Covered']) },
         sorts: { day: transportDriverDuty.dutyOn, driver: transportDrivers.fullName },
         defaultSort: { id: 'day', dir: 'desc' },
         tiebreak: [transportDrivers.fullName],
@@ -1075,9 +1113,9 @@ export class TransportRecords implements OnModuleInit {
       roles: { read: TRANSPORT_ROLES, write: TRANSPORT_ROLES },
       label: (r) => `${r.routeName} · ${r.direction}`,
       list: {
-        select: { id: transportTrips.id, routeId: transportTrips.routeId, routeName: transportRoutes.name, direction: transportTrips.direction, driverName: users.fullName, status: transportTrips.status, startedAt: transportTrips.startedAt, endedAt: transportTrips.endedAt, pings: transportTrips.pings, stopsReached: transportTrips.lastStopSeq, minutes: sql<number | null>`(extract(epoch from (coalesce(${transportTrips.endedAt}, now()) - ${transportTrips.startedAt})) / 60)::int`, alerts: sql<number>`(select count(*)::int from transport_trip_events e where e.trip_id = ${qual(transportTrips.id)} and e.kind in ('overspeed', 'deviation'))` },
-        joins: (q) => q.innerJoin(transportRoutes, eq(transportRoutes.id, transportTrips.routeId)).innerJoin(users, eq(users.id, transportTrips.driverUserId)),
-        search: [transportRoutes.name, users.fullName],
+        select: { id: transportTrips.id, routeId: transportTrips.routeId, routeName: transportRoutes.name, direction: transportTrips.direction, driverName: users.fullName, status: transportTrips.status, regNo: transportVehicles.regNo, startOdometerKm: transportTrips.startOdometerKm, endOdometerKm: transportTrips.endOdometerKm, km: sql<number | null>`${transportTrips.endOdometerKm} - ${transportTrips.startOdometerKm}`, boarded: sql<number>`(select count(*)::int from transport_boardings b where b.trip_id = ${qual(transportTrips.id)} and b.kind = 'board')`, startedAt: transportTrips.startedAt, endedAt: transportTrips.endedAt, pings: transportTrips.pings, stopsReached: transportTrips.lastStopSeq, minutes: sql<number | null>`(extract(epoch from (coalesce(${transportTrips.endedAt}, now()) - ${transportTrips.startedAt})) / 60)::int`, alerts: sql<number>`(select count(*)::int from transport_trip_events e where e.trip_id = ${qual(transportTrips.id)} and e.kind in ('overspeed', 'deviation'))` },
+        joins: (q) => q.innerJoin(transportRoutes, eq(transportRoutes.id, transportTrips.routeId)).innerJoin(users, eq(users.id, transportTrips.driverUserId)).leftJoin(transportVehicles, eq(transportVehicles.id, transportTrips.vehicleId)),
+        search: [transportRoutes.name, users.fullName, transportVehicles.regNo],
         filters: { route: { label: 'Route', options: routeOptions, where: (v) => uuidEq(transportTrips.routeId, v) }, status: choiceFilter('Status', transportTrips.status, choices(['running', 'Running'], ['ended', 'Ended'])), direction: choiceFilter('Direction', transportTrips.direction, choices(['pickup', 'Pick-up'], ['drop', 'Drop'])) },
         sorts: { started: transportTrips.startedAt, route: transportRoutes.name },
         defaultSort: { id: 'started', dir: 'desc' },
@@ -1089,8 +1127,13 @@ export class TransportRecords implements OnModuleInit {
         { key: 'direction', header: 'Direction' },
         { key: 'driverName', header: 'Driver' },
         { key: 'status', header: 'Status' },
+        { key: 'regNo', header: 'Vehicle' },
         { key: 'stopsReached', header: 'Stops reached' },
+        { key: 'boarded', header: 'Boarded' },
         { key: 'minutes', header: 'Minutes' },
+        { key: 'startOdometerKm', header: 'Odometer out (km)' },
+        { key: 'endOdometerKm', header: 'Odometer in (km)' },
+        { key: 'km', header: 'Distance (km)' },
         { key: 'alerts', header: 'Alerts' },
       ],
       remove: { guard: async () => 'Trips are kept as the trip log' },

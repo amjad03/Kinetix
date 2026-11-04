@@ -9,4 +9,12 @@ describe('generic HTTP GPS adapter', () => {
     expect(a.parse({ positions: [{ deviceId: 'KA02', lat: 1, lng: 2, speedKmh: 5 }, { lat: 1, lng: 2 }, { vehicle: 'X', lat: 99, lng: 0 }] })).toEqual([{ vehicle: 'KA02', lat: 1, lng: 2, speedKmh: 5 }]);
     expect(a.parse('nonsense')).toEqual([]);
   });
+
+  it('reads when the tracker took the fix, as ISO time or epoch seconds or milliseconds', () => {
+    const iso = '2026-11-03T07:15:00+05:30';
+    expect(a.parse({ vehicle: 'KA01', lat: 1, lng: 2, at: iso })[0].at?.toISOString()).toBe('2026-11-03T01:45:00.000Z');
+    expect(a.parse({ vehicle: 'KA01', lat: 1, lng: 2, timestamp: 1_793_000_000 })[0].at?.getTime()).toBe(1_793_000_000_000);
+    expect(a.parse({ vehicle: 'KA01', lat: 1, lng: 2, timestamp: 1_793_000_000_123 })[0].at?.getTime()).toBe(1_793_000_000_123);
+    expect(a.parse({ vehicle: 'KA01', lat: 1, lng: 2, at: 'yesterday' })).toEqual([]);
+  });
 });

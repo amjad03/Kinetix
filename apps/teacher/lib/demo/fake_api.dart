@@ -888,6 +888,39 @@ class FakeTeacherApi implements TeacherApi {
   @override
   Future<void> endTrip(String tripId) async => calls.add('end trip $tripId');
 
+  TripManifest manifestData = TripManifest(
+    tripId: 'trip1',
+    direction: TripDirection.pickup,
+    riders: [
+      ManifestRider(studentId: 'st1', name: 'Aarav Rao', rollNo: 'R1', stopName: 'Market', boardedAt: DateTime(2026, 11, 4, 7, 22)),
+      const ManifestRider(studentId: 'st2', name: 'Diya Shetty', rollNo: 'R2', stopName: 'Temple'),
+    ],
+  );
+
+  @override
+  Future<TripManifest> tripManifest(String tripId) async {
+    calls.add('manifest $tripId');
+    return manifestData;
+  }
+
+  @override
+  Future<void> markBoarding(String tripId, {String? studentId, String? code, required bool board}) async {
+    calls.add('mark $tripId ${studentId ?? code} ${board ? 'board' : 'alight'}');
+    manifestData = TripManifest(
+      tripId: manifestData.tripId,
+      direction: manifestData.direction,
+      riders: [
+        for (final r in manifestData.riders)
+          r.studentId == studentId || (code != null && code.endsWith(r.studentId))
+              ? ManifestRider(studentId: r.studentId, name: r.name, rollNo: r.rollNo, stopName: r.stopName, boardedAt: board ? DateTime(2026, 11, 4, 7, 40) : r.boardedAt, alightedAt: board ? r.alightedAt : DateTime(2026, 11, 4, 8, 30))
+              : r,
+      ],
+    );
+  }
+
+  @override
+  Future<void> raiseSos(String tripId, {double? lat, double? lng, String? note}) async => calls.add('sos $tripId ${note ?? ''}'.trim());
+
   // --- Calendar --------------------------------------------------------------------------------
 
   List<CalendarEvent> calendarEvents = [

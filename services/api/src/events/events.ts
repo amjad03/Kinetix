@@ -56,6 +56,9 @@ export const DomainEvents = {
   PurchaseOrderApproved: 'procurement.po_approved',
   PurchaseInvoicePosted: 'procurement.invoice_posted',
   AssetDisposed: 'assets.disposed',
+  // Transport: an SOS from the bus, and a fee change after the month was billed (a move or a cancelled seat).
+  TransportSosRaised: 'transport.sos_raised',
+  TransportFeeAdjusted: 'transport.fee_adjusted',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

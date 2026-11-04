@@ -1672,5 +1672,18 @@
   "libFacetSubject": "ವಿಷಯ",
   "libFacetLanguage": "ಭಾಷೆ",
   "libFacetDecade": "ಪ್ರಕಟಣೆ",
-  "libDecade": "{year} ರ ದಶಕ"
+  "libDecade": "{year} ರ ದಶಕ",
+  "busLate": "ಸುಮಾರು {minutes} ನಿಮಿಷ ತಡವಾಗಿ ಬರುತ್ತಿದೆ",
+  "busToday": "ಇಂದು ಬಸ್‌ನಲ್ಲಿ",
+  "busGotOn": "{time} ಕ್ಕೆ ಹತ್ತಿದಿರಿ",
+  "busGotOff": "{time} ಕ್ಕೆ ಇಳಿದಿರಿ",
+  "busNotMarked": "ಇಂದು ಇನ್ನೂ ಬಸ್‌ನಲ್ಲಿ ದಾಖಲಾಗಿಲ್ಲ",
+  "busDriver": "ಚಾಲಕ",
+  "busAttendant": "ಸಹಾಯಕಿ",
+  "busDropTime": "ಡ್ರಾಪ್ ಸಮಯ",
+  "busPassUntil": "ಬಸ್ ಪಾಸ್ ಮಾನ್ಯ ವರೆಗೆ",
+  "busFee": "ಸಾರಿಗೆ ಶುಲ್ಕ",
+  "busFeeDue": "{amount} ಬಾಕಿ",
+  "busFeeOverdue": "{amount} ಅವಧಿ ಮೀರಿದೆ",
+  "busFeeClear": "ಏನೂ ಬಾಕಿ ಇಲ್ಲ"
 }

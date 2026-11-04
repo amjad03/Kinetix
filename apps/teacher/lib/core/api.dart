@@ -377,6 +377,15 @@ abstract class TeacherApi implements AnnouncementSource {
 
   Future<void> endTrip(String tripId);
 
+  /// Who rides the trip and who has got on and off (driver, conductor or attendant).
+  Future<TripManifest> tripManifest(String tripId);
+
+  /// Marks a student on or off the bus: picked from the manifest ([studentId]) or by the bus pass QR ([code]).
+  Future<void> markBoarding(String tripId, {String? studentId, String? code, required bool board});
+
+  /// SOS from the bus: the transport office is alerted at once with where the bus is.
+  Future<void> raiseSos(String tripId, {double? lat, double? lng, String? note});
+
   /// A subject's syllabus outline, or null when the subject is not linked to a course yet.
   Future<Syllabus?> syllabus(String subjectId);
 
@@ -1316,6 +1325,19 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<void> endTrip(String tripId) async {
     await _send('POST', '/v1/transport/trips/$tripId/end', body: <String, dynamic>{});
+  }
+
+  @override
+  Future<TripManifest> tripManifest(String tripId) async => TripManifest.fromJson(await _send('GET', '/v1/transport/trips/$tripId/manifest') as Map<String, dynamic>);
+
+  @override
+  Future<void> markBoarding(String tripId, {String? studentId, String? code, required bool board}) async {
+    await _send('POST', '/v1/transport/trips/$tripId/boardings', body: {'studentId': ?studentId, 'code': ?code, 'kind': board ? 'board' : 'alight'});
+  }
+
+  @override
+  Future<void> raiseSos(String tripId, {double? lat, double? lng, String? note}) async {
+    await _send('POST', '/v1/transport/trips/$tripId/sos', body: {'lat': ?lat, 'lng': ?lng, 'note': ?note});
   }
 
   @override

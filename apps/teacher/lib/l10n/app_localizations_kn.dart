@@ -4680,4 +4680,63 @@ class AppLocalizationsKn extends AppLocalizations {
   String indentRejectTitle(String number) {
     return '$number ತಿರಸ್ಕರಿಸಿ';
   }
+
+  @override
+  String get driverManifest => 'ಬಸ್‌ನಲ್ಲಿರುವ ವಿದ್ಯಾರ್ಥಿಗಳು';
+
+  @override
+  String driverManifestCount(int onBoard, int boarded, int riders) {
+    return '$onBoard ಬಸ್‌ನಲ್ಲಿ · $riders ರಲ್ಲಿ $boarded ಹತ್ತಿದರು';
+  }
+
+  @override
+  String get driverGotOn => 'ಹತ್ತಿದರು';
+
+  @override
+  String get driverGotOff => 'ಇಳಿದರು';
+
+  @override
+  String driverOnAt(Object time) {
+    return '$time ಕ್ಕೆ ಹತ್ತಿದರು';
+  }
+
+  @override
+  String driverOffAt(Object time) {
+    return '$time ಕ್ಕೆ ಇಳಿದರು';
+  }
+
+  @override
+  String get driverScanPass => 'ಬಸ್ ಪಾಸ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ';
+
+  @override
+  String get driverScanHint => 'ವಿದ್ಯಾರ್ಥಿಯ ಬಸ್ ಪಾಸ್‌ನ QR ಕಡೆಗೆ ಕ್ಯಾಮೆರಾ ತಿರುಗಿಸಿ';
+
+  @override
+  String get driverMarked => 'ದಾಖಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get driverSos => 'ಎಸ್‌ಒಎಸ್';
+
+  @override
+  String get driverSosAsk => 'ಈಗ ಸಾರಿಗೆ ಕಚೇರಿಗೆ ಎಸ್‌ಒಎಸ್ ಕಳುಹಿಸಬೇಕೇ? ಅವರಿಗೆ ಬಸ್‌ನ ಸ್ಥಳ ತಕ್ಷಣ ಸಿಗುತ್ತದೆ.';
+
+  @override
+  String get driverSosNote => 'ಏನಾಗಿದೆ (ಐಚ್ಛಿಕ)';
+
+  @override
+  String get driverSosSend => 'ಎಸ್‌ಒಎಸ್ ಕಳುಹಿಸಿ';
+
+  @override
+  String get driverSosSent => 'ಎಸ್‌ಒಎಸ್ ಕಳುಹಿಸಲಾಗಿದೆ. ಸಾರಿಗೆ ಕಚೇರಿಗೆ ತಿಳಿಸಲಾಗಿದೆ.';
+
+  @override
+  String get driverCancel => 'ರದ್ದುಮಾಡಿ';
+
+  @override
+  String driverCrewOnTrip(Object route) {
+    return 'ಬಸ್ ಓಡುತ್ತಿದೆ · $route';
+  }
+
+  @override
+  String get driverCrewWaiting => 'ಚಾಲಕರು ಇನ್ನೂ ಪ್ರಯಾಣ ಆರಂಭಿಸಿಲ್ಲ. ಬಸ್ ಹೊರಟಾಗ ವಿದ್ಯಾರ್ಥಿಗಳ ಪಟ್ಟಿ ತೆರೆಯುತ್ತದೆ.';
 }

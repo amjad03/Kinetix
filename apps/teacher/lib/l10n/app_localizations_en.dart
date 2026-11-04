@@ -4674,4 +4674,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String indentRejectTitle(String number) {
     return 'Reject $number';
   }
+
+  @override
+  String get driverManifest => 'Students on board';
+
+  @override
+  String driverManifestCount(int onBoard, int boarded, int riders) {
+    return '$onBoard on board · $boarded of $riders got on';
+  }
+
+  @override
+  String get driverGotOn => 'On';
+
+  @override
+  String get driverGotOff => 'Off';
+
+  @override
+  String driverOnAt(Object time) {
+    return 'On at $time';
+  }
+
+  @override
+  String driverOffAt(Object time) {
+    return 'off at $time';
+  }
+
+  @override
+  String get driverScanPass => 'Scan a bus pass';
+
+  @override
+  String get driverScanHint => 'Point the camera at the QR on the student’s bus pass';
+
+  @override
+  String get driverMarked => 'Marked';
+
+  @override
+  String get driverSos => 'SOS';
+
+  @override
+  String get driverSosAsk => 'Send an SOS to the transport office now? They get the bus’s position at once.';
+
+  @override
+  String get driverSosNote => 'What is wrong (optional)';
+
+  @override
+  String get driverSosSend => 'Send SOS';
+
+  @override
+  String get driverSosSent => 'SOS sent. The transport office has been alerted.';
+
+  @override
+  String get driverCancel => 'Cancel';
+
+  @override
+  String driverCrewOnTrip(Object route) {
+    return 'The bus is running · $route';
+  }
+
+  @override
+  String get driverCrewWaiting => 'The driver has not started a run yet. The students’ list opens when the bus sets off.';
 }

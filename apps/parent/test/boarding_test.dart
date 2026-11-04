@@ -73,8 +73,11 @@ void main() {
     final (api, _) = await pumpApp(tester);
     await openBoarding(tester);
     expect(find.text('No out-passes yet'), findsOneWidget);
+    // The in/out history card sits above the menu, so it may start below the fold.
+    await tester.scrollUntilVisible(find.text('Masala dosa'), 200, scrollable: find.byType(Scrollable).first);
     expect(find.descendant(of: find.byKey(const Key('canteenMenu')), matching: find.text('Masala dosa')), findsOneWidget);
     expect(find.text('Not available today'), findsOneWidget);
+    await tester.scrollUntilVisible(find.byKey(const Key('askOutPass')), -200, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.byKey(const Key('askOutPass')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('outPassReason')), 'Cousin wedding');

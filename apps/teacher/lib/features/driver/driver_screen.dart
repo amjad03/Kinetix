@@ -7,6 +7,7 @@ import '../../core/l10n.dart';
 import '../../core/models.dart';
 import '../../widgets/common.dart';
 import 'location.dart';
+import 'manifest_screen.dart';
 import 'trip_controller.dart';
 
 /// Driver mode (Profile → Driver mode, for logins with the `driver` role): pick the route and
@@ -39,6 +40,9 @@ class _DriverScreenState extends State<DriverScreen> {
   String? _routeId;
   TripDirection _direction = TripDirection.pickup;
 
+  /// A run of a route this person rides as the conductor or attendant (they mark the students, the driver runs it).
+  DriverTrip? _crewTrip;
+
   @override
   void initState() {
     super.initState();
@@ -62,7 +66,11 @@ class _DriverScreenState extends State<DriverScreen> {
       });
       final running = h.trip;
       final route = running == null ? null : h.routes.where((r) => r.id == running.routeId).firstOrNull;
-      if (running != null && route != null) await _trip.resume(running, route);
+      if (running != null && route != null && route.drives) {
+        await _trip.resume(running, route);
+      } else {
+        setState(() => _crewTrip = running);
+      }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e);
     }
@@ -82,6 +90,7 @@ class _DriverScreenState extends State<DriverScreen> {
                 ? const Center(child: CircularProgressIndicator())
                 : Padding(padding: const EdgeInsets.all(Kx.s16), child: ErrorBanner.api(_error!, onRetry: _load));
           }
+          if (home.routes.isNotEmpty && home.routes.every((r) => !r.drives)) return ListView(padding: const EdgeInsets.all(Kx.s16), children: _crew(context, home));
           if (home.routes.isEmpty) {
             return Padding(
               padding: const EdgeInsets.all(Kx.s16),
@@ -93,6 +102,44 @@ class _DriverScreenState extends State<DriverScreen> {
         },
       ),
     );
+  }
+
+  /// The conductor or attendant: the run under way on their route (to mark the students) or a note to wait for it.
+  List<Widget> _crew(BuildContext context, DriverHome home) {
+    final l = context.l10n;
+    final t = _crewTrip;
+    final route = t == null ? null : home.routes.where((r) => r.id == t.routeId).firstOrNull;
+    if (t == null || route == null) return [Text(l.driverCrewWaiting, key: const Key('driverCrewWaiting'), style: context.text.bodyLarge), const SizedBox(height: Kx.s16), OutlinedButton.icon(onPressed: _load, icon: const Icon(Icons.refresh), label: Text(l.retry))];
+    return [
+      Text(l.driverCrewOnTrip(route.name), key: const Key('driverCrewTrip'), style: context.text.titleMedium),
+      const SizedBox(height: Kx.s16),
+      FilledButton.icon(key: const Key('driverManifest'), onPressed: () => ManifestScreen.open(context, widget.api, t.id), icon: const Icon(Icons.groups), label: Text(l.driverManifest)),
+    ];
+  }
+
+  Future<void> _sos(String tripId) async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final note = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.driverSos),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [Text(l.driverSosAsk), TextField(key: const Key('sosNote'), controller: note, decoration: InputDecoration(labelText: l.driverSosNote))]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.driverCancel)),
+          FilledButton(key: const Key('sosSend'), style: FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.error), onPressed: () => Navigator.pop(ctx, true), child: Text(l.driverSosSend)),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      final fix = _trip.lastFix;
+      await widget.api.raiseSos(tripId, lat: fix?.lat, lng: fix?.lng, note: note.text.trim().isEmpty ? null : note.text.trim());
+      messenger.showSnackBar(SnackBar(content: Text(l.driverSosSent)));
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    }
   }
 
   List<Widget> _idle(BuildContext context, DriverHome home) {
@@ -199,6 +246,16 @@ class _DriverScreenState extends State<DriverScreen> {
           trailing: s.pickupLabel == null ? null : Text(s.pickupLabel!),
         ),
       const SizedBox(height: Kx.s24),
+      FilledButton.icon(key: const Key('driverManifest'), onPressed: () => ManifestScreen.open(context, widget.api, _trip.trip!.id), icon: const Icon(Icons.groups), label: Text(l.driverManifest)),
+      const SizedBox(height: Kx.s12),
+      FilledButton.icon(
+        key: const Key('driverSos'),
+        style: FilledButton.styleFrom(backgroundColor: c.error, foregroundColor: c.onError),
+        onPressed: () => _sos(_trip.trip!.id),
+        icon: const Icon(Icons.sos),
+        label: Text(l.driverSos),
+      ),
+      const SizedBox(height: Kx.s12),
       FilledButton.tonalIcon(key: const Key('driverEnd'), onPressed: _trip.end, icon: const Icon(Icons.stop), label: Text(l.driverEnd)),
     ];
   }

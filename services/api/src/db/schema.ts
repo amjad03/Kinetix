@@ -4134,6 +4134,8 @@ export const TENANT_TABLES = [
   'hostels', 'hostel_room_types', 'hostel_applications', 'hostel_bed_holds', 'hostel_requests', 'hostel_deposits', 'hostel_settlements', 'hostel_staff', 'hostel_duties', 'hostel_sickbay', 'hostel_late_entries', 'hostel_incidents', 'hostel_room_assets', 'mess_leaves', 'mess_bills',
   // Hostel production pass (migrations 0204-0205; schema-hostel-pass.ts).
   'hostel_gate_logs', 'hostel_committees', 'mess_inspections', 'mess_expenses',
+  // Transport production pass (migrations 0206-0207; schema-transport.ts).
+  'transport_fare_slabs', 'transport_safety_checks', 'transport_fee_adjustments',
   'transport_change_requests', 'transport_maintenance', 'transport_route_overrides', 'transport_pickup_persons', 'transport_handovers', 'transport_driver_duty',
   // Campus life, welfare, communication and LMS depth (migrations 0174-0176, schema-life.ts).
   'activity_units', 'unit_members', 'unit_activities', 'unit_hours', 'student_achievements', 'outreach_activities', 'club_budgets', 'club_expense_claims',
@@ -4201,6 +4203,18 @@ export const transportDrivers = pgTable('transport_drivers', {
   isSpare: boolean('is_spare').notNull().default(false),
   badgeNo: text('badge_no').notNull().default(''),
   policeVerifiedOn: date('police_verified_on'),
+  // Verification record (migration 0206): the school-bus guidelines ask for a verified, medically fit driver with a
+  // heavy-vehicle licence held at least five years, and a woman attendant on every bus.
+  /** male | female | other | '' */
+  gender: text('gender').notNull().default(''),
+  dateOfBirth: date('date_of_birth'),
+  /** LMV, HMV, HPMV/HGMV, transport badge… */
+  licenceClass: text('licence_class').notNull().default(''),
+  licenceIssuedOn: date('licence_issued_on'),
+  policeVerificationRef: text('police_verification_ref').notNull().default(''),
+  medicalValidUntil: date('medical_valid_until'),
+  trainedOn: date('trained_on'),
+  verificationNote: text('verification_note').notNull().default(''),
   createdAt: createdAt(),
 });
 
@@ -4215,6 +4229,9 @@ export const transportRoutes = pgTable(
     monthlyFeePaise: integer('monthly_fee_paise').notNull().default(0),
     active: boolean('active').notNull().default(true),
     code: text('code').notNull().default(''),
+    /** The conductor and the (woman) attendant who ride the route (migration 0206). */
+    conductorId: uuid('conductor_id').references(() => transportDrivers.id, { onDelete: 'set null' }),
+    attendantId: uuid('attendant_id').references(() => transportDrivers.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('transport_routes_name_uq').on(t.tenantId, t.name)],
@@ -4236,6 +4253,8 @@ export const transportStops = pgTable(
     dropTime: text('drop_time'),
     landmark: text('landmark').notNull().default(''),
     sortOrder: integer('sort_order').notNull().default(0),
+    /** Road distance from the campus (migration 0206): picks the fare slab when the stop has no fee of its own. */
+    distanceKm: numeric('distance_km', { precision: 7, scale: 2, mode: 'number' }),
   },
   (t) => [uniqueIndex('transport_stops_seq_uq').on(t.routeId, t.seq)],
 );
@@ -4280,6 +4299,10 @@ export const transportTrips = pgTable(
     lastSpeedKmh: numeric('last_speed_kmh', { precision: 6, scale: 1, mode: 'number' }),
     lastPingAt: timestamp('last_ping_at', { withTimezone: true }),
     pings: integer('pings').notNull().default(0),
+    // The trip sheet (migration 0207): the vehicle that ran (the route's or a substitute) and the odometer at each end.
+    vehicleId: uuid('vehicle_id').references(() => transportVehicles.id, { onDelete: 'set null' }),
+    startOdometerKm: integer('start_odometer_km'),
+    endOdometerKm: integer('end_odometer_km'),
   },
   (t) => [index('transport_trips_route_idx').on(t.routeId, t.startedAt)],
 );
@@ -5755,7 +5778,7 @@ export const transportIncidents = pgTable('transport_incidents', {
   tenantId: tenantId(),
   vehicleId: uuid('vehicle_id').references(() => transportVehicles.id),
   tripId: uuid('trip_id').references(() => transportTrips.id),
-  kind: text('kind').$type<'accident' | 'breakdown' | 'delay' | 'behaviour' | 'other'>().notNull(),
+  kind: text('kind').$type<'accident' | 'breakdown' | 'delay' | 'behaviour' | 'sos' | 'other'>().notNull(),
   severity: text('severity').$type<'low' | 'medium' | 'high'>().notNull().default('low'),
   description: text('description').notNull(),
   occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),

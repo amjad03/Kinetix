@@ -26,5 +26,6 @@ Load or reload with `pnpm db:seed:soundarya` in `services/api` (replaces this in
 | guardian | Revathi Naik (mother of Vignesh Naik and Chaitra Naik) | parent.bca@soundarya.demo.zynetix.in |
 
 Other staff sign in with `<email prefix>@soundarya.demo.zynetix.in` (for example `admissions`, `placements`, `warden`, `transport`, `stores`, `grievance`, `research`).
+Other staff sign in with `<email prefix>@soundarya.demo.zynetix.in` (for example `admissions`, `placements`, `warden`, `transport`, `driver1`, `driver2`, `stores`, `grievance`, `research`). Transport: `transport` runs the office (live map, safety and capacity); `driver1` and `driver2` use driver mode in the Teacher App (`docs/product/transport.md`).
 
 Institution: Soundarya Nagar, Sidedahalli, Nagasandra Post, Bengaluru 560073. Bengaluru City University, NEP semester scheme, academic year 2026-27.

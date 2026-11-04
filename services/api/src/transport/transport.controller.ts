@@ -1,7 +1,7 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, Headers, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query, UnauthorizedException } from '@nestjs/common';
 import { RealtimeEvents, type TransportPositionEvent } from '@zynetix/shared';
 import { createHash, randomBytes } from 'node:crypto';
-import { and, asc, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
@@ -18,7 +18,10 @@ import { SystemLookups } from '../db/system-lookups.service.js';
 import { GPS_ADAPTERS } from './gps-adapter.js';
 import { usersWithRoles } from '../common/lht-kit.js';
 import { transportRouteOverrides } from '../db/schema-lht.js';
-import { offRouteM } from './transport-rules.js';
+import { lateMinutes, offRouteM } from './transport-rules.js';
+import { TransportPassService } from './transport-pass.service.js';
+import { feeInvoices } from '../db/schema.js';
+import { transportBoardings } from '../db/schema-integrations.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 
@@ -60,7 +63,10 @@ const ExpenseBody = z
   .refine((e) => e.kind !== 'fuel' || e.litres != null, { message: 'Give the litres filled', path: ['litres'] });
 const IncidentBody = z.object({ vehicleId: z.uuid().optional(), tripId: z.uuid().optional(), kind: z.enum(['accident', 'breakdown', 'delay', 'behaviour', 'other']), severity: z.enum(['low', 'medium', 'high']).default('low'), description: z.string().trim().min(3).max(1000), occurredAt: z.iso.datetime().optional() });
 const SourceBody = z.object({ name: z.string().trim().min(1).max(60) });
-const TripBody = z.object({ routeId: z.uuid(), direction: z.enum(['pickup', 'drop']) });
+const Odometer = z.number().int().min(0).max(5_000_000);
+const TripBody = z.object({ routeId: z.uuid(), direction: z.enum(['pickup', 'drop']), odometerKm: Odometer.optional() });
+const EndBody = z.object({ odometerKm: Odometer.optional() }).default({});
+const EndSeatBody = z.object({ on: Day.optional(), reason: z.string().trim().max(300).default('') }).default({ reason: '' });
 const PingBody = z.object({ lat: Lat, lng: Lng, speedKmh: z.number().min(0).max(200).optional() });
 
 /**
@@ -86,6 +92,7 @@ export class TransportController {
     private readonly notifications: NotificationsService,
     private readonly gateway: RealtimeGateway,
     private readonly lookups: SystemLookups,
+    private readonly pass: TransportPassService,
   ) {}
 
   // --- Masters ---------------------------------------------------------------------------
@@ -135,12 +142,12 @@ export class TransportController {
       const warn = Number((await readSettings(tx, p.tenantId, 'transport')).rules.docExpiryWarnDays);
       const limit = sql`(${today}::date + ${warn}::int)`;
       const v = await tx.select().from(transportVehicles).where(sql`${transportVehicles.status} <> 'retired' and (${transportVehicles.insuranceExpiresOn} <= ${limit} or ${transportVehicles.fitnessExpiresOn} <= ${limit} or ${transportVehicles.pucExpiresOn} <= ${limit} or ${transportVehicles.permitExpiresOn} <= ${limit} or ${transportVehicles.roadTaxExpiresOn} <= ${limit})`);
-      const d = await tx.select().from(transportDrivers).where(sql`${transportDrivers.active} and ${transportDrivers.licenseExpiresOn} <= ${limit}`);
+      const d = await tx.select().from(transportDrivers).where(sql`${transportDrivers.active} and (${transportDrivers.licenseExpiresOn} <= ${limit} or ${transportDrivers.medicalValidUntil} <= ${limit})`);
       return {
         today,
         items: [
           ...v.flatMap((x) => (['insuranceExpiresOn', 'fitnessExpiresOn', 'pucExpiresOn', 'permitExpiresOn', 'roadTaxExpiresOn'] as const).filter((k) => x[k] && x[k]! <= addDays(today, warn)).map((k) => ({ kind: k.replace('ExpiresOn', ''), subject: x.regNo, expiresOn: x[k]!, expired: x[k]! < today }))),
-          ...d.map((x) => ({ kind: 'licence', subject: x.fullName, expiresOn: x.licenseExpiresOn!, expired: x.licenseExpiresOn! < today })),
+          ...d.flatMap((x) => (['licence', 'medical'] as const).map((kind) => ({ kind, subject: x.fullName, on: kind === 'licence' ? x.licenseExpiresOn : x.medicalValidUntil }))).filter((x) => x.on && x.on <= addDays(today, warn)).map((x) => ({ kind: x.kind, subject: x.subject, expiresOn: x.on!, expired: x.on! < today })),
         ].sort((a, b) => a.expiresOn.localeCompare(b.expiresOn)),
       };
     });
@@ -267,12 +274,13 @@ export class TransportController {
   @Post('assignments/:studentId/end')
   @HttpCode(200)
   @Auth('user', TRANSPORT_ROLES)
-  endAssignment(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string) {
+  endAssignment(@CurrentPrincipal() p: UserPrincipal, @Param('studentId', ParseUUIDPipe) studentId: string, @Body(new ZodBody(EndSeatBody)) b: z.infer<typeof EndSeatBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const [a] = await tx.update(transportAssignments).set({ endedOn: await this.today(tx) }).where(and(eq(transportAssignments.studentId, studentId), isNull(transportAssignments.endedOn))).returning();
+      const [a] = await tx.select().from(transportAssignments).where(and(eq(transportAssignments.studentId, studentId), isNull(transportAssignments.endedOn)));
       if (!a) throw new NotFoundException('This student has no transport seat');
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.unassigned', subjectType: 'transport_assignment', subjectId: a.id });
-      return a;
+      // A month already billed is credited the days given up.
+      const res = await this.pass.endSeat({ tx, p }, a.id, b.on, b.reason);
+      return { ...a, endedOn: res.endedOn, creditedPaise: res.creditedPaise, refundDuePaise: res.refundDuePaise };
     });
   }
 
@@ -298,23 +306,34 @@ export class TransportController {
 
   // --- Driver mode -----------------------------------------------------------------------
 
-  /** The driver's route(s) with stops, and the trip under way if any. */
+  /**
+   * The routes the signed-in crew member works (as the driver, conductor or attendant) with stops, their role on each,
+   * and the trip under way on one of them if any.
+   */
   @Get('me')
   @Auth('user', ['driver'])
   me(@CurrentPrincipal() p: UserPrincipal) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const routes = await tx
-        .select({ id: transportRoutes.id, name: transportRoutes.name, regNo: transportVehicles.regNo })
+        .select({ id: transportRoutes.id, name: transportRoutes.name, regNo: transportVehicles.regNo, driverId: transportRoutes.driverId, conductorId: transportRoutes.conductorId, attendantId: transportRoutes.attendantId, crewId: transportDrivers.id })
         .from(transportRoutes)
-        .innerJoin(transportDrivers, and(eq(transportDrivers.id, transportRoutes.driverId), eq(transportDrivers.userId, p.userId)))
+        .innerJoin(transportDrivers, and(sql`${transportDrivers.id} in (${transportRoutes.driverId}, ${transportRoutes.conductorId}, ${transportRoutes.attendantId})`, eq(transportDrivers.userId, p.userId)))
         .leftJoin(transportVehicles, eq(transportVehicles.id, transportRoutes.vehicleId))
-        .where(eq(transportRoutes.active, true));
-      const withStops = await Promise.all(routes.map(async (r) => ({ ...r, stops: await tx.select().from(transportStops).where(eq(transportStops.routeId, r.id)).orderBy(asc(transportStops.sortOrder), asc(transportStops.seq)) })));
-      const [trip] = await tx.select().from(transportTrips).where(and(eq(transportTrips.driverUserId, p.userId), eq(transportTrips.status, 'running')));
+        .where(eq(transportRoutes.active, true))
+        .orderBy(asc(transportRoutes.name));
+      const stops = routes.length ? await tx.select().from(transportStops).where(inArray(transportStops.routeId, routes.map((r) => r.id))).orderBy(asc(transportStops.sortOrder), asc(transportStops.seq)) : [];
+      const withStops = routes.map((r) => ({ id: r.id, name: r.name, regNo: r.regNo, role: r.crewId === r.driverId ? 'driver' : r.crewId === r.conductorId ? 'conductor' : 'attendant', stops: stops.filter((s) => s.routeId === r.id) }));
+      const [trip] = await tx
+        .select()
+        .from(transportTrips)
+        .where(and(eq(transportTrips.status, 'running'), routes.length ? sql`(${transportTrips.driverUserId} = ${p.userId}::uuid or ${inArray(transportTrips.routeId, routes.map((r) => r.id))})` : eq(transportTrips.driverUserId, p.userId)))
+        .orderBy(desc(transportTrips.startedAt))
+        .limit(1);
       return { routes: withStops, trip: trip ?? null };
     });
   }
 
+  /** The driver starts a run of their route (ending any run of theirs left open); the trip sheet takes the vehicle running it today and the odometer. */
   @Post('trips')
   @Auth('user', ['driver'])
   startTrip(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(TripBody)) b: z.infer<typeof TripBody>) {
@@ -326,8 +345,13 @@ export class TransportController {
           .innerJoin(transportDrivers, and(eq(transportDrivers.id, transportRoutes.driverId), eq(transportDrivers.userId, p.userId)))
           .where(eq(transportRoutes.id, b.routeId));
         if (!mine) throw new NotFoundException('That is not your route');
+        const vehicleId = await this.pass.vehicleFor(tx, b.routeId, await this.today(tx));
+        if (b.odometerKm != null && vehicleId) {
+          const [last] = await tx.select({ km: sql<number | null>`max(greatest(${transportTrips.startOdometerKm}, ${transportTrips.endOdometerKm}))` }).from(transportTrips).where(eq(transportTrips.vehicleId, vehicleId));
+          if (last?.km != null && b.odometerKm < last.km) throw new BadRequestException(`The odometer was already at ${last.km} km`);
+        }
         await tx.update(transportTrips).set({ status: 'ended', endedAt: this.clock.now() }).where(and(eq(transportTrips.driverUserId, p.userId), eq(transportTrips.status, 'running')));
-        const [trip] = await tx.insert(transportTrips).values({ tenantId: p.tenantId, routeId: b.routeId, direction: b.direction, driverUserId: p.userId, startedAt: this.clock.now() }).returning();
+        const [trip] = await tx.insert(transportTrips).values({ tenantId: p.tenantId, routeId: b.routeId, direction: b.direction, driverUserId: p.userId, startedAt: this.clock.now(), vehicleId, startOdometerKm: b.odometerKm ?? null }).returning();
         await tx.insert(transportTripEvents).values({ tenantId: p.tenantId, tripId: trip.id, kind: 'started', at: this.clock.now() });
         await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.trip_started', subjectType: 'transport_trip', subjectId: trip.id, data: b });
         return trip;
@@ -343,20 +367,28 @@ export class TransportController {
     return this.ingest(p.tenantId, id, b, p.userId);
   }
 
-  /** One position for a trip, from the driver's phone or a GPS vendor (`driverUserId` null). */
-  private async ingest(tenantId: string, id: string, b: z.infer<typeof PingBody>, driverUserId: string | null) {
+  /**
+   * One position for a trip, from the driver's phone or a GPS vendor (`driverUserId` null). A vendor's fix taken
+   * before the last one already used (a late or repeated delivery) changes nothing and answers `stale`.
+   */
+  private async ingest(tenantId: string, id: string, b: z.infer<typeof PingBody> & { at?: Date }, driverUserId: string | null): Promise<TransportPositionEvent & { stale?: boolean }> {
     const { event, recipients } = await this.db.withTenant(tenantId, async (tx) => {
       const [trip] = await tx.select().from(transportTrips).where(driverUserId ? and(eq(transportTrips.id, id), eq(transportTrips.driverUserId, driverUserId)) : eq(transportTrips.id, id)).for('update');
       if (!trip) throw new NotFoundException('Trip not found');
       if (trip.status !== 'running') throw new ConflictException('This trip has ended');
+      const now = this.clock.now();
+      const at = b.at && b.at < now ? b.at : now;
+      if (b.at && trip.lastPingAt && at <= trip.lastPingAt) {
+        const stale: TransportPositionEvent & { stale: boolean } = { tripId: id, routeId: trip.routeId, lat: b.lat, lng: b.lng, speedKmh: b.speedKmh ?? null, nextStop: null, etaMinutes: null, at: at.toISOString(), stale: true };
+        return { event: stale, recipients: [] as string[] };
+      }
       const [route] = await tx.select({ name: transportRoutes.name }).from(transportRoutes).where(eq(transportRoutes.id, trip.routeId));
       const stops = await this.orderedStops(tx, trip.routeId, trip.direction);
       let reached = trip.lastStopSeq;
       const here = { lat: b.lat, lng: b.lng };
-      const now = this.clock.now();
       // Stops reached since the last ping (a fast bus can pass two between pings).
       while (reached < stops.length && haversineM(here, stops[reached]) <= REACHED_M) {
-        await tx.insert(transportTripEvents).values({ tenantId: tenantId, tripId: id, kind: 'stop_reached', stopId: stops[reached].id, at: now });
+        await tx.insert(transportTripEvents).values({ tenantId: tenantId, tripId: id, kind: 'stop_reached', stopId: stops[reached].id, at });
         reached++;
       }
       const next = stops[reached] ?? null;
@@ -364,7 +396,7 @@ export class TransportController {
       if (next && dist! <= APPROACH_M) {
         const [seen] = await tx.select({ id: transportTripEvents.id }).from(transportTripEvents).where(and(eq(transportTripEvents.tripId, id), eq(transportTripEvents.stopId, next.id), eq(transportTripEvents.kind, 'approaching')));
         if (!seen) {
-          await tx.insert(transportTripEvents).values({ tenantId: tenantId, tripId: id, kind: 'approaching', stopId: next.id, at: now });
+          await tx.insert(transportTripEvents).values({ tenantId: tenantId, tripId: id, kind: 'approaching', stopId: next.id, at });
           const riders = await tx
             .select({ id: students.id, fullName: students.fullName })
             .from(transportAssignments)
@@ -373,7 +405,11 @@ export class TransportController {
           for (const r of riders) await this.notifications.transportArrival(tx, { tripId: id, stopId: next.id, stopName: next.name, routeName: route.name, studentId: r.id, studentName: r.fullName });
         }
       }
-      await tx.update(transportTrips).set({ lastStopSeq: reached, lastLat: b.lat, lastLng: b.lng, lastSpeedKmh: b.speedKmh ?? null, lastPingAt: now, pings: sql`${transportTrips.pings} + 1` }).where(eq(transportTrips.id, id));
+      await tx.update(transportTrips).set({ lastStopSeq: reached, lastLat: b.lat, lastLng: b.lng, lastSpeedKmh: b.speedKmh ?? null, lastPingAt: at, pings: sql`${transportTrips.pings} + 1` }).where(eq(transportTrips.id, id));
+      // Reaching a stop leaves the one before it behind: a student there not marked on board is reported.
+      if (reached > trip.lastStopSeq && reached > 1) await this.pass.notBoarded(tx, tenantId, trip, route.name, stops.slice(Math.max(0, trip.lastStopSeq - 1), reached - 1));
+      const eta = dist == null ? null : etaMinutes(dist, b.speedKmh ?? null);
+      const late = await this.pass.delay(tx, tenantId, trip, route.name, stops.slice(reached), eta, now);
       // The route is checked from the first stop on (before it the bus is still coming from the depot).
       await this.alerts(tx, tenantId, trip.id, route.name, here, b.speedKmh ?? null, reached > 0 ? stops : [], now);
       const people = await tx.execute<{ user_id: string }>(sql`
@@ -387,27 +423,36 @@ export class TransportController {
         lng: b.lng,
         speedKmh: b.speedKmh ?? null,
         nextStop: next ? { id: next.id, name: next.name, seq: next.seq } : null,
-        etaMinutes: dist == null ? null : etaMinutes(dist, b.speedKmh ?? null),
-        at: now.toISOString(),
+        etaMinutes: eta,
+        lateMinutes: late,
+        at: at.toISOString(),
       };
       return { event, recipients: people.rows.map((r) => r.user_id) };
     });
-    this.gateway.toUsers(recipients, RealtimeEvents.TransportPosition, event);
+    if (recipients.length) this.gateway.toUsers(recipients, RealtimeEvents.TransportPosition, event);
     return event;
   }
 
+  /** The driver ends the run: the trip sheet takes the closing odometer; the last stop's missing riders and anyone never marked off a drop are reported. */
   @Post('trips/:id/end')
   @HttpCode(200)
   @Auth('user', ['driver'])
-  endTrip(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+  endTrip(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(EndBody)) b: z.infer<typeof EndBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const [trip] = await tx.select().from(transportTrips).where(and(eq(transportTrips.id, id), eq(transportTrips.driverUserId, p.userId))).for('update');
       if (!trip) throw new NotFoundException('Trip not found');
       if (trip.status === 'ended') return trip;
-      const [done] = await tx.update(transportTrips).set({ status: 'ended', endedAt: this.clock.now() }).where(eq(transportTrips.id, id)).returning();
+      if (b.odometerKm != null && trip.startOdometerKm != null && b.odometerKm < trip.startOdometerKm) throw new BadRequestException(`The trip started at ${trip.startOdometerKm} km`);
+      const [route] = await tx.select({ name: transportRoutes.name }).from(transportRoutes).where(eq(transportRoutes.id, trip.routeId));
+      if (trip.lastStopSeq > 0) {
+        const stops = await this.orderedStops(tx, trip.routeId, trip.direction);
+        await this.pass.notBoarded(tx, p.tenantId, trip, route.name, stops.slice(trip.lastStopSeq - 1, trip.lastStopSeq));
+      }
+      const left = await this.pass.leftOnBoard(tx, p.tenantId, trip, route.name);
+      const [done] = await tx.update(transportTrips).set({ status: 'ended', endedAt: this.clock.now(), endOdometerKm: b.odometerKm ?? null }).where(eq(transportTrips.id, id)).returning();
       await tx.insert(transportTripEvents).values({ tenantId: p.tenantId, tripId: id, kind: 'ended', at: this.clock.now() });
-      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.trip_ended', subjectType: 'transport_trip', subjectId: id });
-      return done;
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'transport.trip_ended', subjectType: 'transport_trip', subjectId: id, data: { odometerKm: b.odometerKm ?? null, leftOnBoard: left } });
+      return { ...done, leftOnBoard: left };
     });
   }
 
@@ -460,16 +505,49 @@ export class TransportController {
       if (!a) return { assigned: false as const };
       const stops = await tx.select({ id: transportStops.id, name: transportStops.name, seq: transportStops.seq, lat: transportStops.lat, lng: transportStops.lng }).from(transportStops).where(eq(transportStops.routeId, a.routeId)).orderBy(asc(transportStops.sortOrder), asc(transportStops.seq));
       const [trip] = await tx.select().from(transportTrips).where(and(eq(transportTrips.routeId, a.routeId), eq(transportTrips.status, 'running')));
-      let bus: null | { tripId: string; lat: number; lng: number; speedKmh: number | null; at: Date | null; etaMinutes: number | null; stopsAway: number } = null;
+      let bus: null | { tripId: string; direction: string; lat: number; lng: number; speedKmh: number | null; at: Date | null; etaMinutes: number | null; lateMinutes: number | null; stopsAway: number } = null;
       if (trip?.lastLat != null && trip.lastLng != null) {
         const ordered = await this.orderedStops(tx, a.routeId, trip.direction);
         const idx = ordered.findIndex((s) => s.id === a.stopId);
         const dist = haversineM({ lat: trip.lastLat, lng: trip.lastLng }, { lat: a.stopLat, lng: a.stopLng });
         // Already past this stop on this run: no ETA.
         const passed = idx >= 0 && idx < trip.lastStopSeq;
-        bus = { tripId: trip.id, lat: trip.lastLat, lng: trip.lastLng, speedKmh: trip.lastSpeedKmh, at: trip.lastPingAt, etaMinutes: passed ? null : etaMinutes(dist, trip.lastSpeedKmh), stopsAway: passed ? 0 : Math.max(0, idx - trip.lastStopSeq) };
+        const eta = passed ? null : etaMinutes(dist, trip.lastSpeedKmh);
+        const [tz] = await tx.select({ tz: tenants.timezone }).from(tenants);
+        const nowHhmm = localParts(this.clock.now(), tz?.tz ?? 'Asia/Kolkata').time.slice(0, 5);
+        bus = { tripId: trip.id, direction: trip.direction, lat: trip.lastLat, lng: trip.lastLng, speedKmh: trip.lastSpeedKmh, at: trip.lastPingAt, etaMinutes: eta, lateMinutes: lateMinutes(nowHhmm, eta, trip.direction === 'drop' ? ordered[idx]?.dropTime : a.pickupTime), stopsAway: passed ? 0 : Math.max(0, idx - trip.lastStopSeq) };
       }
-      return { assigned: true as const, ...a, stops, bus };
+      const today = await this.today(tx);
+      // The crew the family may call, today's getting on and off, the pass and the transport fee.
+      const [crew] = await tx.execute<{ driver: string | null; driver_phone: string | null; attendant: string | null; attendant_phone: string | null; drop_time: string | null; seat_id: string; starts_on: string }>(sql`
+        select d.full_name as driver, d.phone as driver_phone, att.full_name as attendant, att.phone as attendant_phone, st.drop_time, a.id as seat_id, a.starts_on::text as starts_on
+        from transport_assignments a join transport_routes r on r.id = a.route_id join transport_stops st on st.id = a.stop_id
+        left join transport_drivers d on d.id = r.driver_id left join transport_drivers att on att.id = r.attendant_id
+        where a.student_id = ${studentId}::uuid and a.ended_on is null`).then((r) => r.rows);
+      const marks = await tx
+        .select({ kind: transportBoardings.kind, at: transportBoardings.boardedAt, method: transportBoardings.method, direction: transportTrips.direction, stopName: transportStops.name })
+        .from(transportBoardings)
+        .leftJoin(transportTrips, eq(transportTrips.id, transportBoardings.tripId))
+        .leftJoin(transportStops, eq(transportStops.id, transportBoardings.stopId))
+        .where(and(eq(transportBoardings.studentId, studentId), eq(transportBoardings.onDate, today)))
+        .orderBy(asc(transportBoardings.boardedAt));
+      const [fee] = await tx
+        .select({ due: sql<number>`coalesce(sum(${feeInvoices.amountPaise} - ${feeInvoices.paidPaise}) filter (where ${feeInvoices.status} <> 'cancelled'), 0)::bigint`.mapWith(Number), overdue: sql<number>`coalesce(sum(${feeInvoices.amountPaise} - ${feeInvoices.paidPaise}) filter (where ${feeInvoices.status} <> 'cancelled' and ${feeInvoices.dueOn} < ${today}::date), 0)::bigint`.mapWith(Number), nextDue: sql<string | null>`min(${feeInvoices.dueOn}) filter (where ${feeInvoices.amountPaise} > ${feeInvoices.paidPaise} and ${feeInvoices.status} <> 'cancelled')::text`, paid: sql<number>`coalesce(sum(${feeInvoices.paidPaise}), 0)::bigint`.mapWith(Number) })
+        .from(feeInvoices)
+        .where(and(eq(feeInvoices.studentId, studentId), sql`${feeInvoices.title} ilike 'transport%'`));
+      const months = Number((await readSettings(tx, p.tenantId, 'transport')).rules.passValidMonths) || 12;
+      const passUntil = new Date(Date.parse(`${crew.starts_on}T00:00:00Z`) + months * 30.44 * 86_400_000).toISOString().slice(0, 10);
+      return {
+        assigned: true as const,
+        ...a,
+        dropTime: crew.drop_time,
+        stops,
+        bus,
+        crew: { driver: crew.driver, driverPhone: crew.driver_phone || null, attendant: crew.attendant, attendantPhone: crew.attendant_phone || null },
+        today: marks.map((m) => ({ kind: m.kind, at: m.at, method: m.method, direction: m.direction, stopName: m.stopName })),
+        pass: { seatId: crew.seat_id, from: crew.starts_on, until: passUntil, valid: passUntil >= today, pdf: `/v1/transport/passes/${studentId}.pdf` },
+        fee: { duePaise: fee?.due ?? 0, overduePaise: fee?.overdue ?? 0, nextDueOn: fee?.nextDue ?? null, paidPaise: fee?.paid ?? 0 },
+      };
     });
   }
 
@@ -622,7 +700,7 @@ export class TransportController {
     const trips = await this.db.withTenant(tenant.id, async (tx) => {
       const [src] = await tx.update(transportGpsSources).set({ lastSeenAt: this.clock.now() }).where(and(eq(transportGpsSources.tokenHash, hash), eq(transportGpsSources.active, true))).returning({ id: transportGpsSources.id });
       if (!src) throw new UnauthorizedException('Bad token');
-      const out: { tripId: string; fix: { lat: number; lng: number; speedKmh?: number } }[] = [];
+      const out: { tripId: string; fix: { lat: number; lng: number; speedKmh?: number; at?: Date } }[] = [];
       for (const fix of adapter.parse(body)) {
         // The route's own vehicle (by registration or tracker id), or a substitute vehicle running the route today.
         const sameVehicle = sql`(${transportVehicles.regNo} = ${fix.vehicle} or upper(${transportVehicles.gpsDevice}) = ${fix.vehicle})`;
@@ -638,8 +716,18 @@ export class TransportController {
       }
       return out;
     });
-    for (const t of trips) await this.ingest(tenant.id, t.tripId, t.fix, null);
-    return { accepted: trips.length };
+    // Fixes in the order the tracker took them; a late or repeated one is stale and skipped; a trip that ended meanwhile is skipped.
+    let accepted = 0;
+    let stale = 0;
+    for (const t of trips.sort((x, y) => (x.fix.at?.getTime() ?? 0) - (y.fix.at?.getTime() ?? 0))) {
+      const r = await this.ingest(tenant.id, t.tripId, t.fix, null).catch((e: unknown) => {
+        if (e instanceof ConflictException || e instanceof NotFoundException) return null;
+        throw e;
+      });
+      if (r?.stale) stale++;
+      else if (r) accepted++;
+    }
+    return { accepted, stale };
   }
 
   // --- helpers -----------------------------------------------------------------------------

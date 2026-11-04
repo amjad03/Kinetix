@@ -1552,7 +1552,7 @@ class BusStop {
 /// Where the bus is right now, and how far from the child's stop.
 class BusPosition {
   const BusPosition(
-      {required this.tripId, required this.lat, required this.lng, this.speedKmh, this.at, this.etaMinutes, this.stopsAway = 0});
+      {required this.tripId, required this.lat, required this.lng, this.speedKmh, this.at, this.etaMinutes, this.stopsAway = 0, this.lateMinutes});
 
   factory BusPosition.fromJson(Map<String, dynamic> j) => BusPosition(
         tripId: j['tripId'] as String,
@@ -1562,6 +1562,7 @@ class BusPosition {
         at: _instant(j['at']),
         etaMinutes: (j['etaMinutes'] as num?)?.toInt(),
         stopsAway: (j['stopsAway'] as num?)?.toInt() ?? 0,
+        lateMinutes: (j['lateMinutes'] as num?)?.toInt(),
       );
 
   final String tripId;
@@ -1573,6 +1574,67 @@ class BusPosition {
   /// Minutes to the child's stop; null once the bus has passed it.
   final int? etaMinutes;
   final int stopsAway;
+
+  /// Minutes behind the stop's timetable at the bus's pace (0 on time; null when the stop has no time).
+  final int? lateMinutes;
+}
+
+/// Getting on or off the bus today (by the conductor, the bus pass QR or a card reader).
+class BusMark {
+  const BusMark({required this.kind, required this.at, this.method, this.stopName, this.direction});
+
+  factory BusMark.fromJson(Map<String, dynamic> j) => BusMark(
+        kind: j['kind'] as String,
+        at: DateTime.parse(j['at'] as String).toLocal(),
+        method: j['method'] as String?,
+        stopName: j['stopName'] as String?,
+        direction: j['direction'] as String?,
+      );
+
+  /// board | alight
+  final String kind;
+  final DateTime at;
+  final String? method;
+  final String? stopName;
+  final String? direction;
+}
+
+/// What else the family sees about the seat: the crew to call, today's boarding, the bus pass and the transport fee.
+class BusDetails {
+  const BusDetails({this.driver, this.driverPhone, this.attendant, this.attendantPhone, this.dropTime, this.today = const [], this.passFrom, this.passUntil, this.passValid = false, this.feeDuePaise = 0, this.feeOverduePaise = 0, this.feeNextDue});
+
+  factory BusDetails.fromJson(Map<String, dynamic> j) {
+    final crew = (j['crew'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final pass = (j['pass'] as Map?)?.cast<String, dynamic>();
+    final fee = (j['fee'] as Map?)?.cast<String, dynamic>();
+    return BusDetails(
+      driver: crew['driver'] as String?,
+      driverPhone: crew['driverPhone'] as String?,
+      attendant: crew['attendant'] as String?,
+      attendantPhone: crew['attendantPhone'] as String?,
+      dropTime: _clock(j['dropTime']),
+      today: [for (final m in (j['today'] as List? ?? const [])) BusMark.fromJson((m as Map).cast<String, dynamic>())],
+      passFrom: pass?['from'] as String?,
+      passUntil: pass?['until'] as String?,
+      passValid: pass?['valid'] as bool? ?? false,
+      feeDuePaise: (fee?['duePaise'] as num?)?.toInt() ?? 0,
+      feeOverduePaise: (fee?['overduePaise'] as num?)?.toInt() ?? 0,
+      feeNextDue: fee?['nextDueOn'] as String?,
+    );
+  }
+
+  final String? driver;
+  final String? driverPhone;
+  final String? attendant;
+  final String? attendantPhone;
+  final ClockTime? dropTime;
+  final List<BusMark> today;
+  final String? passFrom;
+  final String? passUntil;
+  final bool passValid;
+  final int feeDuePaise;
+  final int feeOverduePaise;
+  final String? feeNextDue;
 }
 
 /// A `transport.position` event (TransportPositionEvent in packages/shared).
@@ -1586,6 +1648,7 @@ class BusPositionEvent {
     this.nextStopId,
     this.nextStopSeq,
     this.etaMinutes,
+    this.lateMinutes,
     this.at,
   });
 
@@ -1600,6 +1663,7 @@ class BusPositionEvent {
       nextStopId: next?['id'] as String?,
       nextStopSeq: (next?['seq'] as num?)?.toInt(),
       etaMinutes: (j['etaMinutes'] as num?)?.toInt(),
+      lateMinutes: (j['lateMinutes'] as num?)?.toInt(),
       at: _instant(j['at']),
     );
   }
@@ -1616,6 +1680,9 @@ class BusPositionEvent {
 
   /// Minutes to that next stop.
   final int? etaMinutes;
+
+  /// Minutes behind that stop's timetable.
+  final int? lateMinutes;
   final DateTime? at;
 }
 
@@ -1649,6 +1716,7 @@ class StudentBus {
     this.pickupTime,
     this.stops = const [],
     this.bus,
+    this.details = const BusDetails(),
   });
 
   factory StudentBus.fromJson(Map<String, dynamic> j) {
@@ -1665,6 +1733,7 @@ class StudentBus {
       pickupTime: _clock(j['pickupTime']),
       stops: [for (final s in (j['stops'] as List? ?? const [])) BusStop.fromJson((s as Map).cast<String, dynamic>())],
       bus: j['bus'] == null ? null : BusPosition.fromJson((j['bus'] as Map).cast<String, dynamic>()),
+      details: BusDetails.fromJson(j),
     );
   }
 
@@ -1681,6 +1750,9 @@ class StudentBus {
 
   /// Null when no trip is running (or the bus has not reported a position yet).
   final BusPosition? bus;
+
+  /// The crew, today's boarding, the pass and the fee.
+  final BusDetails details;
 
   /// This bus after a live position: the ETA to the child's stop and how many stops away.
   /// Events for another route leave it as it is.
@@ -1709,7 +1781,8 @@ class StudentBus {
       stopLng: stopLng,
       pickupTime: pickupTime,
       stops: stops,
-      bus: BusPosition(tripId: e.tripId, lat: e.lat, lng: e.lng, speedKmh: e.speedKmh, at: e.at, etaMinutes: eta, stopsAway: away),
+      bus: BusPosition(tripId: e.tripId, lat: e.lat, lng: e.lng, speedKmh: e.speedKmh, at: e.at, etaMinutes: eta, stopsAway: away, lateMinutes: e.lateMinutes),
+      details: details,
     );
   }
 }

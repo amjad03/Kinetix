@@ -214,6 +214,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/transport', label: 'nav.transport', section: 'transport', icon: 'transport' },
       { href: '/transport/desk', label: 'lht.desk.transport', section: 'transport', icon: 'transport' },
       { href: '/transport/records', label: 'lht.records.transport', section: 'transport', icon: 'documents' },
+      { href: '/transport/live', label: 'tp.link.live', section: 'transport', icon: 'transport' },
+      { href: '/transport/safety', label: 'tp.link.safety', section: 'transport', icon: 'transport' },
       { href: '/hostel', label: 'nav.hostel', section: 'hostel', icon: 'hostel' },
       { href: '/hostel/desk', label: 'lht.desk.hostel', section: 'hostel', icon: 'hostel' },
       { href: '/hostel/records', label: 'lht.records.hostel', section: 'hostel', icon: 'documents' },

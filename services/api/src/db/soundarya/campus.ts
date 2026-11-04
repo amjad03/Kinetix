@@ -100,8 +100,8 @@ export async function transport(c: Ctx): Promise<void> {
     if (c.holidays.has(date)) continue;
     for (const [ri, route] of routes.entries()) {
       for (const dir of ['pickup', 'drop']) {
-        const t = await k.one<{ id: string }>('transport_trips', { routeId: route.id, driverUserId: ri % 2 ? c.byEmail.driver2.id : c.byEmail.driver1.id, direction: dir, status: 'completed', startedAt: at(date, dir === 'pickup' ? '07:10' : '16:15'), endedAt: at(date, dir === 'pickup' ? '08:35' : '17:40'), lastStopSeq: 5, lastLat: '13.0412', lastLng: '77.5233', lastSpeedKmh: '0', lastPingAt: at(date, dir === 'pickup' ? '08:35' : '17:40'), pings: r.int(60, 140) });
-        await k.ins('transport_trip_events', stops.filter((s) => s.routeId === route.id).map((s) => ({ tripId: t.id, kind: 'arrived', stopId: s.id, at: at(date, dir === 'pickup' ? `0${7 + Math.floor(s.seq / 3)}:${String(15 + s.seq * 5).padStart(2, '0')}` : `16:${String(20 + s.seq * 5).padStart(2, '0')}`) })), { returning: false });
+        const t = await k.one<{ id: string }>('transport_trips', { routeId: route.id, driverUserId: ri % 2 ? c.byEmail.driver2.id : c.byEmail.driver1.id, direction: dir, status: 'ended', startedAt: at(date, dir === 'pickup' ? '07:10' : '16:15'), endedAt: at(date, dir === 'pickup' ? '08:35' : '17:40'), lastStopSeq: 5, lastLat: '13.0412', lastLng: '77.5233', lastSpeedKmh: '0', lastPingAt: at(date, dir === 'pickup' ? '08:35' : '17:40'), pings: r.int(60, 140) });
+        await k.ins('transport_trip_events', stops.filter((s) => s.routeId === route.id).map((s) => ({ tripId: t.id, kind: 'stop_reached', stopId: s.id, at: at(date, dir === 'pickup' ? `0${7 + Math.floor(s.seq / 3)}:${String(15 + s.seq * 5).padStart(2, '0')}` : `16:${String(20 + s.seq * 5).padStart(2, '0')}`) })), { returning: false });
       }
     }
   }

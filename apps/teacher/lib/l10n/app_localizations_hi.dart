@@ -4669,4 +4669,63 @@ class AppLocalizationsHi extends AppLocalizations {
   String indentRejectTitle(String number) {
     return '$number अस्वीकार करें';
   }
+
+  @override
+  String get driverManifest => 'बस में विद्यार्थी';
+
+  @override
+  String driverManifestCount(int onBoard, int boarded, int riders) {
+    return '$onBoard बस में · $riders में से $boarded चढ़े';
+  }
+
+  @override
+  String get driverGotOn => 'चढ़े';
+
+  @override
+  String get driverGotOff => 'उतरे';
+
+  @override
+  String driverOnAt(Object time) {
+    return '$time बजे चढ़े';
+  }
+
+  @override
+  String driverOffAt(Object time) {
+    return '$time बजे उतरे';
+  }
+
+  @override
+  String get driverScanPass => 'बस पास स्कैन करें';
+
+  @override
+  String get driverScanHint => 'विद्यार्थी के बस पास के QR पर कैमरा रखें';
+
+  @override
+  String get driverMarked => 'दर्ज किया';
+
+  @override
+  String get driverSos => 'एसओएस';
+
+  @override
+  String get driverSosAsk => 'अभी परिवहन कार्यालय को एसओएस भेजें? उन्हें बस की स्थिति तुरंत मिलेगी।';
+
+  @override
+  String get driverSosNote => 'क्या हुआ (वैकल्पिक)';
+
+  @override
+  String get driverSosSend => 'एसओएस भेजें';
+
+  @override
+  String get driverSosSent => 'एसओएस भेजा गया। परिवहन कार्यालय को सूचित कर दिया गया है।';
+
+  @override
+  String get driverCancel => 'रद्द करें';
+
+  @override
+  String driverCrewOnTrip(Object route) {
+    return 'बस चल रही है · $route';
+  }
+
+  @override
+  String get driverCrewWaiting => 'चालक ने अभी यात्रा शुरू नहीं की है। बस चलने पर विद्यार्थियों की सूची खुलेगी।';
 }

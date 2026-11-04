@@ -148,8 +148,8 @@ describe('campus operations depth: hostel, transport, canteen', () => {
       };
       await post(undefined, { vehicle: 'KA05GP0001', lat: 12.9, lng: 77.5 }).expect(404);
       await post('gps_wrong', { vehicle: 'KA05GP0001', lat: 12.9, lng: 77.5 }).expect(401);
-      expect((await post(src.token, { vehicle: 'ka05gp0001', lat: 12.9, lng: 77.5, speed: 25 }).expect(200)).body).toEqual({ accepted: 1 });
-      expect((await post(src.token, { positions: [{ vehicle: 'UNKNOWN', lat: 1, lng: 1 }] }).expect(200)).body).toEqual({ accepted: 0 });
+      expect((await post(src.token, { vehicle: 'ka05gp0001', lat: 12.9, lng: 77.5, speed: 25 }).expect(200)).body).toEqual({ accepted: 1, stale: 0 });
+      expect((await post(src.token, { positions: [{ vehicle: 'UNKNOWN', lat: 1, lng: 1 }] }).expect(200)).body).toEqual({ accepted: 0, stale: 0 });
       const [trip] = await db.select().from(s.transportTrips).where(eq(s.transportTrips.routeId, routeId));
       expect(trip).toMatchObject({ lastLat: 12.9, lastLng: 77.5, lastSpeedKmh: 25, pings: 1 });
       await http().post(`/v1/transport/gps/sources/${src.id}/revoke`).set(as('transport_manager')).expect(200);

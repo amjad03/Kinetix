@@ -2,6 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import argon2 from 'argon2';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { moveDelta, seatFee } from '../src/transport/transport-rules.js';
 import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
 
 /**
@@ -100,21 +101,21 @@ describe('transport depth', () => {
     expect(riders.map((r: { feeRupees: number }) => r.feeRupees).sort()).toEqual([3100, 3410]);
     expect(riders.find((r: { feeRupees: number }) => r.feeRupees === 3100).name).toBe('Student A');
     const seatA = riders.find((r: { name: string }) => r.name === 'Student A');
-    // Move A to Route 2 (₹4,650) from today: the rest of the month's difference is charged.
-    const moved = (await post('tm', `/v1/records/transport-riders/${seatA.id}/move`, { to: ids.lake, reason: 'Family moved' }).expect(200)).body;
-    expect(moved).toBeDefined();
-    const delta = (await owner.query(`select amount_paise from fee_invoices where student_id = $1 and title like 'Transport fee change%'`, [t.students[0].id])).rows;
-    const dim = new Date(Date.UTC(Number(day(0).slice(0, 4)), Number(day(0).slice(5, 7)), 0)).getUTCDate();
-    const left = dim - Number(day(0).slice(8, 10)) + 1;
-    expect(delta.map((r) => Number(r.amount_paise))).toEqual([Math.round((155_000 * left) / dim)]);
-    // The month's run: A pays both seats pro rata (together a full month at each rate), staff get a payroll recovery.
+    // The month's run first: A pays the full month at ₹3,100, staff get a payroll recovery.
     const month = day(0).slice(0, 7);
     const run = (await post('tm', '/v1/transport/fees/month', { month }).expect(200)).body;
     expect(run).toMatchObject({ studentsCharged: 1, staffRecoveries: 1 });
-    const used = dim - left;
-    const expectA = Math.round((310_000 * used) / dim) + Math.round((465_000 * left) / dim);
-    expect((await owner.query(`select amount_paise from fee_invoices where student_id = $1 and title = $2`, [t.students[0].id, `Transport fee ${month}`])).rows.map((r) => Number(r.amount_paise))).toEqual([expectA]);
+    expect((await owner.query(`select amount_paise from fee_invoices where student_id = $1 and title = $2`, [t.students[0].id, `Transport fee ${month}`])).rows.map((r) => Number(r.amount_paise))).toEqual([310_000]);
     expect((await owner.query(`select kind, amount_paise, status from payroll_adjustments where user_id = $1`, [t.teacher.id])).rows.map((r) => [r.kind, Number(r.amount_paise), r.status])).toEqual([['recovery', 341_000, 'pending']]);
+    // Move A to Route 2 (₹4,650) from today in the billed month: only the difference is charged, once, and kept in the ledger.
+    await post('tm', `/v1/records/transport-riders/${seatA.id}/move`, { to: ids.lake, reason: 'Family moved' }).expect(200);
+    const delta = (await owner.query(`select amount_paise from fee_invoices where student_id = $1 and title like 'Transport fee change%'`, [t.students[0].id])).rows;
+    const expected = moveDelta(month, 310_000, 465_000, start, day(0));
+    expect(delta.map((r) => Number(r.amount_paise))).toEqual(expected > 0 ? [expected] : []);
+    // What A owes for the month now equals both seats pro rata: no double charge.
+    expect(310_000 + expected).toBe(seatFee(month, 310_000, start, day(0)) + seatFee(month, 465_000, day(0), null));
+    const adj = (await get('tm', `/v1/transport/students/${t.students[0].id}/fee-adjustments`).expect(200)).body;
+    expect(adj.map((a: { kind: string; amountPaise: number }) => [a.kind, a.amountPaise])).toEqual([['move_charge', expected]]);
     expect((await post('tm', '/v1/transport/fees/month', { month }).expect(200)).body).toMatchObject({ studentsCharged: 0, staffRecoveries: 0 });
   });
 
