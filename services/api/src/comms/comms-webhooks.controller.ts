@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
-import { Body, Controller, Get, HttpCode, Logger, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Header, HttpCode, Logger, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
@@ -32,10 +32,15 @@ export class CommsWebhooksController {
     private readonly notifications: NotificationsService,
   ) {}
 
-  /** Meta's subscription check: answers the challenge when the verify token is the institution's secret. */
+  /**
+   * Meta's subscription check: answers the challenge when the verify token is the institution's secret. The echo is
+   * plain text and only a short token (Meta sends digits), so the API never reflects caller-chosen HTML.
+   */
   @Get(':provider/:tenantId/:token')
+  @Header('content-type', 'text/plain; charset=utf-8')
   async verify(@Param('provider') provider: string, @Param('tenantId') tenantId: string, @Param('token') token: string, @Query('hub.challenge') challenge?: string) {
     await this.authenticate(provider, tenantId, token);
+    if (challenge !== undefined && !/^[\w.-]{1,200}$/.test(challenge)) throw new BadRequestException('hub.challenge must be a short token');
     return challenge ?? 'ok';
   }
 
