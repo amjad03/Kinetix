@@ -124,8 +124,16 @@ Counts (44 items): before **24 Have, 5 Partial, 15 Missing**; after part 1 **24 
 Shared code `packages/zynetix_ui/lib/src/mobile_core.dart`; user guide and store checklist `docs/product/mobile-apps.md`.
 New strings (17 shared + 23 notification kinds, 7 Board) in en / hi / kn arb files of all four apps, `gen-l10n` run.
 `flutter analyze`: clean in all four apps. Tests added: `packages/zynetix_ui/test/mobile_core_test.dart`,
-`apps/{teacher,student,parent}/test/mobile_session_test.dart`, `apps/board/test/screensaver_test.dart`; results in the
-pass report. Full suites were not re-run in this pass (targeted files only, under the shared lock).
+`apps/{teacher,student,parent}/test/mobile_session_test.dart`, `apps/board/test/screensaver_test.dart`.
+
+Test results (honest state at the end of the time box; the shared heavy lock was queued behind other agents):
+- `mobile_core_test.dart`: 16 of 16 passed. The 3 accessibility tests (320 dp, text scale 2.0) were added afterwards
+  and have **not been run** yet.
+- Teacher, targeted (`mobile_session_test`, attendance, marks, profile, secure storage, i18n, sign-in): 50 passed,
+  1 failed: the new sign-out test signed in with the wrong fake password (a test bug, fixed); the re-run had not
+  finished.
+- Student, Parent, Board new tests: `flutter analyze` clean, **not run** (queued when the pass was stopped).
+- Full suites of the four apps were **not** re-run in this pass. Run them before merging.
 
 After part 2, of the 12 items left by part 1: **Built** refresh in apps, server sign-out, local wipe, cached reads,
 notification settings, board attendance code, version gate and crash reporting (phone apps); **Partial** Teacher
