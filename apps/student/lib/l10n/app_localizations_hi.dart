@@ -5663,4 +5663,253 @@ class AppLocalizationsHi extends AppLocalizations {
   String libDecade(String year) {
     return '$year का दशक';
   }
+
+  @override
+  String get ppTitle => 'मेरा प्लेसमेंट';
+
+  @override
+  String get ppOpen => 'आपकी स्थिति, राउंड, दस्तावेज़, प्रशिक्षण और क्रेडिट';
+
+  @override
+  String ppCounts(String eligible, String registered, String shortlisted, String offers) {
+    return 'आपके लिए $eligible ड्राइव खुले · $registered पंजीकृत · $shortlisted शॉर्टलिस्ट · $offers ऑफ़र';
+  }
+
+  @override
+  String ppMarks(String cgpa, String backlogs, String history) {
+    return 'CGPA $cgpa · अभी $backlogs बैकलॉग · $history विषय कभी अनुत्तीर्ण';
+  }
+
+  @override
+  String get ppNoResult => 'अभी कोई प्रकाशित परिणाम नहीं';
+
+  @override
+  String ppSchool(String tenth, String twelfth) {
+    return 'कक्षा 10: $tenth · कक्षा 12: $twelfth';
+  }
+
+  @override
+  String ppGap(String n) {
+    return 'अंतराल वर्ष: $n';
+  }
+
+  @override
+  String ppDebarred(String date) {
+    return '$date तक आप ड्राइव के लिए पंजीकरण नहीं कर सकते';
+  }
+
+  @override
+  String get ppOptedOut => 'आपने प्लेसमेंट से बाहर रहना चुना है';
+
+  @override
+  String ppPlaced(String category) {
+    return 'आपने $category ऑफ़र स्वीकार किया';
+  }
+
+  @override
+  String get ppCategory_regular => 'सामान्य';
+
+  @override
+  String get ppCategory_dream => 'ड्रीम';
+
+  @override
+  String get ppCategory_super_dream => 'सुपर ड्रीम';
+
+  @override
+  String get ppDocuments => 'प्लेसमेंट सेल के लिए दस्तावेज़';
+
+  @override
+  String get ppDoc_resume => 'बायोडाटा';
+
+  @override
+  String get ppDoc_marks_10 => 'कक्षा 10 अंकपत्र';
+
+  @override
+  String get ppDoc_marks_12 => 'कक्षा 12 अंकपत्र';
+
+  @override
+  String get ppDoc_semester_marks => 'सेमेस्टर अंकपत्र';
+
+  @override
+  String get ppDoc_id_proof => 'पहचान प्रमाण';
+
+  @override
+  String get ppDocStatus_verified => 'सत्यापित';
+
+  @override
+  String get ppDocStatus_pending => 'सेल की प्रतीक्षा';
+
+  @override
+  String get ppDocStatus_rejected => 'स्वीकार नहीं: फिर अपलोड करें';
+
+  @override
+  String get ppDocStatus_missing => 'अपलोड नहीं';
+
+  @override
+  String get ppUpload => 'अपलोड करें';
+
+  @override
+  String get ppUploaded => 'अपलोड हुआ; प्लेसमेंट सेल इसे सत्यापित करेगा';
+
+  @override
+  String get ppDrives => 'मेरे ड्राइव';
+
+  @override
+  String get ppNoDrives => 'आपने अभी किसी ड्राइव के लिए पंजीकरण नहीं किया';
+
+  @override
+  String get ppResult_pass => 'उत्तीर्ण';
+
+  @override
+  String get ppResult_fail => 'चयनित नहीं';
+
+  @override
+  String get ppResult_absent => 'अनुपस्थित';
+
+  @override
+  String get ppResult_waiting => 'प्रतीक्षा';
+
+  @override
+  String ppSlot(String time, String venue) {
+    return '$time, $venue';
+  }
+
+  @override
+  String get ppTraining => 'प्रशिक्षण';
+
+  @override
+  String ppAttendance(String pct) {
+    return 'उपस्थिति $pct%';
+  }
+
+  @override
+  String ppScore(String test, String score, String max) {
+    return '$test: $max में से $score';
+  }
+
+  @override
+  String get ppCredits => 'इंटर्नशिप क्रेडिट';
+
+  @override
+  String ppCreditsLine(String earned, String required, String short) {
+    return '$required में से $earned क्रेडिट अर्जित · $short कम';
+  }
+
+  @override
+  String ppCreditsMet(String earned) {
+    return '$earned क्रेडिट अर्जित: आवश्यकता पूरी';
+  }
+
+  @override
+  String get ppApprenticeships => 'शिक्षुता';
+
+  @override
+  String ppStipend(String stipend, String share) {
+    return 'वजीफ़ा $stipend प्रति माह · सरकारी हिस्सा $share';
+  }
+
+  @override
+  String get ppReferrals => 'रेफ़रल';
+
+  @override
+  String get ppAskReferral => 'किसी पूर्व छात्र से रेफ़रल माँगें';
+
+  @override
+  String get ppReferralAlumnus => 'पूर्व छात्र';
+
+  @override
+  String get ppReferralCompany => 'कंपनी';
+
+  @override
+  String get ppReferralRole => 'भूमिका';
+
+  @override
+  String get ppReferralMessage => 'पूर्व छात्र के लिए संदेश';
+
+  @override
+  String get ppReferralSend => 'भेजें';
+
+  @override
+  String get ppReferralSent => 'अनुरोध भेजा गया';
+
+  @override
+  String get ppNoMentors => 'अभी कोई पूर्व छात्र अनुरोध नहीं ले रहा';
+
+  @override
+  String get ppRefStatus_requested => 'माँगा गया';
+
+  @override
+  String get ppRefStatus_referred => 'रेफ़र किया';
+
+  @override
+  String get ppRefStatus_interviewing => 'साक्षात्कार जारी';
+
+  @override
+  String get ppRefStatus_hired => 'नियुक्त';
+
+  @override
+  String get ppRefStatus_declined => 'अस्वीकृत';
+
+  @override
+  String get ppRefStatus_closed => 'बंद';
+
+  @override
+  String get ppApStatus_enrolled => 'नामांकित';
+
+  @override
+  String get ppApStatus_contract_registered => 'अनुबंध पंजीकृत';
+
+  @override
+  String get ppApStatus_ongoing => 'जारी';
+
+  @override
+  String get ppApStatus_completed => 'पूरा';
+
+  @override
+  String get ppApStatus_terminated => 'जल्दी समाप्त';
+
+  @override
+  String get careersReason_not_yet_open => 'पंजीकरण अभी खुला नहीं';
+
+  @override
+  String get careersReason_batch_not_eligible => 'आपके बैच के लिए खुला नहीं';
+
+  @override
+  String get careersReason_opted_out => 'आपने प्लेसमेंट से बाहर रहना चुना';
+
+  @override
+  String get careersReason_not_opted_in => 'पहले प्लेसमेंट में शामिल होना चुनें';
+
+  @override
+  String get careersReason_debarred => 'आप अभी वर्जित हैं';
+
+  @override
+  String get careersReason_already_placed => 'पहले से चयनित: केवल ऊँची श्रेणी खुली';
+
+  @override
+  String get careersReason_gender_not_eligible => 'आपके लिए खुला नहीं';
+
+  @override
+  String get careersReason_tenth_below => 'कक्षा 10 के अंक न्यूनतम से कम';
+
+  @override
+  String get careersReason_twelfth_below => 'कक्षा 12 के अंक न्यूनतम से कम';
+
+  @override
+  String get careersReason_no_prior_marks => 'आपके कक्षा 10 या 12 के अंक दर्ज नहीं';
+
+  @override
+  String get careersReason_gap_exceeded => 'अंतराल वर्ष अधिक';
+
+  @override
+  String get careersReason_backlog_history_exceeded => 'कभी अनुत्तीर्ण विषय अधिक';
+
+  @override
+  String get careersReason_documents_not_verified => 'आपके दस्तावेज़ अभी सत्यापित नहीं';
+
+  @override
+  String get ppFillResume => 'मेरे रिकॉर्ड से भरें';
+
+  @override
+  String get ppFilled => 'आपके रिकॉर्ड से भरा गया; जाँचकर सहेजें';
 }

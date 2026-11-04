@@ -9,7 +9,7 @@ import '../../widgets/common.dart';
 /// The Student App passes [onRegister], [onWithdraw] and [onRespond]; the Parent App leaves them out
 /// and the screen is read-only.
 class CareersScreen extends StatefulWidget {
-  const CareersScreen({super.key, required this.load, this.onRegister, this.onWithdraw, this.onRespond, this.onPrepare});
+  const CareersScreen({super.key, required this.load, this.onRegister, this.onWithdraw, this.onRespond, this.onPrepare, this.onDashboard});
 
   final Future<CareerOverview> Function() load;
   final Future<void> Function(String driveId)? onRegister;
@@ -19,6 +19,9 @@ class CareersScreen extends StatefulWidget {
   /// Opens career preparation (resume, tests, mock interviews, recommendations, assistant); the Student App only.
   final VoidCallback? onPrepare;
 
+  /// Opens the student's own placement dashboard (standing, rounds, documents, training, credits).
+  final VoidCallback? onDashboard;
+
   static Future<void> open(
     BuildContext context, {
     required Future<CareerOverview> Function() load,
@@ -26,8 +29,9 @@ class CareersScreen extends StatefulWidget {
     Future<void> Function(String driveId)? onWithdraw,
     Future<void> Function(String offerId, bool accept)? onRespond,
     VoidCallback? onPrepare,
+    VoidCallback? onDashboard,
   }) => Navigator.of(context).push(
-    MaterialPageRoute(builder: (_) => CareersScreen(load: load, onRegister: onRegister, onWithdraw: onWithdraw, onRespond: onRespond, onPrepare: onPrepare)),
+    MaterialPageRoute(builder: (_) => CareersScreen(load: load, onRegister: onRegister, onWithdraw: onWithdraw, onRespond: onRespond, onPrepare: onPrepare, onDashboard: onDashboard)),
   );
 
   @override
@@ -95,6 +99,17 @@ class _CareersScreenState extends State<CareersScreen> {
                       key: const Key('careersAcademics'),
                       style: context.text.titleMedium,
                     ),
+                    if (widget.onDashboard != null)
+                      Card(
+                        child: ListTile(
+                          key: const Key('openPlacementDashboard'),
+                          leading: const Icon(Icons.insights_outlined),
+                          title: Text(l.ppTitle),
+                          subtitle: Text(l.ppOpen),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: widget.onDashboard,
+                        ),
+                      ),
                     if (widget.onPrepare != null)
                       Card(
                         child: ListTile(
@@ -213,6 +228,19 @@ String _offerLabel(AppLocalizations l, String s) => switch (s) {
 };
 
 String _reasonLabel(AppLocalizations l, String s) => switch (s) {
+  'not_yet_open' => l.careersReason_not_yet_open,
+  'batch_not_eligible' => l.careersReason_batch_not_eligible,
+  'opted_out' => l.careersReason_opted_out,
+  'not_opted_in' => l.careersReason_not_opted_in,
+  'debarred' => l.careersReason_debarred,
+  'already_placed' => l.careersReason_already_placed,
+  'gender_not_eligible' => l.careersReason_gender_not_eligible,
+  'tenth_below' => l.careersReason_tenth_below,
+  'twelfth_below' => l.careersReason_twelfth_below,
+  'no_prior_marks' => l.careersReason_no_prior_marks,
+  'gap_exceeded' => l.careersReason_gap_exceeded,
+  'backlog_history_exceeded' => l.careersReason_backlog_history_exceeded,
+  'documents_not_verified' => l.careersReason_documents_not_verified,
   'deadline_passed' => l.careersReason_deadline_passed,
   'no_results' => l.careersReason_no_results,
   'cgpa_below' => l.careersReason_cgpa_below,

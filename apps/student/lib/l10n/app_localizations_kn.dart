@@ -5677,4 +5677,253 @@ class AppLocalizationsKn extends AppLocalizations {
   String libDecade(String year) {
     return '$year ರ ದಶಕ';
   }
+
+  @override
+  String get ppTitle => 'ನನ್ನ ಪ್ಲೇಸ್‌ಮೆಂಟ್';
+
+  @override
+  String get ppOpen => 'ನಿಮ್ಮ ಸ್ಥಿತಿ, ಸುತ್ತುಗಳು, ದಾಖಲೆಗಳು, ತರಬೇತಿ ಮತ್ತು ಕ್ರೆಡಿಟ್';
+
+  @override
+  String ppCounts(String eligible, String registered, String shortlisted, String offers) {
+    return 'ನಿಮಗೆ $eligible ಡ್ರೈವ್ ತೆರೆದಿವೆ · $registered ನೋಂದಣಿ · $shortlisted ಕಿರುಪಟ್ಟಿ · $offers ಆಫರ್';
+  }
+
+  @override
+  String ppMarks(String cgpa, String backlogs, String history) {
+    return 'CGPA $cgpa · ಈಗ $backlogs ಬ್ಯಾಕ್‌ಲಾಗ್ · $history ವಿಷಯ ಎಂದಾದರೂ ಅನುತ್ತೀರ್ಣ';
+  }
+
+  @override
+  String get ppNoResult => 'ಇನ್ನೂ ಪ್ರಕಟಿತ ಫಲಿತಾಂಶವಿಲ್ಲ';
+
+  @override
+  String ppSchool(String tenth, String twelfth) {
+    return '10ನೇ ತರಗತಿ: $tenth · 12ನೇ ತರಗತಿ: $twelfth';
+  }
+
+  @override
+  String ppGap(String n) {
+    return 'ಅಂತರ ವರ್ಷ: $n';
+  }
+
+  @override
+  String ppDebarred(String date) {
+    return '$date ರವರೆಗೆ ನೀವು ಡ್ರೈವ್‌ಗೆ ನೋಂದಾಯಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ';
+  }
+
+  @override
+  String get ppOptedOut => 'ನೀವು ಪ್ಲೇಸ್‌ಮೆಂಟ್‌ನಿಂದ ಹೊರಗುಳಿದಿದ್ದೀರಿ';
+
+  @override
+  String ppPlaced(String category) {
+    return 'ನೀವು $category ಆಫರ್ ಸ್ವೀಕರಿಸಿದ್ದೀರಿ';
+  }
+
+  @override
+  String get ppCategory_regular => 'ಸಾಮಾನ್ಯ';
+
+  @override
+  String get ppCategory_dream => 'ಡ್ರೀಮ್';
+
+  @override
+  String get ppCategory_super_dream => 'ಸೂಪರ್ ಡ್ರೀಮ್';
+
+  @override
+  String get ppDocuments => 'ಪ್ಲೇಸ್‌ಮೆಂಟ್ ಘಟಕಕ್ಕೆ ದಾಖಲೆಗಳು';
+
+  @override
+  String get ppDoc_resume => 'ಸ್ವವಿವರ';
+
+  @override
+  String get ppDoc_marks_10 => '10ನೇ ತರಗತಿ ಅಂಕಪಟ್ಟಿ';
+
+  @override
+  String get ppDoc_marks_12 => '12ನೇ ತರಗತಿ ಅಂಕಪಟ್ಟಿ';
+
+  @override
+  String get ppDoc_semester_marks => 'ಸೆಮಿಸ್ಟರ್ ಅಂಕಪಟ್ಟಿಗಳು';
+
+  @override
+  String get ppDoc_id_proof => 'ಗುರುತಿನ ಪುರಾವೆ';
+
+  @override
+  String get ppDocStatus_verified => 'ಪರಿಶೀಲಿತ';
+
+  @override
+  String get ppDocStatus_pending => 'ಘಟಕದ ನಿರೀಕ್ಷೆ';
+
+  @override
+  String get ppDocStatus_rejected => 'ಸ್ವೀಕರಿಸಿಲ್ಲ: ಮತ್ತೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ';
+
+  @override
+  String get ppDocStatus_missing => 'ಅಪ್‌ಲೋಡ್ ಆಗಿಲ್ಲ';
+
+  @override
+  String get ppUpload => 'ಅಪ್‌ಲೋಡ್';
+
+  @override
+  String get ppUploaded => 'ಅಪ್‌ಲೋಡ್ ಆಯಿತು; ಪ್ಲೇಸ್‌ಮೆಂಟ್ ಘಟಕ ಪರಿಶೀಲಿಸುತ್ತದೆ';
+
+  @override
+  String get ppDrives => 'ನನ್ನ ಡ್ರೈವ್‌ಗಳು';
+
+  @override
+  String get ppNoDrives => 'ನೀವು ಇನ್ನೂ ಯಾವುದೇ ಡ್ರೈವ್‌ಗೆ ನೋಂದಾಯಿಸಿಲ್ಲ';
+
+  @override
+  String get ppResult_pass => 'ಉತ್ತೀರ್ಣ';
+
+  @override
+  String get ppResult_fail => 'ಆಯ್ಕೆಯಾಗಿಲ್ಲ';
+
+  @override
+  String get ppResult_absent => 'ಗೈರು';
+
+  @override
+  String get ppResult_waiting => 'ನಿರೀಕ್ಷೆ';
+
+  @override
+  String ppSlot(String time, String venue) {
+    return '$time, $venue';
+  }
+
+  @override
+  String get ppTraining => 'ತರಬೇತಿ';
+
+  @override
+  String ppAttendance(String pct) {
+    return 'ಹಾಜರಾತಿ $pct%';
+  }
+
+  @override
+  String ppScore(String test, String score, String max) {
+    return '$test: $max ರಲ್ಲಿ $score';
+  }
+
+  @override
+  String get ppCredits => 'ಇಂಟರ್ನ್‌ಶಿಪ್ ಕ್ರೆಡಿಟ್';
+
+  @override
+  String ppCreditsLine(String earned, String required, String short) {
+    return '$required ರಲ್ಲಿ $earned ಕ್ರೆಡಿಟ್ ಗಳಿಕೆ · $short ಕೊರತೆ';
+  }
+
+  @override
+  String ppCreditsMet(String earned) {
+    return '$earned ಕ್ರೆಡಿಟ್ ಗಳಿಕೆ: ಅಗತ್ಯ ಪೂರೈಸಿದೆ';
+  }
+
+  @override
+  String get ppApprenticeships => 'ಶಿಷ್ಯವೃತ್ತಿ';
+
+  @override
+  String ppStipend(String stipend, String share) {
+    return 'ಸ್ಟೈಪೆಂಡ್ ತಿಂಗಳಿಗೆ $stipend · ಸರ್ಕಾರದ ಪಾಲು $share';
+  }
+
+  @override
+  String get ppReferrals => 'ಶಿಫಾರಸುಗಳು';
+
+  @override
+  String get ppAskReferral => 'ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿಯಿಂದ ಶಿಫಾರಸು ಕೇಳಿ';
+
+  @override
+  String get ppReferralAlumnus => 'ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿ';
+
+  @override
+  String get ppReferralCompany => 'ಕಂಪನಿ';
+
+  @override
+  String get ppReferralRole => 'ಹುದ್ದೆ';
+
+  @override
+  String get ppReferralMessage => 'ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿಗೆ ಸಂದೇಶ';
+
+  @override
+  String get ppReferralSend => 'ಕಳುಹಿಸಿ';
+
+  @override
+  String get ppReferralSent => 'ವಿನಂತಿ ಕಳುಹಿಸಲಾಗಿದೆ';
+
+  @override
+  String get ppNoMentors => 'ಈಗ ಯಾವ ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿಯೂ ವಿನಂತಿ ಸ್ವೀಕರಿಸುತ್ತಿಲ್ಲ';
+
+  @override
+  String get ppRefStatus_requested => 'ಕೇಳಲಾಗಿದೆ';
+
+  @override
+  String get ppRefStatus_referred => 'ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ';
+
+  @override
+  String get ppRefStatus_interviewing => 'ಸಂದರ್ಶನ ನಡೆಯುತ್ತಿದೆ';
+
+  @override
+  String get ppRefStatus_hired => 'ನೇಮಕ';
+
+  @override
+  String get ppRefStatus_declined => 'ನಿರಾಕರಿಸಲಾಗಿದೆ';
+
+  @override
+  String get ppRefStatus_closed => 'ಮುಚ್ಚಲಾಗಿದೆ';
+
+  @override
+  String get ppApStatus_enrolled => 'ನೋಂದಾಯಿತ';
+
+  @override
+  String get ppApStatus_contract_registered => 'ಒಪ್ಪಂದ ನೋಂದಾಯಿತ';
+
+  @override
+  String get ppApStatus_ongoing => 'ನಡೆಯುತ್ತಿದೆ';
+
+  @override
+  String get ppApStatus_completed => 'ಮುಗಿದಿದೆ';
+
+  @override
+  String get ppApStatus_terminated => 'ಬೇಗ ಮುಗಿಯಿತು';
+
+  @override
+  String get careersReason_not_yet_open => 'ನೋಂದಣಿ ಇನ್ನೂ ತೆರೆದಿಲ್ಲ';
+
+  @override
+  String get careersReason_batch_not_eligible => 'ನಿಮ್ಮ ತಂಡಕ್ಕೆ ತೆರೆದಿಲ್ಲ';
+
+  @override
+  String get careersReason_opted_out => 'ನೀವು ಪ್ಲೇಸ್‌ಮೆಂಟ್‌ನಿಂದ ಹೊರಗುಳಿದಿದ್ದೀರಿ';
+
+  @override
+  String get careersReason_not_opted_in => 'ಮೊದಲು ಪ್ಲೇಸ್‌ಮೆಂಟ್‌ಗೆ ಸೇರಿ';
+
+  @override
+  String get careersReason_debarred => 'ನೀವು ಈಗ ನಿರ್ಬಂಧಿತರು';
+
+  @override
+  String get careersReason_already_placed => 'ಈಗಾಗಲೇ ಆಯ್ಕೆ: ಹೆಚ್ಚಿನ ವರ್ಗ ಮಾತ್ರ ತೆರೆದಿದೆ';
+
+  @override
+  String get careersReason_gender_not_eligible => 'ನಿಮಗೆ ತೆರೆದಿಲ್ಲ';
+
+  @override
+  String get careersReason_tenth_below => '10ನೇ ತರಗತಿ ಅಂಕ ಕನಿಷ್ಠಕ್ಕಿಂತ ಕಡಿಮೆ';
+
+  @override
+  String get careersReason_twelfth_below => '12ನೇ ತರಗತಿ ಅಂಕ ಕನಿಷ್ಠಕ್ಕಿಂತ ಕಡಿಮೆ';
+
+  @override
+  String get careersReason_no_prior_marks => 'ನಿಮ್ಮ 10 ಅಥವಾ 12ನೇ ತರಗತಿ ಅಂಕ ದಾಖಲಾಗಿಲ್ಲ';
+
+  @override
+  String get careersReason_gap_exceeded => 'ಅಂತರ ವರ್ಷಗಳು ಹೆಚ್ಚು';
+
+  @override
+  String get careersReason_backlog_history_exceeded => 'ಎಂದಾದರೂ ಅನುತ್ತೀರ್ಣ ವಿಷಯಗಳು ಹೆಚ್ಚು';
+
+  @override
+  String get careersReason_documents_not_verified => 'ನಿಮ್ಮ ದಾಖಲೆಗಳು ಇನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ';
+
+  @override
+  String get ppFillResume => 'ನನ್ನ ದಾಖಲೆಯಿಂದ ತುಂಬಿ';
+
+  @override
+  String get ppFilled => 'ನಿಮ್ಮ ದಾಖಲೆಯಿಂದ ತುಂಬಲಾಗಿದೆ; ಪರಿಶೀಲಿಸಿ ಉಳಿಸಿ';
 }

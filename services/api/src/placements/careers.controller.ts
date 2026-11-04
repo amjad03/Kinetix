@@ -179,7 +179,8 @@ export class CareersController {
         .from(alumniProfiles)
         .where(and(staff ? undefined : eq(alumniProfiles.directoryVisible, true), year ? eq(alumniProfiles.graduationYear, Number(year)) : undefined, mentors === 'true' ? eq(alumniProfiles.mentorAvailable, true) : undefined))
         .orderBy(desc(alumniProfiles.graduationYear), asc(alumniProfiles.fullName));
-      return staff ? rows : rows.map(({ email: _e, phone: _p, studentId: _s, ...r }) => r);
+      // Students and families get no contact details or internal links (login, verifier).
+      return staff ? rows : rows.map(({ email: _e, phone: _p, studentId: _s, userId: _u, verifiedBy: _v, ...r }) => r);
     });
   }
 

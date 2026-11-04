@@ -5665,4 +5665,253 @@ class AppLocalizationsEn extends AppLocalizations {
   String libDecade(String year) {
     return '${year}s';
   }
+
+  @override
+  String get ppTitle => 'My placement';
+
+  @override
+  String get ppOpen => 'Where you stand, your rounds, documents, training and credits';
+
+  @override
+  String ppCounts(String eligible, String registered, String shortlisted, String offers) {
+    return '$eligible drives open to you · $registered registered · $shortlisted shortlisted · $offers offers';
+  }
+
+  @override
+  String ppMarks(String cgpa, String backlogs, String history) {
+    return 'CGPA $cgpa · $backlogs backlogs now · $history subjects ever failed';
+  }
+
+  @override
+  String get ppNoResult => 'No published result yet';
+
+  @override
+  String ppSchool(String tenth, String twelfth) {
+    return 'Class 10: $tenth · Class 12: $twelfth';
+  }
+
+  @override
+  String ppGap(String n) {
+    return 'Gap years: $n';
+  }
+
+  @override
+  String ppDebarred(String date) {
+    return 'You cannot register for drives until $date';
+  }
+
+  @override
+  String get ppOptedOut => 'You have opted out of placements';
+
+  @override
+  String ppPlaced(String category) {
+    return 'You accepted a $category offer';
+  }
+
+  @override
+  String get ppCategory_regular => 'regular';
+
+  @override
+  String get ppCategory_dream => 'dream';
+
+  @override
+  String get ppCategory_super_dream => 'super dream';
+
+  @override
+  String get ppDocuments => 'Documents for the placement cell';
+
+  @override
+  String get ppDoc_resume => 'Resume';
+
+  @override
+  String get ppDoc_marks_10 => 'Class 10 marks card';
+
+  @override
+  String get ppDoc_marks_12 => 'Class 12 marks card';
+
+  @override
+  String get ppDoc_semester_marks => 'Semester marks cards';
+
+  @override
+  String get ppDoc_id_proof => 'ID proof';
+
+  @override
+  String get ppDocStatus_verified => 'Verified';
+
+  @override
+  String get ppDocStatus_pending => 'Waiting for the cell';
+
+  @override
+  String get ppDocStatus_rejected => 'Not accepted: upload again';
+
+  @override
+  String get ppDocStatus_missing => 'Not uploaded';
+
+  @override
+  String get ppUpload => 'Upload';
+
+  @override
+  String get ppUploaded => 'Uploaded; the placement cell will verify it';
+
+  @override
+  String get ppDrives => 'My drives';
+
+  @override
+  String get ppNoDrives => 'You have not registered for a drive yet';
+
+  @override
+  String get ppResult_pass => 'Cleared';
+
+  @override
+  String get ppResult_fail => 'Not selected';
+
+  @override
+  String get ppResult_absent => 'Absent';
+
+  @override
+  String get ppResult_waiting => 'Waiting';
+
+  @override
+  String ppSlot(String time, String venue) {
+    return '$time at $venue';
+  }
+
+  @override
+  String get ppTraining => 'Training';
+
+  @override
+  String ppAttendance(String pct) {
+    return 'Attendance $pct%';
+  }
+
+  @override
+  String ppScore(String test, String score, String max) {
+    return '$test: $score of $max';
+  }
+
+  @override
+  String get ppCredits => 'Internship credits';
+
+  @override
+  String ppCreditsLine(String earned, String required, String short) {
+    return '$earned of $required credits earned · $short short';
+  }
+
+  @override
+  String ppCreditsMet(String earned) {
+    return '$earned credits earned: the requirement is met';
+  }
+
+  @override
+  String get ppApprenticeships => 'Apprenticeships';
+
+  @override
+  String ppStipend(String stipend, String share) {
+    return 'Stipend $stipend a month · Government share $share';
+  }
+
+  @override
+  String get ppReferrals => 'Referrals';
+
+  @override
+  String get ppAskReferral => 'Ask an alumnus for a referral';
+
+  @override
+  String get ppReferralAlumnus => 'Alumnus';
+
+  @override
+  String get ppReferralCompany => 'Company';
+
+  @override
+  String get ppReferralRole => 'Role';
+
+  @override
+  String get ppReferralMessage => 'Message to the alumnus';
+
+  @override
+  String get ppReferralSend => 'Send';
+
+  @override
+  String get ppReferralSent => 'Request sent';
+
+  @override
+  String get ppNoMentors => 'No alumni are taking requests right now';
+
+  @override
+  String get ppRefStatus_requested => 'Requested';
+
+  @override
+  String get ppRefStatus_referred => 'Referred';
+
+  @override
+  String get ppRefStatus_interviewing => 'Interviewing';
+
+  @override
+  String get ppRefStatus_hired => 'Hired';
+
+  @override
+  String get ppRefStatus_declined => 'Declined';
+
+  @override
+  String get ppRefStatus_closed => 'Closed';
+
+  @override
+  String get ppApStatus_enrolled => 'Enrolled';
+
+  @override
+  String get ppApStatus_contract_registered => 'Contract registered';
+
+  @override
+  String get ppApStatus_ongoing => 'Ongoing';
+
+  @override
+  String get ppApStatus_completed => 'Completed';
+
+  @override
+  String get ppApStatus_terminated => 'Ended early';
+
+  @override
+  String get careersReason_not_yet_open => 'Registration has not opened yet';
+
+  @override
+  String get careersReason_batch_not_eligible => 'Not open to your batch';
+
+  @override
+  String get careersReason_opted_out => 'You opted out of placements';
+
+  @override
+  String get careersReason_not_opted_in => 'Opt in to placements first';
+
+  @override
+  String get careersReason_debarred => 'You are debarred for now';
+
+  @override
+  String get careersReason_already_placed => 'Already placed: only a higher category is open';
+
+  @override
+  String get careersReason_gender_not_eligible => 'Not open to you';
+
+  @override
+  String get careersReason_tenth_below => 'Class 10 marks are below the minimum';
+
+  @override
+  String get careersReason_twelfth_below => 'Class 12 marks are below the minimum';
+
+  @override
+  String get careersReason_no_prior_marks => 'Your class 10 or 12 marks are not on record';
+
+  @override
+  String get careersReason_gap_exceeded => 'Too many gap years';
+
+  @override
+  String get careersReason_backlog_history_exceeded => 'Too many subjects ever failed';
+
+  @override
+  String get careersReason_documents_not_verified => 'Your documents are not verified yet';
+
+  @override
+  String get ppFillResume => 'Fill from my record';
+
+  @override
+  String get ppFilled => 'Filled from your record; check it and save';
 }

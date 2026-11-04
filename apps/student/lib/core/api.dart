@@ -25,6 +25,7 @@ import 'campus_extras.dart';
 import 'models.dart';
 import 'outcomes.dart';
 import 'pathways.dart';
+import 'placement_pass.dart';
 import 'scholarships.dart';
 import 'school_life.dart';
 import 'self_service.dart';
@@ -241,6 +242,18 @@ abstract class StudentApi implements AnnouncementSource {
   Future<void> registerForDrive(String studentId, String driveId);
   Future<void> withdrawFromDrive(String studentId, String driveId);
   Future<void> respondToOffer(String offerId, {required bool accept});
+
+  /// Everything about the student's placement (`GET /v1/placements/students/:id/dashboard`).
+  Future<PlacementDashboard> placementDashboard(String studentId);
+
+  /// Uploads a placement document (resume, marks cards) for the cell to verify (multipart).
+  Future<void> uploadPlacementDocument(String studentId, String kind, UploadFile file);
+
+  /// Alumni who take mentoring and referral requests.
+  Future<List<AlumniMentor>> alumniMentors();
+
+  /// Asks an alumnus for a referral at a company (`POST /v1/placements/referrals`).
+  Future<void> requestReferral({required String alumniId, required String company, String role = '', required String message});
 
   /// Grievances this person raised, newest first (`GET /v1/grievances/mine`).
   Future<List<GrievanceTicket>> myGrievances();
@@ -486,6 +499,9 @@ abstract class StudentApi implements AnnouncementSource {
 
   Future<Resume> resume();
   Future<void> saveResume(Resume resume);
+
+  /// A resume drafted from the student's record (`GET /v1/careers/resume/draft`); nothing is saved.
+  Future<Resume> resumeDraft();
 
   /// Aptitude tests, starting an attempt (questions without answers), and submitting it (`answers[i]` is the chosen option or null).
   Future<List<AptitudeTest>> aptitudeTests();
@@ -973,6 +989,29 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<void> respondToOffer(String offerId, {required bool accept}) async =>
       _send('POST', '/v1/placements/offers/$offerId/respond', body: {'response': accept ? 'accepted' : 'declined'});
+
+  @override
+  Future<PlacementDashboard> placementDashboard(String studentId) async =>
+      PlacementDashboard.fromJson(await _send('GET', '/v1/placements/students/$studentId/dashboard') as Map<String, dynamic>);
+
+  @override
+  Future<void> uploadPlacementDocument(String studentId, String kind, UploadFile file) async {
+    final req = http.MultipartRequest('POST', Uri.parse('$baseUrl/v1/placements/students/$studentId/documents'))
+      ..fields['kind'] = kind
+      ..files.add(http.MultipartFile.fromBytes('file', file.bytes, filename: file.name, contentType: MediaType.parse(file.mime)))
+      ..headers['accept'] = 'application/json';
+    if (token != null) req.headers['authorization'] = 'Bearer $token';
+    await _receive(req, auth: true, timeout: const Duration(minutes: 1));
+  }
+
+  @override
+  Future<List<AlumniMentor>> alumniMentors() async => [
+    for (final a in await _send('GET', '/v1/placements/alumni?mentors=true') as List) AlumniMentor.fromJson((a as Map).cast<String, dynamic>()),
+  ];
+
+  @override
+  Future<void> requestReferral({required String alumniId, required String company, String role = '', required String message}) async =>
+      _send('POST', '/v1/placements/referrals', body: {'alumniId': alumniId, 'company': company, 'role': role, 'message': message});
 
   @override
   Future<List<GrievanceTicket>> myGrievances() async => [
@@ -1465,6 +1504,9 @@ class HttpStudentApi implements StudentApi {
 
   @override
   Future<Resume> resume() async => Resume.fromJson(_map(await _send('GET', '/v1/careers/resume')));
+
+  @override
+  Future<Resume> resumeDraft() async => Resume.fromJson(_map(await _send('GET', '/v1/careers/resume/draft')));
 
   @override
   Future<void> saveResume(Resume resume) => _send('PUT', '/v1/careers/resume', body: resume.toJson());

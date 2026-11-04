@@ -34,6 +34,7 @@ import '../library/library.dart';
 import '../alumni/alumni_home.dart';
 import '../careers/career_prep.dart';
 import '../careers/careers.dart';
+import '../careers/placement_dashboard.dart';
 import '../learning/learning_screen.dart';
 import 'device_trust_tile.dart';
 import '../projects/projects_screen.dart';
@@ -314,6 +315,13 @@ class ProfileTabState extends State<ProfileTab> {
                       onWithdraw: (drive) => api.withdrawFromDrive(st.id, drive),
                       onRespond: (offer, accept) => api.respondToOffer(offer, accept: accept),
                       onPrepare: () => CareerPrepScreen.open(context, api),
+                      onDashboard: () => PlacementDashboardScreen.open(
+                        context,
+                        load: () => api.placementDashboard(st.id),
+                        onUpload: (kind, file) => api.uploadPlacementDocument(st.id, kind, file),
+                        mentors: api.alumniMentors,
+                        onAskReferral: ({required alumniId, required company, required role, required message}) => api.requestReferral(alumniId: alumniId, company: company, role: role, message: message),
+                      ),
                     );
                   },
                 ),

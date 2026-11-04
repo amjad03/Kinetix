@@ -10130,6 +10130,456 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{year}s'**
   String libDecade(String year);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'My placement'**
+  String get ppTitle;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Where you stand, your rounds, documents, training and credits'**
+  String get ppOpen;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'{eligible} drives open to you · {registered} registered · {shortlisted} shortlisted · {offers} offers'**
+  String ppCounts(String eligible, String registered, String shortlisted, String offers);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'CGPA {cgpa} · {backlogs} backlogs now · {history} subjects ever failed'**
+  String ppMarks(String cgpa, String backlogs, String history);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'No published result yet'**
+  String get ppNoResult;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Class 10: {tenth} · Class 12: {twelfth}'**
+  String ppSchool(String tenth, String twelfth);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Gap years: {n}'**
+  String ppGap(String n);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot register for drives until {date}'**
+  String ppDebarred(String date);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'You have opted out of placements'**
+  String get ppOptedOut;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'You accepted a {category} offer'**
+  String ppPlaced(String category);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'regular'**
+  String get ppCategory_regular;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'dream'**
+  String get ppCategory_dream;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'super dream'**
+  String get ppCategory_super_dream;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Documents for the placement cell'**
+  String get ppDocuments;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get ppDoc_resume;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Class 10 marks card'**
+  String get ppDoc_marks_10;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Class 12 marks card'**
+  String get ppDoc_marks_12;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Semester marks cards'**
+  String get ppDoc_semester_marks;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'ID proof'**
+  String get ppDoc_id_proof;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get ppDocStatus_verified;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the cell'**
+  String get ppDocStatus_pending;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Not accepted: upload again'**
+  String get ppDocStatus_rejected;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Not uploaded'**
+  String get ppDocStatus_missing;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Upload'**
+  String get ppUpload;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded; the placement cell will verify it'**
+  String get ppUploaded;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'My drives'**
+  String get ppDrives;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'You have not registered for a drive yet'**
+  String get ppNoDrives;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Cleared'**
+  String get ppResult_pass;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Not selected'**
+  String get ppResult_fail;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Absent'**
+  String get ppResult_absent;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get ppResult_waiting;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'{time} at {venue}'**
+  String ppSlot(String time, String venue);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get ppTraining;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance {pct}%'**
+  String ppAttendance(String pct);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'{test}: {score} of {max}'**
+  String ppScore(String test, String score, String max);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Internship credits'**
+  String get ppCredits;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'{earned} of {required} credits earned · {short} short'**
+  String ppCreditsLine(String earned, String required, String short);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'{earned} credits earned: the requirement is met'**
+  String ppCreditsMet(String earned);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Apprenticeships'**
+  String get ppApprenticeships;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Stipend {stipend} a month · Government share {share}'**
+  String ppStipend(String stipend, String share);
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Referrals'**
+  String get ppReferrals;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Ask an alumnus for a referral'**
+  String get ppAskReferral;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Alumnus'**
+  String get ppReferralAlumnus;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get ppReferralCompany;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get ppReferralRole;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Message to the alumnus'**
+  String get ppReferralMessage;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get ppReferralSend;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent'**
+  String get ppReferralSent;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'No alumni are taking requests right now'**
+  String get ppNoMentors;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get ppRefStatus_requested;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Referred'**
+  String get ppRefStatus_referred;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Interviewing'**
+  String get ppRefStatus_interviewing;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Hired'**
+  String get ppRefStatus_hired;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get ppRefStatus_declined;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get ppRefStatus_closed;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolled'**
+  String get ppApStatus_enrolled;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Contract registered'**
+  String get ppApStatus_contract_registered;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing'**
+  String get ppApStatus_ongoing;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get ppApStatus_completed;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Ended early'**
+  String get ppApStatus_terminated;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Registration has not opened yet'**
+  String get careersReason_not_yet_open;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Not open to your batch'**
+  String get careersReason_batch_not_eligible;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'You opted out of placements'**
+  String get careersReason_opted_out;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Opt in to placements first'**
+  String get careersReason_not_opted_in;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'You are debarred for now'**
+  String get careersReason_debarred;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Already placed: only a higher category is open'**
+  String get careersReason_already_placed;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Not open to you'**
+  String get careersReason_gender_not_eligible;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Class 10 marks are below the minimum'**
+  String get careersReason_tenth_below;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Class 12 marks are below the minimum'**
+  String get careersReason_twelfth_below;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Your class 10 or 12 marks are not on record'**
+  String get careersReason_no_prior_marks;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Too many gap years'**
+  String get careersReason_gap_exceeded;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Too many subjects ever failed'**
+  String get careersReason_backlog_history_exceeded;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Your documents are not verified yet'**
+  String get careersReason_documents_not_verified;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Fill from my record'**
+  String get ppFillResume;
+
+  /// Student placement dashboard (placements pass).
+  ///
+  /// In en, this message translates to:
+  /// **'Filled from your record; check it and save'**
+  String get ppFilled;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
