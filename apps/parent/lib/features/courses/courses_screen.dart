@@ -23,6 +23,7 @@ class CoursesScreen extends StatefulWidget {
 
 class _CoursesScreenState extends State<CoursesScreen> {
   List<LmsCourseSummary>? _items;
+  ChildLmsSummary? _summary;
   ApiException? _error;
 
   @override
@@ -36,9 +37,41 @@ class _CoursesScreenState extends State<CoursesScreen> {
     try {
       final r = await widget.api.lmsCourses(widget.child.id);
       if (mounted) setState(() => _items = r);
+      // Progress and activity are extra: the grades still show if this part fails.
+      final s = await widget.api.lmsSummary(widget.child.id).then<ChildLmsSummary?>((v) => v, onError: (_) => null);
+      if (mounted) setState(() => _summary = s);
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e);
     }
+  }
+
+  String _reason(AppLocalizations l, String r) => switch (r) {
+    'inactive' => l.lpReasonInactive,
+    'low_engagement' => l.lpReasonLowEngagement,
+    'low_quiz' => l.lpReasonLowQuiz,
+    'overdue' => l.lpReasonOverdue,
+    _ => l.lpReasonMissedLive,
+  };
+
+  /// Progress, activity and why the course flags the child, under the course's grade.
+  List<Widget> _progress(BuildContext context, ChildCourseProgress p) {
+    final l = context.l10n;
+    final ml = MaterialLocalizations.of(context);
+    final flagged = p.riskLevel == 'medium' || p.riskLevel == 'high';
+    return [
+      const SizedBox(height: Kx.s8),
+      LinearProgressIndicator(value: p.itemsTotal == 0 ? 0 : p.completionPct / 100, minHeight: 6, borderRadius: BorderRadius.circular(3)),
+      const SizedBox(height: Kx.s4),
+      Text(
+        [l.lpChildProgress(p.itemsDone, p.itemsTotal), p.lastActiveAt == null ? l.lpNeverActive : l.lpLastActive(ml.formatShortDate(p.lastActiveAt!)), if (p.liveHeld > 0) l.lpLiveAttended(p.liveJoined, p.liveHeld)].join(' · '),
+        style: context.text.bodySmall,
+      ),
+      if (flagged)
+        Padding(
+          padding: const EdgeInsets.only(top: Kx.s4),
+          child: Text('${l.lpNeedsAttention}: ${p.reasons.map((r) => _reason(l, r)).join(', ')}', key: Key('attention-${p.courseId}'), style: context.text.bodySmall?.copyWith(color: context.colors.error, fontWeight: FontWeight.w600)),
+        ),
+    ];
   }
 
   @override
@@ -56,23 +89,34 @@ class _CoursesScreenState extends State<CoursesScreen> {
           if (_error != null) ErrorBanner(_error!, onRetry: _load),
           if (items == null && _error == null) const KxLoading(),
           if (items != null && items.isEmpty) KxEmptyState(icon: Icons.school_outlined, message: l.coursesNone),
+          if ((_summary?.certificates ?? 0) > 0)
+            Padding(
+              padding: const EdgeInsets.only(bottom: Kx.s12),
+              child: Row(key: const Key('childCertificates'), children: [const Icon(Icons.workspace_premium_outlined), const SizedBox(width: Kx.s8), Expanded(child: Text(l.lpCertificatesEarned(_summary!.certificates)))]),
+            ),
           if (items != null)
             for (final c in items) ...[
               KxCard(
                 key: Key('course-${c.courseId}'),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => CourseScreen(api: widget.api, child: widget.child, summary: c))),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(c.title, style: context.text.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                          Text(l.courseModulesCount(c.moduleCount), style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
-                        ],
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(c.title, style: context.text.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                              Text(l.courseModulesCount(c.moduleCount), style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
+                            ],
+                          ),
+                        ),
+                        GradeChip(overall: c.overall, letter: c.letter),
+                      ],
                     ),
-                    GradeChip(overall: c.overall, letter: c.letter),
+                    for (final p in (_summary?.courses ?? const <ChildCourseProgress>[]).where((p) => p.courseId == c.courseId)) ..._progress(context, p),
                   ],
                 ),
               ),

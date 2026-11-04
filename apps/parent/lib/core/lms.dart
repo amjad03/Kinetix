@@ -84,3 +84,51 @@ class LmsCourseDetail {
   final double? overall;
   final String? letter;
 }
+
+/// One course in a child's LMS summary (`GET /v1/lms/students/:id/summary`): how far they are, how active, and why
+/// the course flags them, if it does.
+class ChildCourseProgress {
+  const ChildCourseProgress({required this.courseId, required this.completionPct, required this.itemsDone, required this.itemsTotal, this.lastActiveAt, this.overdue = 0, this.liveHeld = 0, this.liveJoined = 0, this.riskLevel = 'none', this.reasons = const []});
+
+  factory ChildCourseProgress.fromJson(Map<String, dynamic> j) {
+    final risk = (j['risk'] as Map?)?.cast<String, dynamic>();
+    return ChildCourseProgress(
+      courseId: j['courseId'] as String,
+      completionPct: (j['completionPct'] as num?)?.toInt() ?? 0,
+      itemsDone: (j['itemsDone'] as num?)?.toInt() ?? 0,
+      itemsTotal: (j['itemsTotal'] as num?)?.toInt() ?? 0,
+      lastActiveAt: j['lastActiveAt'] is String ? DateTime.tryParse(j['lastActiveAt'] as String)?.toLocal() : null,
+      overdue: (j['overdue'] as num?)?.toInt() ?? 0,
+      liveHeld: (j['liveHeld'] as num?)?.toInt() ?? 0,
+      liveJoined: (j['liveJoined'] as num?)?.toInt() ?? 0,
+      riskLevel: risk?['level'] as String? ?? 'none',
+      reasons: [for (final r in (risk?['reasons'] as List? ?? const [])) '$r'],
+    );
+  }
+
+  final String courseId;
+  final int completionPct;
+  final int itemsDone;
+  final int itemsTotal;
+  final DateTime? lastActiveAt;
+  final int overdue;
+  final int liveHeld;
+  final int liveJoined;
+
+  /// none, low, medium or high.
+  final String riskLevel;
+  final List<String> reasons;
+}
+
+/// A child's LMS progress per course and their certificates.
+class ChildLmsSummary {
+  const ChildLmsSummary({required this.courses, this.certificates = 0});
+
+  factory ChildLmsSummary.fromJson(Map<String, dynamic> j) => ChildLmsSummary(
+    courses: [for (final c in (j['courses'] as List? ?? const [])) ChildCourseProgress.fromJson((c as Map).cast<String, dynamic>())],
+    certificates: [for (final c in (j['certificates'] as List? ?? const [])) if ((c as Map)['revokedAt'] == null) c].length,
+  );
+
+  final List<ChildCourseProgress> courses;
+  final int certificates;
+}
