@@ -184,7 +184,9 @@ export interface ThesisDetail {
   scholar: { id: string; fullName: string; programme: string; supervisorUserId: string };
   events: { id: string; stage: string; note: string; createdAt: string }[];
   vivas: { id: string; kind: string; scheduledAt: string; venue: string; panel: { name: string; role: string }[]; status: string; outcome: string | null; remarks: string | null }[];
-  similarity: { scorePercent: number | string; matches: { thesisId: string; title: string; percent: number }[]; createdAt: string } | null;
+  similarity: { scorePercent: number | string; matches: { thesisId: string; title: string; percent: number }[]; createdAt: string; engine: string; level: string | null; reportRef: string | null } | null;
+  shodhgangaHandle: string | null;
+  shodhgangaDepositedOn: string | null;
   similarityLimitPercent: number;
 }
 export interface DatasetRow { id: string; title: string; description: string; owner: string; license: string; access: string; embargoUntil: string | null; doi: string | null; keywords: string[]; projectId: string | null; files: { index: number; name: string; sizeBytes: number }[]; canOpen: boolean }

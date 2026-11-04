@@ -280,6 +280,10 @@ abstract class TeacherApi implements AnnouncementSource {
   Future<List<Publication>> researchPublications({String? ownerUserId});
   Future<Publication> importPublicationDoi(String doi);
   Future<List<ResearchDataset>> researchDatasets();
+  /// My research profile: identifiers, summary (with the h-index), IPR and incentive claims.
+  Future<MyResearch> myResearch();
+  /// Saves my researcher identifiers (ORCID, Scopus, ResearcherID, Google Scholar, Vidwan); the office verifies them again.
+  Future<void> saveResearcherIds(Map<String, String?> ids);
 
   /// Project mentoring: my projects, a workspace, the discussion, rubric reviews, viva, showcase and recruiting hub, join requests and skill matches.
   Future<List<MyProject>> myProjects();
@@ -1118,6 +1122,12 @@ class HttpTeacherApi implements TeacherApi {
 
   @override
   Future<List<ResearchDataset>> researchDatasets() async => _rows(await _send('GET', '/v1/research/datasets'), ResearchDataset.fromJson);
+
+  @override
+  Future<MyResearch> myResearch() async => MyResearch.fromJson(await _send('GET', '/v1/research/me') as Map<String, dynamic>);
+
+  @override
+  Future<void> saveResearcherIds(Map<String, String?> ids) async => _send('PUT', '/v1/research/profiles/me', body: ids);
 
   @override
   Future<List<MyProject>> myProjects() async => _rows(await _send('GET', '/v1/projects/mine'), MyProject.fromJson);

@@ -418,6 +418,10 @@ export const thesisRecords = pgTable(
     version: integer('version').notNull().default(0),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
+    // Migration 0217: the e-copy deposited with INFLIBNET Shodhganga (UGC 2022) and the award date.
+    shodhgangaHandle: text('shodhganga_handle'),
+    shodhgangaDepositedOn: date('shodhganga_deposited_on'),
+    awardedOn: date('awarded_on'),
   },
   (t) => [uniqueIndex('thesis_records_scholar_uq').on(t.scholarId)],
 );
@@ -467,6 +471,10 @@ export const similarityChecks = pgTable(
     matches: jsonb('matches').$type<{ thesisId: string; title: string; percent: number }[]>().notNull().default([]),
     checkedBy: userRef('checked_by'),
     createdAt: createdAt(),
+    // Migration 0217: an external engine's report (URKUND / Ouriginal, DrillBit, Turnitin) and the UGC 2018 level.
+    reportRef: text('report_ref'),
+    reportUrl: text('report_url'),
+    level: text('level'), // level_0 | level_1 | level_2 | level_3
   },
   (t) => [index('similarity_checks_thesis_idx').on(t.thesisId)],
 );

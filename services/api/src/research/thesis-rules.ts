@@ -12,8 +12,8 @@ export function canMoveThesis(from: string, to: string): boolean {
   return to === 'draft' && (from === 'examination' || from === 'viva');
 }
 
-/** Similarity above this share needs the research office's override before the thesis goes to examiners. */
-export const SIMILARITY_LIMIT_PERCENT = 25;
+/** The default similarity limit (UGC 2018: up to 10% is level 0); the research settings can change it. */
+export const SIMILARITY_LIMIT_PERCENT = 10;
 /** At least this many examiners before a thesis can go to examination. */
 export const MIN_EXAMINERS = 2;
 

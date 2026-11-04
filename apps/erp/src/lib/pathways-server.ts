@@ -11,7 +11,7 @@ export async function parseFailure(e: ParseError): Promise<{ ok: false; error: s
 }
 
 /** An error in the user's language, for checks the actions make themselves. */
-export async function failure(key: 'pw.err.number' | 'pw.err.fileType' | 'pw.err.fileSize'): Promise<{ ok: false; error: string }> {
+export async function failure(key: 'pw.err.number' | 'pw.err.fileType' | 'pw.err.fileSize' | 'rsp.claim.choose'): Promise<{ ok: false; error: string }> {
   const { t } = await getI18n();
   return { ok: false, error: t(key) };
 }

@@ -54,8 +54,11 @@ export const SETTINGS_CATALOGUE: Record<SettingsModule, ModuleCatalogue> = {
   placements: { numbering: [], rules: [num('offerResponseDays', 0, 0, 60), flag('requireOptIn', false), { key: 'offerPolicy', kind: 'choice', default: 'dream', choices: ['one_offer', 'dream', 'open'] }, num('debarDaysForAbsence', 30, 0, 365), num('dreamMinLpa', 0, 0, 1000), num('superDreamMinLpa', 0, 0, 1000), flag('notifyEligibleOnOpen', true), { key: 'requiredDocs', kind: 'choice', default: 'resume', choices: ['resume', 'resume_marks', 'all'] }, num('internshipHoursPerCredit', 45, 1, 200), num('internshipCreditsRequired', 0, 0, 40), num('natsStipendGraduate', 12300, 0, 200000), num('natsStipendDiploma', 10900, 0, 200000), num('natsGovtSharePct', 50, 0, 100)], templates: {}, defaults: [num('minCgpa', 0, 0, 10), num('maxBacklogs', 0, 0, 50)] },
   // Students may ask alumni for mentoring only while this is on.
   alumni: { numbering: [], rules: [flag('mentorshipEnabled', true)], templates: {}, defaults: [] },
-  // Project codes from approved proposals and new projects.
-  research: { numbering: ['PRJ'], rules: [], templates: {}, defaults: [] },
+  // Project codes from approved proposals and new projects. A thesis whose similarity is above similarityLimitPercent
+  // (UGC 2018: 10% for the core work) needs the office's override before examination; a supervisor without a set cap
+  // guides as many as their designation allows (UGC 2022), else supervisorCapDefault; a co-author's incentive is
+  // coAuthorIncentivePct of the first author's; progress reports are due every progressReportMonths months.
+  research: { numbering: ['PRJ'], rules: [num('similarityLimitPercent', 10, 0, 100), num('supervisorCapDefault', 8, 1, 30), num('coAuthorIncentivePct', 50, 0, 100), num('progressReportMonths', 6, 1, 12)], templates: {}, defaults: [] },
   // New events start with this capacity when none is given.
   events: { numbering: [], rules: [], templates: {}, defaults: [num('defaultCapacity', 100, 1, 100000)] },
   // Campaigns may not be scheduled inside the quiet hours (institution time).

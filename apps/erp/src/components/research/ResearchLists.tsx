@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, Building2, CalendarClock, FileBadge, FlaskConical, Handshake, Lightbulb, Microscope, ScrollText, ShieldCheck, Trophy, Users, Wallet } from 'lucide-react';
+import { BadgeIndianRupee, BookOpen, BookUser, Building2, CalendarClock, ClipboardList, FileBadge, FlaskConical, Handshake, Landmark, Lightbulb, Microscope, ScrollText, ShieldCheck, Trophy, Users, Wallet } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { KitList, type ColSpec, type ParamAction } from '@/components/registers/KitList';
 import type { Tone } from '@/components/ui';
@@ -288,6 +288,140 @@ export const RESEARCH_SPECS: Record<string, Spec> = {
     empty: { icon: <ShieldCheck />, title: 'rsx.empty.ethics', body: 'rsx.emptyBody.ethics' },
   },
 };
+
+// The research pass's registers (research-pass.records.ts) and the columns it added to the lists above.
+RESEARCH_SPECS['research-publications'].columns.push(
+  { key: 'ugcCareGroup', header: 'rsp.col.careGroup', kind: 'choice', defaultHidden: true },
+  { key: 'impactFactor', header: 'rsp.col.impactFactor', kind: 'number', defaultHidden: true },
+  { key: 'quartile', header: 'rsp.col.quartile', kind: 'choice', defaultHidden: true },
+  { key: 'metadataSource', header: 'rsp.col.source', kind: 'choice', defaultHidden: true, tone: status(['crossref', 'orcid'], ['pending']) },
+);
+RESEARCH_SPECS['research-grants'].columns.splice(
+  4,
+  0,
+  { key: 'released', header: 'rsp.col.released', kind: 'money', sortKey: false, hideBelow: 'md' },
+  { key: 'agencyKind', header: 'rsp.col.agencyKind', kind: 'choice', defaultHidden: true },
+  { key: 'overhead', header: 'rsp.col.overhead', kind: 'money', sortKey: false, defaultHidden: true },
+);
+RESEARCH_SPECS['research-scholars'].columns.splice(
+  1,
+  0,
+  { key: 'registrationNo', header: 'rsp.col.regNo', hideBelow: 'md' },
+  { key: 'mode', header: 'rsp.col.mode', kind: 'choice', defaultHidden: true },
+  { key: 'fellowship', header: 'rsp.col.fellowship', kind: 'choice', defaultHidden: true },
+  { key: 'centreId', from: 'centreName', header: 'rsp.col.centre', defaultHidden: true },
+  { key: 'lastReportTo', header: 'rsp.col.lastReport', kind: 'date', sortKey: false, defaultHidden: true },
+  { key: 'submitBy', header: 'rsp.col.submitBy', kind: 'date', sortKey: false, defaultHidden: true },
+);
+RESEARCH_SPECS['research-conferences'].columns.push(
+  { key: 'eventKind', header: 'rsp.col.eventKind', kind: 'choice', hideBelow: 'lg' },
+  { key: 'theme', header: 'rsp.col.theme', kind: 'choice', defaultHidden: true },
+  { key: 'participants', header: 'rsx.col.participants', kind: 'number', defaultHidden: true },
+);
+Object.assign(RESEARCH_SPECS, {
+  'research-profiles': {
+    label: 'rsp.list.profiles',
+    columns: [
+      { key: 'userId', from: 'userIdName', header: 'rsx.col.teacher', kind: 'strong' },
+      { key: 'orcid', header: 'rsp.col.orcid' },
+      { key: 'scopusAuthorId', header: 'rsp.col.scopus', hideBelow: 'md' },
+      { key: 'wosResearcherId', header: 'rsp.col.wos', hideBelow: 'lg' },
+      { key: 'googleScholarId', header: 'rsp.col.scholar', defaultHidden: true },
+      { key: 'vidwanId', header: 'rsp.col.vidwan', defaultHidden: true },
+      { key: 'scopusHIndex', header: 'rsp.col.hScopus', kind: 'number', hideBelow: 'sm' },
+      { key: 'publications', header: 'rsx.list.publications', kind: 'number', sortKey: false, hideBelow: 'md' },
+      { key: 'verifiedAt', header: 'rsp.col.verified', kind: 'date', sortKey: false },
+      { key: 'areas', header: 'rsp.col.areas', kind: 'wrap', defaultHidden: true },
+    ],
+    empty: { icon: <BookUser />, title: 'rsp.empty.profiles', body: 'rsp.emptyBody.profiles' },
+  },
+  'research-incentive-schemes': {
+    label: 'rsp.list.schemes',
+    columns: [
+      { key: 'name', header: 'rsp.col.scheme', kind: 'strong' },
+      { key: 'kind', header: 'rsx.col.kind', kind: 'choice' },
+      { key: 'capPerYear', header: 'rsp.col.cap', kind: 'money', hideBelow: 'md' },
+      { key: 'validUntil', header: 'rsx.col.validUntil', kind: 'date', hideBelow: 'sm' },
+      { key: 'claims', header: 'rsp.col.claims', kind: 'number', sortKey: false, hideBelow: 'sm' },
+      { key: 'paid', header: 'rsp.col.paid', kind: 'money', sortKey: false, hideBelow: 'md' },
+      { key: 'active', header: 'rsp.col.open', kind: 'bool' },
+    ],
+    empty: { icon: <BadgeIndianRupee />, title: 'rsp.empty.schemes', body: 'rsp.emptyBody.schemes' },
+    paramActions: [{ key: 'setRates', fields: [{ name: 'rates', label: 'rsp.p.rates', type: 'textarea', required: true }] }],
+  },
+  'research-incentive-claims': {
+    label: 'rsp.list.claims',
+    columns: [
+      { key: 'subject', header: 'rsx.col.title', kind: 'wrap', sortKey: false },
+      { key: 'userId', from: 'userIdName', header: 'rsx.col.teacher' },
+      { key: 'schemeId', from: 'schemeName', header: 'rsp.col.scheme', hideBelow: 'lg' },
+      { key: 'basis', header: 'rsp.col.basis', hideBelow: 'md' },
+      { key: 'amount', header: 'rsx.col.amount', kind: 'money' },
+      { key: 'status', header: 'rsx.col.status', kind: 'choice', tone: status(['paid', 'approved'], ['claimed'], ['rejected']) },
+      { key: 'paidOn', header: 'rsp.col.paidOn', kind: 'date', defaultHidden: true },
+      { key: 'paymentRef', header: 'rsp.col.paymentRef', defaultHidden: true },
+    ],
+    empty: { icon: <BadgeIndianRupee />, title: 'rsp.empty.claims', body: 'rsp.emptyBody.claims' },
+    paramActions: [
+      { key: 'reject', fields: [{ name: 'note', label: 'rsx.p.reason', type: 'textarea', required: true }], tone: 'danger', when: (r) => r.status === 'claimed' },
+      { key: 'pay', fields: [{ name: 'paymentRef', label: 'rsp.p.paymentRef', required: true }, { name: 'paidOn', label: 'rsp.p.paidOn', type: 'date' }], when: (r) => r.status === 'approved' },
+    ],
+  },
+  'grant-heads': {
+    label: 'rsp.list.heads',
+    columns: [
+      { key: 'grantName', header: 'rsx.col.grant', kind: 'strong', sortKey: false },
+      { key: 'head', header: 'rsp.col.head', kind: 'choice' },
+      { key: 'sanctioned', header: 'rsx.col.sanctioned', kind: 'money' },
+      { key: 'spent', header: 'rsx.col.spent', kind: 'money', sortKey: false },
+      { key: 'left', header: 'rsx.col.balance', kind: 'money', sortKey: false, hideBelow: 'sm' },
+    ],
+    empty: { icon: <Wallet />, title: 'rsp.empty.heads', body: 'rsp.emptyBody.heads' },
+  },
+  'grant-releases': {
+    label: 'rsp.list.releases',
+    columns: [
+      { key: 'grantName', header: 'rsx.col.grant', kind: 'strong', sortKey: false },
+      { key: 'instalment', header: 'rsp.col.instalment', kind: 'number' },
+      { key: 'releasedOn', header: 'rsp.col.releasedOn', kind: 'date' },
+      { key: 'amount', header: 'rsx.col.amount', kind: 'money' },
+      { key: 'receivedOn', header: 'rsp.col.receivedOn', kind: 'date', hideBelow: 'sm' },
+      { key: 'reference', header: 'rsx.col.reference', hideBelow: 'md' },
+    ],
+    empty: { icon: <Wallet />, title: 'rsp.empty.releases', body: 'rsp.emptyBody.releases' },
+  },
+  'research-centres': {
+    label: 'rsp.list.centres',
+    columns: [
+      { key: 'code', header: 'rsx.col.code', kind: 'strong' },
+      { key: 'name', header: 'rsp.col.centre', kind: 'wrap' },
+      { key: 'recognisedBy', header: 'rsp.col.recognisedBy', hideBelow: 'md' },
+      { key: 'validUntil', header: 'rsx.col.validUntil', kind: 'date', hideBelow: 'sm' },
+      { key: 'scholars', header: 'rsx.list.scholars', kind: 'number', sortKey: false, hideBelow: 'sm' },
+      { key: 'guides', header: 'rsp.col.guides', kind: 'number', sortKey: false, hideBelow: 'lg' },
+      { key: 'validity', header: 'rsx.col.validity', kind: 'choice', sortKey: false, tone: status(['valid'], ['expiring'], ['expired', 'lapsed', 'closed']) },
+      { key: 'headUserId', from: 'headUserIdName', header: 'rsp.col.head', defaultHidden: true },
+    ],
+    empty: { icon: <Landmark />, title: 'rsp.empty.centres', body: 'rsp.emptyBody.centres' },
+  },
+  'scholar-progress-reports': {
+    label: 'rsp.list.progress',
+    columns: [
+      { key: 'scholarName', header: 'rsx.col.scholar', kind: 'strong', sortKey: false },
+      { key: 'periodFrom', header: 'rsx.col.periodFrom', kind: 'date', hideBelow: 'sm' },
+      { key: 'periodTo', header: 'rsx.col.periodTo', kind: 'date' },
+      { key: 'submittedOn', header: 'rsx.col.submittedOn', kind: 'date', hideBelow: 'md' },
+      { key: 'rating', header: 'rsx.col.progress', kind: 'choice', tone: status(['satisfactory'], ['needs_improvement'], ['unsatisfactory']), hideBelow: 'sm' },
+      { key: 'status', header: 'rsx.col.status', kind: 'choice', tone: status(['accepted'], ['submitted'], ['returned']) },
+      { key: 'summary', header: 'rsp.col.workDone', kind: 'wrap', defaultHidden: true },
+    ],
+    empty: { icon: <ClipboardList />, title: 'rsp.empty.progress', body: 'rsp.emptyBody.progress' },
+    paramActions: [
+      { key: 'accept', fields: [{ name: 'rating', label: 'rsp.p.rating', required: true, options: [{ value: 'satisfactory', label: 'rk.o.scholar-progress-reports.rating.satisfactory' }, { value: 'needs_improvement', label: 'rk.o.scholar-progress-reports.rating.needs_improvement' }, { value: 'unsatisfactory', label: 'rk.o.scholar-progress-reports.rating.unsatisfactory' }] }, { name: 'remarks', label: 'rsp.p.remarks', type: 'textarea' }], when: (r) => r.status === 'submitted' },
+      { key: 'return', fields: [{ name: 'remarks', label: 'rsp.p.correct', type: 'textarea', required: true }], tone: 'danger', when: (r) => r.status === 'submitted' },
+    ],
+  },
+} satisfies Record<string, Spec>);
 
 /** One research register as a kit list. */
 export function ResearchList({ entity, meta, page, state, extraParams, toolbar }: { entity: string; meta: RecordMeta; page: RecordsPage<Row>; state: ListState; extraParams: Record<string, string>; toolbar?: ReactNode }) {

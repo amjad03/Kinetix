@@ -8,11 +8,13 @@ import { tenantToday } from '../common/tenant-today.js';
 import { Clock } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { researchScholars, students, userRoles, users } from '../db/schema.js';
+import { designations, researchScholars, staffProfiles, students, userRoles, users } from '../db/schema.js';
 import { similarityChecks, supervisorAllocations, supervisorCapacity, thesisEvents, thesisRecords, thesisVivas } from '../db/schema-pathways.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { FACULTY_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES } from './research.controller.js';
-import { MIN_EXAMINERS, SIMILARITY_LIMIT_PERCENT, canMoveThesis, hasCapacity, internalSimilarity } from './thesis-rules.js';
+import { qualitySettings } from '../quality-hub/settings.catalogue.js';
+import { capForDesignation, ugcLevel } from './research-pass.rules.js';
+import { MIN_EXAMINERS, canMoveThesis, hasCapacity, internalSimilarity } from './thesis-rules.js';
 
 const hasRole = (p: UserPrincipal, roles: readonly string[]) => p.roles.some((r) => roles.includes(r));
 const ThesisBody = z.object({ title: z.string().trim().min(3).max(300), abstract: z.string().trim().max(5000).default('') });
@@ -22,6 +24,8 @@ const ExaminersBody = z.object({ examiners: z.array(z.object({ name: z.string().
 const VivaBody = z.object({ kind: z.enum(['pre_submission', 'open_defence']).default('open_defence'), scheduledAt: z.coerce.date(), venue: z.string().trim().max(120).default(''), panel: z.array(z.object({ name: z.string().trim().min(1).max(120), role: z.string().trim().max(60).default('examiner') })).min(1).max(8) });
 const VivaResult = z.object({ outcome: z.enum(['passed', 'revise', 'failed']), remarks: z.string().trim().max(1000).default('') });
 const CapacityBody = z.object({ maxScholars: z.number().int().min(0).max(30), areas: z.array(z.string().trim().min(1).max(60)).max(12).default([]) });
+const ExternalCheck = z.object({ engine: z.enum(['urkund', 'drillbit', 'turnitin', 'ithenticate', 'other']), scorePercent: z.number().min(0).max(100), reportRef: z.string().trim().min(1).max(120), reportUrl: z.url().max(500).optional() });
+const ShodhgangaBody = z.object({ handle: z.string().trim().regex(/^(https?:\/\/shodhganga\.inflibnet\.ac\.in\/handle\/)?10603\/\d{1,9}$/, 'Give the Shodhganga handle, like 10603/512345'), depositedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) });
 const AllocateBody = z.object({ supervisorUserId: z.uuid(), role: z.enum(['supervisor', 'co_supervisor']).default('supervisor'), reason: z.string().trim().max(300).default('') });
 
 /** Thesis workflow from synopsis to award, the viva, an internal originality check, and supervisor allocation with load caps. */
@@ -42,6 +46,19 @@ export class ThesisController {
     const own = row.scholarUserId === p.userId;
     if (!office && !supervisor && !own) throw new NotFoundException('Thesis not found');
     return { ...row, office: hasRole(p, RESEARCH_ROLES), supervisor, own };
+  }
+
+  /** The similarity limit of the institution (UGC 2018: 10% for the core work unless the research settings say otherwise). */
+  private async limit(tx: Tx, tenantId: string) {
+    return Number((await qualitySettings(tx, tenantId, 'research')).rules.similarityLimitPercent ?? 10);
+  }
+
+  /** A supervisor's cap: the one set for them, else what their designation allows (UGC 2022), else the institution's default. */
+  private async capOf(tx: Tx, tenantId: string, userId: string) {
+    const [cap] = await tx.select().from(supervisorCapacity).where(eq(supervisorCapacity.userId, userId));
+    if (cap) return cap.maxScholars;
+    const [d] = await tx.select({ name: designations.name }).from(staffProfiles).innerJoin(designations, eq(designations.id, staffProfiles.designationId)).where(eq(staffProfiles.userId, userId));
+    return capForDesignation(d?.name, Number((await qualitySettings(tx, tenantId, 'research')).rules.supervisorCapDefault ?? 8));
   }
 
   private async log(tx: Tx, p: UserPrincipal, thesisId: string, stage: string, note: string) {
@@ -83,7 +100,7 @@ export class ThesisController {
     const vivas = await tx.select().from(thesisVivas).where(eq(thesisVivas.thesisId, id)).orderBy(desc(thesisVivas.scheduledAt));
     const [check] = await tx.select().from(similarityChecks).where(eq(similarityChecks.thesisId, id)).orderBy(desc(similarityChecks.createdAt)).limit(1);
     const { contentText, ...rest } = t;
-    return { ...rest, hasText: contentText.length > 0, scholar: { id: s.id, fullName: s.fullName, programme: s.programme, supervisorUserId: s.supervisorUserId }, events, vivas, similarity: check ?? null, similarityLimitPercent: SIMILARITY_LIMIT_PERCENT };
+    return { ...rest, hasText: contentText.length > 0, scholar: { id: s.id, fullName: s.fullName, programme: s.programme, supervisorUserId: s.supervisorUserId }, events, vivas, similarity: check ?? null, similarityLimitPercent: await this.limit(tx, p.tenantId) };
   }
 
   @Get('theses/:id')
@@ -142,9 +159,48 @@ export class ThesisController {
       if (t.contentText.trim().length < 200) throw new BadRequestException('Add the thesis text (at least 200 characters) before checking it');
       const others = await tx.select({ id: thesisRecords.id, scholarId: thesisRecords.scholarId, title: thesisRecords.title, text: thesisRecords.contentText }).from(thesisRecords).where(and(ne(thesisRecords.id, id), ne(thesisRecords.contentText, '')));
       const r = internalSimilarity(t.contentText, others);
-      const [row] = await tx.insert(similarityChecks).values({ tenantId: p.tenantId, thesisId: id, scorePercent: r.scorePercent, matches: r.matches, checkedBy: p.userId }).returning();
+      const [row] = await tx.insert(similarityChecks).values({ tenantId: p.tenantId, thesisId: id, scorePercent: r.scorePercent, matches: r.matches, checkedBy: p.userId, level: ugcLevel(r.scorePercent) }).returning();
       await auditUser(tx, p, 'thesis.similarity_checked', 'thesis', id, { scorePercent: r.scorePercent });
-      return { ...row, limitPercent: SIMILARITY_LIMIT_PERCENT, withinLimit: r.scorePercent <= SIMILARITY_LIMIT_PERCENT, engine: 'internal', note: 'Compared with the other theses of this institution only.' };
+      const limit = await this.limit(tx, p.tenantId);
+      return { ...row, limitPercent: limit, withinLimit: r.scorePercent <= limit, engine: 'internal', note: 'Compared with the other theses of this institution only.' };
+    });
+  }
+
+  /**
+   * Records the report of the plagiarism detection software the university uses (URKUND / Ouriginal or DrillBit under
+   * the UGC-INFLIBNET ShodhShuddhi programme, Turnitin, iThenticate) with its UGC 2018 level. The report, not the
+   * internal check, then decides whether the thesis may go to examiners.
+   */
+  @Post('theses/:id/similarity/external')
+  @HttpCode(200)
+  @Auth('user', FACULTY_ROLES)
+  externalSimilarity(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ExternalCheck)) b: z.infer<typeof ExternalCheck>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const { t, office, supervisor } = await this.load(tx, p, id);
+      if (!office && !supervisor) throw new NotFoundException('Thesis not found');
+      if (!['draft', 'submitted'].includes(t.stage)) throw new ConflictException('A similarity report is recorded for a draft or a submitted thesis');
+      const [row] = await tx.insert(similarityChecks).values({ tenantId: p.tenantId, thesisId: id, engine: b.engine, scorePercent: b.scorePercent, matches: [], checkedBy: p.userId, reportRef: b.reportRef, reportUrl: b.reportUrl ?? null, level: ugcLevel(b.scorePercent) }).returning();
+      await this.log(tx, p, id, t.stage, `${b.engine} report ${b.reportRef}: ${b.scorePercent}%`);
+      await auditUser(tx, p, 'thesis.similarity_report', 'thesis', id, { engine: b.engine, scorePercent: b.scorePercent, reportRef: b.reportRef });
+      const limit = await this.limit(tx, p.tenantId);
+      return { ...row, limitPercent: limit, withinLimit: b.scorePercent <= limit };
+    });
+  }
+
+  /** Records the e-copy deposited with INFLIBNET Shodhganga after the award (UGC Ph.D. Regulations 2022). */
+  @Post('theses/:id/shodhganga')
+  @HttpCode(200)
+  @Auth('user', RESEARCH_ROLES)
+  shodhganga(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(ShodhgangaBody)) b: z.infer<typeof ShodhgangaBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const { t } = await this.load(tx, p, id);
+      if (t.stage !== 'awarded') throw new ConflictException('The thesis is deposited with Shodhganga after the award');
+      if (t.awardedOn && b.depositedOn < t.awardedOn) throw new BadRequestException('The deposit cannot be before the award');
+      const handle = b.handle.replace(/^https?:\/\/shodhganga\.inflibnet\.ac\.in\/handle\//, '');
+      await tx.update(thesisRecords).set({ shodhgangaHandle: handle, shodhgangaDepositedOn: b.depositedOn, updatedAt: sql`now()` }).where(eq(thesisRecords.id, id));
+      await this.log(tx, p, id, t.stage, `Deposited with Shodhganga (${handle})`);
+      await auditUser(tx, p, 'thesis.shodhganga_deposited', 'thesis', id, { handle });
+      return { id, shodhgangaHandle: handle, shodhgangaDepositedOn: b.depositedOn };
     });
   }
 
@@ -163,11 +219,12 @@ export class ThesisController {
         if (t.examiners.length < MIN_EXAMINERS) throw new ConflictException(`Appoint at least ${MIN_EXAMINERS} examiners first`);
         const [check] = await tx.select().from(similarityChecks).where(eq(similarityChecks.thesisId, id)).orderBy(desc(similarityChecks.createdAt)).limit(1);
         if (!check) throw new ConflictException('Run the similarity check first');
-        if (check.scorePercent > SIMILARITY_LIMIT_PERCENT && !b.overrideSimilarity) throw new ConflictException(`Similarity is ${check.scorePercent}%, above the ${SIMILARITY_LIMIT_PERCENT}% limit. The research office can override with a reason.`);
-        if (check.scorePercent > SIMILARITY_LIMIT_PERCENT && !b.note) throw new BadRequestException('Give a reason for the override');
+        const limit = await this.limit(tx, p.tenantId);
+        if (check.scorePercent > limit && !b.overrideSimilarity) throw new ConflictException(`Similarity is ${check.scorePercent}%, above the ${limit}% limit. The research office can override with a reason.`);
+        if (check.scorePercent > limit && !b.note) throw new BadRequestException('Give a reason for the override');
       }
       const today = await tenantToday(tx, this.clock);
-      await tx.update(thesisRecords).set({ stage: b.to, submittedOn: b.to === 'submitted' ? today : t.submittedOn, version: t.version + 1, updatedAt: sql`now()` }).where(eq(thesisRecords.id, id));
+      await tx.update(thesisRecords).set({ stage: b.to, submittedOn: b.to === 'submitted' ? today : t.submittedOn, awardedOn: b.to === 'awarded' ? today : t.awardedOn, version: t.version + 1, updatedAt: sql`now()` }).where(eq(thesisRecords.id, id));
       if (b.to === 'submitted') await tx.update(researchScholars).set({ status: 'thesis_submitted' }).where(eq(researchScholars.id, s.id));
       if (b.to === 'awarded') await tx.update(researchScholars).set({ status: 'awarded', completedOn: today }).where(eq(researchScholars.id, s.id));
       await this.log(tx, p, id, b.to, b.note);
@@ -209,7 +266,7 @@ export class ThesisController {
           const today = await tenantToday(tx, this.clock);
           await tx.update(researchScholars).set({ status: 'awarded', completedOn: today }).where(eq(researchScholars.id, s.id));
         } else if (b.outcome === 'revise') stage = 'draft';
-        if (stage !== t.stage) await tx.update(thesisRecords).set({ stage, version: t.version + 1, updatedAt: sql`now()` }).where(eq(thesisRecords.id, t.id));
+        if (stage !== t.stage) await tx.update(thesisRecords).set({ stage, awardedOn: stage === 'awarded' ? await tenantToday(tx, this.clock) : t.awardedOn, version: t.version + 1, updatedAt: sql`now()` }).where(eq(thesisRecords.id, t.id));
       }
       await this.log(tx, p, t.id, stage, `${v.kind.replace('_', ' ')}: ${b.outcome}`);
       await auditUser(tx, p, 'thesis.viva_recorded', 'thesis', t.id, { vivaId, outcome: b.outcome });
@@ -226,12 +283,14 @@ export class ThesisController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const faculty = await tx.select({ id: users.id, fullName: users.fullName }).from(users).innerJoin(userRoles, eq(userRoles.userId, users.id)).where(sql`${userRoles.role} in ('teacher', 'hod', 'principal')`).groupBy(users.id);
       const caps = await tx.select().from(supervisorCapacity);
+      const fallback = Number((await qualitySettings(tx, p.tenantId, 'research')).rules.supervisorCapDefault ?? 8);
+      const titles = await tx.select({ userId: staffProfiles.userId, name: designations.name }).from(staffProfiles).innerJoin(designations, eq(designations.id, staffProfiles.designationId));
       const loads = await tx.select({ id: researchScholars.supervisorUserId, n: sql<number>`count(*)::int` }).from(researchScholars).where(sql`${researchScholars.status} in ('enrolled', 'thesis_submitted')`).groupBy(researchScholars.supervisorUserId);
       return faculty
         .map((f) => {
           const cap = caps.find((c) => c.userId === f.id);
           const load = loads.find((l) => l.id === f.id)?.n ?? 0;
-          const max = cap?.maxScholars ?? 8;
+          const max = cap?.maxScholars ?? capForDesignation(titles.find((x) => x.userId === f.id)?.name, fallback);
           return { userId: f.id, fullName: f.fullName, maxScholars: max, areas: cap?.areas ?? [], load, available: Math.max(0, max - load) };
         })
         .sort((a, b) => b.available - a.available || a.fullName.localeCompare(b.fullName));
@@ -260,9 +319,9 @@ export class ThesisController {
       const [fac] = await tx.select({ id: userRoles.id }).from(userRoles).where(and(eq(userRoles.userId, b.supervisorUserId), sql`${userRoles.role} in ('teacher', 'hod', 'principal')`));
       if (!fac) throw new ConflictException('That person is not a faculty member');
       if (b.role === 'supervisor' && s.supervisorUserId === b.supervisorUserId) throw new ConflictException('That person already supervises this scholar');
-      const [cap] = await tx.select().from(supervisorCapacity).where(eq(supervisorCapacity.userId, b.supervisorUserId));
+      const max = await this.capOf(tx, p.tenantId, b.supervisorUserId);
       const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(researchScholars).where(and(eq(researchScholars.supervisorUserId, b.supervisorUserId), sql`${researchScholars.status} in ('enrolled', 'thesis_submitted')`));
-      if (b.role === 'supervisor' && !hasCapacity(n, cap?.maxScholars ?? 8)) throw new ConflictException(`That supervisor already has ${n} scholars, the most they can take`);
+      if (b.role === 'supervisor' && !hasCapacity(n, max)) throw new ConflictException(`That supervisor already has ${n} scholars, the most they can take`);
       const today = await tenantToday(tx, this.clock);
       if (b.role === 'supervisor') {
         await tx.update(supervisorAllocations).set({ endedOn: today }).where(and(eq(supervisorAllocations.scholarId, scholarId), eq(supervisorAllocations.role, 'supervisor'), isNull(supervisorAllocations.endedOn)));

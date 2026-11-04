@@ -4,6 +4,7 @@ import { Inbox } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition, type ReactNode } from 'react';
 import { bulkRecords } from '@/app/(dashboard)/records-actions';
+import { MenuItem } from '@/components/kx';
 import { BulkReportDialog } from '@/components/records/BulkReportDialog';
 import { RecordsTable } from '@/components/records/RecordsTable';
 import { tr } from '@/components/records/text';
@@ -35,7 +36,8 @@ export interface ColSpec {
 /** A module action that needs values (a date, a reason): asked for in a dialog, then run like the kit's own actions. */
 export interface ParamAction {
   key: string;
-  fields: { name: string; label: MessageKey; type?: 'date' | 'text' | 'textarea'; required?: boolean }[];
+  /** `options` makes the field a choice of fixed values. */
+  fields: { name: string; label: MessageKey; type?: 'date' | 'text' | 'textarea'; required?: boolean; options?: { value: string; label: MessageKey }[] }[];
   tone?: 'danger';
   /** Offered only for rows this says yes to. */
   when?: (row: Row) => boolean;
@@ -197,6 +199,7 @@ export function KitList({
               <TextInput
                 key={f.name}
                 label={t(f.label)}
+                select={!!f.options}
                 type={f.type === 'date' ? 'date' : 'text'}
                 multiline={f.type === 'textarea'}
                 minRows={f.type === 'textarea' ? 3 : undefined}
@@ -205,7 +208,13 @@ export function KitList({
                 onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
                 slotProps={f.type === 'date' ? { inputLabel: { shrink: true } } : undefined}
                 fullWidth
-              />
+              >
+                {f.options?.map((o) => (
+                  <MenuItem key={o.value} value={o.value}>
+                    {t(o.label)}
+                  </MenuItem>
+                ))}
+              </TextInput>
             ))}
           </div>
         </Dialog>

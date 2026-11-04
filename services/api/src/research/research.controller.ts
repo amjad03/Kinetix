@@ -14,6 +14,9 @@ import { checkVersion, found, hasRole } from '../placements/placements.access.js
 import { moveProposal } from './proposal-flow.js';
 import { FACULTY_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES } from './roles.js';
 import { grantBalance, normalizeDoi, researchKpis } from './research-rules.js';
+import { agencyKindOf, BUDGET_HEADS, expenseRefusal } from './research-pass.rules.js';
+import { researchGrantHeads, researchGrantReleases } from '../db/schema-research.js';
+import { duplicateOf } from './publication-dupes.js';
 
 export { FACULTY_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES };
 
@@ -33,8 +36,8 @@ const ProposalBody = z.object({
 });
 const ProjectBody = z.object({ title: z.string().trim().min(1).max(200), kind: z.enum(['research', 'capstone', 'industry']).default('research'), piUserId: z.uuid(), departmentId: z.uuid().optional(), sponsorOrg: Opt(160), startsOn: Day, endsOn: Day.optional() });
 const MemberBody = z.object({ userId: z.uuid().optional(), studentId: z.uuid().optional(), role: z.enum(['supervisor', 'co_supervisor', 'member', 'student']) }).refine((v) => !!v.userId !== !!v.studentId, 'Give a userId or a studentId');
-const GrantBody = z.object({ projectId: z.uuid(), agency: z.string().trim().min(1).max(160), scheme: z.string().trim().max(160).default(''), sanctionRef: Opt(80), sanctionedPaise: Paise.min(1), startsOn: Day, endsOn: Day });
-const ExpenseBody = z.object({ head: z.string().trim().min(1).max(80), amountPaise: Paise.min(1), spentOn: Day, description: z.string().trim().max(500).default(''), voucherRef: Opt(80) });
+const GrantBody = z.object({ projectId: z.uuid(), agency: z.string().trim().min(1).max(160), scheme: z.string().trim().max(160).default(''), sanctionRef: Opt(80), sanctionedPaise: Paise.min(1), startsOn: Day, endsOn: Day, agencyKind: z.enum(['government', 'non_government', 'international', 'industry']).optional(), overheadPct: z.number().min(0).max(50).default(0) });
+const ExpenseBody = z.object({ head: z.string().trim().min(1).max(80), amountPaise: Paise.min(1), spentOn: Day, description: z.string().trim().max(500).default(''), voucherRef: Opt(80), budgetHead: z.enum(BUDGET_HEADS).optional() });
 const Author = z.object({ name: z.string().trim().min(1).max(120), userId: z.uuid().optional() });
 const PublicationBody = z.object({
   title: z.string().trim().min(1).max(300),
@@ -285,11 +288,12 @@ export class ResearchController {
 
   // ---- publications, conferences, patents ---------------------------------------------------
 
+  /** Publications, by year, and a teacher's own: those they recorded and those that credit them as a co-author. */
   @Get('publications')
   @Auth('user', FACULTY_ROLES)
   listPublications(@CurrentPrincipal() p: UserPrincipal, @Query('year') year?: string, @Query('ownerUserId') owner?: string) {
     return this.db.withTenant(p.tenantId, (tx) =>
-      tx.select().from(publications).where(and(year ? eq(publications.year, Number(year)) : undefined, owner ? eq(publications.ownerUserId, owner) : undefined)).orderBy(desc(publications.year), asc(publications.title)),
+      tx.select().from(publications).where(and(year && /^\d{4}$/.test(year) ? eq(publications.year, Number(year)) : undefined, owner && z.uuid().safeParse(owner).success ? or(eq(publications.ownerUserId, owner), sql`${publications.authors} @> ${JSON.stringify([{ userId: owner }])}::jsonb`) : undefined)).orderBy(desc(publications.year), asc(publications.title)),
     );
   }
 
@@ -300,6 +304,8 @@ export class ResearchController {
       const doi = b.doi ? normalizeDoi(b.doi) : null;
       if (b.doi && !doi) throw new BadRequestException({ message: 'That is not a valid DOI', code: 'INVALID_DOI' });
       if (b.projectId) await this.projectAccess(tx, p, b.projectId, true);
+      const dup = await duplicateOf(tx, { doi, title: b.title, year: b.year });
+      if (dup) throw new ConflictException({ message: dup.reason === 'doi' ? 'A publication with that DOI is already recorded' : 'This publication is already recorded (same title); add yourself as an author there', code: 'DUPLICATE_PUBLICATION', existingId: dup.id });
       const { ownerUserId, doi: _d, ...rest } = b;
       const [row] = await orConflict('A publication with that DOI is already recorded', () => tx.insert(publications).values({ tenantId: p.tenantId, ownerUserId: ownerUserId && hasRole(p, RESEARCH_ROLES) ? ownerUserId : p.userId, doi, ...rest }).returning());
       await auditUser(tx, p, 'research.publication_added', 'publication', row.id, { doi, year: b.year });
@@ -379,7 +385,7 @@ export class ResearchController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       if (b.endsOn < b.startsOn) throw new BadRequestException('The end date is before the start date');
       await this.projectAccess(tx, p, b.projectId, true);
-      const [row] = await tx.insert(researchGrants).values({ tenantId: p.tenantId, ...b }).returning();
+      const [row] = await tx.insert(researchGrants).values({ tenantId: p.tenantId, ...b, agencyKind: b.agencyKind ?? agencyKindOf(b.agency) }).returning();
       await auditUser(tx, p, 'research.grant_created', 'grant', row.id, { agency: b.agency, sanctionedPaise: b.sanctionedPaise });
       return row;
     });
@@ -405,11 +411,18 @@ export class ResearchController {
       await this.projectAccess(tx, p, g.projectId, true);
       if (g.status !== 'active') throw new ConflictException('This grant is closed');
       if (b.spentOn < g.startsOn || b.spentOn > g.endsOn) throw new ConflictException('The expense falls outside the grant period');
-      const spent = await tx.select({ a: grantExpenses.amountPaise }).from(grantExpenses).where(eq(grantExpenses.grantId, id));
-      const bal = grantBalance(g.sanctionedPaise, spent.map((x) => x.a));
-      if (b.amountPaise > bal.balancePaise) throw new ConflictException({ message: 'This expense exceeds the unspent balance of the grant', code: 'GRANT_OVERSPEND', balancePaise: bal.balancePaise });
+      const spent = await tx.select({ a: grantExpenses.amountPaise, head: grantExpenses.budgetHead }).from(grantExpenses).where(eq(grantExpenses.grantId, id));
+      // A grant with budget heads books each expense against one; spending stops at the head, at the sanction and at what was released.
+      const heads = await tx.select().from(researchGrantHeads).where(eq(researchGrantHeads.grantId, id));
+      if (heads.length && !b.budgetHead) throw new BadRequestException({ message: 'Choose the budget head this expense is charged to', code: 'HEAD_REQUIRED' });
+      const head = b.budgetHead ? heads.find((h) => h.head === b.budgetHead) : undefined;
+      if (b.budgetHead && heads.length && !head) throw new ConflictException({ message: 'This grant has no such budget head', code: 'NO_SUCH_HEAD' });
+      const releases = await tx.select({ a: researchGrantReleases.amountPaise }).from(researchGrantReleases).where(eq(researchGrantReleases.grantId, id));
+      const total = spent.reduce((s, x) => s + x.a, 0);
+      const refusal = expenseRefusal({ sanctionedPaise: g.sanctionedPaise, headSanctionedPaise: head ? head.sanctionedPaise : null, headSpentPaise: spent.filter((x) => x.head === b.budgetHead).reduce((s, x) => s + x.a, 0), spentPaise: total, releasedPaise: releases.length ? releases.reduce((s, x) => s + x.a, 0) : null, amountPaise: b.amountPaise });
+      if (refusal) throw new ConflictException({ message: refusal.message, code: refusal.code, balancePaise: refusal.limitPaise });
       const [row] = await tx.insert(grantExpenses).values({ tenantId: p.tenantId, grantId: id, createdBy: p.userId, ...b }).returning();
-      await auditUser(tx, p, 'research.expense_recorded', 'grant', id, { amountPaise: b.amountPaise, head: b.head, voucherRef: b.voucherRef });
+      await auditUser(tx, p, 'research.expense_recorded', 'grant', id, { amountPaise: b.amountPaise, head: b.head, budgetHead: b.budgetHead, voucherRef: b.voucherRef });
       return { ...row, ...grantBalance(g.sanctionedPaise, [...spent.map((x) => x.a), b.amountPaise]) };
     });
   }

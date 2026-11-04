@@ -4984,4 +4984,101 @@ class AppLocalizationsKn extends AppLocalizations {
   String lmsScore(String score, String max) {
     return '$max ರಲ್ಲಿ $score';
   }
+
+  @override
+  String get researchMine => 'ನನ್ನ ಸಂಶೋಧನೆ';
+
+  @override
+  String resPublicationsCount(int n) {
+    return 'ಪ್ರಕಟಣೆಗಳು ($n ಸೂಚಿತ)';
+  }
+
+  @override
+  String get resCitations => 'ಉಲ್ಲೇಖಗಳು';
+
+  @override
+  String resHIndex(int n) {
+    return 'ಎಚ್-ಸೂಚ್ಯಂಕ (i10: $n)';
+  }
+
+  @override
+  String get resIprCount => 'ಸಲ್ಲಿಸಿದ / ಮಂಜೂರಾದ ಪೇಟೆಂಟ್‌ಗಳು';
+
+  @override
+  String get resScholarsCount => 'ಮಾರ್ಗದರ್ಶನ / ಪದವಿ ಪಡೆದ ಸಂಶೋಧಕರು';
+
+  @override
+  String get resIds => 'ಸಂಶೋಧಕರ ಗುರುತುಗಳು';
+
+  @override
+  String get resIdsNone => 'ಇನ್ನೂ ಯಾವುದೇ ಗುರುತಿಲ್ಲ. ಕಚೇರಿ ನಿಮ್ಮ ಕೆಲಸವನ್ನು ಆಮದು ಮಾಡಲು ನಿಮ್ಮ ಆರ್ಕಿಡ್ ಐಡಿ ಮತ್ತು ಇತರವನ್ನು ಸೇರಿಸಿ.';
+
+  @override
+  String get resIdsBody => 'ಲಿಂಕ್‌ಗಳೂ ಸಾಕು: ಐಡಿಯನ್ನು ಅವುಗಳಿಂದ ಓದಲಾಗುತ್ತದೆ. ಬದಲಾವಣೆಯನ್ನು ಸಂಶೋಧನಾ ಕಚೇರಿ ಮತ್ತೆ ಪರಿಶೀಲಿಸುತ್ತದೆ.';
+
+  @override
+  String get resEditIds => 'ಗುರುತುಗಳನ್ನು ಸಂಪಾದಿಸಿ';
+
+  @override
+  String get resSaveIds => 'ಉಳಿಸಿ';
+
+  @override
+  String get resIdOrcid => 'ಆರ್ಕಿಡ್ ಐಡಿ';
+
+  @override
+  String get resIdScopus => 'ಸ್ಕೋಪಸ್ ಲೇಖಕ ಐಡಿ';
+
+  @override
+  String get resIdWos => 'ವೆಬ್ ಆಫ್ ಸೈನ್ಸ್ ರಿಸರ್ಚರ್ ಐಡಿ';
+
+  @override
+  String get resIdScholar => 'ಗೂಗಲ್ ಸ್ಕಾಲರ್';
+
+  @override
+  String get resIdVidwan => 'ವಿದ್ವಾನ್ ಐಡಿ';
+
+  @override
+  String get resVerified => 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get resNotVerified => 'ಪರಿಶೀಲನೆ ಬಾಕಿ';
+
+  @override
+  String get resIpr => 'ಪೇಟೆಂಟ್ ಮತ್ತು ಬೌದ್ಧಿಕ ಆಸ್ತಿ';
+
+  @override
+  String get resIprEmpty => 'ಯಾವುದೇ ಪೇಟೆಂಟ್ ಅಥವಾ ಬೌದ್ಧಿಕ ಆಸ್ತಿ ದಾಖಲಾಗಿಲ್ಲ.';
+
+  @override
+  String get resClaims => 'ಪ್ರೋತ್ಸಾಹ ಹಕ್ಕುಗಳು';
+
+  @override
+  String get resClaimsEmpty => 'ಇನ್ನೂ ಯಾವುದೇ ಪ್ರೋತ್ಸಾಹ ಹಕ್ಕು ಇಲ್ಲ.';
+
+  @override
+  String get patentDraft => 'ಕರಡು';
+
+  @override
+  String get patentFiled => 'ಸಲ್ಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get patentPublished => 'ಪ್ರಕಟಿತ';
+
+  @override
+  String get patentGranted => 'ಮಂಜೂರಾಗಿದೆ';
+
+  @override
+  String get patentRejected => 'ತಿರಸ್ಕೃತ';
+
+  @override
+  String get claimClaimed => 'ಹಕ್ಕು ಸಲ್ಲಿಸಲಾಗಿದೆ';
+
+  @override
+  String get claimApproved => 'ಅನುಮೋದಿಸಲಾಗಿದೆ';
+
+  @override
+  String get claimPaid => 'ಪಾವತಿಸಲಾಗಿದೆ';
+
+  @override
+  String get claimRejected => 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ';
 }

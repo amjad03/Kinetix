@@ -4137,6 +4137,15 @@ export const TENANT_TABLES = [
   'grant_utilisation_certificates',
   'scholar_dc_meetings',
   'scholar_coursework',
+  // Research pass (migrations 0216-0217).
+  'research_profiles',
+  'research_doi_cache',
+  'research_centres',
+  'research_grant_heads',
+  'research_grant_releases',
+  'research_incentive_schemes',
+  'research_incentive_claims',
+  'scholar_progress_reports',
   // OBE depth (migration 0160).
   'peo_mission_map',
   'program_outcome_versions',
@@ -5254,6 +5263,8 @@ export const researchProjects = pgTable('research_projects', {
   outcomeSummary: text('outcome_summary'),
   version: integer('version').notNull().default(0),
   createdAt: createdAt(),
+  /** The research centre it runs in (research_centres, migration 0216). */
+  centreId: uuid('centre_id'),
 });
 
 export const projectMembers = pgTable('project_members', {
@@ -5290,6 +5301,18 @@ export const researchScholars = pgTable('research_scholars', {
   status: text('status').notNull().default('enrolled'), // enrolled | thesis_submitted | awarded | withdrawn
   completedOn: date('completed_on'),
   createdAt: createdAt(),
+  // Registration detail (migration 0217), for the university register, AISHE and NIRF.
+  registrationNo: text('registration_no'),
+  mode: text('mode').notNull().default('full_time'), // full_time | part_time
+  departmentId: ref('department_id', () => departments.id),
+  centreId: uuid('centre_id'),
+  fellowship: text('fellowship').notNull().default('none'), // none | jrf | srf | institute | other
+  fellowshipAgency: text('fellowship_agency'),
+  entrance: text('entrance'), // net | gate | set | entrance_test | exempt
+  gender: text('gender'), // female | male | other
+  category: text('category'), // general | sc | st | obc | ews
+  courseworkCompletedOn: date('coursework_completed_on'),
+  synopsisApprovedOn: date('synopsis_approved_on'),
 });
 
 export const publications = pgTable('publications', {
@@ -5319,6 +5342,9 @@ export const publications = pgTable('publications', {
   status: text('status').notNull().default('published'), // accepted | published | retracted
   retractedOn: date('retracted_on'),
   retractionNote: text('retraction_note'),
+  // Research pass (migration 0216): where the details came from (manual | crossref | orcid | pending) and the UGC-CARE group.
+  metadataSource: text('metadata_source').notNull().default('manual'),
+  ugcCareGroup: text('ugc_care_group'), // I | II
 });
 
 export const researchGrants = pgTable('research_grants', {
@@ -5333,6 +5359,9 @@ export const researchGrants = pgTable('research_grants', {
   endsOn: date('ends_on').notNull(),
   status: text('status').notNull().default('active'), // active | closed | cancelled
   createdAt: createdAt(),
+  // Research pass (migration 0216): government, non-government, international or industry; overhead the institution keeps.
+  agencyKind: text('agency_kind').notNull().default('government'),
+  overheadPct: numeric('overhead_pct', { precision: 5, scale: 2, mode: 'number' }).notNull().default(0),
 });
 
 export const grantExpenses = pgTable('grant_expenses', {
@@ -5346,6 +5375,8 @@ export const grantExpenses = pgTable('grant_expenses', {
   voucherRef: text('voucher_ref'),
   createdBy: ref('created_by', () => users.id),
   createdAt: createdAt(),
+  /** The sanctioned budget head it is charged to (research_grant_heads.head, migration 0216). */
+  budgetHead: text('budget_head'),
 });
 
 export const conferences = pgTable('conferences', {
@@ -5360,6 +5391,13 @@ export const conferences = pgTable('conferences', {
   paperTitle: text('paper_title'),
   publicationId: ref('publication_id', () => publications.id),
   createdAt: createdAt(),
+  // Research pass (migration 0217): what was held and what about (NAAC 3.2.2), participants and sponsorship.
+  eventKind: text('event_kind').notNull().default('conference'), // conference | seminar | workshop | fdp | symposium
+  theme: text('theme').notNull().default('subject'), // subject | research_methodology | ipr | entrepreneurship
+  endsOn: date('ends_on'),
+  participants: integer('participants'),
+  sponsor: text('sponsor'),
+  sponsoredPaise: bigint('sponsored_paise', { mode: 'number' }).notNull().default(0),
 });
 
 export const patents = pgTable('patents', {
