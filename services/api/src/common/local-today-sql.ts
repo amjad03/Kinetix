@@ -6,3 +6,6 @@ import { sql } from 'drizzle-orm';
  * "upcoming" then show the wrong rows. The tenants table shows a session only its own institution (RLS tenant_self).
  */
 export const LOCAL_TODAY = sql.raw(`(now() at time zone coalesce((select t.timezone from tenants t limit 1), 'Asia/Kolkata'))::date`);
+
+/** The institution-local date of a timestamptz column (`col::date` would take the server's UTC date). */
+export const localDateOf = (col: unknown) => sql`((${col}) at time zone coalesce((select t.timezone from tenants t limit 1), 'Asia/Kolkata'))::date`;

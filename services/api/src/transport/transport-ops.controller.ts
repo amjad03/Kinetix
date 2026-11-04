@@ -22,6 +22,7 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { ObjectStorage } from '../storage/storage.service.js';
 import { TRANSPORT_ROLES } from './transport.controller.js';
 import { passValidUntil, seatFee } from './transport-rules.js';
+import { localDateOf } from '../common/local-today-sql.js';
 
 const Month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a month like 2026-10');
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
@@ -367,7 +368,7 @@ export class TransportOpsController {
         changeRequests: await one(tx.select({ n }).from(transportChangeRequests).where(eq(transportChangeRequests.status, 'pending'))),
         changesToday: await one(tx.select({ n }).from(transportRouteOverrides).where(sql`${today}::date between ${transportRouteOverrides.fromOn} and ${transportRouteOverrides.untilOn}`)),
         uncovered: await one(tx.select({ n }).from(transportDriverDuty).where(and(eq(transportDriverDuty.dutyOn, today), sql`${transportDriverDuty.status} <> 'present'`, isNull(transportDriverDuty.substituteDriverId), sql`${transportDriverDuty.routeId} is not null`))),
-        handoversToday: await one(tx.select({ n }).from(transportHandovers).where(and(eq(transportHandovers.status, 'done'), sql`${transportHandovers.handedAt}::date = ${today}::date`))),
+        handoversToday: await one(tx.select({ n }).from(transportHandovers).where(and(eq(transportHandovers.status, 'done'), sql`${localDateOf(transportHandovers.handedAt)} = ${today}::date`))),
       };
     });
   }
