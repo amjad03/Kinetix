@@ -20,4 +20,4 @@ Per course the teacher sets up to ten **weighted categories** (weights total 100
 - Student App: My Learning has a Courses tab (course cards with the grade, then modules, announcements and the grade breakdown).
 - Parent App: Profile has Course grades for each child.
 
-Not built: reordering by drag and drop, file upload into a course (links only), quizzes and discussion forums, per-student pacing and completion tracking.
+Later work (quizzes, forums, completion, certificates, live classes, offline, analytics and the NAAC evidence) is in [lms.md](lms.md).
