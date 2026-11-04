@@ -4007,5 +4007,23 @@
         "type": "String"
       }
     }
-  }
+  },
+  "busLate": "Running about {minutes} min late",
+  "@busLate": {"placeholders": {"minutes": {"type": "int"}}},
+  "busToday": "Today on the bus",
+  "busGotOn": "Got on at {time}",
+  "@busGotOn": {"placeholders": {"time": {}}},
+  "busGotOff": "Got off at {time}",
+  "@busGotOff": {"placeholders": {"time": {}}},
+  "busNotMarked": "Not marked on the bus yet today",
+  "busDriver": "Driver",
+  "busAttendant": "Attendant",
+  "busDropTime": "Drop time",
+  "busPassUntil": "Bus pass valid until",
+  "busFee": "Transport fee",
+  "busFeeDue": "{amount} due",
+  "@busFeeDue": {"placeholders": {"amount": {}}},
+  "busFeeOverdue": "{amount} overdue",
+  "@busFeeOverdue": {"placeholders": {"amount": {}}},
+  "busFeeClear": "Nothing due"
 }

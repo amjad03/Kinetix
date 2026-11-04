@@ -150,9 +150,30 @@ class _BusScreenState extends State<BusScreen> {
                     _row(context, Icons.alt_route, l.busRoute, b.routeName ?? ''),
                     _row(context, Icons.location_on_outlined, l.busYourStop, b.stopName ?? ''),
                     if (b.pickupTime != null) _row(context, Icons.schedule, l.busPickup, context.fmt.clock(b.pickupTime!)),
+                    if (b.dropTime != null) _row(context, Icons.schedule_outlined, l.busDropTime, context.fmt.clock(b.dropTime!)),
                     if (b.regNo != null) _row(context, Icons.directions_bus_outlined, l.busVehicle, b.regNo!),
+                    if (b.driver != null) _row(context, Icons.badge_outlined, l.busDriver, b.driver!),
+                    if (b.attendant != null) _row(context, Icons.support_agent_outlined, l.busAttendant, b.attendant!),
+                    if (b.passUntil != null) _row(context, Icons.qr_code_2, l.busPassUntil, context.fmt.date(DateTime.parse(b.passUntil!))),
+                    _row(context, Icons.currency_rupee, l.busFee, b.feeDuePaise <= 0 ? l.busFeeClear : b.feeOverduePaise > 0 ? l.busFeeOverdue(Fmt.rupees(b.feeOverduePaise)) : l.busFeeDue(Fmt.rupees(b.feeDuePaise))),
                   ],
                 ),
+              ),
+              SectionTitle(l.busToday),
+              KxCard(
+                key: const Key('busToday'),
+                child: b.today.isEmpty
+                    ? Text(l.busNotMarked, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant))
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final m in b.today)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: Kx.s4),
+                              child: Text([m.kind == 'board' ? l.busGotOn(context.fmt.time(m.at)) : l.busGotOff(context.fmt.time(m.at)), if (m.stopName != null) m.stopName!].join(' · '), style: context.text.bodyMedium),
+                            ),
+                        ],
+                      ),
               ),
               SectionTitle(l.busStopsHeading),
               KxCard(
@@ -271,6 +292,7 @@ class _Live extends StatelessWidget {
               children: [
                 Text(eta == null ? l.busPassed : l.busEta(eta), key: const Key('busEta'), style: context.text.titleMedium?.copyWith(color: c.onPrimaryContainer, fontWeight: FontWeight.w600)),
                 if (eta != null) Text(l.busStopsAway(live.stopsAway), style: context.text.bodyMedium?.copyWith(color: c.onPrimaryContainer)),
+                if ((live.lateMinutes ?? 0) > 0) Text(l.busLate(live.lateMinutes!), key: const Key('busLate'), style: context.text.bodyMedium?.copyWith(color: c.error, fontWeight: FontWeight.w600)),
               ],
             ),
           ),

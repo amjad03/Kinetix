@@ -1672,5 +1672,18 @@
   "libFacetSubject": "विषय",
   "libFacetLanguage": "भाषा",
   "libFacetDecade": "प्रकाशन",
-  "libDecade": "{year} का दशक"
+  "libDecade": "{year} का दशक",
+  "busLate": "लगभग {minutes} मिनट देर से चल रही है",
+  "busToday": "आज बस में",
+  "busGotOn": "{time} बजे चढ़े",
+  "busGotOff": "{time} बजे उतरे",
+  "busNotMarked": "आज अभी बस में दर्ज नहीं",
+  "busDriver": "चालक",
+  "busAttendant": "परिचारिका",
+  "busDropTime": "ड्रॉप समय",
+  "busPassUntil": "बस पास मान्य तक",
+  "busFee": "परिवहन शुल्क",
+  "busFeeDue": "{amount} देय",
+  "busFeeOverdue": "{amount} अतिदेय",
+  "busFeeClear": "कुछ देय नहीं"
 }

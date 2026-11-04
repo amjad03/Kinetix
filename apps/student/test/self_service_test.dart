@@ -311,6 +311,38 @@ void main() {
   });
 
   group('Bus', () {
+    testWidgets('shows lateness, today on the bus, the crew, the pass and the fee', (tester) async {
+      phone(tester);
+      api.busInfo = StudentBus.fromJson({
+        'assigned': true,
+        'routeName': 'Route 4 · Jayanagar',
+        'regNo': 'KA01AB1234',
+        'stopId': 'st2',
+        'stopName': 'Jayanagar 4th Block',
+        'pickupTime': '07:30',
+        'dropTime': '16:20',
+        'stops': [
+          {'id': 'st1', 'name': 'Banashankari', 'seq': 1},
+          {'id': 'st2', 'name': 'Jayanagar 4th Block', 'seq': 2},
+        ],
+        'bus': {'tripId': 't1', 'lat': 12.9, 'lng': 77.5, 'speedKmh': 20, 'etaMinutes': 6, 'stopsAway': 1, 'lateMinutes': 12},
+        'crew': {'driver': 'Manjunath Urs', 'attendant': 'Pushpa'},
+        'today': [
+          {'kind': 'board', 'at': '2026-11-04T01:52:00.000Z', 'stopName': 'Jayanagar 4th Block'},
+        ],
+        'pass': {'until': '2027-08-03', 'valid': true},
+        'fee': {'duePaise': 180000, 'overduePaise': 180000},
+      });
+      await tester.pumpWidget(host(BusScreen(api: api, studentId: 's1', every: const Duration(hours: 1))));
+      await tester.pumpAndSettle();
+      expect(find.text('Running about 12 min late'), findsOneWidget);
+      expect(find.text('Driver: Manjunath Urs', findRichText: true), findsOneWidget);
+      expect(find.text('Attendant: Pushpa', findRichText: true), findsOneWidget);
+      expect(find.text('Transport fee: ₹1,800 overdue', findRichText: true), findsOneWidget);
+      await tester.scrollUntilVisible(find.byKey(const Key('busToday')), 200);
+      expect(find.textContaining('Got on at'), findsOneWidget);
+    });
+
     testWidgets('asks to change stop and opens the bus pass', (tester) async {
       phone(tester);
       final opened = <String>[];
