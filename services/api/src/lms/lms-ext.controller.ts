@@ -70,7 +70,7 @@ export class LmsExtController {
       if (!a.manage && !a.student) throw new ForbiddenException('Only the class and its teachers can post here');
       // Pre-moderation: a student's new discussion waits for a teacher when the institution asks for it.
       const held = !a.manage && (await lmsSettingsOf(tx, p.tenantId)).forumModeration === 'hold_students';
-      const [row] = await tx.insert(forumThreads).values({ tenantId: p.tenantId, courseId: id, authorId: p.userId, title: b.title, body: b.body, held }).returning();
+      const [row] = await tx.insert(forumThreads).values({ tenantId: p.tenantId, courseId: id, authorId: p.userId, title: b.title, body: b.body, held, createdAt: this.clock.now(), lastPostAt: this.clock.now() }).returning();
       await auditUser(tx, p, 'lms.forum.thread', 'forum_thread', row.id, { courseId: id, held });
       return row;
     });
@@ -106,7 +106,7 @@ export class LmsExtController {
       if (!a.manage && !a.student) throw new ForbiddenException('Only the class and its teachers can post here');
       if (t.locked && !a.manage) throw new ConflictException('This discussion is locked');
       const held = !a.manage && (await lmsSettingsOf(tx, p.tenantId)).forumModeration === 'hold_students';
-      const [row] = await tx.insert(forumPosts).values({ tenantId: p.tenantId, threadId, authorId: p.userId, body: b.body, held }).returning();
+      const [row] = await tx.insert(forumPosts).values({ tenantId: p.tenantId, threadId, authorId: p.userId, body: b.body, held, createdAt: this.clock.now() }).returning();
       if (!held) {
         await tx.update(forumThreads).set({ lastPostAt: this.clock.now() }).where(eq(forumThreads.id, threadId));
         // The author of the discussion hears about replies (not about their own).

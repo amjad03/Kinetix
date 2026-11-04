@@ -22,6 +22,8 @@ export interface PackageToken {
   reg?: string;
   /** One-use id of a fetch link. */
   jti?: string;
+  /** Content links: the API origin that made the player (the files' only allowed framer and cmi5's xAPI endpoint). */
+  o?: string;
   exp: number;
 }
 

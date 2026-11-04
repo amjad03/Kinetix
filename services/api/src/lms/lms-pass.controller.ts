@@ -218,7 +218,7 @@ export class LmsPassController {
       const now = this.clock.now();
       const ids = [...new Set(b.events.map((e) => e.itemId))];
       const items = await tx
-        .select({ item: lmsItems, sectionId: lmsCourses.sectionId, status: lmsCourses.status })
+        .select({ item: lmsItems, sectionId: lmsCourses.sectionId, status: lmsCourses.status, courseId: lmsCourses.id })
         .from(lmsItems)
         .innerJoin(lmsModules, eq(lmsModules.id, lmsItems.moduleId))
         .innerJoin(lmsCourses, eq(lmsCourses.id, lmsModules.courseId))
@@ -226,11 +226,14 @@ export class LmsPassController {
       const done = new Set((await tx.select({ i: lmsItemProgress.itemId }).from(lmsItemProgress).where(and(eq(lmsItemProgress.studentId, s.id), isNotNull(lmsItemProgress.completedAt)))).map((r) => r.i));
       let applied = 0;
       const skipped: string[] = [];
+      // Items of a course still waiting for its prerequisite courses are skipped.
+      const blocked = new Set<string>();
+      for (const cid of new Set(items.map((x) => x.courseId))) if ((await openPrerequisites(tx, this.lms, await this.lms.course(tx, cid), s.id, now)).length) blocked.add(cid);
       // Oldest first, so an item finished offline unlocks the one after it in the same batch.
       for (const e of [...b.events].sort((x, y) => x.at.getTime() - y.at.getTime())) {
         const it = items.find((x) => x.item.id === e.itemId);
         const at = e.at > now ? now : e.at;
-        if (!it || it.sectionId !== s.sectionId || it.status !== 'published' || !itemAccess(it.item, s.id, at, done).visible || (itemAccess(it.item, s.id, at, done) as { locked?: boolean }).locked) {
+        if (!it || blocked.has(it.courseId) || it.sectionId !== s.sectionId || it.status !== 'published' || !itemAccess(it.item, s.id, at, done).visible || (itemAccess(it.item, s.id, at, done) as { locked?: boolean }).locked) {
           skipped.push(e.itemId);
           continue;
         }

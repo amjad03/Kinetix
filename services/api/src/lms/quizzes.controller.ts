@@ -11,6 +11,7 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { assessments, calendarEvents, campusEvents, eventRegistrations, homework, homeworkSubmissions, lmsCourses, lmsItems, lmsModules, marks, qbQuestions, sections, students, subjects } from '../db/schema.js';
 import { homeworkExtensions, lmsItemProgress, lmsQuizAttempts, lmsQuizQuestions, lmsQuizzes, type QuizResult } from '../db/schema-life.js';
 import { itemAccess, itemStats } from './lms-access.js';
+import { openPrerequisites } from './lms-completion.js';
 import { attemptTotal, canReview, permutation, proctorVerdict, scoreAnswer } from './quiz-rules.js';
 import { lmsQuizEvents, QUIZ_EVENT_KINDS } from '../db/schema-lms.js';
 import { LMS_STAFF, LmsService } from './lms.service.js';
@@ -601,6 +602,8 @@ export class QuizzesController {
       const access = itemAccess(item.item, s.id, this.clock.now(), done);
       if (!access.visible) throw new NotFoundException('Not found');
       if (access.locked) throw new ConflictException('Finish the item before this one first');
+      const [{ courseId }] = await tx.select({ courseId: lmsModules.courseId }).from(lmsModules).where(eq(lmsModules.id, item.item.moduleId));
+      if ((await openPrerequisites(tx, this.lms, await this.lms.course(tx, courseId), s.id, this.clock.now())).length) throw new ConflictException('Finish the courses this one needs first');
       // How the item counts as done: opening it, the student's "Mark as done", or (quizzes, packages) a pass mark.
       if (b.completed && item.item.completionRule === 'pass') throw new ConflictException('This item is completed by passing it');
       const complete = item.item.completionRule === 'view' || (b.completed && item.item.completionRule === 'mark_done');

@@ -203,7 +203,7 @@ export class ScormController {
       if (!pkg) throw new NotFoundException('Package not found');
       let [att] = await tx.select().from(scormAttempts).where(and(eq(scormAttempts.packageId, t.pkg), eq(scormAttempts.userId, t.user!)));
       const [who] = await tx.select({ name: users.fullName }).from(users).where(eq(users.id, t.user!));
-      const content = this.tokens.sign({ s: 'c', pkg: pkg.id, tenant: t.tenant }, PLAYER_TTL);
+      const content = this.tokens.sign({ s: 'c', pkg: pkg.id, tenant: t.tenant, o: this.tokens.apiOrigin(req) }, PLAYER_TTL);
       const base = `${this.tokens.contentOrigin(req)}/v1/scorm/content/${content}/`;
       const launch = pkg.launchHref.split('?')[0].split('/').map(encodeURIComponent).join('/');
       let src = base + launch;
@@ -252,7 +252,9 @@ export class ScormController {
       return { file: (await tx.select().from(scormFiles).where(and(eq(scormFiles.packageId, t.pkg), eq(scormFiles.path, rel))))[0], version: pkg.version };
     });
     if (!file) throw new NotFoundException('File not found in the package');
-    const headers = packageFileHeaders(this.tokens.contentOrigin(req), this.tokens.apiOrigin(req), version === 'cmi5' ? `${this.tokens.apiOrigin(req)}/v1/xapi/` : null);
+    // The request reached the content host, so the API's origin comes from the (signed) link the player made.
+    const api = t.o ?? this.tokens.apiOrigin(req);
+    const headers = packageFileHeaders(this.tokens.contentOrigin(req), api, version === 'cmi5' ? `${api}/v1/xapi/` : null);
     for (const [k, v] of Object.entries(headers)) res.setHeader(k, v);
     res.setHeader('content-type', file.mime);
     const html = file.mime.startsWith('text/html') && version !== 'cmi5';
