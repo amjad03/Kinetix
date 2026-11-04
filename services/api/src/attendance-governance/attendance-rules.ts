@@ -22,9 +22,11 @@ export function attendanceLocked(day: string, now: Date, timeZone: string, lockH
  * Cut off, never rounded up: 599 of 799 is 74.97%, and rounding it to 75.0 let a short student through a 75% rule.
  * (attended × 1000 ÷ total is exact when it divides, so the cut-off has no floating point drift.)
  */
-export function attendancePct(present: number, late: number, absent: number): number | null {
-  const total = present + late + absent;
-  return total === 0 ? null : Math.floor(((present + late) * 1000) / total) / 10;
+export function attendancePct(present: number, late: number, absent: number, od: { onDuty: number; onDutyCounts: boolean } = { onDuty: 0, onDutyCounts: false }): number | null {
+  // On-duty sessions (approved on-duty leave) count as attended under the institution's rule, else they are left out like excused ones.
+  const duty = od.onDutyCounts ? od.onDuty : 0;
+  const total = present + late + absent + duty;
+  return total === 0 ? null : Math.floor(((present + late + duty) * 1000) / total) / 10;
 }
 
 /** The percentage after condonation, capped at 100. */

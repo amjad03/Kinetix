@@ -72,6 +72,8 @@ export interface ComponentResult {
   fraction: number | null;
   /** Weighted contribution to the subject's 100. */
   weighted: number;
+  /** Grace marks (percentage points of the subject) included in `weighted`; only on external components. */
+  grace?: number;
 }
 
 export interface SubjectResult {

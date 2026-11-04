@@ -5,7 +5,7 @@ import type { Tx } from '../db/db.service.js';
 import { attendanceLeaves, studentBatches } from '../db/schema-academic-ops.js';
 import { academicSettings, academicYears, courseOfferings, courseRegistrations, sections, students, timetableSlots } from '../db/schema.js';
 import { termFor } from '../terms/terms.js';
-import { attendanceSettings, type ThresholdSource } from './eligibility.js';
+import { attendanceSettings, onDutyRecord, type ThresholdSource } from './eligibility.js';
 
 /**
  * The attendance policy in force for a class, in one place: the eligibility threshold (programme override > approved
@@ -167,6 +167,8 @@ export async function leaveOn(tx: Tx, studentIds: string[], date: string, starts
 export interface Tally {
   held: number;
   attended: number;
+  /** Of these, sessions on approved on-duty leave (in held and attended only when the institution counts on duty as attended). */
+  onDuty: number;
   pct: number | null;
   condoned: number;
   effective: number | null;
@@ -192,7 +194,9 @@ export interface StudentEligibility {
   warning: boolean;
 }
 
-const pct1 = (attended: number, held: number) => (held > 0 ? Math.round((attended / held) * 1000) / 10 : null);
+/** Attended over held to one decimal, cut off and never rounded up (599 of 799 is 74.9, not 75.0; see attendancePct). */
+export const tallyPct = (attended: number, held: number) => (held > 0 ? Math.floor((attended * 1000) / held) / 10 : null);
+const pct1 = tallyPct;
 const eff = (p: number | null, pts: number) => (p === null ? null : Math.min(100, Math.round((p + pts) * 10) / 10));
 
 /** Whether a percentage short of the threshold could still be condoned under the policy. */
@@ -210,32 +214,39 @@ export function canBeCondoned(p: AttendancePolicy, pct: number | null): boolean 
 export async function eligibilityFor(tx: Tx, studentIds: string[], policy: AttendancePolicy, window: { from: string | null; to: string | null }): Promise<StudentEligibility[]> {
   if (!studentIds.length) return [];
   const ids = sql.join(studentIds.map((id) => sql`${id}::uuid`), sql`, `);
-  const attended = policy.lateCountsAsPresent ? sql`status in ('present','late')` : sql`status = 'present'`;
-  const held = sql`status in ('present','late','absent')`;
+  // On-duty sessions follow the institution's rule when counted, whatever status the leave wrote at approval.
+  const odCounts = policy.onDutyCountsAs !== 'excused' ? sql`true` : sql`false`;
+  const isOd = sql`(od and status <> 'absent')`;
+  const attended = sql`(case when ${isOd} then ${odCounts} else ${policy.lateCountsAsPresent ? sql`status in ('present','late')` : sql`status = 'present'`} end)`;
+  const held = sql`(case when ${isOd} then ${odCounts} else status in ('present','late','absent') end)`;
   // Within the dates; without dates, what was marked in the student's present class.
   const within = (dateCol: SQL, sectionCol: SQL, studentCol: SQL) =>
     window.from || window.to
       ? sql`${dateCol} between coalesce(${window.from}::date, '1900-01-01'::date) and coalesce(${window.to}::date, '2999-12-31'::date)`
       : sql`${sectionCol} = (select st.section_id from students st where st.id = ${studentCol})`;
-  const bySubject = (await tx.execute<{ student_id: string; subject_id: string; subject: string; code: string; held: number; attended: number }>(sql`
+  const bySubject = (await tx.execute<{ student_id: string; subject_id: string; subject: string; code: string; held: number; attended: number; on_duty: number }>(sql`
     with u as (
-      select ar.student_id, ts.subject_id, ar.status from attendance_records ar join timetable_slots ts on ts.id = ar.timetable_slot_id
+      select ar.student_id, ts.subject_id, ar.status::text as status, ${onDutyRecord('ar')} as od from attendance_records ar join timetable_slots ts on ts.id = ar.timetable_slot_id
         where ar.student_id in (${ids}) and ${within(sql.raw('ar.date'), sql.raw('ar.section_id'), sql.raw('ar.student_id'))}
       union all
-      select sca.student_id, sc.subject_id, sca.status from special_class_attendance sca join special_classes sc on sc.id = sca.special_class_id
+      select sca.student_id, sc.subject_id, sca.status::text as status,
+        exists (select 1 from attendance_leaves odl where odl.student_id = sca.student_id and odl.status = 'approved' and odl.kind = 'on_duty' and odl.applied @> jsonb_build_array('special|' || sc.id::text)) as od
+        from special_class_attendance sca join special_classes sc on sc.id = sca.special_class_id
         where sca.student_id in (${ids}) and sc.status <> 'cancelled' and ${within(sql.raw('sc.date'), sql.raw('sc.section_id'), sql.raw('sca.student_id'))}
     )
-    select u.student_id, u.subject_id, sb.name as subject, sb.code, count(*) filter (where ${held})::int as held, count(*) filter (where ${attended})::int as attended
+    select u.student_id, u.subject_id, sb.name as subject, sb.code, count(*) filter (where ${held})::int as held, count(*) filter (where ${attended})::int as attended, count(*) filter (where ${isOd})::int as on_duty
     from u join subjects sb on sb.id = u.subject_id group by u.student_id, u.subject_id, sb.name, sb.code order by sb.code`)).rows;
   // Whole-day marks count where the institution marks by day, and for anyone with no period marks at all (a day
   // register, biometric punches) where it marks by period.
   const dayRows = (
-          await tx.execute<{ student_id: string; held: number; attended: number }>(
+          await tx.execute<{ student_id: string; held: number; attended: number; on_duty: number }>(
             policy.mode !== 'session'
-              ? sql`select student_id, count(*) filter (where ${held})::int as held, count(*) filter (where ${attended})::int as attended from attendance_records ar
-                    where student_id in (${ids}) and timetable_slot_id is null and ${within(sql.raw('ar.date'), sql.raw('ar.section_id'), sql.raw('ar.student_id'))} group by student_id`
-              : sql`select student_id, count(*) filter (where ${held})::int as held, count(*) filter (where ${attended})::int as attended from attendance_session_marks m
-                    where student_id in (${ids}) and ${within(sql.raw('m.date'), sql.raw('m.section_id'), sql.raw('m.student_id'))} group by student_id`,
+              ? sql`select student_id, count(*) filter (where ${held})::int as held, count(*) filter (where ${attended})::int as attended, count(*) filter (where ${isOd})::int as on_duty
+                    from (select ar.student_id, ar.status::text as status, ${onDutyRecord('ar')} as od from attendance_records ar
+                    where ar.student_id in (${ids}) and ar.timetable_slot_id is null and ${within(sql.raw('ar.date'), sql.raw('ar.section_id'), sql.raw('ar.student_id'))}) d group by student_id`
+              : sql`select student_id, count(*) filter (where ${held})::int as held, count(*) filter (where ${attended})::int as attended, count(*) filter (where ${isOd})::int as on_duty
+                    from (select m.student_id, m.status::text as status, false as od from attendance_session_marks m
+                    where m.student_id in (${ids}) and ${within(sql.raw('m.date'), sql.raw('m.section_id'), sql.raw('m.student_id'))}) d group by student_id`,
           )
         ).rows;
   const condoned = (await tx.execute<{ student_id: string; subject_id: string | null; pts: number }>(sql`
@@ -252,15 +263,16 @@ export async function eligibilityFor(tx: Tx, studentIds: string[], policy: Atten
       const pct = pct1(r.attended, r.held);
       const condonedPts = cap((subjectPts.get(`${studentId}:${r.subject_id}`) ?? 0) + (overallPts.get(studentId) ?? 0));
       const e = eff(pct, condonedPts);
-      return { subjectId: r.subject_id, subject: r.subject, code: r.code, held: r.held, attended: r.attended, pct, condoned: condonedPts, effective: e, short: e !== null && e < policy.thresholdPct };
+      return { subjectId: r.subject_id, subject: r.subject, code: r.code, held: r.held, attended: r.attended, onDuty: r.on_duty, pct, condoned: condonedPts, effective: e, short: e !== null && e < policy.thresholdPct };
     });
     const day = dayRows.find((r) => r.student_id === studentId);
     const byPeriod = policy.mode === 'hour' && subs.some((r) => r.held > 0);
     const h = byPeriod ? subs.reduce((s, r) => s + r.held, 0) : (day?.held ?? 0);
     const a = byPeriod ? subs.reduce((s, r) => s + r.attended, 0) : (day?.attended ?? 0);
+    const od = byPeriod ? subs.reduce((s, r) => s + r.on_duty, 0) : (day?.on_duty ?? 0);
     const pct = pct1(a, h);
     const pts = cap(overallPts.get(studentId) ?? 0);
-    const overall: Tally = { held: h, attended: a, pct, condoned: pts, effective: eff(pct, pts) };
+    const overall: Tally = { held: h, attended: a, onDuty: od, pct, condoned: pts, effective: eff(pct, pts) };
     const overallShort = overall.effective !== null && overall.effective < policy.thresholdPct;
     const perSubject = policy.basis === 'per_subject' && byPeriod;
     const shortIn = perSubject ? subjects.filter((s) => s.short).map((s) => s.subjectId) : overallShort ? ['overall'] : [];

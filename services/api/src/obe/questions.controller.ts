@@ -14,7 +14,7 @@ import { assessmentQuestionCos, assessmentQuestions, QUESTION_DIFFICULTY, questi
 import { assessmentCoMap, assessments, coSets, courseOutcomes, examPapers, examSessions, marks, qbPaperItems, qbPapers, schemeComponents, sections, students, subjects } from '../db/schema.js';
 import { headsSubject } from '../departments/departments.controller.js';
 import { isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
-import { blueprintShares, round } from './attainment.js';
+import { blueprintShares, choiceGroupError, paperMax, paperTotal, round } from './attainment.js';
 import { bloomNumber, BLOOM_LEVELS } from './bloom.js';
 import { ObeService } from './obe.service.js';
 import { marksSheetRows, parseMarksSheet } from './question-sheet.js';
@@ -31,6 +31,9 @@ const QuestionsBody = z.object({
         maxMarks: z.number().gt(0).max(1000),
         bloomLevel: z.string().trim().max(20).nullish(),
         difficulty: z.enum(QUESTION_DIFFICULTY).nullish(),
+        /** Internal choice: a group name ("Part B") and how many of its questions are answered. */
+        choiceGroup: z.string().trim().max(20).nullish(),
+        attemptAny: z.number().int().min(1).max(50).nullish(),
         cos: z.array(z.object({ coId: z.uuid(), weight: z.number().gt(0).max(100).default(1) })).max(10).default([]),
       }),
     )
@@ -123,14 +126,21 @@ export class ObeQuestionsController {
       const nos = body.questions.map((q) => q.no.toLowerCase());
       if (new Set(nos).size !== nos.length) throw new BadRequestException('Two questions have the same number');
       for (const q of body.questions) if (q.bloomLevel && bloomNumber(q.bloomLevel) === null) throw new BadRequestException(`Q${q.no}: the Bloom level must be one of ${BLOOM_LEVELS.join(', ')}`);
-      const total = body.questions.reduce((s, q) => s + q.maxMarks, 0);
+      const choice = body.questions.map((q) => ({ ...q, choiceGroup: q.choiceGroup || null, attemptAny: q.choiceGroup ? (q.attemptAny ?? null) : null }));
+      const choiceError = choiceGroupError(choice);
+      if (choiceError) throw new BadRequestException(choiceError);
+      // With internal choice, what a student can score: compulsory questions plus the largest N of each group.
+      const total = paperMax(choice);
       if (body.questions.length && total + 1e-9 < a.maxMarks) throw new BadRequestException(`The questions add up to ${round(total, 2)} marks; the paper is out of ${a.maxMarks}`);
       const valid = new Set((await this.activeCos(tx, a.subjectId)).map((c) => c.id));
       if (body.questions.some((q) => q.cos.some((c) => !valid.has(c.coId)))) throw new BadRequestException('Tag questions with the course’s current course outcomes');
       const existing = await tx.select().from(assessmentQuestions).where(eq(assessmentQuestions.assessmentId, id)).orderBy(asc(assessmentQuestions.ord));
       const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(questionMarks).where(and(eq(questionMarks.assessmentId, id), sql`${questionMarks.marks} is not null`));
-      const sameShape = existing.length === body.questions.length && existing.every((q) => body.questions.some((b) => b.no.toLowerCase() === q.no.toLowerCase() && Math.abs(b.maxMarks - q.maxMarks) < 1e-9));
-      if (n > 0 && !sameShape) throw new ConflictException('Question-wise marks are entered; you can still change the COs and Bloom levels, but not the questions or their marks');
+      // The choice groups decide each student's total, so they are part of the paper's shape too.
+      const sameShape =
+        existing.length === choice.length &&
+        existing.every((q) => choice.some((b) => b.no.toLowerCase() === q.no.toLowerCase() && Math.abs(b.maxMarks - q.maxMarks) < 1e-9 && (b.choiceGroup ?? null) === (q.choiceGroup ?? null) && (b.attemptAny ?? null) === (q.attemptAny ?? null)));
+      if (n > 0 && !sameShape) throw new ConflictException('Question-wise marks are entered; you can still change the COs and Bloom levels, but not the questions, their marks or their choice groups');
       let rows: (typeof assessmentQuestions.$inferSelect)[];
       if (sameShape && existing.length) {
         rows = [];
@@ -142,7 +152,7 @@ export class ObeQuestionsController {
         await tx.delete(assessmentQuestionCos).where(inArray(assessmentQuestionCos.questionId, existing.map((q) => q.id)));
       } else {
         await tx.delete(assessmentQuestions).where(eq(assessmentQuestions.assessmentId, id));
-        rows = body.questions.length ? await tx.insert(assessmentQuestions).values(body.questions.map((q, i) => ({ tenantId: p.tenantId, assessmentId: id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel ?? null, difficulty: q.difficulty ?? null, ord: i }))).returning() : [];
+        rows = choice.length ? await tx.insert(assessmentQuestions).values(choice.map((q, i) => ({ tenantId: p.tenantId, assessmentId: id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel ?? null, difficulty: q.difficulty ?? null, choiceGroup: q.choiceGroup, attemptAny: q.attemptAny, ord: i }))).returning() : [];
       }
       const tags = body.questions.flatMap((b) => {
         const q = rows.find((r) => r.no.toLowerCase() === b.no.toLowerCase())!;
@@ -173,13 +183,13 @@ export class ObeQuestionsController {
       if (n > 0) throw new ConflictException('This assessment already has a paper; clear it first');
       const cos = await this.activeCos(tx, a.subjectId);
       const byCode = new Map(cos.map((c) => [c.code, c.id]));
-      let src: { no: string; part: string; maxMarks: number; bloomLevel: string | null; difficulty: QuestionDifficulty | null; cos: { coId: string; weight: number }[] }[] = [];
+      let src: { no: string; part: string; maxMarks: number; bloomLevel: string | null; difficulty: QuestionDifficulty | null; choiceGroup?: string | null; attemptAny?: number | null; cos: { coId: string; weight: number }[] }[] = [];
       if (body.fromAssessmentId) {
         const [from] = await tx.select().from(assessments).where(eq(assessments.id, body.fromAssessmentId));
         if (!from || from.subjectId !== a.subjectId) throw new BadRequestException('Copy from an assessment of the same course');
         const qs = await tx.select().from(assessmentQuestions).where(eq(assessmentQuestions.assessmentId, from.id)).orderBy(asc(assessmentQuestions.ord));
         const tags = qs.length ? await tx.select({ questionId: assessmentQuestionCos.questionId, weight: assessmentQuestionCos.weight, code: courseOutcomes.code }).from(assessmentQuestionCos).innerJoin(courseOutcomes, eq(courseOutcomes.id, assessmentQuestionCos.coId)).where(inArray(assessmentQuestionCos.questionId, qs.map((q) => q.id))) : [];
-        src = qs.map((q) => ({ no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, difficulty: q.difficulty, cos: tags.filter((t) => t.questionId === q.id && byCode.has(t.code)).map((t) => ({ coId: byCode.get(t.code)!, weight: t.weight })) }));
+        src = qs.map((q) => ({ no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, difficulty: q.difficulty, choiceGroup: q.choiceGroup, attemptAny: q.attemptAny, cos: tags.filter((t) => t.questionId === q.id && byCode.has(t.code)).map((t) => ({ coId: byCode.get(t.code)!, weight: t.weight })) }));
       } else if (body.rubricId) {
         const [rubric] = await tx.select().from(rubrics).where(eq(rubrics.id, body.rubricId));
         if (!rubric || rubric.archived) throw new BadRequestException('Choose a rubric in use');
@@ -198,7 +208,7 @@ export class ObeQuestionsController {
         });
       }
       if (!src.length) throw new BadRequestException('That paper has no questions');
-      const rows = await tx.insert(assessmentQuestions).values(src.map((q, i) => ({ tenantId: p.tenantId, assessmentId: id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, difficulty: q.difficulty, ord: i }))).returning();
+      const rows = await tx.insert(assessmentQuestions).values(src.map((q, i) => ({ tenantId: p.tenantId, assessmentId: id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, difficulty: q.difficulty, choiceGroup: q.choiceGroup ?? null, attemptAny: q.attemptAny ?? null, ord: i }))).returning();
       const tags = src.flatMap((q, i) => q.cos.map((c) => ({ tenantId: p.tenantId, questionId: rows[i].id, coId: c.coId, weight: c.weight })));
       if (tags.length) await tx.insert(assessmentQuestionCos).values(tags);
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'obe.paper.copied', subjectType: 'assessment', subjectId: id, data: { from: body.fromAssessmentId ?? body.qbPaperId ?? body.rubricId, questions: rows.length } });
@@ -263,7 +273,7 @@ export class ObeQuestionsController {
       const roster = await tx.select({ id: students.id, rollNo: students.rollNo, name: students.fullName }).from(students).where(and(eq(students.sectionId, a.sectionId), eq(students.status, 'active')));
       const { entries, errors } = parseMarksSheet(rows, qs.map((q) => ({ id: q.id, no: q.no, maxMarks: q.maxMarks })), roster);
       for (const e of entries) {
-        const sum = Object.values(e.marks).reduce<number>((s, v) => s + (v ?? 0), 0);
+        const sum = paperTotal(qs, new Map(Object.entries(e.marks)));
         if (!e.absent && sum > a.maxMarks + 1e-9) errors.push({ row: 0, message: `${roster.find((r) => r.id === e.studentId)?.rollNo}: total ${round(sum, 2)} is more than ${a.maxMarks}` });
       }
       if (errors.length || check === 'true') return { saved: false, rows: entries.length, errors };
@@ -287,7 +297,8 @@ export class ObeQuestionsController {
         if (v !== null && v > q.maxMarks + 1e-9) throw new BadRequestException(`Q${q.no} is out of ${q.maxMarks}`);
       }
       const values = e.absent ? [] : Object.entries(e.marks);
-      const sum = values.reduce<number>((s, [, v]) => s + (v ?? 0), 0);
+      // With internal choice only the best answered N of a group count (an extra answer is not added).
+      const sum = paperTotal(qs, new Map(values));
       if (sum > a.maxMarks + 1e-9) throw new BadRequestException(`A total of ${round(sum, 2)} is more than the ${a.maxMarks} the assessment is out of`);
       if (e.absent) await tx.delete(questionMarks).where(and(eq(questionMarks.assessmentId, a.id), eq(questionMarks.studentId, e.studentId)));
       for (const [qid, v] of values)
@@ -295,9 +306,9 @@ export class ObeQuestionsController {
           .insert(questionMarks)
           .values({ tenantId: p.tenantId, assessmentId: a.id, questionId: qid, studentId: e.studentId, marks: v, updatedBy: p.userId })
           .onConflictDoUpdate({ target: [questionMarks.questionId, questionMarks.studentId], set: { marks: v, updatedBy: p.userId, updatedAt: new Date() } });
-      const all = e.absent ? [] : await tx.select({ m: questionMarks.marks }).from(questionMarks).where(and(eq(questionMarks.assessmentId, a.id), eq(questionMarks.studentId, e.studentId)));
+      const all = e.absent ? [] : await tx.select({ q: questionMarks.questionId, m: questionMarks.marks }).from(questionMarks).where(and(eq(questionMarks.assessmentId, a.id), eq(questionMarks.studentId, e.studentId)));
       const any = all.some((r) => r.m !== null);
-      const total = any ? round(all.reduce((s, r) => s + (r.m ?? 0), 0), 2) : null;
+      const total = any ? paperTotal(qs, new Map(all.map((r) => [r.q, r.m] as [string, number | null]))) : null;
       if (!e.absent && !any) {
         await tx.delete(marks).where(and(eq(marks.assessmentId, a.id), eq(marks.studentId, e.studentId)));
         continue;
@@ -323,7 +334,7 @@ export class ObeQuestionsController {
     const [sec] = await tx.select({ name: sections.displayName, yearId: sections.academicYearId }).from(sections).where(eq(sections.id, a.sectionId));
     const [comp] = a.componentId ? await tx.select({ kind: schemeComponents.kind, name: schemeComponents.name }).from(schemeComponents).where(eq(schemeComponents.id, a.componentId)) : [];
     const config = (await this.obe.policy(tx, sub.programId, a.subjectId, sec.yearId)).config;
-    const questions = qs.map((q) => ({ id: q.id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, difficulty: q.difficulty, cos: tags.filter((t) => t.questionId === q.id).map((t) => ({ coId: t.coId, weight: t.weight })) }));
+    const questions = qs.map((q) => ({ id: q.id, no: q.no, part: q.part, maxMarks: q.maxMarks, bloomLevel: q.bloomLevel, difficulty: q.difficulty, choiceGroup: q.choiceGroup, attemptAny: q.attemptAny, cos: tags.filter((t) => t.questionId === q.id).map((t) => ({ coId: t.coId, weight: t.weight })) }));
     const shares = blueprintShares(questions, config.seeApportion);
     const coMarks = cos.map((c) => ({ coId: c.id, code: c.code, marks: round(questions.reduce((s, q) => { const w = q.cos.reduce((x, y) => x + y.weight, 0); const mine = q.cos.find((x) => x.coId === c.id); return s + (mine && w ? (q.maxMarks * mine.weight) / w : 0); }, 0), 2), share: round((shares.get(c.id) ?? 0) * 100, 1) }));
     const bloom = BLOOM_LEVELS.map((name, i) => ({ level: i + 1, name, marks: round(questions.filter((q) => bloomNumber(q.bloomLevel) === i + 1).reduce((s, q) => s + q.maxMarks, 0), 2) }));
@@ -335,7 +346,7 @@ export class ObeQuestionsController {
       apportion: config.seeApportion,
       cos: cos.map((c) => ({ id: c.id, code: c.code, statement: c.statement, bloomLevel: c.bloomLevel })),
       questions,
-      paperMarks: round(questions.reduce((s, q) => s + q.maxMarks, 0), 2),
+      paperMarks: paperMax(questions),
       coMarks,
       bloom,
       difficulty,

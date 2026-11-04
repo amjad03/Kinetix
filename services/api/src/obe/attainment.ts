@@ -252,7 +252,7 @@ export function programOutcomeAttainment(cells: PoCell[], config: AttainmentConf
     return { courseId, articulation, attainment: config.poMethod === 'course_average' ? avg : weighted, cos: mine.length };
   });
   let level: number | null;
-  if ((config.poMethod ?? 'co_weighted') === 'co_weighted') {
+  if ((config.poMethod ?? 'course_weighted') === 'co_weighted') {
     const strength = known.reduce((s, c) => s + c.strength, 0);
     level = strength === 0 ? null : known.reduce((s, c) => s + c.strength * (c.coAttainment as number), 0) / strength;
   } else {
@@ -285,6 +285,88 @@ export function articulationMatrix(cells: { courseId: string; outcomeId: string;
 export interface BlueprintQuestion {
   maxMarks: number;
   cos: { coId: string; weight: number }[];
+  /** Internal choice: the questions sharing a group, of which the student answers any `attemptAny` ("any 5 of 7"). */
+  choiceGroup?: string | null;
+  attemptAny?: number | null;
+}
+
+/** What the internal-choice helpers need of a question (a database row will do). */
+export type ChoiceQuestion = { id: string; maxMarks: number; choiceGroup?: string | null; attemptAny?: number | null };
+
+const groupOf = (q: Pick<BlueprintQuestion, "choiceGroup" | "attemptAny">) => (q.choiceGroup && q.attemptAny ? q.choiceGroup.trim().toLowerCase() : null);
+
+/**
+ * The questions that count for one student. Outside a choice group, every question. In a group "answer any N": the
+ * best N the student answered (an extra answer is not held against them), made up to N with unanswered questions in
+ * paper order when they answered fewer (a required answer they left out counts as 0). With no marks at all (absent),
+ * the first N of each group.
+ */
+export function gradedQuestions<Q extends ChoiceQuestion>(questions: Q[], marks: Map<string, number | null>): Q[] {
+  const keep = new Set<Q>();
+  const groups = new Map<string, Q[]>();
+  for (const q of questions) {
+    const g = groupOf(q);
+    if (g === null) keep.add(q);
+    else groups.set(g, [...(groups.get(g) ?? []), q]);
+  }
+  for (const qs of groups.values()) {
+    const n = Math.min(qs[0].attemptAny as number, qs.length);
+    const answered = qs.filter((q) => marks.get(q.id) !== null && marks.get(q.id) !== undefined);
+    // Best marks first; ties keep paper order (sort is stable).
+    const best = [...answered].sort((a, b) => (marks.get(b.id) as number) - (marks.get(a.id) as number)).slice(0, n);
+    const missing = qs.filter((q) => !answered.includes(q)).slice(0, n - best.length);
+    for (const q of [...best, ...missing]) keep.add(q);
+  }
+  return questions.filter((q) => keep.has(q));
+}
+
+/** A student's total on the paper: the marks of the questions that count (see gradedQuestions). */
+export function paperTotal(questions: ChoiceQuestion[], marks: Map<string, number | null>): number {
+  return round(gradedQuestions(questions, marks).reduce((s, q) => s + (marks.get(q.id) ?? 0), 0), 2);
+}
+
+/** The most a student can score on the paper: every compulsory question, plus the N largest of each choice group. */
+export function paperMax(questions: BlueprintQuestion[]): number {
+  let total = 0;
+  const groups = new Map<string, BlueprintQuestion[]>();
+  for (const q of questions) {
+    const g = groupOf(q);
+    if (g === null) total += q.maxMarks;
+    else groups.set(g, [...(groups.get(g) ?? []), q]);
+  }
+  for (const qs of groups.values()) total += [...qs].sort((a, b) => b.maxMarks - a.maxMarks).slice(0, qs[0].attemptAny as number).reduce((s, q) => s + q.maxMarks, 0);
+  return round(total, 2);
+}
+
+/** Why a paper's choice groups are not usable, or null: one "answer any N" per group, N at least 1 and fewer than the group's questions. */
+export function choiceGroupError(questions: BlueprintQuestion[]): string | null {
+  const groups = new Map<string, BlueprintQuestion[]>();
+  for (const q of questions) {
+    const g = q.choiceGroup?.trim().toLowerCase() || null;
+    if ((g === null) !== (q.attemptAny === null || q.attemptAny === undefined)) return 'A choice question needs both its group and how many of the group to answer';
+    if (g !== null) groups.set(g, [...(groups.get(g) ?? []), q]);
+  }
+  for (const [g, qs] of groups) {
+    const n = qs[0].attemptAny as number;
+    if (qs.some((q) => q.attemptAny !== n)) return `Choice group ${g}: every question must have the same "answer any" number`;
+    if (!Number.isInteger(n) || n < 1 || n >= qs.length) return `Choice group ${g}: "answer any" must be at least 1 and fewer than its ${qs.length} questions`;
+  }
+  return null;
+}
+
+/** Each question's expected share of its marks: 1 outside a choice group, N / M inside a group "answer any N of M". */
+function expectedFactor(questions: BlueprintQuestion[]): Map<BlueprintQuestion, number> {
+  const size = new Map<string, number>();
+  for (const q of questions) {
+    const g = groupOf(q);
+    if (g !== null) size.set(g, (size.get(g) ?? 0) + 1);
+  }
+  return new Map(
+    questions.map((q) => {
+      const g = groupOf(q);
+      return [q, g === null ? 1 : Math.min(1, (q.attemptAny as number) / (size.get(g) as number))];
+    }),
+  );
 }
 
 /**
@@ -295,7 +377,9 @@ export interface BlueprintQuestion {
 export function blueprintShares(questions: BlueprintQuestion[], mode: Apportion): Map<string, number> {
   const out = new Map<string, number>();
   if (mode === 'off') return out;
-  const total = questions.reduce((s, q) => s + q.maxMarks, 0);
+  // With internal choice, each question in a group "any N of M" is expected to carry N/M of its marks.
+  const factor = expectedFactor(questions);
+  const total = questions.reduce((s, q) => s + q.maxMarks * (factor.get(q) as number), 0);
   if (total <= 0) return out;
   if (mode === 'equal') {
     const cos = [...new Set(questions.flatMap((q) => q.cos.map((c) => c.coId)))];
@@ -305,15 +389,19 @@ export function blueprintShares(questions: BlueprintQuestion[], mode: Apportion)
   for (const q of questions) {
     const w = q.cos.reduce((s, c) => s + c.weight, 0);
     if (w <= 0) continue;
-    for (const c of q.cos) out.set(c.coId, (out.get(c.coId) ?? 0) + (q.maxMarks * c.weight) / w / total);
+    for (const c of q.cos) out.set(c.coId, (out.get(c.coId) ?? 0) + (q.maxMarks * (factor.get(q) as number) * c.weight) / w / total);
   }
   return out;
 }
 
-/** A student's marks on each CO from their question-wise marks: each question's marks split over its COs by weight. */
+/**
+ * A student's marks on each CO from their question-wise marks: each question's marks split over its COs by weight.
+ * Only the questions that count for the student do (internal choice: the answered best N of a group; a question they
+ * chose not to answer adds nothing to the CO's maximum).
+ */
 export function questionCoMarks(questions: (BlueprintQuestion & { id: string })[], marks: Map<string, number | null>): Map<string, { scored: number; max: number }> {
   const out = new Map<string, { scored: number; max: number }>();
-  for (const q of questions) {
+  for (const q of gradedQuestions(questions, marks)) {
     const w = q.cos.reduce((s, c) => s + c.weight, 0);
     if (w <= 0) continue;
     const m = marks.get(q.id) ?? 0;

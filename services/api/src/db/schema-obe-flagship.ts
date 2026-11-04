@@ -28,6 +28,9 @@ export const assessmentQuestions = pgTable(
     bloomLevel: text('bloom_level'),
     /** easy, medium or hard (the question bank's scale; migration 0185). */
     difficulty: text('difficulty').$type<QuestionDifficulty>(),
+    /** Internal choice (migration 0226): questions sharing a group, of which any `attemptAny` are answered ("any 5 of 7"). */
+    choiceGroup: text('choice_group'),
+    attemptAny: smallint('attempt_any'),
     ord: smallint('ord').notNull().default(0),
     createdAt: created(),
   },

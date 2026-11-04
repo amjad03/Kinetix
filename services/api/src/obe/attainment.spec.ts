@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { articulationMatrix, blueprintShares, combinedAttainment, DEFAULT_ATTAINMENT_CONFIG as C, directAttainment, gapFor, indirectAttainment, levelFor, peoAttainment, programOutcomeAttainment, questionCoMarks, trend, validateConfig, withDefaults, type EvidenceItem, type PoCell } from './attainment.js';
+import { articulationMatrix, blueprintShares, combinedAttainment, DEFAULT_ATTAINMENT_CONFIG as C, directAttainment, gapFor, indirectAttainment, levelFor, peoAttainment, programOutcomeAttainment, questionCoMarks, gradedQuestions, paperMax, paperTotal, choiceGroupError, trend, validateConfig, withDefaults, type EvidenceItem, type PoCell } from './attainment.js';
 
 const students = (scores: number[], max = 10) => scores.map((scored, i) => ({ studentId: `s${i}`, scored, max }));
 // CIE: 7 of 10 students at >= 60%, class average 60%. SEE: 4 of 10 at >= 60%, class average 50%.
@@ -151,4 +151,60 @@ describe('OBE attainment maths', () => {
     expect(peoAttainment([{ outcomeId: 'pso1', strength: 2 }], levels)).toEqual({ value: null, measured: 0, mapped: 1 });
     expect(peoAttainment([], levels).value).toBeNull();
   });
+
+  it('audit OBE-3: without a poMethod the PO roll-up uses the documented default (course_weighted)', () => {
+    const { poMethod: _omit, ...noMethod } = C;
+    expect(programOutcomeAttainment(cells, noMethod as typeof C).level).toBe(programOutcomeAttainment(cells, C).level);
+    expect(programOutcomeAttainment(cells, noMethod as typeof C).level).toBe(1.63);
+  });
 });
+
+describe('audit OBE-2: internal choice ("answer any N of M")', () => {
+  // Part A: q1 (CO1, 10) compulsory. Part B: answer any 2 of q2 (CO1), q3 (CO2), q4 (CO3), 10 each. Paper out of 30.
+  const paper = [
+    { id: 'q1', maxMarks: 10, cos: [{ coId: 'co1', weight: 1 }] },
+    { id: 'q2', maxMarks: 10, cos: [{ coId: 'co1', weight: 1 }], choiceGroup: 'B', attemptAny: 2 },
+    { id: 'q3', maxMarks: 10, cos: [{ coId: 'co2', weight: 1 }], choiceGroup: 'B', attemptAny: 2 },
+    { id: 'q4', maxMarks: 10, cos: [{ coId: 'co3', weight: 1 }], choiceGroup: 'B', attemptAny: 2 },
+  ];
+
+  it('a skipped choice question does not count against the student', () => {
+    // Answered q1, q2 and q3, skipped q4: CO3 was not attempted, so it has no marks and no maximum for this student.
+    const m = questionCoMarks(paper, new Map([['q1', 8], ['q2', 6], ['q3', 9]]));
+    expect(m.get('co1')).toEqual({ scored: 14, max: 20 });
+    expect(m.get('co2')).toEqual({ scored: 9, max: 10 });
+    expect(m.has('co3')).toBe(false);
+    expect(paperTotal(paper, new Map([['q1', 8], ['q2', 6], ['q3', 9]]))).toBe(23);
+  });
+
+  it('grades the best N when the student answers more than N', () => {
+    const marks = new Map<string, number | null>([['q1', 5], ['q2', 4], ['q3', 7], ['q4', 9]]);
+    expect(gradedQuestions(paper, marks).map((q) => q.id)).toEqual(['q1', 'q3', 'q4']);
+    expect(paperTotal(paper, marks)).toBe(21);
+    const m = questionCoMarks(paper, marks);
+    expect(m.get('co1')).toEqual({ scored: 5, max: 10 });
+    expect(m.get('co3')).toEqual({ scored: 9, max: 10 });
+  });
+
+  it('fewer than N attempted: the missing answers count as 0, taken in paper order', () => {
+    const m = questionCoMarks(paper, new Map([['q1', 10], ['q4', 10]]));
+    // q4 attempted, plus q2 (first unanswered) at 0.
+    expect(m.get('co1')).toEqual({ scored: 10, max: 20 });
+    expect(m.get('co3')).toEqual({ scored: 10, max: 10 });
+    expect(m.has('co2')).toBe(false);
+  });
+
+  it('the paper maximum, the apportioned shares and the validation follow the choice', () => {
+    expect(paperMax(paper)).toBe(30);
+    const b = blueprintShares(paper, 'blueprint');
+    // Expected marks: CO1 10 + 10*2/3, CO2 10*2/3, CO3 10*2/3, over 30.
+    expect(b.get('co1')).toBeCloseTo(16.6667 / 30, 4);
+    expect(b.get('co2')).toBeCloseTo(6.6667 / 30, 4);
+    expect([...b.values()].reduce((s, v) => s + v, 0)).toBeCloseTo(1, 9);
+    expect(choiceGroupError(paper)).toBeNull();
+    expect(choiceGroupError([...paper.slice(0, 2), { ...paper[2], attemptAny: 1 }])).toMatch(/same/);
+    expect(choiceGroupError([paper[0], { ...paper[1], attemptAny: 1 }])).toMatch(/fewer/);
+    expect(choiceGroupError([{ ...paper[0], attemptAny: 1 }])).toMatch(/group/);
+  });
+});
+
