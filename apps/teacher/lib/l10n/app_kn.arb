@@ -1902,5 +1902,22 @@
   "libReady": "ಡೆಸ್ಕ್‌ನಲ್ಲಿ ನಿಮಗಾಗಿ ಕಾಯುತ್ತಿದೆ",
   "libWaiting": "ಪ್ರತಿಗಾಗಿ ಸರದಿಯಲ್ಲಿ",
   "libCancel": "ರದ್ದುಮಾಡಿ",
-  "libCancelled": "ಕಾಯ್ದಿರಿಸುವಿಕೆ ರದ್ದಾಗಿದೆ"
+  "libCancelled": "ಕಾಯ್ದಿರಿಸುವಿಕೆ ರದ್ದಾಗಿದೆ",
+  "driverManifest": "ಬಸ್‌ನಲ್ಲಿರುವ ವಿದ್ಯಾರ್ಥಿಗಳು",
+  "driverManifestCount": "{onBoard} ಬಸ್‌ನಲ್ಲಿ · {riders} ರಲ್ಲಿ {boarded} ಹತ್ತಿದರು",
+  "driverGotOn": "ಹತ್ತಿದರು",
+  "driverGotOff": "ಇಳಿದರು",
+  "driverOnAt": "{time} ಕ್ಕೆ ಹತ್ತಿದರು",
+  "driverOffAt": "{time} ಕ್ಕೆ ಇಳಿದರು",
+  "driverScanPass": "ಬಸ್ ಪಾಸ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ",
+  "driverScanHint": "ವಿದ್ಯಾರ್ಥಿಯ ಬಸ್ ಪಾಸ್‌ನ QR ಕಡೆಗೆ ಕ್ಯಾಮೆರಾ ತಿರುಗಿಸಿ",
+  "driverMarked": "ದಾಖಲಿಸಲಾಗಿದೆ",
+  "driverSos": "ಎಸ್‌ಒಎಸ್",
+  "driverSosAsk": "ಈಗ ಸಾರಿಗೆ ಕಚೇರಿಗೆ ಎಸ್‌ಒಎಸ್ ಕಳುಹಿಸಬೇಕೇ? ಅವರಿಗೆ ಬಸ್‌ನ ಸ್ಥಳ ತಕ್ಷಣ ಸಿಗುತ್ತದೆ.",
+  "driverSosNote": "ಏನಾಗಿದೆ (ಐಚ್ಛಿಕ)",
+  "driverSosSend": "ಎಸ್‌ಒಎಸ್ ಕಳುಹಿಸಿ",
+  "driverSosSent": "ಎಸ್‌ಒಎಸ್ ಕಳುಹಿಸಲಾಗಿದೆ. ಸಾರಿಗೆ ಕಚೇರಿಗೆ ತಿಳಿಸಲಾಗಿದೆ.",
+  "driverCancel": "ರದ್ದುಮಾಡಿ",
+  "driverCrewOnTrip": "ಬಸ್ ಓಡುತ್ತಿದೆ · {route}",
+  "driverCrewWaiting": "ಚಾಲಕರು ಇನ್ನೂ ಪ್ರಯಾಣ ಆರಂಭಿಸಿಲ್ಲ. ಬಸ್ ಹೊರಟಾಗ ವಿದ್ಯಾರ್ಥಿಗಳ ಪಟ್ಟಿ ತೆರೆಯುತ್ತದೆ."
 }

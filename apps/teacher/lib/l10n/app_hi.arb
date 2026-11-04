@@ -1902,5 +1902,22 @@
   "libReady": "डेस्क पर आपकी प्रतीक्षा में",
   "libWaiting": "प्रति के लिए कतार में",
   "libCancel": "रद्द करें",
-  "libCancelled": "आरक्षण रद्द"
+  "libCancelled": "आरक्षण रद्द",
+  "driverManifest": "बस में विद्यार्थी",
+  "driverManifestCount": "{onBoard} बस में · {riders} में से {boarded} चढ़े",
+  "driverGotOn": "चढ़े",
+  "driverGotOff": "उतरे",
+  "driverOnAt": "{time} बजे चढ़े",
+  "driverOffAt": "{time} बजे उतरे",
+  "driverScanPass": "बस पास स्कैन करें",
+  "driverScanHint": "विद्यार्थी के बस पास के QR पर कैमरा रखें",
+  "driverMarked": "दर्ज किया",
+  "driverSos": "एसओएस",
+  "driverSosAsk": "अभी परिवहन कार्यालय को एसओएस भेजें? उन्हें बस की स्थिति तुरंत मिलेगी।",
+  "driverSosNote": "क्या हुआ (वैकल्पिक)",
+  "driverSosSend": "एसओएस भेजें",
+  "driverSosSent": "एसओएस भेजा गया। परिवहन कार्यालय को सूचित कर दिया गया है।",
+  "driverCancel": "रद्द करें",
+  "driverCrewOnTrip": "बस चल रही है · {route}",
+  "driverCrewWaiting": "चालक ने अभी यात्रा शुरू नहीं की है। बस चलने पर विद्यार्थियों की सूची खुलेगी।"
 }

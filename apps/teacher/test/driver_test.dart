@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:zynetix_teacher/core/api.dart';
 import 'package:zynetix_teacher/core/models.dart';
 import 'package:zynetix_teacher/features/driver/driver_screen.dart';
+import 'package:zynetix_teacher/features/driver/manifest_screen.dart';
 import 'package:zynetix_teacher/features/driver/location.dart';
 import 'package:zynetix_teacher/features/driver/trip_controller.dart';
 
@@ -238,6 +239,48 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('Location permission is needed'), findsOneWidget);
       expect(find.byKey(const Key('driverRunning')), findsNothing);
+    });
+
+    testWidgets('marks students on and off from the manifest, by hand and by the pass QR, and raises an SOS', (tester) async {
+      await pumpScreen(tester);
+      await tester.tap(find.byKey(const Key('driverStart')));
+      await tester.pumpAndSettle();
+      loc.controller.add(const GeoFix(lat: 12.95, lng: 77.62, speedKmh: 20));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('driverSos')));
+      await tester.tap(find.byKey(const Key('driverSos')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('sosNote')), 'Tyre burst');
+      await tester.tap(find.byKey(const Key('sosSend')));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('sos trip1 Tyre burst'));
+      expect(find.text('SOS sent. The transport office has been alerted.'), findsOneWidget);
+
+      await tester.pumpWidget(localizedApp(home: ManifestScreen(api: api, tripId: 'trip1', scan: (_) async => 'KXBUS:0f8fad5b-d9cb-469f-a165-70867728950e:st2')));
+      await tester.pumpAndSettle();
+      expect(find.text('1 on board · 1 of 2 got on'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('off-st1')));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('mark trip1 st1 alight'));
+      expect(find.text('0 on board · 1 of 2 got on'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('manifestScan')));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('mark trip1 KXBUS:0f8fad5b-d9cb-469f-a165-70867728950e:st2 board'));
+      expect(find.text('1 on board · 2 of 2 got on'), findsOneWidget);
+    });
+
+    testWidgets('a conductor opens the students of the run the driver started, and cannot start one', (tester) async {
+      api.driverData = DriverHome(
+        routes: [DriverRoute(id: 'r1', name: 'Route 4 · Indiranagar', role: 'conductor', stops: api.driverData.routes.first.stops)],
+        trip: const DriverTrip(id: 'trip9', routeId: 'r1', direction: TripDirection.pickup),
+      );
+      await pumpScreen(tester);
+      expect(find.byKey(const Key('driverCrewTrip')), findsOneWidget);
+      expect(find.byKey(const Key('driverStart')), findsNothing);
+      await tester.tap(find.byKey(const Key('driverManifest')));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('manifest trip9'));
+      expect(api.positions, isEmpty);
     });
 
     testWidgets('in Hindi', (tester) async {

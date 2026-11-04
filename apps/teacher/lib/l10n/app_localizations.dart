@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// App name (keep in English).
   ///
@@ -8444,9 +8451,112 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reservation cancelled'**
   String get libCancelled;
+
+  /// No description provided for @driverManifest.
+  ///
+  /// In en, this message translates to:
+  /// **'Students on board'**
+  String get driverManifest;
+
+  /// No description provided for @driverManifestCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{onBoard} on board · {boarded} of {riders} got on'**
+  String driverManifestCount(int onBoard, int boarded, int riders);
+
+  /// No description provided for @driverGotOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get driverGotOn;
+
+  /// No description provided for @driverGotOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get driverGotOff;
+
+  /// No description provided for @driverOnAt.
+  ///
+  /// In en, this message translates to:
+  /// **'On at {time}'**
+  String driverOnAt(Object time);
+
+  /// No description provided for @driverOffAt.
+  ///
+  /// In en, this message translates to:
+  /// **'off at {time}'**
+  String driverOffAt(Object time);
+
+  /// No description provided for @driverScanPass.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a bus pass'**
+  String get driverScanPass;
+
+  /// No description provided for @driverScanHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Point the camera at the QR on the student’s bus pass'**
+  String get driverScanHint;
+
+  /// No description provided for @driverMarked.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked'**
+  String get driverMarked;
+
+  /// No description provided for @driverSos.
+  ///
+  /// In en, this message translates to:
+  /// **'SOS'**
+  String get driverSos;
+
+  /// No description provided for @driverSosAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Send an SOS to the transport office now? They get the bus’s position at once.'**
+  String get driverSosAsk;
+
+  /// No description provided for @driverSosNote.
+  ///
+  /// In en, this message translates to:
+  /// **'What is wrong (optional)'**
+  String get driverSosNote;
+
+  /// No description provided for @driverSosSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send SOS'**
+  String get driverSosSend;
+
+  /// No description provided for @driverSosSent.
+  ///
+  /// In en, this message translates to:
+  /// **'SOS sent. The transport office has been alerted.'**
+  String get driverSosSent;
+
+  /// No description provided for @driverCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get driverCancel;
+
+  /// No description provided for @driverCrewOnTrip.
+  ///
+  /// In en, this message translates to:
+  /// **'The bus is running · {route}'**
+  String driverCrewOnTrip(Object route);
+
+  /// No description provided for @driverCrewWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'The driver has not started a run yet. The students’ list opens when the bus sets off.'**
+  String get driverCrewWaiting;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -8455,7 +8565,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

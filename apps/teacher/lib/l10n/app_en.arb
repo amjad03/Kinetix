@@ -4942,5 +4942,26 @@
   "libCancelled": "Reservation cancelled",
   "@libCancelled": {
     "description": "Library (Profile → Work)."
-  }
+  },
+  "driverManifest": "Students on board",
+  "driverManifestCount": "{onBoard} on board · {boarded} of {riders} got on",
+  "@driverManifestCount": {"placeholders": {"onBoard": {"type": "int"}, "boarded": {"type": "int"}, "riders": {"type": "int"}}},
+  "driverGotOn": "On",
+  "driverGotOff": "Off",
+  "driverOnAt": "On at {time}",
+  "@driverOnAt": {"placeholders": {"time": {}}},
+  "driverOffAt": "off at {time}",
+  "@driverOffAt": {"placeholders": {"time": {}}},
+  "driverScanPass": "Scan a bus pass",
+  "driverScanHint": "Point the camera at the QR on the student’s bus pass",
+  "driverMarked": "Marked",
+  "driverSos": "SOS",
+  "driverSosAsk": "Send an SOS to the transport office now? They get the bus’s position at once.",
+  "driverSosNote": "What is wrong (optional)",
+  "driverSosSend": "Send SOS",
+  "driverSosSent": "SOS sent. The transport office has been alerted.",
+  "driverCancel": "Cancel",
+  "driverCrewOnTrip": "The bus is running · {route}",
+  "@driverCrewOnTrip": {"placeholders": {"route": {}}},
+  "driverCrewWaiting": "The driver has not started a run yet. The students’ list opens when the bus sets off."
 }
