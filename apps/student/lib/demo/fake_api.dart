@@ -533,6 +533,103 @@ class FakeStudentApi implements StudentApi {
     return List.of(lmsCourseList);
   }
 
+  /// LMS pass: progress, the offline bundle, live classes, certificates, paths, packages and proctoring.
+  final lmsProgress = <String>[];
+  List<Map<String, Object>> lmsSynced = [];
+  Map<String, dynamic> lmsBundle = {
+    'studentId': 's1',
+    'generatedAt': '2026-11-02T10:00:00Z',
+    'courses': [
+      {
+        'id': 'c1',
+        'title': 'Mathematics 7 B',
+        'subject': 'Mathematics',
+        'completion': {'total': 3, 'done': 1, 'pct': 33, 'eligible': false, 'missing': ['items']},
+        'modules': [
+          {
+            'title': 'Fractions',
+            'items': [
+              {'id': 'i1', 'kind': 'page', 'title': 'Adding fractions', 'body': 'Make the denominators equal, then add the numerators.', 'completionRule': 'view', 'completed': true, 'sizeKb': 2},
+              {'id': 'i2', 'kind': 'link', 'title': 'Practice sheet', 'url': 'https://example.com/p', 'completionRule': 'mark_done', 'completed': false},
+              {'id': 'i3', 'kind': 'quiz', 'title': 'Fractions quiz', 'completionRule': 'pass', 'completed': false, 'locked': true},
+            ],
+          },
+        ],
+        'announcements': [{'title': 'Unit test on Friday'}],
+      },
+    ],
+  };
+  List<LiveClassRow> liveClasses = [LiveClassRow(id: 'l1', title: 'Doubt session', course: 'Mathematics 7 B', subject: 'Mathematics', startsAt: DateTime(2026, 11, 4, 16), durationMin: 45, provider: 'meet', open: true)];
+  List<LmsCertificate> certificates = [LmsCertificate(id: 'ct1', title: 'Science 7 B', kind: 'course', serial: 'CC/2026/0007', issuedAt: DateTime(2026, 10, 30), completedPct: 92)];
+  List<LearningPathRow> learningPaths = const [LearningPathRow(id: 'p1', title: 'Number sense track', pct: 50, complete: false, certificate: true, steps: [(title: 'Mathematics 7 B', required: true, done: false), (title: 'Science 7 B', required: false, done: true)])];
+  final quizEvents = <Map<String, Object>>[];
+  bool quizSubmitOnEvent = false;
+
+  @override
+  Future<void> lmsItemProgress(String itemId, {bool completed = false}) async {
+    calls.add('lmsItemProgress $itemId $completed');
+    if (lmsError != null) throw lmsError!;
+    lmsProgress.add('$itemId $completed');
+  }
+
+  @override
+  Future<Map<String, dynamic>> lmsOfflineBundle(String studentId) async {
+    calls.add('lmsOfflineBundle $studentId');
+    if (lmsError != null) throw lmsError!;
+    return lmsBundle;
+  }
+
+  @override
+  Future<int> syncLmsProgress(List<Map<String, Object>> events) async {
+    calls.add('syncLmsProgress ${events.length}');
+    if (lmsError != null) throw lmsError!;
+    lmsSynced = [...lmsSynced, ...events];
+    return events.length;
+  }
+
+  @override
+  Future<List<LiveClassRow>> myLiveClasses(String studentId) async {
+    calls.add('myLiveClasses');
+    if (lmsError != null) throw lmsError!;
+    return liveClasses;
+  }
+
+  @override
+  Future<String> joinLiveClass(String liveId) async {
+    calls.add('joinLiveClass $liveId');
+    return 'https://meet.google.com/abc-defg-hij';
+  }
+
+  @override
+  Future<List<LmsCertificate>> myLmsCertificates(String studentId) async {
+    calls.add('myLmsCertificates');
+    if (lmsError != null) throw lmsError!;
+    return certificates;
+  }
+
+  @override
+  Future<void> claimCourseCertificate(String courseId) async => calls.add('claimCourseCertificate $courseId');
+
+  @override
+  Future<List<LearningPathRow>> myLearningPaths(String studentId) async {
+    calls.add('myLearningPaths');
+    if (lmsError != null) throw lmsError!;
+    return learningPaths;
+  }
+
+  @override
+  Future<String> launchPackage(String packageId) async {
+    calls.add('launchPackage $packageId');
+    return 'http://test/v1/scorm/player/token';
+  }
+
+  @override
+  Future<bool> reportQuizEvents(String attemptId, List<Map<String, Object>> events) async {
+    calls.add('reportQuizEvents $attemptId ${events.length}');
+    quizEvents.addAll(events);
+    return quizSubmitOnEvent;
+  }
+
   @override
   Future<LmsCourseDetail> lmsCourse(String courseId, String studentId) async {
     calls.add('lmsCourse $courseId');
@@ -542,13 +639,15 @@ class FakeStudentApi implements StudentApi {
       subject: 'Mathematics',
       description: '',
       modules: [
-        LmsModule(title: 'Fractions', items: [LmsItem(kind: 'topic', title: 'Adding fractions'), LmsItem(kind: 'link', title: 'Practice sheet', url: 'https://example.com/p')]),
+        LmsModule(title: 'Fractions', items: [LmsItem(id: 'i1', kind: 'page', title: 'Adding fractions', body: 'Make the denominators equal, then add the numerators.', completed: true, sizeKb: 2), LmsItem(id: 'i2', kind: 'link', title: 'Practice sheet', url: 'https://example.com/p', completionRule: 'mark_done'), LmsItem(id: 'i3', kind: 'quiz', title: 'Fractions quiz', completionRule: 'pass', locked: true)]),
         LmsModule(title: 'Decimals', items: []),
       ],
       announcements: ['Unit test on Friday'],
       parts: [LmsGradePart(name: 'Tests', weight: 60, percent: 80), LmsGradePart(name: 'Homework', weight: 40, percent: 85)],
       overall: 82,
       letter: 'A',
+      completion: LmsCompletion(total: 3, done: 1, pct: 33, eligible: false, missing: ['items']),
+      certificate: true,
     );
   }
 

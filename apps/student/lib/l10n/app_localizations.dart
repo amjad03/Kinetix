@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// No description provided for @today.
   ///
@@ -10225,7 +10232,12 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{eligible} drives open to you · {registered} registered · {shortlisted} shortlisted · {offers} offers'**
-  String ppCounts(String eligible, String registered, String shortlisted, String offers);
+  String ppCounts(
+    String eligible,
+    String registered,
+    String shortlisted,
+    String offers,
+  );
 
   /// Student placement dashboard (placements pass).
   ///
@@ -10658,9 +10670,280 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Filled from your record; check it and save'**
   String get ppFilled;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} done'**
+  String lpProgress(int done, int total);
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Offline copy from {when}'**
+  String lpOfflineCopy(String when);
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'No copy on this phone yet. Connect once to keep your courses for offline reading.'**
+  String get lpOfflineNone;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'{count} offline steps will be sent when you are back online'**
+  String lpPendingSync(int count);
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Live classes'**
+  String get lpLive;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get lpJoin;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Joined'**
+  String get lpJoined;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Opens 15 minutes before'**
+  String get lpLiveOpensSoon;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'{course} · {when}'**
+  String lpLiveAt(String course, String when);
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates and learning paths'**
+  String get lpAchievements;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Certificates'**
+  String get lpCertificates;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'No certificates yet. Finish a course to earn one.'**
+  String get lpNoCertificates;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Learning paths'**
+  String get lpPaths;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'No learning paths for your class yet.'**
+  String get lpNoPaths;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'{pct}% of the path done'**
+  String lpPathProgress(int pct);
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'optional'**
+  String get lpOptional;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Get my certificate'**
+  String get lpGetCertificate;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'You have completed this course.'**
+  String get lpCertificateReady;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate issued'**
+  String get lpCertificateTaken;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Finish these courses first: {names}'**
+  String lpNeedsCourses(String names);
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the item before this one first'**
+  String get lpLocked;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as done'**
+  String get lpMarkDone;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as done'**
+  String get lpMarkedDone;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Open this quiz from the Quizzes tab'**
+  String get lpQuizInTab;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'{kb} KB'**
+  String lpSizeKb(int kb);
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'{min} min'**
+  String lpMinutes(int min);
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Done when opened'**
+  String get lpRuleView;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Mark it done when finished'**
+  String get lpRuleMarkDone;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Done when you pass'**
+  String get lpRulePass;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson'**
+  String get lpKindPage;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Video'**
+  String get lpKindVideo;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'File'**
+  String get lpKindFile;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get lpKindLink;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Interactive lesson'**
+  String get lpKindScorm;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get lpKindQuiz;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Live class'**
+  String get lpKindLive;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Material'**
+  String get lpKindOther;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'This quiz records when you leave the app.'**
+  String get lpProctorNotice;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Leaving the app {max} times submits the quiz.'**
+  String lpProctorStrict(int max);
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'A wrong answer loses {pct}% of its marks; a blank one loses nothing.'**
+  String lpNegativeNotice(int pct);
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Your quiz was submitted because you left it too many times.'**
+  String get lpAutoSubmitted;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Revoked'**
+  String get lpRevoked;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the link'**
+  String get lpOpenFailed;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Check online'**
+  String get lpVerify;
+
+  /// LMS pass (courses, live classes, certificates, offline).
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress'**
+  String get lpCourseProgress;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -10669,7 +10952,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

@@ -285,6 +285,25 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> with WidgetsBindi
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Leaving the app saves at once: the time keeps running on the server.
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) _flush();
+    // A proctored quiz tells the teacher the student left the app; too many times under "strict" submits it.
+    if (state == AppLifecycleState.paused && widget.attempt.proctoring != 'off' && !_submitting) _reportLeft();
+  }
+
+  Future<void> _reportLeft() async {
+    try {
+      final submitted = await widget.api.reportQuizEvents(widget.attempt.attemptId, [
+        {'kind': 'app_background', 'at': _now.toUtc().toIso8601String()},
+      ]);
+      if (submitted && mounted) {
+        setState(() => _submitting = true);
+        _tick?.cancel();
+        _autosave?.cancel();
+        say(context, context.l10n.lpAutoSubmitted);
+        Navigator.of(context).pop();
+      }
+    } on ApiException {
+      // Offline: the server still holds the time limit; nothing else to do.
+    }
   }
 
   void _set(String id, Object value) {
@@ -431,6 +450,21 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> with WidgetsBindi
                     : ListView(
                         padding: const EdgeInsets.all(Kx.s16),
                         children: [
+                          if (_index == 0 && (widget.attempt.negativePct > 0 || widget.attempt.proctoring != 'off'))
+                            Container(
+                              key: const Key('qzRules'),
+                              margin: const EdgeInsets.only(bottom: Kx.s12),
+                              padding: const EdgeInsets.all(Kx.s12),
+                              decoration: BoxDecoration(color: c.tertiaryContainer, borderRadius: BorderRadius.circular(8)),
+                              child: Text(
+                                [
+                                  if (widget.attempt.negativePct > 0) l.lpNegativeNotice(widget.attempt.negativePct),
+                                  if (widget.attempt.proctoring != 'off') l.lpProctorNotice,
+                                  if (widget.attempt.proctoring == 'strict') l.lpProctorStrict(widget.attempt.maxViolations),
+                                ].join(' '),
+                                style: context.text.bodyMedium?.copyWith(color: c.onTertiaryContainer),
+                              ),
+                            ),
                           Text(l.qzQuestionOf(_index + 1, qs.length), style: context.text.labelLarge?.copyWith(color: c.primary)),
                           const SizedBox(height: Kx.s4),
                           Text(q.text, key: Key('qText-${q.id}'), style: context.text.titleMedium),

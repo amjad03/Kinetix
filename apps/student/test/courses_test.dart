@@ -34,7 +34,8 @@ void main() {
     await tapAndSettleOn(tester, find.byKey(const Key('course-c1')));
     expect(api.calls, contains('lmsCourse c1'));
     expect(find.text('Fractions'), findsOneWidget);
-    expect(find.text('topic · Adding fractions'), findsOneWidget);
+    expect(find.text('Adding fractions'), findsOneWidget);
+    expect(find.text('1 of 3 done · 33%'), findsOneWidget);
     expect(find.text('Tests (60%)'), findsOneWidget);
     expect(find.text('Unit test on Friday'), findsOneWidget);
   });

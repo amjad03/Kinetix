@@ -359,6 +359,34 @@ abstract class StudentApi implements AnnouncementSource {
   /// One course: modules, content, announcements and the grade breakdown (`GET /v1/lms/courses/:id`).
   Future<LmsCourseDetail> lmsCourse(String courseId, String studentId);
 
+  /// The student opened an item, or marked it done; the item's rule decides what counts (`POST /v1/lms/items/:id/progress`).
+  Future<void> lmsItemProgress(String itemId, {bool completed = false});
+
+  /// Every published course with its released content and progress, kept on the phone for offline reading (`GET /v1/lms/my/offline`).
+  Future<Map<String, dynamic>> lmsOfflineBundle(String studentId);
+
+  /// Progress recorded while offline, applied as of when it happened; returns how many were applied (`POST /v1/lms/my/progress/sync`).
+  Future<int> syncLmsProgress(List<Map<String, Object>> events);
+
+  /// Live classes of the coming week (`GET /v1/lms/my-live`).
+  Future<List<LiveClassRow>> myLiveClasses(String studentId);
+
+  /// Joins a live class: the join is recorded (it becomes attendance) and the meeting link comes back (`POST /v1/lms/live/:id/join`).
+  Future<String> joinLiveClass(String liveId);
+
+  /// Completion certificates (`GET /v1/lms/my/certificates`), and taking one for a completed course.
+  Future<List<LmsCertificate>> myLmsCertificates(String studentId);
+  Future<void> claimCourseCertificate(String courseId);
+
+  /// Learning paths with progress (`GET /v1/lms/my/paths`).
+  Future<List<LearningPathRow>> myLearningPaths(String studentId);
+
+  /// The player address of a SCORM or cmi5 package (`POST /v1/scorm/packages/:id/launch`), absolute.
+  Future<String> launchPackage(String packageId);
+
+  /// Proctoring signals during a quiz attempt (`POST /v1/lms/quiz-attempts/:id/events`); true when the attempt was submitted for too many.
+  Future<bool> reportQuizEvents(String attemptId, List<Map<String, Object>> events);
+
   /// Scholarships open for applications (`GET /v1/finance/scholarship-schemes`).
   Future<List<ScholarshipScheme>> scholarshipSchemes();
 
@@ -1285,6 +1313,39 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<LmsCourseDetail> lmsCourse(String courseId, String studentId) async =>
       LmsCourseDetail.fromJson(await _send('GET', '/v1/lms/courses/$courseId?studentId=$studentId') as Map<String, dynamic>);
+
+  @override
+  Future<void> lmsItemProgress(String itemId, {bool completed = false}) => _send('POST', '/v1/lms/items/$itemId/progress', body: {'completed': completed});
+
+  @override
+  Future<Map<String, dynamic>> lmsOfflineBundle(String studentId) async => (await _send('GET', '/v1/lms/my/offline?studentId=$studentId') as Map).cast<String, dynamic>();
+
+  @override
+  Future<int> syncLmsProgress(List<Map<String, Object>> events) async => ((await _send('POST', '/v1/lms/my/progress/sync', body: {'events': events}) as Map)['applied'] as num).toInt();
+
+  @override
+  Future<List<LiveClassRow>> myLiveClasses(String studentId) async => [for (final r in await _send('GET', '/v1/lms/my-live?studentId=$studentId') as List) LiveClassRow.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<String> joinLiveClass(String liveId) async => (await _send('POST', '/v1/lms/live/$liveId/join') as Map)['joinUrl'] as String;
+
+  @override
+  Future<List<LmsCertificate>> myLmsCertificates(String studentId) async => [for (final r in await _send('GET', '/v1/lms/my/certificates?studentId=$studentId') as List) LmsCertificate.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<void> claimCourseCertificate(String courseId) => _send('POST', '/v1/lms/courses/$courseId/certificate/claim');
+
+  @override
+  Future<List<LearningPathRow>> myLearningPaths(String studentId) async => [for (final r in await _send('GET', '/v1/lms/my/paths?studentId=$studentId') as List) LearningPathRow.fromJson((r as Map).cast<String, dynamic>())];
+
+  @override
+  Future<String> launchPackage(String packageId) async {
+    final path = (await _send('POST', '/v1/scorm/packages/$packageId/launch') as Map)['playerUrl'] as String;
+    return '${baseUrl.replaceAll(RegExp(r'/+$'), '')}$path';
+  }
+
+  @override
+  Future<bool> reportQuizEvents(String attemptId, List<Map<String, Object>> events) async => (await _send('POST', '/v1/lms/quiz-attempts/$attemptId/events', body: {'events': events}) as Map)['submitted'] == true;
 
   @override
   Future<List<ScholarshipScheme>> scholarshipSchemes() async =>
