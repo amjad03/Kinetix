@@ -4977,5 +4977,20 @@
   "driverCancel": "Cancel",
   "driverCrewOnTrip": "The bus is running · {route}",
   "@driverCrewOnTrip": {"placeholders": {"route": {}}},
-  "driverCrewWaiting": "The driver has not started a run yet. The students’ list opens when the bus sets off."
+  "driverCrewWaiting": "The driver has not started a run yet. The students’ list opens when the bus sets off.",
+  "inboxEmergency": "Emergency",
+  "pollPrompt": "Choose an answer",
+  "pollChange": "Thank you for answering. You can change your answer while the poll is open.",
+  "pollClosed": "This poll has closed",
+  "pollVotes": "{votes} ({pct}%)",
+  "@pollVotes": {"placeholders": {"votes": {"type": "int"}, "pct": {"type": "int"}}},
+  "dndTitle": "Do not disturb",
+  "dndHelp": "Families are told when to expect a reply and your phone gets no chat alerts. Emergencies still come through.",
+  "dndOnUntil": "Do not disturb until {when}",
+  "@dndOnUntil": {"placeholders": {"when": {"type": "String"}}},
+  "dndNote": "Note for families (optional)",
+  "dndTwoHours": "For 2 hours",
+  "dndTomorrow": "Until 8 am tomorrow",
+  "dndOff": "Switch off",
+  "dndOffDone": "Do not disturb is off"
 }

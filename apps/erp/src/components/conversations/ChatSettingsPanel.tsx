@@ -25,13 +25,14 @@ export function ChatSettingsPanel({ settings, staff, schoolKind }: { settings: C
   const [days, setDays] = useState<number[]>(settings.officeHours?.days ?? [1, 2, 3, 4, 5, 6]);
   const [office, setOffice] = useState<string[]>(settings.officeUserIds ?? []);
   const [officeRoles, setOfficeRoles] = useState<string[]>(settings.officeRoles ?? []);
+  const [escalate, setEscalate] = useState(String(settings.escalateAfterHours ?? 48));
   const [busy, start] = useTransition();
   const hoursError = hoursOn && (startAt >= endAt || days.length === 0) ? t('fc.set.hoursError') : '';
 
   const save = () =>
     start(async () => {
       if (hoursError) return;
-      const r = await saveChatSettings({ studentChat, officeHours: hoursOn ? { start: startAt, end: endAt, days } : null, officeUserIds: office, officeRoles });
+      const r = await saveChatSettings({ studentChat, officeHours: hoursOn ? { start: startAt, end: endAt, days } : null, officeUserIds: office, officeRoles, escalateAfterHours: Math.max(0, Math.min(336, Math.round(Number(escalate) || 0))) });
       if (!r.ok) return toast.error(r.error);
       toast.success(t('fc.set.saved'));
       router.refresh();
@@ -77,6 +78,11 @@ export function ChatSettingsPanel({ settings, staff, schoolKind }: { settings: C
           <SwitchField label={t('fc.set.studentChat')} checked={studentChat} onChange={setStudentChat} />
           <p className="text-xs text-muted-foreground">{schoolKind ? t('fc.set.studentChatSchool') : t('fc.set.studentChatCollege')}</p>
         </div>
+        <label className="grid max-w-[360px] gap-1.5 text-[13px] font-semibold">
+          {t('fs.set.escalate')}
+          <input type="number" min={0} max={336} value={escalate} onChange={(e) => setEscalate(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm font-normal" data-testid="fc-escalate-hours" />
+          <span className="text-xs font-normal text-muted-foreground">{t('fs.set.escalateHelp')}</span>
+        </label>
         <fieldset className="grid gap-2 border-0 p-0 m-0">
           <legend className="text-[13px] font-semibold mb-1">{t('fc.set.officeStaff')}</legend>
           <p className="text-xs text-muted-foreground">{t('fc.set.officeStaffHelp')}</p>

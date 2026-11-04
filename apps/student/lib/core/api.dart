@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../features/privacy/channel_prefs.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -71,7 +72,7 @@ class OtpChallenge {
 }
 
 /// Everything the Student App asks of the ZYNETIX Cloud API. Tests use a fake.
-abstract class StudentApi implements AnnouncementSource {
+abstract class StudentApi implements AnnouncementSource, ChannelPrefSource {
   String get baseUrl;
   set baseUrl(String value);
 
@@ -1079,6 +1080,18 @@ class HttpStudentApi implements StudentApi {
   @override
   Future<Announcement> acknowledgeAnnouncement(String id) async =>
       Announcement.fromJson(await _send('POST', '/v1/announcements/inbox/$id/ack') as Map<String, dynamic>);
+
+  @override
+  Future<Announcement> voteAnnouncement(String id, int option) async =>
+      Announcement.fromJson(await _send('POST', '/v1/announcements/inbox/$id/vote', body: {'option': option}) as Map<String, dynamic>);
+
+  @override
+  Future<List<ChannelPref>> channelPrefs() async => _prefsOf(await _send('GET', '/v1/comms/preferences'));
+
+  @override
+  Future<List<ChannelPref>> setChannelPref(String channel, bool granted) async => _prefsOf(await _send('PUT', '/v1/comms/preferences', body: {'channel': channel, 'granted': granted}));
+
+  List<ChannelPref> _prefsOf(dynamic j) => [for (final c in ((j as Map)['channels'] as List)) ChannelPref.fromJson((c as Map).cast<String, dynamic>())];
 
   @override
   Future<Uint8List> announcementFile(String id, String fileId) => _download('/v1/announcements/inbox/$id/attachments/$fileId');

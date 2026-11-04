@@ -2,6 +2,7 @@
 /// (`--dart-define=ZYNETIX_DEMO=true`) use them through DemoParentApi (demo_api.dart).
 library;
 
+import '../features/privacy/channel_prefs.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -566,7 +567,7 @@ class FakeParentApi implements ParentApi {
   };
 
   List<Map<String, dynamic>> calendarEvents = [
-    eventJson('e1', 'event', 'College day', '2026-10-10'),
+    {...eventJson('e1', 'event', 'College day', '2026-10-10'), 'rsvp': true, 'rsvpBy': '2026-10-08', 'venue': 'Main ground'},
     eventJson('e2', 'exam', 'Mid-semester exams', '2026-10-12', '2026-10-16', ['BCom']),
     eventJson('e3', 'holiday', 'Dussehra', '2026-10-20', '2026-10-21'),
     eventJson('e4', 'exam', 'BCA practicals', '2026-10-22', null, ['BCA']),
@@ -2074,9 +2075,23 @@ class FakeParentApi implements ParentApi {
       readAt: DateTime.now().subtract(const Duration(days: 2)),
       pinned: false,
     ),
+    Announcement(
+      id: 'an-poll',
+      title: 'Annual Day on 12 December',
+      body: 'Annual Day is on 12 December at 10 am. Please answer the poll.',
+      important: false,
+      requiresAck: false,
+      canAcknowledge: false,
+      sentAt: DateTime.now().subtract(const Duration(days: 4)),
+      senderName: 'Principal',
+      attachments: const [],
+      readAt: DateTime.now().subtract(const Duration(days: 4)),
+      pinned: false,
+      poll: AnnouncementPoll(question: 'Will you attend?', options: const ['Yes', 'No', 'Not sure'], closed: false),
+    ),
   ];
 
-  Announcement _withState(Announcement a, {DateTime? readAt, DateTime? acknowledgedAt}) => Announcement(
+  Announcement _withState(Announcement a, {DateTime? readAt, DateTime? acknowledgedAt, AnnouncementPoll? poll}) => Announcement(
     id: a.id,
     title: a.title,
     body: a.body,
@@ -2089,8 +2104,62 @@ class FakeParentApi implements ParentApi {
     attachments: a.attachments,
     readAt: readAt ?? a.readAt,
     acknowledgedAt: acknowledgedAt ?? a.acknowledgedAt,
-    pinned: a.important && (acknowledgedAt ?? a.acknowledgedAt) == null && (a.expiresAt == null || a.expiresAt!.isAfter(DateTime.now())),
+    pinned: (a.important || a.emergency) && (acknowledgedAt ?? a.acknowledgedAt) == null && (a.expiresAt == null || a.expiresAt!.isAfter(DateTime.now())),
+    emergency: a.emergency,
+    language: a.language,
+    poll: poll ?? a.poll,
   );
+  /// Votes already given on the fake's polls (one other person said "Yes").
+  final Map<String, List<int>> pollVotes = {'an-poll': [0]};
+
+  // ── Messages from the school: channel choices ─────────────────────────────────────────────
+
+  final Map<String, bool> channelChoices = {'sms': true, 'whatsapp': false, 'email': true, 'push': true};
+
+  List<ChannelPref> _channelList() => [for (final e in channelChoices.entries) ChannelPref(channel: e.key, granted: e.value, reachable: true)];
+
+  @override
+  Future<List<ChannelPref>> channelPrefs() async {
+    calls.add('channelPrefs');
+    return _channelList();
+  }
+
+  @override
+  Future<List<ChannelPref>> setChannelPref(String channel, bool granted) async {
+    calls.add('channelPref $channel $granted');
+    channelChoices[channel] = granted;
+    return _channelList();
+  }
+
+  /// RSVPs given in the fake.
+  final Map<String, (String, int)> rsvps = {};
+
+  @override
+  Future<void> rsvp(String eventId, String response, int guests) async {
+    calls.add('rsvp $eventId $response $guests');
+    rsvps[eventId] = (response, guests);
+  }
+
+  @override
+  Future<void> escalateConversation(String conversationId, String reason) async {
+    calls.add('escalate $conversationId $reason');
+  }
+
+  @override
+  Future<Announcement> voteAnnouncement(String id, int option) async {
+    calls.add('announcementVote $id $option');
+    final i = announcementList.indexWhere((a) => a.id == id);
+    if (i < 0) throw ApiException(404, 'Message not found');
+    final a = announcementList[i];
+    final p = a.poll;
+    if (p == null) throw ApiException(400, 'This message has no poll');
+    if (p.closed) throw ApiException(409, 'The poll has closed');
+    final votes = [...?pollVotes[id], option];
+    pollVotes[id] = votes;
+    final results = [for (var k = 0; k < p.options.length; k++) PollResult(option: p.options[k], votes: votes.where((v) => v == k).length, pct: (votes.where((v) => v == k).length * 100) ~/ votes.length)];
+    return announcementList[i] = _withState(a, readAt: a.readAt ?? DateTime.now(), poll: AnnouncementPoll(question: p.question, options: p.options, closed: false, closesAt: p.closesAt, myVote: option, results: results));
+  }
+
 
   @override
   Future<AnnouncementInbox> announcements() async {

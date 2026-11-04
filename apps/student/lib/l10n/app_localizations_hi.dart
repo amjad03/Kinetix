@@ -5961,4 +5961,60 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get ppFilled => 'आपके रिकॉर्ड से भरा गया; जाँचकर सहेजें';
+
+  @override
+  String get inboxEmergency => 'आपातकाल';
+
+  @override
+  String get pollPrompt => 'एक उत्तर चुनें';
+
+  @override
+  String get pollChange => 'उत्तर देने के लिए धन्यवाद। मतदान खुला रहने तक आप उत्तर बदल सकते हैं।';
+
+  @override
+  String get pollClosed => 'यह मतदान बंद हो गया है';
+
+  @override
+  String pollVotes(int votes, int pct) {
+    return '$votes ($pct%)';
+  }
+
+  @override
+  String get prefTitle => 'संस्थान से संदेश';
+
+  @override
+  String get prefLinkHelp => 'एसएमएस, व्हाट्सऐप, ईमेल और फ़ोन सूचनाएँ चुनें';
+
+  @override
+  String get prefIntro => 'चुनें कि संस्थान ऐप के बाहर आपसे कैसे संपर्क करे। आप इसे कभी भी बदल सकते हैं।';
+
+  @override
+  String get prefSms => 'एसएमएस';
+
+  @override
+  String get prefWhatsapp => 'व्हाट्सऐप';
+
+  @override
+  String get prefEmail => 'ईमेल';
+
+  @override
+  String get prefPush => 'फ़ोन सूचनाएँ';
+
+  @override
+  String get prefSmsHelp => 'शुल्क अनुस्मारक, अनुपस्थिति और सूचनाएँ संदेश से';
+
+  @override
+  String get prefWhatsappHelp => 'संस्थान के सत्यापित खाते से व्हाट्सऐप पर सूचनाएँ';
+
+  @override
+  String get prefEmailHelp => 'ईमेल से सूचनाएँ और पत्र';
+
+  @override
+  String get prefPushHelp => 'नई सूचनाओं और संदेशों के लिए इस फ़ोन पर सूचना';
+
+  @override
+  String get prefNoAddress => 'संस्थान के पास आपका यह नंबर या पता नहीं है';
+
+  @override
+  String get prefAlwaysOn => 'ऐप में सूचनाएँ और आपात सूचनाएँ हमेशा आप तक पहुँचती हैं।';
 }

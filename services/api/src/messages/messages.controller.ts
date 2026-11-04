@@ -18,7 +18,9 @@ import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { isSchoolAdmin } from '../teacher/teacher.service.js';
 import { naturalAsc } from '../common/natural-order.js';
-import { FAMILY_ROLES, OFFICE_ROLE_CHOICES, officeRolesOf, outsideOfficeHours, studentChatEnabled, tick, validOfficeHours } from './chat-rules.js';
+import { FAMILY_ROLES, OFFICE_ROLE_CHOICES, moderationFlag, officeRolesOf, outsideOfficeHours, studentChatEnabled, tick, validOfficeHours } from './chat-rules.js';
+import { ChatSafetyService, DEFAULT_ESCALATE_HOURS } from './chat-safety.service.js';
+import { chatAvailability, chatBlocks, messageReports, REPORT_REASONS } from '../db/schema-comms.js';
 
 const StartBody = z
   .object({ studentId: z.uuid(), withUserId: z.uuid().optional(), office: z.boolean().default(false) })
@@ -36,8 +38,21 @@ const SettingsBody = z.object({
   officeHours: z.object({ start: HHMM, end: HHMM, days: z.array(z.number().int().min(1).max(7)).min(1).max(7) }).nullable().optional(),
   officeUserIds: z.array(z.uuid()).max(50).optional(),
   officeRoles: z.array(z.enum(OFFICE_ROLE_CHOICES)).max(10).optional(),
+  escalateAfterHours: z.number().int().min(0).max(336).optional(),
 });
 const ClassTeacherBody = z.object({ userId: z.uuid().nullable() });
+const ReportBody = z.object({ reason: z.enum(REPORT_REASONS), note: z.string().trim().max(500).default('') });
+const EscalateBody = z.object({ reason: z.string().trim().min(5, 'Say why it needs the head of department').max(300) });
+const BlockBody = z.object({ reason: z.string().trim().min(5, 'Say why').max(300), days: z.number().int().min(1).max(365).nullable().default(null) });
+const ModerateBody = z
+  .object({ action: z.enum(['dismiss', 'hide', 'warn', 'block']), note: z.string().trim().max(500).default(''), blockDays: z.number().int().min(1).max(365).nullable().default(null) })
+  .refine((b) => b.action === 'dismiss' || b.note.length >= 3, { message: 'Say what was done and why', path: ['note'] });
+const AvailabilityBody = z.object({
+  dndUntil: z.iso.datetime({ offset: true }).nullable(),
+  hours: z.object({ start: HHMM, end: HHMM, days: z.array(z.number().int().min(1).max(7)).min(1).max(7) }).nullable(),
+  awayNote: z.string().trim().max(200).default(''),
+});
+const REMOVED = 'This message was removed by the institution.';
 
 const staffUser = alias(users, 'staff_user');
 const familyUser = alias(users, 'family_user');
@@ -61,6 +76,7 @@ export class ConversationsController {
     private readonly scans: UploadScanService,
     private readonly storage: ObjectStorage,
     private readonly clock: Clock,
+    private readonly safety: ChatSafetyService,
   ) {}
 
   /**
@@ -168,7 +184,7 @@ export class ConversationsController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const t = await this.tenant(tx);
       const office = await this.officeStaffIds(tx);
-      const base = { studentChat: studentChatEnabled(t.settings.chat, t.kind), officeHours: t.settings.chat?.officeHours ?? null, timezone: t.timezone, kind: t.kind, isOffice: office.includes(p.userId) };
+      const base = { studentChat: studentChatEnabled(t.settings.chat, t.kind), officeHours: t.settings.chat?.officeHours ?? null, escalateAfterHours: t.settings.chat?.escalateAfterHours ?? DEFAULT_ESCALATE_HOURS, timezone: t.timezone, kind: t.kind, isOffice: office.includes(p.userId) };
       if (!isSchoolAdmin(p)) return base;
       const officeStaff = office.length ? await tx.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, office)).orderBy(asc(users.fullName)) : [];
       const classTeachers = await tx
@@ -193,10 +209,11 @@ export class ConversationsController {
         ...(body.officeHours !== undefined ? { officeHours: body.officeHours } : {}),
         ...(body.officeUserIds !== undefined ? { officeUserIds: [...new Set(body.officeUserIds)] } : {}),
         ...(body.officeRoles !== undefined ? { officeRoles: [...new Set(body.officeRoles)] } : {}),
+        ...(body.escalateAfterHours !== undefined ? { escalateAfterHours: body.escalateAfterHours } : {}),
       };
       await tx.update(tenants).set({ settings: { ...t.settings, chat } }).where(eq(tenants.id, p.tenantId));
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'conversation.settings_changed', subjectType: 'tenant', subjectId: p.tenantId, data: { before, after: chat } });
-      return { studentChat: studentChatEnabled(chat, t.kind), officeHours: chat.officeHours ?? null, officeUserIds: chat.officeUserIds ?? [], officeRoles: officeRolesOf(chat) };
+      return { studentChat: studentChatEnabled(chat, t.kind), officeHours: chat.officeHours ?? null, officeUserIds: chat.officeUserIds ?? [], officeRoles: officeRolesOf(chat), escalateAfterHours: chat.escalateAfterHours ?? DEFAULT_ESCALATE_HOURS };
     });
   }
 
@@ -361,8 +378,10 @@ export class ConversationsController {
           senderName: users.fullName,
           kind: messages.kind,
           body: messages.body,
-          attachment: sql<{ name: string; type: string; size: number } | null>`case when ${messages.attachmentKey} is null then null else json_build_object('name', ${messages.attachmentName}, 'type', ${messages.attachmentType}, 'size', ${messages.attachmentSize}) end`,
+          attachment: sql<{ name: string; type: string; size: number } | null>`case when ${messages.attachmentKey} is null or ${messages.hiddenAt} is not null then null else json_build_object('name', ${messages.attachmentName}, 'type', ${messages.attachmentType}, 'size', ${messages.attachmentSize}) end`,
           createdAt: messages.createdAt,
+          hiddenAt: messages.hiddenAt,
+          flag: messages.flag,
         })
         .from(messages)
         .innerJoin(users, eq(users.id, messages.senderId))
@@ -371,12 +390,18 @@ export class ConversationsController {
         .limit(50);
       const t = await this.tenant(tx);
       const hours = t.settings.chat?.officeHours ?? null;
+      const blocked = side === 'family' ? await this.safety.activeBlock(tx, p.userId, fresh.staffId) : null;
+      const away = side === 'family' ? await this.safety.away(tx, fresh.staffId, t.timezone) : null;
       return {
         conversation: await this.summary(tx, p, id, office),
-        messages: page.reverse().map((m) => this.withTick(m, fresh, side)),
+        // A removed message keeps its place; leaders reading for safeguarding still see what it said, and why it was flagged.
+        messages: page.reverse().map(({ hiddenAt, flag, ...m }) => ({ ...this.withTick({ ...m, body: hiddenAt && side !== 'leader' ? REMOVED : m.body }, fresh, side), hidden: !!hiddenAt, ...(side === 'leader' ? { flag } : {}) })),
         officeHours: hours,
         afterHours: side === 'family' && outsideOfficeHours(this.clock.now(), t.timezone, hours),
-        canWrite: side === 'staff' || (side === 'family' && fresh.status !== 'closed'),
+        away: away ? { until: away.until, note: away.note, hours: away.hours } : null,
+        escalated: fresh.escalatedAt ? { at: fresh.escalatedAt, to: fresh.escalatedTo, reason: fresh.escalationReason } : null,
+        blocked: blocked ? { reason: blocked.reason, until: blocked.until } : null,
+        canWrite: side === 'staff' || (side === 'family' && fresh.status !== 'closed' && !blocked),
       };
     });
   }
@@ -386,7 +411,11 @@ export class ConversationsController {
   async send(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(SendBody)) body: z.infer<typeof SendBody>) {
     let stored: Awaited<ReturnType<typeof putBlob>> | undefined;
     // Who may write is checked before the file is stored.
-    await this.db.withTenant(p.tenantId, async (tx) => this.writable(tx, p, await this.load(tx, id), await this.officeStaffIds(tx)));
+    await this.db.withTenant(p.tenantId, async (tx) => {
+      const c = await this.load(tx, id);
+      this.writable(tx, p, c, await this.officeStaffIds(tx));
+      await this.assertNotBlocked(tx, p, c);
+    });
     if (body.attachment) {
       stored = await putBlob(this.storage, p.tenantId, 'conversations', body.attachment, this.scans);
     }
@@ -394,8 +423,12 @@ export class ConversationsController {
       const c = await this.load(tx, id);
       const office = await this.officeStaffIds(tx);
       const side = this.writable(tx, p, c, office);
+      await this.assertNotBlocked(tx, p, c);
       const fromStaff = side === 'staff';
       const now = new Date();
+      // The language filter flags (never blocks) a message for the moderators.
+      const toStudent = fromStaff && !!(await tx.select({ id: students.id }).from(students).where(eq(students.userId, c.familyId)).limit(1))[0];
+      const flag = body.body ? moderationFlag(body.body, toStudent) : null;
       const [m] = await tx
         .insert(messages)
         .values({
@@ -404,6 +437,7 @@ export class ConversationsController {
           senderId: p.userId,
           body: body.body,
           createdAt: now,
+          flag,
           ...(stored ? { attachmentKey: stored.storageKey, attachmentName: stored.title, attachmentType: stored.contentType, attachmentSize: stored.sizeBytes } : {}),
         })
         .returning();
@@ -416,8 +450,16 @@ export class ConversationsController {
           ...(!fromStaff && c.status === 'resolved' ? { status: 'open' as const, statusChangedAt: now, statusChangedBy: p.userId } : {}),
         })
         .where(eq(conversations.id, id));
+      if (flag) {
+        await tx.insert(messageReports).values({ tenantId: p.tenantId, messageId: m.id, conversationId: id, reportedBy: null, reason: 'filter', note: flag });
+        await audit(tx, { tenantId: p.tenantId, actorType: 'system', action: 'conversation.message_flagged', subjectType: 'conversation', subjectId: id, data: { messageId: m.id, flag } });
+      }
       const [sender] = await tx.select({ fullName: users.fullName }).from(users).where(eq(users.id, p.userId));
       const recipientId = fromStaff ? c.familyId : c.staffId;
+      // An escalated thread: the head of department hears the family too.
+      if (!fromStaff && c.escalatedTo && c.escalatedTo !== c.staffId) {
+        await this.notifications.messageSent(tx, { id: m.id, conversationId: id, recipientId: c.escalatedTo, senderName: sender?.fullName ?? 'ZYNETIX', body: body.body || stored?.title || '', studentId: c.studentId });
+      }
       if (fromStaff || !c.staffMuted) {
         await this.notifications.messageSent(tx, {
           id: m.id,
@@ -431,7 +473,8 @@ export class ConversationsController {
       const t = await this.tenant(tx);
       const hours = t.settings.chat?.officeHours ?? null;
       const afterHours = !fromStaff && outsideOfficeHours(this.clock.now(), t.timezone, hours);
-      const people = [c.familyId, c.staffId, p.userId, ...(c.kind === 'office' ? office : [])];
+      const away = fromStaff ? null : await this.safety.away(tx, c.staffId, t.timezone);
+      const people = [c.familyId, c.staffId, p.userId, ...(c.escalatedTo ? [c.escalatedTo] : []), ...(c.kind === 'office' ? office : [])];
       return {
         out: {
           id: m.id,
@@ -444,6 +487,8 @@ export class ConversationsController {
           status: 'sent' as const,
           afterHours,
           officeHours: afterHours ? hours : null,
+          away: away ? { until: away.until, note: away.note, hours: away.hours } : null,
+          flagged: !!flag,
         },
         notify: people,
       };
@@ -562,11 +607,195 @@ export class ConversationsController {
     return summary;
   }
 
+  // ---- safety: reports, moderation, blocks, escalation, availability ----------------------------
+
+  /** Either side reports a message to the moderators (once per person per message). */
+  @Post(':id/messages/:messageId/report')
+  @HttpCode(201)
+  @Auth('user')
+  report(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Param('messageId', ParseUUIDPipe) messageId: string, @Body(new ZodBody(ReportBody)) body: z.infer<typeof ReportBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const c = await this.load(tx, id);
+      const side = this.sideOf(p, c, await this.officeStaffIds(tx));
+      if (side !== 'family' && side !== 'staff') throw new NotFoundException('Conversation not found');
+      const [m] = await tx.select({ id: messages.id, senderId: messages.senderId, kind: messages.kind }).from(messages).where(and(eq(messages.id, messageId), eq(messages.conversationId, id)));
+      if (!m || m.kind !== 'text') throw new NotFoundException('Message not found');
+      if (m.senderId === p.userId) throw new BadRequestException('You cannot report your own message');
+      const [r] = await tx.insert(messageReports).values({ tenantId: p.tenantId, messageId, conversationId: id, reportedBy: p.userId, reason: body.reason, note: body.note }).onConflictDoNothing().returning();
+      if (!r) throw new ConflictException('You have already reported this message');
+      const moderators = await tx.selectDistinct({ id: userRoles.userId }).from(userRoles).innerJoin(users, eq(users.id, userRoles.userId)).where(and(inArray(userRoles.role, ['principal', 'tenant_admin']), eq(users.status, 'active')));
+      await this.notifications.notifyUsers(tx, moderators.map((x) => x.id), { kind: 'message', text: { title: 'A chat message was reported', body: `Reason: ${body.reason}. Open Conversations > Moderation.` }, data: { conversationId: id, reportId: r.id }, dedupeKey: `message-report:${r.id}` });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'conversation.message_reported', subjectType: 'conversation', subjectId: id, data: { messageId, reason: body.reason } });
+      return { id: r.id, status: r.status };
+    });
+  }
+
+  /** Reports waiting for a decision (or decided), newest first, with the message and the thread. Leaders only. */
+  @Get('moderation')
+  @Auth('user', ['tenant_admin', 'principal'])
+  moderation(@CurrentPrincipal() p: UserPrincipal, @Query('status') status = 'open', @Query('page') page = '1') {
+    const st = z.enum(['open', 'actioned', 'dismissed', 'all']).parse(status);
+    const pg = z.coerce.number().int().min(1).max(10_000).parse(page);
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const where = st === 'all' ? undefined : eq(messageReports.status, st);
+      const [{ n }] = await tx.select({ n: sql<number>`count(*)::int` }).from(messageReports).where(where);
+      const rows = await tx
+        .select({
+          id: messageReports.id,
+          reason: messageReports.reason,
+          note: messageReports.note,
+          status: messageReports.status,
+          action: messageReports.action,
+          resolutionNote: messageReports.resolutionNote,
+          createdAt: messageReports.createdAt,
+          resolvedAt: messageReports.resolvedAt,
+          reporter: sql<string | null>`(select full_name from users u where u.id = ${messageReports.reportedBy})`,
+          conversationId: messageReports.conversationId,
+          message: { id: messages.id, body: messages.body, createdAt: messages.createdAt, hidden: sql<boolean>`${messages.hiddenAt} is not null`, senderId: messages.senderId },
+          sender: users.fullName,
+          student: students.fullName,
+          staff: sql<string>`(select full_name from users u where u.id = ${conversations.staffId})`,
+          family: sql<string>`(select full_name from users u where u.id = ${conversations.familyId})`,
+          senderBlocked: sql<boolean>`exists (select 1 from chat_blocks b where b.user_id = ${messages.senderId} and b.lifted_at is null and (b.until is null or b.until > now()))`,
+        })
+        .from(messageReports)
+        .innerJoin(messages, eq(messages.id, messageReports.messageId))
+        .innerJoin(users, eq(users.id, messages.senderId))
+        .innerJoin(conversations, eq(conversations.id, messageReports.conversationId))
+        .innerJoin(students, eq(students.id, conversations.studentId))
+        .where(where)
+        .orderBy(desc(messageReports.createdAt))
+        .limit(50)
+        .offset((pg - 1) * 50);
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'conversation.moderation_viewed', subjectType: 'tenant', subjectId: p.tenantId, data: { status: st, page: pg } });
+      return { rows, total: n, page: pg, pageSize: 50 };
+    });
+  }
+
+  /** Decides a report: dismiss it, remove the message, warn in the thread, or stop the sender writing. Closes every open report on that message. */
+  @Post('moderation/:reportId')
+  @HttpCode(200)
+  @Auth('user', ['tenant_admin', 'principal'])
+  moderate(@CurrentPrincipal() p: UserPrincipal, @Param('reportId', ParseUUIDPipe) reportId: string, @Body(new ZodBody(ModerateBody)) body: z.infer<typeof ModerateBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [r] = await tx.select().from(messageReports).where(eq(messageReports.id, reportId));
+      if (!r) throw new NotFoundException('Report not found');
+      if (r.status !== 'open') throw new ConflictException('This report has been decided');
+      const [m] = await tx.select().from(messages).where(eq(messages.id, r.messageId));
+      const now = this.clock.now();
+      if (body.action === 'hide') await tx.update(messages).set({ hiddenAt: now, hiddenBy: p.userId }).where(eq(messages.id, m.id));
+      if (body.action === 'warn') await tx.insert(messages).values({ tenantId: p.tenantId, conversationId: r.conversationId, senderId: p.userId, kind: 'system', body: `The institution reminds everyone to keep this conversation respectful. ${body.note}`.slice(0, 500), createdAt: now });
+      if (body.action === 'block') await tx.insert(chatBlocks).values({ tenantId: p.tenantId, userId: m.senderId, blockedBy: p.userId, reason: body.note, until: body.blockDays ? new Date(now.getTime() + body.blockDays * 86_400_000) : null });
+      if (body.action === 'block') await tx.update(messages).set({ hiddenAt: now, hiddenBy: p.userId }).where(eq(messages.id, m.id));
+      const decided = await tx
+        .update(messageReports)
+        .set({ status: body.action === 'dismiss' ? 'dismissed' : 'actioned', action: body.action, resolvedBy: p.userId, resolvedAt: now, resolutionNote: body.note })
+        .where(and(eq(messageReports.messageId, r.messageId), eq(messageReports.status, 'open')))
+        .returning({ id: messageReports.id });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `conversation.moderation_${body.action}`, subjectType: 'conversation', subjectId: r.conversationId, data: { reportId, messageId: r.messageId, reports: decided.length, note: body.note, blockDays: body.blockDays } });
+      return { id: reportId, status: body.action === 'dismiss' ? 'dismissed' : 'actioned', action: body.action, reports: decided.length };
+    });
+  }
+
+  /** People stopped from writing in chat. Leaders see every block; staff see the ones they set. */
+  @Get('blocks')
+  @Auth('user')
+  blocks(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) =>
+      tx
+        .select({ id: chatBlocks.id, userId: chatBlocks.userId, fullName: users.fullName, reason: chatBlocks.reason, until: chatBlocks.until, staffId: chatBlocks.staffId, createdAt: chatBlocks.createdAt, blockedBy: sql<string | null>`(select full_name from users u where u.id = ${chatBlocks.blockedBy})` })
+        .from(chatBlocks)
+        .innerJoin(users, eq(users.id, chatBlocks.userId))
+        .where(and(isNull(chatBlocks.liftedAt), isSchoolAdmin(p) ? undefined : eq(chatBlocks.blockedBy, p.userId)))
+        .orderBy(desc(chatBlocks.createdAt))
+        .limit(200),
+    );
+  }
+
+  /** A member of staff stops the family in this thread writing to them (the office and the head still can be reached). */
+  @Post(':id/block')
+  @HttpCode(201)
+  @Auth('user')
+  block(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(BlockBody)) body: z.infer<typeof BlockBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const c = await this.load(tx, id);
+      const side = this.sideOf(p, c, await this.officeStaffIds(tx));
+      if (side !== 'staff' && side !== 'leader') throw new NotFoundException('Conversation not found');
+      const now = this.clock.now();
+      const [b] = await tx.insert(chatBlocks).values({ tenantId: p.tenantId, userId: c.familyId, blockedBy: p.userId, staffId: side === 'leader' ? null : c.staffId, reason: body.reason, until: body.days ? new Date(now.getTime() + body.days * 86_400_000) : null }).returning();
+      await tx.insert(messages).values({ tenantId: p.tenantId, conversationId: id, senderId: p.userId, kind: 'system', body: 'Messages from the family are paused in this conversation. Contact the office for anything urgent.', createdAt: now });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'conversation.family_blocked', subjectType: 'conversation', subjectId: id, data: { blockId: b.id, reason: body.reason, days: body.days } });
+      return b;
+    });
+  }
+
+  @Post('blocks/:blockId/lift')
+  @HttpCode(200)
+  @Auth('user')
+  lift(@CurrentPrincipal() p: UserPrincipal, @Param('blockId', ParseUUIDPipe) blockId: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [b] = await tx.select().from(chatBlocks).where(eq(chatBlocks.id, blockId));
+      if (!b || b.liftedAt || (!isSchoolAdmin(p) && b.blockedBy !== p.userId)) throw new NotFoundException('Block not found');
+      await tx.update(chatBlocks).set({ liftedAt: this.clock.now(), liftedBy: p.userId }).where(eq(chatBlocks.id, blockId));
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'conversation.block_lifted', subjectType: 'chat_block', subjectId: blockId, data: { userId: b.userId } });
+      return { id: blockId, lifted: true };
+    });
+  }
+
+  /** The family (or the teacher) takes the thread to the head of department. */
+  @Post(':id/escalate')
+  @HttpCode(200)
+  @Auth('user')
+  escalate(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(EscalateBody)) body: z.infer<typeof EscalateBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const c = await this.load(tx, id);
+      const office = await this.officeStaffIds(tx);
+      const side = this.sideOf(p, c, office);
+      if (side !== 'family' && !(side === 'staff' && c.staffId === p.userId)) throw new NotFoundException('Conversation not found');
+      if (c.kind !== 'teacher') throw new BadRequestException('Office conversations are answered by the office');
+      if (c.escalatedAt) throw new ConflictException('This conversation is already with the head of department');
+      if (!(await this.safety.escalationTarget(tx, c.staffId))) throw new ConflictException('There is nobody above this teacher to escalate to');
+      await this.safety.escalate(tx, c, p.userId, body.reason);
+      return this.summary(tx, p, id, office);
+    });
+  }
+
+  /** A member of staff's do-not-disturb and own chat hours. */
+  @Get('me/availability')
+  @Auth('user')
+  availability(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [a] = await tx.select().from(chatAvailability).where(eq(chatAvailability.userId, p.userId));
+      return { dndUntil: a?.dndUntil ?? null, hours: a?.hours ?? null, awayNote: a?.awayNote ?? '', active: !!(a?.dndUntil && a.dndUntil > this.clock.now()) };
+    });
+  }
+
+  @Put('me/availability')
+  @Auth('user')
+  setAvailability(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(AvailabilityBody)) body: z.infer<typeof AvailabilityBody>) {
+    if (p.roles.every((r) => FAMILY_ROLES.includes(r))) throw new ForbiddenException('Only staff set chat hours');
+    if (body.hours && !validOfficeHours(body.hours)) throw new BadRequestException('Chat hours must start before they end');
+    const until = body.dndUntil ? new Date(body.dndUntil) : null;
+    if (until && until.getTime() > this.clock.now().getTime() + 30 * 86_400_000) throw new BadRequestException('Do not disturb can be set for up to 30 days');
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const values = { dndUntil: until, hours: body.hours, awayNote: body.awayNote, updatedAt: this.clock.now() };
+      await tx.insert(chatAvailability).values({ tenantId: p.tenantId, userId: p.userId, ...values }).onConflictDoUpdate({ target: chatAvailability.userId, set: values });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'conversation.availability_set', subjectType: 'user', subjectId: p.userId, data: { dndUntil: until?.toISOString() ?? null, hours: body.hours } });
+      return { dndUntil: until, hours: body.hours, awayNote: body.awayNote, active: !!(until && until > this.clock.now()) };
+    });
+  }
+
+  /** A blocked person cannot write (everywhere, or to this member of staff). */
+  private async assertNotBlocked(tx: Tx, p: UserPrincipal, c: Conversation) {
+    const b = await this.safety.activeBlock(tx, p.userId, c.staffId);
+    if (b) throw new ForbiddenException(`You cannot send messages here at the moment${b.until ? ` (until ${b.until.toISOString().slice(0, 10)})` : ''}. Contact the office.`);
+  }
+
   // --------------------------------------------------------------------------------------------
 
   /** The caller's own threads: as family, as the assignee, or (office staff) any office thread. */
   private mine(p: UserPrincipal, isOffice: boolean): SQL {
-    return or(eq(conversations.staffId, p.userId), eq(conversations.familyId, p.userId), isOffice ? eq(conversations.kind, 'office') : undefined)!;
+    return or(eq(conversations.staffId, p.userId), eq(conversations.familyId, p.userId), eq(conversations.escalatedTo, p.userId), isOffice ? eq(conversations.kind, 'office') : undefined)!;
   }
 
   private search(q: string): SQL {
@@ -576,7 +805,7 @@ export class ConversationsController {
 
   private sideOf(p: UserPrincipal, c: Conversation, office: string[]): Side | null {
     if (c.familyId === p.userId) return 'family';
-    if (c.staffId === p.userId || (c.kind === 'office' && office.includes(p.userId))) return 'staff';
+    if (c.staffId === p.userId || c.escalatedTo === p.userId || (c.kind === 'office' && office.includes(p.userId))) return 'staff';
     if (isSchoolAdmin(p)) return 'leader';
     return null;
   }
@@ -600,7 +829,7 @@ export class ConversationsController {
   }
 
   private summaries(tx: Tx, p: UserPrincipal, isOffice: boolean) {
-    const staffSide = isOffice ? sql`(${conversations.staffId} = ${p.userId}::uuid or ${conversations.kind} = 'office')` : sql`${conversations.staffId} = ${p.userId}::uuid`;
+    const staffSide = isOffice ? sql`(${conversations.staffId} = ${p.userId}::uuid or ${conversations.escalatedTo} = ${p.userId}::uuid or ${conversations.kind} = 'office')` : sql`(${conversations.staffId} = ${p.userId}::uuid or ${conversations.escalatedTo} = ${p.userId}::uuid)`;
     const side = sql<Side>`case when ${conversations.familyId} = ${p.userId}::uuid then 'family' when ${staffSide} then 'staff' else 'leader' end`;
     const myRead = sql`case when ${conversations.familyId} = ${p.userId}::uuid then ${conversations.familyReadAt} else ${conversations.staffReadAt} end`;
     // The other side's messages after my last read; leaders reading for safeguarding have nothing unread.
@@ -623,6 +852,9 @@ export class ConversationsController {
         unread: sql<number>`(case when ${side} = 'leader' then 0 else (select count(*)::int from messages m where m.conversation_id = "conversations"."id" and m.kind = 'text' and ${fromOther} and (${myRead} is null or m.created_at > ${myRead})) end)`,
         statusChangedAt: conversations.statusChangedAt,
         createdAt: conversations.createdAt,
+        escalatedAt: conversations.escalatedAt,
+        escalatedTo: sql<{ id: string; fullName: string } | null>`(select json_build_object('id', u.id, 'fullName', u.full_name) from users u where u.id = ${conversations.escalatedTo})`,
+        openReports: sql<number>`(select count(*)::int from message_reports r where r.conversation_id = "conversations"."id" and r.status = 'open')`,
       })
       .from(conversations)
       .innerJoin(students, eq(students.id, conversations.studentId))

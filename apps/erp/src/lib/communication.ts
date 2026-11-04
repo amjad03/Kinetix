@@ -5,10 +5,15 @@ export type AppChannel = Exclude<AnnChannel, 'boards'>;
 export const CHANNELS: AnnChannel[] = ['boards', 'teacher', 'student', 'parent'];
 export const APP_CHANNELS: AppChannel[] = ['teacher', 'student', 'parent'];
 export type AnnStatus = 'draft' | 'scheduled' | 'sent' | 'recalled';
-export type AudienceScope = 'all' | 'departments' | 'programs' | 'sections' | 'people';
+export type AudienceScope = 'all' | 'departments' | 'programs' | 'sections' | 'people' | 'roles' | 'hostels' | 'routes' | 'lists';
+export type AnnPriority = 'normal' | 'important' | 'emergency';
 
 export interface AnnAudience {
   scope: AudienceScope;
+  roles?: string[];
+  hostelIds?: string[];
+  routeIds?: string[];
+  listIds?: string[];
   departmentIds?: string[];
   programIds?: string[];
   sectionIds?: string[];
@@ -30,11 +35,50 @@ export interface ChannelStats {
   acknowledged: number;
 }
 
+/** The notice in Hindi and Kannada. */
+export type AnnTranslations = Partial<Record<'hi' | 'kn', { title: string; body: string }>>;
+export interface AnnPoll {
+  question: string;
+  options: string[];
+  closesAt: string | null;
+  showResults: boolean;
+}
+export interface AnnPollTally extends AnnPoll {
+  results: { option: string; votes: number; pct: number }[];
+  voted: number;
+  votedPct: number;
+  closed: boolean;
+}
+export interface AnnExternal {
+  templateId: string;
+  templateKey: string | null;
+  channel: string | null;
+  fallback: string[];
+  campaign: { id: string; status: string; recipients: number; sent: number; delivered: number; failed: number; suppressed: number; costPaise: number } | null;
+}
+
+/** What the composer offers beyond classes (GET /v1/announcements/audience-options). */
+export interface AudienceOptions {
+  roles: string[];
+  hostels: { id: string; name: string }[];
+  routes: { id: string; name: string }[];
+  lists: { id: string; name: string }[];
+  outsideTemplates: { id: string; key: string; channel: 'sms' | 'whatsapp' | 'email'; locale: string }[];
+  canEmergency: boolean;
+  scopes: AudienceScope[];
+}
+
 export interface Announcement {
   id: string;
   title: string;
   body: string;
-  priority: 'normal' | 'important';
+  priority: AnnPriority;
+  /** Languages it was translated into (list), and the translations themselves (detail). */
+  translated?: string[];
+  translations?: AnnTranslations;
+  hasPoll?: boolean;
+  poll?: AnnPollTally | null;
+  external?: AnnExternal | null;
   channels: AnnChannel[];
   audience: AnnAudience;
   requiresAck: boolean;
@@ -132,6 +176,11 @@ export interface FamilyThread {
   unread: number;
   statusChangedAt: string | null;
   createdAt: string;
+  /** With the head of department since (escalated by the family, the teacher, or after a long wait). */
+  escalatedAt?: string | null;
+  escalatedTo?: { id: string; fullName: string } | null;
+  /** Reports on its messages waiting for a leader. */
+  openReports?: number;
 }
 
 export interface FamilyMessage {
@@ -144,6 +193,47 @@ export interface FamilyMessage {
   attachment: { name: string; type: string; size: number } | null;
   createdAt: string;
   status: Tick | null;
+  /** Removed by a moderator (the text is replaced, except for leaders). */
+  hidden?: boolean;
+  /** Leaders only: why the language filter flagged it. */
+  flag?: string | null;
+}
+
+export interface ModerationReport {
+  id: string;
+  reason: string;
+  note: string;
+  status: 'open' | 'actioned' | 'dismissed';
+  action: string | null;
+  resolutionNote: string;
+  createdAt: string;
+  resolvedAt: string | null;
+  reporter: string | null;
+  conversationId: string;
+  message: { id: string; body: string; createdAt: string; hidden: boolean; senderId: string };
+  sender: string;
+  student: string;
+  staff: string;
+  family: string;
+  senderBlocked: boolean;
+}
+
+export interface ChatBlock {
+  id: string;
+  userId: string;
+  fullName: string;
+  reason: string;
+  until: string | null;
+  staffId: string | null;
+  createdAt: string;
+  blockedBy: string | null;
+}
+
+export interface Availability {
+  dndUntil: string | null;
+  hours: OfficeHours | null;
+  awayNote: string;
+  active: boolean;
 }
 
 export interface OfficeHours {
@@ -158,6 +248,9 @@ export interface FamilyThreadPage {
   officeHours: OfficeHours | null;
   afterHours: boolean;
   canWrite: boolean;
+  away?: { until: string | null; note: string; hours: OfficeHours | null } | null;
+  escalated?: { at: string; to: string | null; reason: string | null } | null;
+  blocked?: { reason: string; until: string | null } | null;
 }
 
 export interface ChatSettingsView {
@@ -165,6 +258,8 @@ export interface ChatSettingsView {
   officeHours: OfficeHours | null;
   timezone: string;
   kind: 'school' | 'college' | 'university';
+  /** Hours a family's message may wait before it goes to the head of department (0 = never). */
+  escalateAfterHours?: number;
   officeUserIds?: string[];
   /** Roles whose holders also answer office threads, and the roles that may be chosen. */
   officeRoles?: string[];

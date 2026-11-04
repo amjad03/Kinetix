@@ -5975,4 +5975,60 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get ppFilled => 'ನಿಮ್ಮ ದಾಖಲೆಯಿಂದ ತುಂಬಲಾಗಿದೆ; ಪರಿಶೀಲಿಸಿ ಉಳಿಸಿ';
+
+  @override
+  String get inboxEmergency => 'ತುರ್ತು';
+
+  @override
+  String get pollPrompt => 'ಒಂದು ಉತ್ತರ ಆಯ್ಕೆಮಾಡಿ';
+
+  @override
+  String get pollChange => 'ಉತ್ತರಿಸಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದ. ಮತದಾನ ತೆರೆದಿರುವವರೆಗೆ ಉತ್ತರ ಬದಲಿಸಬಹುದು.';
+
+  @override
+  String get pollClosed => 'ಈ ಮತದಾನ ಮುಚ್ಚಿದೆ';
+
+  @override
+  String pollVotes(int votes, int pct) {
+    return '$votes ($pct%)';
+  }
+
+  @override
+  String get prefTitle => 'ಸಂಸ್ಥೆಯಿಂದ ಸಂದೇಶಗಳು';
+
+  @override
+  String get prefLinkHelp => 'ಎಸ್‌ಎಂಎಸ್, ವಾಟ್ಸಾಪ್, ಇಮೇಲ್ ಮತ್ತು ಫೋನ್ ಸೂಚನೆಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ';
+
+  @override
+  String get prefIntro => 'ಆ್ಯಪ್‌ನ ಹೊರಗೆ ಸಂಸ್ಥೆ ನಿಮ್ಮನ್ನು ಹೇಗೆ ಸಂಪರ್ಕಿಸಬೇಕು ಎಂದು ಆಯ್ಕೆಮಾಡಿ. ಇದನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಬದಲಿಸಬಹುದು.';
+
+  @override
+  String get prefSms => 'ಎಸ್‌ಎಂಎಸ್';
+
+  @override
+  String get prefWhatsapp => 'ವಾಟ್ಸಾಪ್';
+
+  @override
+  String get prefEmail => 'ಇಮೇಲ್';
+
+  @override
+  String get prefPush => 'ಫೋನ್ ಸೂಚನೆಗಳು';
+
+  @override
+  String get prefSmsHelp => 'ಶುಲ್ಕ ಜ್ಞಾಪನೆ, ಗೈರುಹಾಜರಿ ಮತ್ತು ಸೂಚನೆಗಳು ಸಂದೇಶದ ಮೂಲಕ';
+
+  @override
+  String get prefWhatsappHelp => 'ಸಂಸ್ಥೆಯ ಪರಿಶೀಲಿತ ಖಾತೆಯಿಂದ ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಸೂಚನೆಗಳು';
+
+  @override
+  String get prefEmailHelp => 'ಇಮೇಲ್ ಮೂಲಕ ಸೂಚನೆಗಳು ಮತ್ತು ಪತ್ರಗಳು';
+
+  @override
+  String get prefPushHelp => 'ಹೊಸ ಸೂಚನೆಗಳು ಮತ್ತು ಸಂದೇಶಗಳಿಗೆ ಈ ಫೋನ್‌ನಲ್ಲಿ ಸೂಚನೆ';
+
+  @override
+  String get prefNoAddress => 'ಸಂಸ್ಥೆಯ ಬಳಿ ನಿಮ್ಮ ಈ ಸಂಖ್ಯೆ ಅಥವಾ ವಿಳಾಸ ಇಲ್ಲ';
+
+  @override
+  String get prefAlwaysOn => 'ಆ್ಯಪ್‌ನ ಸೂಚನೆಗಳು ಮತ್ತು ತುರ್ತು ಸೂಚನೆಗಳು ಯಾವಾಗಲೂ ನಿಮ್ಮನ್ನು ತಲುಪುತ್ತವೆ.';
 }

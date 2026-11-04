@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
-import { CALENDAR_KINDS, calendarProblem, type CalendarEvent, type CalendarInput } from '@/lib/calendar';
+import { CALENDAR_KINDS, calendarProblem, type CalendarEvent, type CalendarInput, type RsvpList } from '@/lib/calendar';
 import { termProblem, type Term, type TermInput } from '@/lib/terms';
 import type { ActionResult } from '@/lib/types';
 
@@ -33,7 +33,17 @@ const body = (i: CalendarInput) => ({
   programIds: i.programIds?.length ? [...new Set(i.programIds)] : null,
   notify: i.notify,
   ...(i.draft !== undefined ? { draft: i.draft } : {}),
+  rsvp: !!i.rsvp && i.kind === 'event',
+  rsvpBy: i.rsvp && i.rsvpBy ? i.rsvpBy : null,
+  capacity: i.rsvp && i.capacity ? i.capacity : null,
+  venue: (i.venue ?? '').trim(),
 });
+
+/** Who replied to an event and the totals. */
+export async function calendarRsvps(id: string): Promise<ActionResult<RsvpList>> {
+  if (!UUID.test(id)) return { ok: false, error: (await getI18n()).t('error.NOT_FOUND') };
+  return act(() => api<RsvpList>(`/v1/admin/calendar/${id}/rsvps`));
+}
 
 export async function createCalendarEvent(input: CalendarInput): Promise<ActionResult<CalendarEvent>> {
   const problem = await check(input);

@@ -1,5 +1,6 @@
 'use client';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, type ReactNode } from 'react';
+import { DLT_CONTENT_TYPES, FALLBACK_CHANNELS } from '@/lib/comms-pass';
 import { campaignDetail, cancelCampaign, createCampaign, previewAudience, removeAudience, runDue, saveAudience, saveTemplate } from '@/app/(dashboard)/communication/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Field } from '@/components/ops/kit';
 import { useLoad } from '@/components/pathways-b/common';
@@ -9,11 +10,12 @@ import type { MessageKey } from '@/i18n/messages';
 import { AUDIENCE_ROLES, CHANNELS, LOCALES_OFFERED, type AudienceRow, type CampaignDetail, type CampaignRow, type MessageTemplate } from '@/lib/pathways-b';
 
 import { Alert, Button, CircularProgress } from '@/components/kx';
+import { LinkButton } from '@/components/LinkButton';
 import { Plus as Add } from 'lucide-react';
 type Section = { value: string; label: string };
 
 /** Templates, audiences and campaigns of the communication engine. */
-export function CommsDesk({ templates, audiences, campaigns, sections, initialTab }: { templates: MessageTemplate[]; audiences: AudienceRow[]; campaigns: CampaignRow[]; sections: Section[]; initialTab: string }) {
+export function CommsDesk({ templates, audiences, campaigns, sections, initialTab, extraTabs = [], canEmergency = false }: { templates: MessageTemplate[]; audiences: AudienceRow[]; campaigns: CampaignRow[]; sections: Section[]; initialTab: string; extraTabs?: { id: string; label: string; node: ReactNode }[]; canEmergency?: boolean }) {
   const { t, fmt } = useI18n();
   const [toast, toastNode] = useToast();
   const [pending, start] = useTransition();
@@ -43,6 +45,10 @@ export function CommsDesk({ templates, audiences, campaigns, sections, initialTa
     { name: 'subject', label: t('pwb.comms.subject'), init: x?.subject },
     { name: 'body', label: t('pwb.comms.body'), kind: 'multiline', required: true, init: x?.body },
     { name: 'dltTemplateId', label: t('pwb.comms.dlt'), init: x?.dltTemplateId ?? '' },
+    { name: 'dltHeader', label: t('cp.f.header'), init: x?.dltHeader ?? '' },
+    { name: 'dltContentType', label: t('cp.f.contentType'), kind: 'select', init: x?.dltContentType ?? 'service_implicit', options: DLT_CONTENT_TYPES.map((c) => ({ value: c, label: t(`cp.ct.${c}` as MessageKey) })) },
+    { name: 'waTemplateName', label: t('cp.f.waName'), init: x?.waTemplateName ?? '' },
+    { name: 'waLanguage', label: t('cp.f.waLang'), init: x?.waLanguage ?? '' },
     { name: 'active', label: t('pwb.comms.active'), kind: 'select', init: x && !x.active ? 'no' : 'yes', options: [{ value: 'yes', label: t('ops.yes') }, { value: 'no', label: t('ops.no') }] },
   ];
 
@@ -66,7 +72,7 @@ export function CommsDesk({ templates, audiences, campaigns, sections, initialTa
               { label: t('pwb.comms.language'), cell: (x) => t(`pwb.lang.${x.locale}` as MessageKey), sort: (x) => x.locale },
               { label: t('pwb.comms.subject'), cell: (x) => x.subject || '-' },
               { label: t('pwb.comms.placeholders'), cell: (x) => (x.placeholders.length ? x.placeholders.map((p) => `{{${p}}}`).join(' ') : '-') },
-              { label: t('pwb.comms.dlt'), cell: (x) => (x.channel === 'sms' ? (x.dltTemplateId ?? <Pill warn label={t('pwb.comms.dltMissing')} />) : '-') },
+              { label: t('pwb.comms.dlt'), cell: (x) => (x.channel === 'sms' ? (x.dltTemplateId ? `${x.dltTemplateId}${x.dltHeader ? ` · ${x.dltHeader}` : ''}` : <Pill warn label={t('pwb.comms.dltMissing')} />) : x.channel === 'whatsapp' ? x.waTemplateName || <Pill warn label={t('cp.waMissing')} /> : '-') },
               { label: t('ops.f.status'), cell: (x) => <Pill label={x.active ? t('pwb.ret.on') : t('pwb.ret.off')} warn={!x.active} /> },
               { label: '', cell: (x) => <Button size="small" onClick={() => setTpl(x)}>{t('ops.edit')}</Button> },
             ]}
@@ -130,6 +136,8 @@ export function CommsDesk({ templates, audiences, campaigns, sections, initialTa
               { label: t('pwb.comms.recipients'), cell: (c) => fmt.number(c.recipients), num: true, sort: (c) => c.recipients },
               { label: t('pwb.comms.sent'), cell: (c) => fmt.number(c.sentCount), num: true, sort: (c) => c.sentCount },
               { label: t('pwb.comms.failed'), cell: (c) => fmt.number(c.failedCount), num: true, sort: (c) => c.failedCount },
+              { label: t('cp.col.cost'), cell: (c) => fmt.rupees(c.costPaise ?? 0), num: true, sort: (c) => c.costPaise ?? 0 },
+              { label: t('cp.col.chain'), cell: (c) => [c.channel, ...(c.fallback ?? [])].map((x) => t(`pwb.ch.${x}` as MessageKey)).join(' → ') + (c.emergency ? ` · ${t('comm.pri.emergency')}` : '') },
               { label: t('cd.suppressed'), cell: (c) => fmt.number(c.suppressedCount ?? 0), num: true, sort: (c) => c.suppressedCount ?? 0 },
               { label: t('cd.repeat'), cell: (c) => (c.repeat && c.repeat !== 'none' ? t(`cd.repeat.${c.repeat}` as MessageKey) : '-'), sort: (c) => c.repeat ?? '' },
               { label: '', cell: (c) => <Button size="small" onClick={() => setDetail(c)}>{t('ops.details')}</Button> },
@@ -138,6 +146,7 @@ export function CommsDesk({ templates, audiences, campaigns, sections, initialTa
         </>
       ),
     },
+    ...extraTabs,
   ];
 
   return (
@@ -176,6 +185,9 @@ export function CommsDesk({ templates, audiences, campaigns, sections, initialTa
             { name: 'sendAt', label: t('pwb.comms.sendAtOptional'), kind: 'datetime' },
             { name: 'repeat', label: t('cd.repeat'), kind: 'select', init: 'none', options: ['none', 'daily', 'weekly', 'monthly'].map((r) => ({ value: r, label: t(`cd.repeat.${r}` as MessageKey) })) },
             { name: 'repeatUntil', label: t('cd.repeatUntil'), kind: 'date' },
+            { name: 'fallback1', label: t('cp.f.fallback1'), kind: 'select', init: '', options: [{ value: '', label: t('cp.none') }, ...FALLBACK_CHANNELS.map((c) => ({ value: c, label: t(`pwb.ch.${c}` as MessageKey) }))] },
+            { name: 'fallback2', label: t('cp.f.fallback2'), kind: 'select', init: '', options: [{ value: '', label: t('cp.none') }, ...FALLBACK_CHANNELS.map((c) => ({ value: c, label: t(`pwb.ch.${c}` as MessageKey) }))] },
+            ...(canEmergency ? [{ name: 'emergency', label: t('cp.f.emergency'), kind: 'select', init: 'no', options: [{ value: 'no', label: t('ops.no') }, { value: 'yes', label: t('cp.emergency.yes') }] } satisfies Field] : []),
           ]}
         />
       )}
@@ -284,6 +296,26 @@ function CampaignDialog({ campaign, onClose, toast }: { campaign: CampaignRow; o
               {Object.entries(d.delivery).map(([k, n]) => `${t(`pwb.comms.delivery.${k}` as MessageKey)}: ${fmt.number(n)}`).join(' · ')}
             </p>
           )}
+          <p className="text-[13px] leading-[19px]" data-testid="comms-campaign-cost">
+            {t('cp.detail.cost', { cost: fmt.rupees(d.costPaise ?? 0), delivered: fmt.number(d.deliveredCount ?? 0) })}
+          </p>
+          {(d.waiting ?? []).map((w) => (
+            <Alert key={w.reason} severity="info">{t(`cp.wait.${w.reason}` as MessageKey, { n: fmt.number(w.n), when: fmt.dateTime(w.until) })}</Alert>
+          ))}
+          {(d.byChannel ?? []).length > 0 && (
+            <Grid
+              testId="comms-by-channel"
+              empty=""
+              rows={d.byChannel!}
+              cols={[
+                { label: t('pwb.comms.channel'), cell: (r) => t(`pwb.ch.${r.channel}` as MessageKey), sort: (r) => r.channel },
+                { label: t('ops.f.status'), cell: (r) => t(`pwb.comms.delivery.${r.status}` as MessageKey), sort: (r) => r.status },
+                { label: t('pwb.comms.recipients'), cell: (r) => fmt.number(r.n), num: true },
+                { label: t('cp.col.cost'), cell: (r) => fmt.rupees(r.cost), num: true },
+              ]}
+            />
+          )}
+          <LinkButton href={`/communication/log?f.source=${d.id}`} variant="outlined">{t('cp.detail.log')}</LinkButton>
           <h6 className="text-sm leading-5 font-medium tracking-[0.1px]">{t('pwb.comms.failures')}</h6>
           <Grid
             testId="comms-failures"
@@ -291,6 +323,7 @@ function CampaignDialog({ campaign, onClose, toast }: { campaign: CampaignRow; o
             rows={d.failures}
             cols={[
               { label: t('ops.f.name'), cell: (f) => f.fullName, sort: (f) => f.fullName },
+              { label: t('pwb.comms.channel'), cell: (f) => (f.channel ? t(`pwb.ch.${f.channel}` as MessageKey) : '-') },
               { label: t('pwb.comms.error'), cell: (f) => f.error ?? '-' },
               { label: t('pwb.comms.attempts'), cell: (f) => f.attempts, num: true },
               { label: t('pwb.comms.nextTry'), cell: (f) => (f.nextAttemptAt ? fmt.dateTime(f.nextAttemptAt) : '-') },

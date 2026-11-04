@@ -5,7 +5,7 @@ import { readSettings } from '../../campus-ops/settings.js';
 import { audit } from '../../common/audit.js';
 import { localParts } from '../../common/time.js';
 import { TextSender, WhatsAppSender } from '../../comms/channels.js';
-import { fillTemplate, toE164 } from '../../comms/comms.logic.js';
+import { fillTemplate, toE164, waParams } from '../../comms/comms.logic.js';
 import { DbService, type Tx } from '../../db/db.service.js';
 import { admissionBroadcasts, admissionBroadcastSends } from '../../db/schema-admissions-pass.js';
 import { messageTemplates } from '../../db/schema-pathways.js';
@@ -151,7 +151,7 @@ export class BroadcastService implements OnModuleInit {
           const text = fillTemplate(t.body, vars).text;
           try {
             if (b.channel === 'sms') await this.sms.send({ to: toE164(r.e.phone)!, text, templateId: t.dltTemplateId!, vars });
-            else if (b.channel === 'whatsapp') await this.whatsapp.send(toE164(r.e.phone)!, t.key, vars);
+            else if (b.channel === 'whatsapp') await this.whatsapp.send({ to: toE164(r.e.phone)!, template: t.waTemplateName || t.key, language: t.waLanguage || t.locale, params: waParams(t.body, vars) });
             else await this.mailer.send({ to: [r.e.email!], subject: fillTemplate(t.subject, vars).text || t.key, text, attachments: [] });
             await tx.update(admissionBroadcastSends).set({ status: 'sent', sentAt: new Date() }).where(eq(admissionBroadcastSends.id, r.s.id));
             await tx.insert(enquiryActivities).values({ tenantId, enquiryId: r.e.id, kind: b.channel === 'email' ? 'email' : b.channel === 'whatsapp' ? 'whatsapp' : 'sms', note: `Campaign message "${t.key}": ${text.slice(0, 280)}`, actorId: b.createdBy });

@@ -14,18 +14,22 @@ import { announcementTemplates, type AnnouncementAttachment } from '../db/schema
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
 import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
-import { BUILT_IN_TEMPLATES, unsafeLink } from './announcements.logic.js';
+import { AUDIENCE_ROLES, BUILT_IN_TEMPLATES, unsafeLink } from './announcements.logic.js';
 import { AnnouncementsService, type AnnouncementInput } from './announcements.service.js';
 
 const Channel = z.enum(['boards', 'teacher', 'student', 'parent']);
 const Audience = z
   .object({
-    scope: z.enum(['all', 'departments', 'programs', 'sections', 'people']),
+    scope: z.enum(['all', 'departments', 'programs', 'sections', 'people', 'roles', 'hostels', 'routes', 'lists']),
     departmentIds: z.array(z.uuid()).max(200).optional(),
     programIds: z.array(z.uuid()).max(200).optional(),
     sectionIds: z.array(z.uuid()).max(500).optional(),
     userIds: z.array(z.uuid()).max(500).optional(),
     studentIds: z.array(z.uuid()).max(500).optional(),
+    roles: z.array(z.enum(AUDIENCE_ROLES)).max(20).optional(),
+    hostelIds: z.array(z.uuid()).max(50).optional(),
+    routeIds: z.array(z.uuid()).max(200).optional(),
+    listIds: z.array(z.uuid()).max(20).optional(),
   })
   .refine(
     (a) =>
@@ -33,17 +37,38 @@ const Audience = z
       (a.scope === 'departments' && a.departmentIds?.length) ||
       (a.scope === 'programs' && a.programIds?.length) ||
       (a.scope === 'sections' && a.sectionIds?.length) ||
-      (a.scope === 'people' && (a.userIds?.length || a.studentIds?.length)),
+      (a.scope === 'people' && (a.userIds?.length || a.studentIds?.length)) ||
+      (a.scope === 'roles' && a.roles?.length) ||
+      (a.scope === 'hostels' && a.hostelIds?.length) ||
+      (a.scope === 'routes' && a.routeIds?.length) ||
+      (a.scope === 'lists' && a.listIds?.length),
     'Choose who receives the message',
   );
+const SafeBody = z.string().trim().min(1).max(5000).refine((b) => !unsafeLink(b), 'Links must start with http:// or https://');
+const Translation = z.object({ title: z.string().trim().min(1).max(120), body: SafeBody });
+const Poll = z
+  .object({
+    question: z.string().trim().min(3).max(200),
+    options: z.array(z.string().trim().min(1).max(80)).min(2, 'Give at least two choices').max(6, 'Up to six choices'),
+    closesAt: z.iso.datetime({ offset: true }).nullable().default(null),
+    showResults: z.boolean().default(true),
+  })
+  .refine((p) => new Set(p.options.map((o) => o.toLowerCase())).size === p.options.length, 'Each choice must be different');
+const External = z.object({ templateId: z.uuid(), fallback: z.array(z.enum(['in_app', 'whatsapp', 'sms', 'email'])).max(3).default([]) });
 /** Attachments: photos and PDFs. */
 const File = BlobBody.extend({ contentType: z.enum(['image/png', 'image/jpeg', 'application/pdf']) });
 const Write = z.object({
   title: z.string().trim().min(1).max(120),
-  body: z.string().trim().min(1).max(5000).refine((b) => !unsafeLink(b), 'Links must start with http:// or https://'),
-  priority: z.enum(['normal', 'important']).default('normal'),
+  body: SafeBody,
+  /** emergency: principals and administrators; reaches everyone at once, through do-not-disturb and quiet hours. */
+  priority: z.enum(['normal', 'important', 'emergency']).default('normal'),
   channels: z.array(Channel).min(1, 'Choose at least one channel').max(4),
   audience: Audience,
+  /** The notice in Hindi and Kannada; readers get the one in their language. */
+  translations: z.object({ hi: Translation.optional(), kn: Translation.optional() }).default({}),
+  poll: Poll.nullable().default(null),
+  /** Also by SMS, WhatsApp or email through a registered template (its {{title}} and {{body}} are filled in). */
+  external: External.nullable().default(null),
   requiresAck: z.boolean().default(false),
   sendAt: z.iso.datetime({ offset: true }).nullable().default(null),
   expiresAt: z.iso.datetime({ offset: true }).nullable().default(null),
@@ -65,6 +90,7 @@ const TemplateBody = z.object({
   channels: z.array(Channel).max(4).default([]),
 });
 const App = z.enum(['teacher', 'student', 'parent']).optional();
+const VoteBody = z.object({ option: z.number().int().min(0).max(5) });
 
 /**
  * Communication > Messages: announcements to boards and the Teacher, Student and Parent apps.
@@ -109,6 +135,14 @@ export class AnnouncementsController {
   @Auth('user')
   ack(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     return this.db.withTenant(p.tenantId, (tx) => this.svc.mark(tx, p, id, true));
+  }
+
+  /** Answers the notice's poll (or changes the answer while it is open). */
+  @Post('inbox/:id/vote')
+  @HttpCode(200)
+  @Auth('user')
+  vote(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(VoteBody)) body: z.infer<typeof VoteBody>) {
+    return this.db.withTenant(p.tenantId, (tx) => this.svc.vote(tx, p, id, body.option));
   }
 
   @Get('inbox/:id/attachments/:attachmentId')
@@ -162,6 +196,16 @@ export class AnnouncementsController {
     });
   }
 
+  /**
+   * What the composer offers beyond classes: whole roles, hostels, bus routes, saved lists (a head of department sees
+   * only their own) and the registered SMS, WhatsApp and email templates a notice can also go out through.
+   */
+  @Get('audience-options')
+  @Auth('user', BROADCAST_ROLES)
+  audienceOptions(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => this.svc.audienceOptions(tx, p));
+  }
+
   /** Staff, parents and students by name, phone or roll number, to send to individuals. */
   @Get('people')
   @Auth('user', BROADCAST_ROLES)
@@ -174,7 +218,10 @@ export class AnnouncementsController {
   @HttpCode(200)
   @Auth('user', BROADCAST_ROLES)
   preview(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(Preview)) body: z.infer<typeof Preview>) {
-    return this.db.withTenant(p.tenantId, (tx) => this.svc.preview(tx, body.audience, body.channels));
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      await this.svc.assertAudience(tx, p, body.audience, 'normal');
+      return this.svc.preview(tx, body.audience, body.channels);
+    });
   }
 
   // ---- Sent list -----------------------------------------------------------------------------
@@ -184,7 +231,7 @@ export class AnnouncementsController {
   @Auth('user', BROADCAST_ROLES)
   async list(@CurrentPrincipal() p: UserPrincipal, @Query('status') status?: string) {
     await this.svc.sendDue(p.tenantId);
-    return this.db.withTenant(p.tenantId, (tx) => this.svc.list(tx, status));
+    return this.db.withTenant(p.tenantId, (tx) => this.svc.list(tx, p, status));
   }
 
   @Post()
@@ -192,26 +239,29 @@ export class AnnouncementsController {
   async create(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(Write)) body: WriteBody) {
     const files = await this.store(p, body.attachments);
     const { id, fanout } = await this.db.withTenant(p.tenantId, (tx) => this.svc.create(tx, p, this.input(body), files, body.mode));
-    this.svc.deliver(fanout);
+    await this.svc.deliver(fanout);
     return this.db.withTenant(p.tenantId, (tx) => this.svc.detail(tx, id));
   }
 
   @Get(':id')
   @Auth('user', BROADCAST_ROLES)
   detail(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
-    return this.db.withTenant(p.tenantId, (tx) => this.svc.detail(tx, id));
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      await this.svc.loadFor(tx, p, id);
+      return this.svc.detail(tx, id);
+    });
   }
 
   /** Edits a draft or scheduled message; `mode: send` sends (or reschedules) it. */
   @Patch(':id')
   @Auth('user', BROADCAST_ROLES)
   async update(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(Write)) body: WriteBody) {
-    const existing = await this.db.withTenant(p.tenantId, (tx) => this.svc.load(tx, id));
+    const existing = await this.db.withTenant(p.tenantId, (tx) => this.svc.loadFor(tx, p, id));
     const kept = existing.attachments.filter((a) => body.keepAttachmentIds.includes(a.id));
     if (kept.length + body.attachments.length > 5) throw new BadRequestException('Attach up to 5 files');
     const files = await this.store(p, body.attachments);
     const fanout = await this.db.withTenant(p.tenantId, (tx) => this.svc.update(tx, p, id, this.input(body), [...kept, ...files], body.mode));
-    this.svc.deliver(fanout);
+    await this.svc.deliver(fanout);
     return this.db.withTenant(p.tenantId, (tx) => this.svc.detail(tx, id));
   }
 
@@ -221,11 +271,11 @@ export class AnnouncementsController {
   @Auth('user', BROADCAST_ROLES)
   async send(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
     const fanout = await this.db.withTenant(p.tenantId, async (tx) => {
-      const a = await this.svc.load(tx, id);
+      const a = await this.svc.loadFor(tx, p, id);
       if (a.status !== 'draft' && a.status !== 'scheduled') throw new BadRequestException('This message has already gone out');
       return this.svc.dispatch(tx, id);
     });
-    this.svc.deliver(fanout);
+    await this.svc.deliver(fanout);
     return this.db.withTenant(p.tenantId, (tx) => this.svc.detail(tx, id));
   }
 
@@ -233,7 +283,10 @@ export class AnnouncementsController {
   @HttpCode(200)
   @Auth('user', BROADCAST_ROLES)
   async recall(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
-    const { deviceIds, broadcastId } = await this.db.withTenant(p.tenantId, async (tx) => ({ deviceIds: await this.svc.recall(tx, p, id), broadcastId: (await this.svc.load(tx, id)).broadcastId }));
+    const { deviceIds, broadcastId } = await this.db.withTenant(p.tenantId, async (tx) => {
+      await this.svc.loadFor(tx, p, id);
+      return { deviceIds: await this.svc.recall(tx, p, id), broadcastId: (await this.svc.load(tx, id)).broadcastId };
+    });
     if (broadcastId) this.realtime.toDevices(deviceIds, RealtimeEvents.BroadcastCleared, { id: broadcastId });
     return this.db.withTenant(p.tenantId, (tx) => this.svc.detail(tx, id));
   }
@@ -242,13 +295,19 @@ export class AnnouncementsController {
   @HttpCode(204)
   @Auth('user', BROADCAST_ROLES)
   async remove(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
-    await this.db.withTenant(p.tenantId, (tx) => this.svc.remove(tx, p, id));
+    await this.db.withTenant(p.tenantId, async (tx) => {
+      await this.svc.loadFor(tx, p, id);
+      return this.svc.remove(tx, p, id);
+    });
   }
 
   @Post(':id/duplicate')
   @Auth('user', BROADCAST_ROLES)
   async duplicate(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
-    const copy = await this.db.withTenant(p.tenantId, (tx) => this.svc.duplicate(tx, p, id));
+    const copy = await this.db.withTenant(p.tenantId, async (tx) => {
+      await this.svc.loadFor(tx, p, id);
+      return this.svc.duplicate(tx, p, id);
+    });
     return this.db.withTenant(p.tenantId, (tx) => this.svc.detail(tx, copy));
   }
 
@@ -257,20 +316,29 @@ export class AnnouncementsController {
   @HttpCode(200)
   @Auth('user', BROADCAST_ROLES)
   remind(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
-    return this.db.withTenant(p.tenantId, (tx) => this.svc.remind(tx, p, id));
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      await this.svc.loadFor(tx, p, id);
+      return this.svc.remind(tx, p, id);
+    });
   }
 
   /** Who got it: `?filter=unread|unacknowledged|undelivered`, `?channel=teacher|student|parent`, `?q=`. */
   @Get(':id/recipients')
   @Auth('user', BROADCAST_ROLES)
   recipients(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Query('filter') filter?: string, @Query('channel') channel?: string, @Query('q') q?: string) {
-    return this.db.withTenant(p.tenantId, (tx) => this.svc.recipients(tx, id, filter, channel, q));
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      await this.svc.loadFor(tx, p, id);
+      return this.svc.recipients(tx, id, filter, channel, q);
+    });
   }
 
   @Get(':id/attachments/:attachmentId')
   @Auth('user', BROADCAST_ROLES)
   async attachment(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Param('attachmentId', ParseUUIDPipe) attachmentId: string, @Res({ passthrough: true }) res: Response) {
-    const f = await this.db.withTenant(p.tenantId, (tx) => this.svc.attachmentFor(tx, p, id, attachmentId, true));
+    const f = await this.db.withTenant(p.tenantId, async (tx) => {
+      await this.svc.loadFor(tx, p, id);
+      return this.svc.attachmentFor(tx, p, id, attachmentId, true);
+    });
     return sendBlob(this.storage, res, { storageKey: f.key, contentType: f.type, title: f.name });
   }
 
@@ -283,9 +351,12 @@ export class AnnouncementsController {
       priority: b.priority,
       channels: [...new Set(b.channels)],
       audience: b.audience,
-      requiresAck: b.requiresAck,
+      requiresAck: b.requiresAck || b.priority === 'emergency',
       sendAt: b.sendAt ? new Date(b.sendAt) : null,
       expiresAt: b.expiresAt ? new Date(b.expiresAt) : null,
+      translations: Object.fromEntries(Object.entries(b.translations).filter(([, v]) => !!v)),
+      poll: b.poll ? { question: b.poll.question, options: b.poll.options, closesAt: b.poll.closesAt, showResults: b.poll.showResults } : null,
+      external: b.external ? { templateId: b.external.templateId, fallback: [...new Set(b.external.fallback)] } : null,
     };
   }
 

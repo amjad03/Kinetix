@@ -43,6 +43,17 @@ export interface PtmSlot {
   endsAt: string;
   studentId: string | null;
   student: string | null;
+  /** After the meeting: attended or no_show, the teacher's minutes and the agreed action points. */
+  attendance?: 'attended' | 'no_show' | null;
+  minutes?: string;
+  actionPoints?: string;
+  minutesAt?: string | null;
+}
+
+/** The meeting in numbers (GET /v1/ptm/events/:id/report). */
+export interface PtmReport {
+  total: { slots: number; booked: number; attended: number; noShow: number; minutes: number };
+  teachers: { teacherId: string; teacher: string; slots: number; booked: number; attended: number; noShow: number; minutes: number }[];
 }
 
 export interface StaffOption {

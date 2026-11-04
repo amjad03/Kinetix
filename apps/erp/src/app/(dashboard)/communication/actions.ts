@@ -13,8 +13,9 @@ const fail = async (key: 'pwb.comms.err.vars' | 'pwb.comms.err.ids' | 'pwb.comms
 /** Creates a template, or changes the text of one (its key, channel and language stay). */
 export async function saveTemplate(v: V, existingId?: string) {
   const dlt = optStr(v.dltTemplateId);
-  if (existingId) return send(`${C}/templates/${id(existingId)}`, { subject: v.subject ?? '', body: v.body, ...(dlt ? { dltTemplateId: dlt } : {}), active: v.active !== 'no' }, PAGE, 'PUT');
-  return send(`${C}/templates`, { key: v.key, channel: v.channel, locale: v.locale || 'en', subject: v.subject ?? '', body: v.body, ...(dlt ? { dltTemplateId: dlt } : {}), active: v.active !== 'no' }, PAGE);
+  const reg = { dltHeader: (v.dltHeader ?? '').trim().toUpperCase(), dltContentType: v.dltContentType || 'service_implicit', waTemplateName: (v.waTemplateName ?? '').trim(), waLanguage: (v.waLanguage ?? '').trim() };
+  if (existingId) return send(`${C}/templates/${id(existingId)}`, { subject: v.subject ?? '', body: v.body, ...(dlt ? { dltTemplateId: dlt } : {}), ...reg, active: v.active !== 'no' }, PAGE, 'PUT');
+  return send(`${C}/templates`, { key: v.key, channel: v.channel, locale: v.locale || 'en', subject: v.subject ?? '', body: v.body, ...(dlt ? { dltTemplateId: dlt } : {}), ...reg, active: v.active !== 'no' }, PAGE);
 }
 
 /** The audience rule from the picked roles and classes and the typed ids; errors are worded for the form. */
@@ -44,7 +45,12 @@ export async function removeAudience(audienceId: string) {
 export async function createCampaign(v: V) {
   const vars = parseVars(v.vars ?? '');
   if (!vars.ok) return fail('pwb.comms.err.vars', { line: vars.line });
-  return send(`${C}/campaigns`, { title: v.title, templateId: v.templateId, audienceId: v.audienceId, vars: vars.vars, ...(optStr(v.sendAt) ? { sendAt: v.sendAt } : {}), ...(v.repeat && v.repeat !== 'none' ? { repeat: v.repeat, ...(optStr(v.repeatUntil) ? { repeatUntil: v.repeatUntil } : {}) } : {}) }, PAGE);
+  const fallback = [...new Set([v.fallback1, v.fallback2].filter((x): x is string => !!x))];
+  return send(
+    `${C}/campaigns`,
+    { title: v.title, templateId: v.templateId, audienceId: v.audienceId, vars: vars.vars, ...(optStr(v.sendAt) ? { sendAt: v.sendAt } : {}), ...(v.repeat && v.repeat !== 'none' ? { repeat: v.repeat, ...(optStr(v.repeatUntil) ? { repeatUntil: v.repeatUntil } : {}) } : {}), fallback, emergency: v.emergency === 'yes' },
+    PAGE,
+  );
 }
 
 export async function campaignDetail(campaignId: string) {

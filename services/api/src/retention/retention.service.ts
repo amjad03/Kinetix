@@ -3,7 +3,8 @@ import { and, eq, isNotNull, isNull, lt, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { notifications, vaultDocuments } from '../db/schema.js';
+import { messages, notifications, vaultDocuments } from '../db/schema.js';
+import { commSendLog } from '../db/schema-comms.js';
 import { careerAssistantMessages, retentionRules } from '../db/schema-pathways.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 
@@ -14,6 +15,10 @@ export const RETENTION_TARGETS = {
   vault_documents: { actions: ['archive'], label: 'Vault documents', usesCategory: true },
   notifications: { actions: ['delete'], label: 'Read notifications', usesCategory: false },
   career_assistant: { actions: ['delete'], label: 'Career assistant chats', usesCategory: false },
+  /** Family chat messages; a message under an open report is kept until the report is decided. */
+  family_chat: { actions: ['delete'], label: 'Family chat messages', usesCategory: false },
+  /** The communication send log (who was sent what, when, at what cost). */
+  comm_send_log: { actions: ['delete'], label: 'Message send log', usesCategory: false },
 } as const;
 export type RetentionTarget = keyof typeof RETENTION_TARGETS;
 
@@ -69,6 +74,16 @@ export class RetentionService implements OnModuleInit {
         const where = and(isNotNull(notifications.readAt), lt(notifications.createdAt, cutoff));
         if (dryRun) return (await tx.select({ n: sql<number>`count(*)::int` }).from(notifications).where(where))[0].n;
         return (await tx.delete(notifications).where(where).returning({ id: notifications.id })).length;
+      }
+      case 'family_chat': {
+        const where = and(lt(messages.createdAt, cutoff), sql`not exists (select 1 from message_reports r where r.message_id = ${messages.id} and r.status = 'open')`);
+        if (dryRun) return (await tx.select({ n: sql<number>`count(*)::int` }).from(messages).where(where))[0].n;
+        return (await tx.delete(messages).where(where).returning({ id: messages.id })).length;
+      }
+      case 'comm_send_log': {
+        const where = lt(commSendLog.attemptedAt, cutoff);
+        if (dryRun) return (await tx.select({ n: sql<number>`count(*)::int` }).from(commSendLog).where(where))[0].n;
+        return (await tx.delete(commSendLog).where(where).returning({ id: commSendLog.id })).length;
       }
       case 'career_assistant': {
         const where = lt(careerAssistantMessages.createdAt, cutoff);

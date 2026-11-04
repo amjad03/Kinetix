@@ -355,7 +355,7 @@ export class ChatController {
         return 'sent';
       }
       if (!this.whatsapp.connected) return 'queued';
-      await this.whatsapp.send(t.contactAddress!, 'staff_message', { name: senderName, body: text });
+      await this.whatsapp.send({ to: t.contactAddress!, template: 'staff_message', language: 'en', params: [senderName, text] });
       return 'sent';
     } catch (e) {
       this.log.warn(`Chat delivery failed: ${(e as Error).message}`);

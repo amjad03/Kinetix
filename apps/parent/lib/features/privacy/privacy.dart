@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'channel_prefs.dart';
 import 'package:zynetix_ui/zynetix_ui.dart';
 
 import '../../core/api.dart';
@@ -287,6 +288,16 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                           onPressed: () => NoticeScreen.open(context, cs.noticeVersion, officer: cs.grievanceOfficer),
                           icon: const Icon(Icons.article_outlined),
                           label: Text(l.readFullNotice),
+                        ),
+                      ),
+                      Card(
+                        child: ListTile(
+                          key: const Key('openChannelPrefs'),
+                          leading: const Icon(Icons.sms_outlined),
+                          title: Text(l.prefTitle),
+                          subtitle: Text(l.prefLinkHelp),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => ChannelPrefsScreen.open(context, controller.api),
                         ),
                       ),
                       const SizedBox(height: Kx.s16),

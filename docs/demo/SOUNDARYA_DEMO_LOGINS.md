@@ -27,5 +27,6 @@ Load or reload with `pnpm db:seed:soundarya` in `services/api` (replaces this in
 
 Other staff sign in with `<email prefix>@soundarya.demo.zynetix.in` (for example `admissions`, `placements`, `warden`, `transport`, `stores`, `grievance`, `research`).
 Other staff sign in with `<email prefix>@soundarya.demo.zynetix.in` (for example `admissions`, `placements`, `warden`, `transport`, `driver1`, `driver2`, `stores`, `grievance`, `research`). Transport: `transport` runs the office (live map, safety and capacity); `driver1` and `driver2` use driver mode in the Teacher App (`docs/product/transport.md`).
+Communication: `principal` sees channels, credits, the cost report, the consent register and chat moderation; `accounts` tops up message credits; `hod.commerce` sends to the Commerce department only; `deepa.nair` is on chat do-not-disturb (`docs/product/communication.md`).
 
 Institution: Soundarya Nagar, Sidedahalli, Nagasandra Post, Bengaluru 560073. Bengaluru City University, NEP semester scheme, academic year 2026-27.

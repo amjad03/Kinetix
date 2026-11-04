@@ -32,6 +32,32 @@ export function tick(createdAt: Date, other: { readAt: Date | null; deliveredAt:
   return 'sent';
 }
 
+/**
+ * Abusive words (English, and Hindi and Kannada as people type them in Latin letters). The filter does not block:
+ * it flags the message for the moderators, who decide. Whole words only, so "class" or "Scunthorpe" pass.
+ */
+const ABUSIVE = ['idiot', 'stupid', 'moron', 'bastard', 'bitch', 'fuck', 'fucking', 'shit', 'asshole', 'dumbass', 'scum', 'useless fellow', 'kamina', 'kameena', 'harami', 'haramkhor', 'kutta', 'kutte', 'saala', 'saali', 'chutiya', 'bewakoof', 'gadha', 'nalayak', 'boli maga', 'sule maga', 'bevarsi', 'loafer'];
+const ABUSIVE_RE = new RegExp(`(^|[^\\p{L}])(${ABUSIVE.map((w) => w.replace(/ /g, '\\s+')).join('|')})(?=$|[^\\p{L}])`, 'iu');
+const PHONE_RE = /(?:\+?91[\s-]?)?(?<!\d)[6-9]\d{4}[\s-]?\d{5}(?!\d)/;
+const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+
+/**
+ * Why a message should be reviewed, or null: abusive language from anyone, and (safeguarding) staff giving a student
+ * a private phone number or email, which moves the conversation where the institution cannot see it.
+ */
+export function moderationFlag(text: string, staffToStudent: boolean): string | null {
+  if (ABUSIVE_RE.test(text)) return 'abusive_language';
+  if (staffToStudent && (PHONE_RE.test(text) || EMAIL_RE.test(text))) return 'private_contact';
+  return null;
+}
+
+/** When the HOD should step in: a family's message unanswered for `hours` (0 = never). */
+export function overdueForEscalation(lastFamilyAt: Date | null, lastStaffAt: Date | null, now: Date, hours: number): boolean {
+  if (!hours || !lastFamilyAt) return false;
+  if (lastStaffAt && lastStaffAt >= lastFamilyAt) return false;
+  return now.getTime() - lastFamilyAt.getTime() >= hours * 3600_000;
+}
+
 /** Validates "HH:MM" office hours: start before end, at least one day. */
 export function validOfficeHours(h: OfficeHours): boolean {
   const re = /^([01]\d|2[0-3]):[0-5]\d$/;

@@ -8,7 +8,7 @@ import { Button } from '@/components/shadcn/button';
 import { FormField, SwitchField, TextInput } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { ATTACH_ACCEPT, ATTACH_TYPES, CHANNELS, MAX_FILE_BYTES, fileSize, fileToBase64, type AnnChannel, type AnnPreview, type Announcement, type AnnTemplate, type AudienceScope, type PeopleResult, type PickedPerson } from '@/lib/communication';
+import { ATTACH_ACCEPT, ATTACH_TYPES, CHANNELS, MAX_FILE_BYTES, fileSize, fileToBase64, type AnnChannel, type AnnPreview, type AnnPriority, type Announcement, type AnnTemplate, type AudienceOptions, type AudienceScope, type PeopleResult, type PickedPerson } from '@/lib/communication';
 import { naturalCompare } from '@/lib/natural';
 import type { Structure } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,8 @@ interface Option {
 }
 
 const SCOPES: AudienceScope[] = ['all', 'departments', 'programs', 'sections', 'people'];
+const FALLBACKS = ['whatsapp', 'sms', 'email', 'in_app'] as const;
+const MAX_OPTIONS = 6;
 /** A datetime-local value for an ISO time (the browser's own zone). */
 const toLocal = (iso: string | null) => {
   if (!iso) return '';
@@ -41,7 +43,10 @@ export function AnnouncementComposer({
   seed,
   onSaved,
   onCancelEdit,
+  options = null,
 }: {
+  /** Roles, hostels, routes, saved lists and outside-channel templates the sender may use. */
+  options?: AudienceOptions | null;
   structure: Structure;
   departments: { id: string; name: string }[];
   templates: AnnTemplate[];
@@ -75,7 +80,25 @@ export function AnnouncementComposer({
   const [programs, setPrograms] = useState<Option[]>(() => pick(programOptions, aud?.programIds));
   const [sections, setSections] = useState<Option[]>(() => pick(sectionOptions, aud?.sectionIds));
   const [people, setPeople] = useState<PickedPerson[]>(editing?.audiencePeople ?? []);
-  const [priority, setPriority] = useState<'normal' | 'important'>(from?.priority ?? 'normal');
+  const hostelOptions = useMemo<Option[]>(() => (options?.hostels ?? []).map((h) => ({ id: h.id, label: h.name })), [options]);
+  const routeOptions = useMemo<Option[]>(() => (options?.routes ?? []).map((r) => ({ id: r.id, label: r.name })), [options]);
+  const listOptions = useMemo<Option[]>(() => (options?.lists ?? []).map((l) => ({ id: l.id, label: l.name })), [options]);
+  const [roles, setRoles] = useState<string[]>(aud?.roles ?? []);
+  const [hostels, setHostels] = useState<Option[]>(() => pick(hostelOptions, aud?.hostelIds));
+  const [routes, setRoutes] = useState<Option[]>(() => pick(routeOptions, aud?.routeIds));
+  const [lists, setLists] = useState<Option[]>(() => pick(listOptions, aud?.listIds));
+  const [translate, setTranslate] = useState(!!editing?.translations && Object.keys(editing.translations).length > 0);
+  const [hi, setHi] = useState(editing?.translations?.hi ?? { title: '', body: '' });
+  const [kn, setKn] = useState(editing?.translations?.kn ?? { title: '', body: '' });
+  const [withPoll, setWithPoll] = useState(!!editing?.poll);
+  const [question, setQuestion] = useState(editing?.poll?.question ?? '');
+  const [choices, setChoices] = useState<string[]>(editing?.poll?.options ?? ['', '']);
+  const [pollCloses, setPollCloses] = useState(toLocal(editing?.poll?.closesAt ?? null));
+  const [showResults, setShowResults] = useState(editing?.poll?.showResults ?? true);
+  const [outsideTpl, setOutsideTpl] = useState(editing?.external?.templateId ?? '');
+  const [fallback, setFallback] = useState<string[]>(editing?.external?.fallback ?? []);
+  const scopes = options?.scopes ?? SCOPES;
+  const [priority, setPriority] = useState<AnnPriority>(from?.priority ?? 'normal');
   const [requiresAck, setRequiresAck] = useState(from?.requiresAck ?? false);
   const [later, setLater] = useState(editing?.status === 'scheduled');
   const [sendAt, setSendAt] = useState(toLocal(editing?.sendAt ?? null));
@@ -95,10 +118,25 @@ export function AnnouncementComposer({
     if (scope === 'departments') return { scope, departmentIds: ids(depts) };
     if (scope === 'programs') return { scope, programIds: ids(programs) };
     if (scope === 'sections') return { scope, sectionIds: ids(sections) };
+    if (scope === 'roles') return { scope, roles };
+    if (scope === 'hostels') return { scope, hostelIds: ids(hostels) };
+    if (scope === 'routes') return { scope, routeIds: ids(routes) };
+    if (scope === 'lists') return { scope, listIds: ids(lists) };
     return { scope, userIds: people.filter((p) => p.kind !== 'record').map((p) => p.id), studentIds: people.filter((p) => p.kind === 'record').map((p) => p.id) };
-  }, [scope, depts, programs, sections, people]);
-  const audienceChosen =
-    scope === 'all' || (scope === 'departments' ? depts.length > 0 : scope === 'programs' ? programs.length > 0 : scope === 'sections' ? sections.length > 0 : people.length > 0);
+  }, [scope, depts, programs, sections, people, roles, hostels, routes, lists]);
+  const chosenFor: Record<AudienceScope, boolean> = {
+    all: true,
+    departments: depts.length > 0,
+    programs: programs.length > 0,
+    sections: sections.length > 0,
+    people: people.length > 0,
+    roles: roles.length > 0,
+    hostels: hostels.length > 0,
+    routes: routes.length > 0,
+    lists: lists.length > 0,
+  };
+  const audienceChosen = chosenFor[scope];
+  const outside = options?.outsideTemplates.find((x) => x.id === outsideTpl) ?? null;
 
   // How many people the current choice reaches, refreshed as it changes.
   const reachable = channels.length > 0 && audienceChosen;
@@ -126,6 +164,19 @@ export function AnnouncementComposer({
     setPeople([]);
     setPriority('normal');
     setRequiresAck(false);
+    setRoles([]);
+    setHostels([]);
+    setRoutes([]);
+    setLists([]);
+    setTranslate(false);
+    setHi({ title: '', body: '' });
+    setKn({ title: '', body: '' });
+    setWithPoll(false);
+    setQuestion('');
+    setChoices(['', '']);
+    setPollCloses('');
+    setOutsideTpl('');
+    setFallback([]);
     setLater(false);
     setSendAt('');
     setExpiresAt('');
@@ -183,11 +234,15 @@ export function AnnouncementComposer({
   const audienceError = touched && !audienceChosen ? t('msg.err.audience') : '';
   const whenError = touched && later && !sendAt ? t('comm.err.when') : touched && later && sendAt && new Date(sendAt) <= new Date() ? t('comm.err.past') : '';
   const expiryError = touched && expiresAt && new Date(expiresAt) <= (later && sendAt ? new Date(sendAt) : new Date()) ? t('comm.err.expiry') : '';
+  const pollChoices = choices.map((c) => c.trim()).filter(Boolean);
+  const pollError = touched && withPoll ? (!question.trim() ? t('cp.poll.errQuestion') : pollChoices.length < 2 ? t('cp.poll.errOptions') : new Set(pollChoices.map((c) => c.toLowerCase())).size !== pollChoices.length ? t('cp.poll.errSame') : '') : '';
+  const half = (x: { title: string; body: string }) => (x.title.trim() && !x.body.trim()) || (!x.title.trim() && x.body.trim());
+  const translationError = touched && translate && (half(hi) || half(kn)) ? t('cp.tr.errBoth') : '';
 
   const submit = (mode: 'draft' | 'send') => {
     setTouched(true);
     setError('');
-    const invalid = !title.trim() || !body.trim() || (mode === 'send' && (channels.length === 0 || !audienceChosen || !!whenError || !!expiryError));
+    const invalid = !title.trim() || !body.trim() || !!pollError || !!translationError || (mode === 'send' && (channels.length === 0 || !audienceChosen || !!whenError || !!expiryError));
     if (invalid || (mode === 'send' && later && (!sendAt || new Date(sendAt) <= new Date()))) return;
     start(async () => {
       const attachments = await Promise.all(files.map(async (f) => ({ filename: f.name, contentType: f.type, contentBase64: await fileToBase64(f) })));
@@ -197,9 +252,12 @@ export function AnnouncementComposer({
         priority,
         channels: channels.length ? channels : ['parent'],
         audience: audienceChosen ? audience : { scope: 'all' },
-        requiresAck,
-        sendAt: later ? fromLocal(sendAt) : null,
+        requiresAck: requiresAck || priority === 'emergency',
+        sendAt: later && priority !== 'emergency' ? fromLocal(sendAt) : null,
         expiresAt: fromLocal(expiresAt),
+        translations: translate ? Object.fromEntries((['hi', 'kn'] as const).map((l) => [l, l === 'hi' ? hi : kn]).filter(([, v]) => typeof v !== 'string' && v.title.trim() && v.body.trim())) : {},
+        poll: withPoll ? { question: question.trim(), options: pollChoices, closesAt: fromLocal(pollCloses), showResults } : null,
+        external: outside ? { templateId: outside.id, fallback: fallback.filter((f) => f !== outside.channel) } : null,
         attachments,
         keepAttachmentIds: kept.map((k) => k.id),
         mode,
@@ -292,7 +350,7 @@ export function AnnouncementComposer({
       <fieldset className="border-0 p-0 m-0 grid gap-3">
         <legend className="text-[13px] leading-5 font-semibold mb-2">{t('msg.sendTo')}</legend>
         <div role="radiogroup" aria-label={t('msg.audience')} className="flex flex-wrap gap-1 rounded-lg border p-0.5 w-fit">
-          {SCOPES.map((s) => (
+          {scopes.map((s) => (
             <button key={s} type="button" role="radio" aria-checked={scope === s} onClick={() => setScope(s)} className={cn('rounded-md px-3 py-1.5 text-sm', scope === s ? 'bg-muted font-semibold' : 'text-muted-foreground')} data-testid={`ann-scope-${s}`}>
               {t(`comm.scope.${s}` as MessageKey)}
             </button>
@@ -302,6 +360,22 @@ export function AnnouncementComposer({
         {scope === 'programs' && multi(t('comm.scope.programs'), programOptions, programs, setPrograms, 'ann-programs')}
         {scope === 'sections' && multi(t('comm.scope.sections'), sectionOptions, sections, setSections, 'ann-sections')}
         {scope === 'people' && <PeoplePicker picked={people} onChange={setPeople} error={audienceError} />}
+        {scope === 'roles' && (
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('comm.scope.roles')} data-testid="ann-roles">
+            {(options?.roles ?? []).map((r) => {
+              const on = roles.includes(r);
+              return (
+                <button key={r} type="button" aria-pressed={on} onClick={() => setRoles((xs) => (on ? xs.filter((x) => x !== r) : [...xs, r]))} className={cn('rounded-full border px-3 py-1 text-sm', on ? 'border-primary bg-secondary text-secondary-foreground' : 'bg-background hover:bg-muted')}>
+                  {t(`cp.role.${r}` as MessageKey)}
+                </button>
+              );
+            })}
+            {audienceError && <p className="w-full text-xs text-red-ink" role="alert">{audienceError}</p>}
+          </div>
+        )}
+        {scope === 'hostels' && multi(t('comm.scope.hostels'), hostelOptions, hostels, setHostels, 'ann-hostels')}
+        {scope === 'routes' && multi(t('comm.scope.routes'), routeOptions, routes, setRoutes, 'ann-routes')}
+        {scope === 'lists' && multi(t('comm.scope.lists'), listOptions, lists, setLists, 'ann-lists')}
         <p className="text-xs text-muted-foreground" data-testid="ann-reach" aria-live="polite">
           {reach && reachable
             ? t('comm.reach', { people: fmt.number(reach.people), teacher: fmt.number(reach.teacher), student: fmt.number(reach.student), parent: fmt.number(reach.parent), boards: fmt.number(reach.boards) })
@@ -379,8 +453,8 @@ export function AnnouncementComposer({
       <fieldset className="border-0 p-0 m-0">
         <legend className="text-[13px] leading-5 font-semibold mb-2">{t('msg.priority')}</legend>
         <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label={t('msg.priority')}>
-          {(['normal', 'important'] as const).map((p) => (
-            <button key={p} type="button" role="radio" aria-checked={priority === p} onClick={() => setPriority(p)} className={cn('rounded-[10px] border px-3 py-2.5 text-left', priority === p ? (p === 'important' ? 'border-amber-ink bg-amber-soft text-amber-ink' : 'border-primary bg-secondary text-secondary-foreground') : 'bg-background hover:bg-muted')} data-testid={`ann-priority-${p}`}>
+          {(options?.canEmergency ? (['normal', 'important', 'emergency'] as const) : (['normal', 'important'] as const)).map((p) => (
+            <button key={p} type="button" role="radio" aria-checked={priority === p} onClick={() => setPriority(p)} className={cn('rounded-[10px] border px-3 py-2.5 text-left', priority === p ? (p === 'emergency' ? 'border-red-ink bg-red-soft text-red-ink' : p === 'important' ? 'border-amber-ink bg-amber-soft text-amber-ink' : 'border-primary bg-secondary text-secondary-foreground') : 'bg-background hover:bg-muted')} data-testid={`ann-priority-${p}`}>
               <b className="block text-sm font-medium">{t(`comm.pri.${p}` as MessageKey)}</b>
               <span className="text-xs opacity-80">{t(`comm.pri.${p}.help` as MessageKey)}</span>
             </button>
@@ -389,14 +463,103 @@ export function AnnouncementComposer({
       </fieldset>
 
       <div>
-        <SwitchField label={t('msg.ack')} checked={requiresAck} onChange={(v: boolean) => setRequiresAck(v)} />
+        <SwitchField label={t('msg.ack')} checked={requiresAck || priority === 'emergency'} disabled={priority === 'emergency'} onChange={(v: boolean) => setRequiresAck(v)} />
         <p className="text-xs text-muted-foreground">{t('comm.ackHelp')}</p>
       </div>
 
+      <div className="grid gap-3 rounded-[10px] border p-4" data-testid="ann-translations">
+        <SwitchField label={t('cp.tr.title')} checked={translate} onChange={(v: boolean) => setTranslate(v)} />
+        <p className="text-xs text-muted-foreground">{t('cp.tr.help')}</p>
+        {translate &&
+          (['hi', 'kn'] as const).map((l) => {
+            const v = l === 'hi' ? hi : kn;
+            const set = l === 'hi' ? setHi : setKn;
+            return (
+              <div key={l} className="grid gap-2">
+                <FormField label={t(`cp.tr.titleIn.${l}` as MessageKey)}>
+                  <TextInput value={v.title} onChange={(e) => set({ ...v, title: e.target.value })} slotProps={{ htmlInput: { maxLength: 120, lang: l } }} data-testid={`ann-tr-${l}-title`} />
+                </FormField>
+                <label className="grid gap-1.5 text-[13px] font-semibold">
+                  {t(`cp.tr.bodyIn.${l}` as MessageKey)}
+                  <textarea lang={l} value={v.body} onChange={(e) => set({ ...v, body: e.target.value })} maxLength={5000} rows={3} className="w-full rounded-md border bg-background px-3.5 py-2 text-sm font-normal leading-5" data-testid={`ann-tr-${l}-body`} />
+                </label>
+              </div>
+            );
+          })}
+        {translationError && <p className="text-xs text-red-ink" role="alert">{translationError}</p>}
+      </div>
+
+      <div className="grid gap-3 rounded-[10px] border p-4" data-testid="ann-poll">
+        <SwitchField label={t('cp.poll.add')} checked={withPoll} onChange={(v: boolean) => setWithPoll(v)} />
+        {withPoll && (
+          <>
+            <FormField label={t('cp.poll.question')} required>
+              <TextInput value={question} onChange={(e) => setQuestion(e.target.value)} slotProps={{ htmlInput: { maxLength: 200 } }} data-testid="ann-poll-question" />
+            </FormField>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {choices.map((c, i) => (
+                <div key={i} className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <FormField label={t('cp.poll.option', { n: i + 1 })}>
+                      <TextInput value={c} onChange={(e) => setChoices((xs) => xs.map((x, j) => (j === i ? e.target.value : x)))} slotProps={{ htmlInput: { maxLength: 80 } }} data-testid={`ann-poll-option-${i}`} />
+                    </FormField>
+                  </div>
+                  {choices.length > 2 && (
+                    <Button type="button" size="icon" variant="ghost" className="size-10" aria-label={t('cp.poll.remove', { n: i + 1 })} onClick={() => setChoices((xs) => xs.filter((_, j) => j !== i))}>
+                      <X />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <Button type="button" variant="outline" size="sm" disabled={choices.length >= MAX_OPTIONS} onClick={() => setChoices((xs) => [...xs, ''])}>
+                {t('cp.poll.addOption')}
+              </Button>
+              <FormField label={t('cp.poll.closes')}>
+                <TextInput type="datetime-local" value={pollCloses} onChange={(e) => setPollCloses(e.target.value)} />
+              </FormField>
+              <SwitchField label={t('cp.poll.showResults')} checked={showResults} onChange={(v: boolean) => setShowResults(v)} />
+            </div>
+            {pollError && <p className="text-xs text-red-ink" role="alert">{pollError}</p>}
+          </>
+        )}
+      </div>
+
+      {(options?.outsideTemplates.length ?? 0) > 0 && (
+        <div className="grid gap-3 rounded-[10px] border p-4" data-testid="ann-outside">
+          <label className="grid gap-1.5 text-[13px] font-semibold">
+            {t('cp.out.title')}
+            <select className="h-10 rounded-md border bg-background px-2 text-sm font-normal" value={outsideTpl} onChange={(e) => setOutsideTpl(e.target.value)} data-testid="ann-outside-template">
+              <option value="">{t('cp.out.none')}</option>
+              {options!.outsideTemplates.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {`${x.key} · ${t(`pwb.ch.${x.channel}` as MessageKey)}`}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="text-xs text-muted-foreground">{t('cp.out.help')}</p>
+          {outside && (
+            <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('cp.out.fallback')}>
+              <span className="text-[13px] font-semibold">{t('cp.out.fallback')}</span>
+              {FALLBACKS.filter((f) => f !== outside.channel).map((f) => {
+                const on = fallback.includes(f);
+                return (
+                  <button key={f} type="button" aria-pressed={on} onClick={() => setFallback((xs) => (on ? xs.filter((x) => x !== f) : [...xs, f]))} className={cn('rounded-full border px-3 py-1 text-sm', on ? 'border-primary bg-secondary text-secondary-foreground' : 'bg-background hover:bg-muted')}>
+                    {t(`pwb.ch.${f}` as MessageKey)}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 items-start">
         <div className="grid gap-2">
-          <SwitchField label={t('comm.later')} checked={later} onChange={(v: boolean) => setLater(v)} />
-          {later && (
+          <SwitchField label={t('comm.later')} checked={later && priority !== 'emergency'} disabled={priority === 'emergency'} onChange={(v: boolean) => setLater(v)} />
+          {later && priority !== 'emergency' && (
             <FormField label={t('comm.sendAt')} required error={whenError || undefined}>
               <TextInput type="datetime-local" value={sendAt} onChange={(e) => setSendAt(e.target.value)} data-testid="ann-send-at" />
             </FormField>
@@ -418,8 +581,8 @@ export function AnnouncementComposer({
           {t('comm.saveDraft')}
         </Button>
         <Button type="button" disabled={pending} onClick={() => submit('send')} data-testid="ann-send">
-          {later ? <CalendarClock /> : <Send />}
-          {later ? t('comm.schedule') : t('comm.sendNow')}
+          {later && priority !== 'emergency' ? <CalendarClock /> : <Send />}
+          {priority === 'emergency' ? t('cp.emergency.send') : later ? t('comm.schedule') : t('comm.sendNow')}
         </Button>
       </div>
     </section>

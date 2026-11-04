@@ -243,7 +243,7 @@ export class NotificationsService {
   }
 
   /** HR, payroll and document events for specific users (idempotent per user and dedupe key). */
-  async notifyUsers(tx: Tx, userIds: string[], n: { kind: 'leave' | 'hostel' | 'payslip' | 'certificate' | 'placement' | 'grievance' | 'welfare' | 'survey' | 'task' | 'homework' | 'calendar' | 'transport' | 'announcement' | 'message'; text: Localized | Text; data: Record<string, string>; dedupeKey: string }, opts: { replace?: boolean } = {}): Promise<void> {
+  async notifyUsers(tx: Tx, userIds: string[], n: { kind: 'leave' | 'hostel' | 'payslip' | 'certificate' | 'placement' | 'grievance' | 'welfare' | 'survey' | 'task' | 'homework' | 'calendar' | 'transport' | 'announcement' | 'message'; text: Localized | Text; data: Record<string, string>; dedupeKey: string }, opts: { replace?: boolean; urgent?: boolean } = {}): Promise<void> {
     if (userIds.length === 0) return;
     await this.insertFor(tx, sql`select u from unnest(array[${uuidList(userIds)}]::uuid[]) as u`, n, opts);
   }
@@ -384,10 +384,11 @@ export class NotificationsService {
     tx: Tx,
     recipients: SQL,
     n: { kind: Kind; text: Localized | Text; data: Record<string, string>; dedupeKey: string },
-    opts: { revive?: boolean; replace?: boolean } = {},
+    opts: { revive?: boolean; replace?: boolean; urgent?: boolean } = {},
   ): Promise<void> {
     // Settings > Notifications: a kind the institution turned off is not sent; one without push stays in the app.
-    const prefs = await notificationPrefs(tx);
+    // An emergency is always sent and always pushed.
+    const prefs = opts.urgent ? { off: [], pushOff: [] } : await notificationPrefs(tx);
     if (prefs.off.includes(n.kind)) return;
     // A withdrawn absence that becomes an absence again is shown again, as unread; a changed
     // entry (calendar, a second review) replaces the earlier text and is shown as new.

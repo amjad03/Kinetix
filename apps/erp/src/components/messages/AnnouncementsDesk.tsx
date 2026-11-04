@@ -8,7 +8,7 @@ import { Button } from '@/components/shadcn/button';
 import { DataTable, Dialog, FormField, Sheet, StatusPill, TabPanel, Tabs, TextInput, useToast, type Column } from '@/components/ui';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { APP_CHANNELS, CHANNELS, fileSize, pctOf, type AnnChannel, type AnnRecipient, type Announcement, type AnnTemplate, type AppChannel } from '@/lib/communication';
+import { APP_CHANNELS, CHANNELS, fileSize, pctOf, type AnnChannel, type AnnRecipient, type Announcement, type AnnTemplate, type AppChannel, type AudienceOptions } from '@/lib/communication';
 import type { Structure } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { AnnouncementComposer } from './AnnouncementComposer';
@@ -28,6 +28,7 @@ export function AnnouncementsDesk({
   templates,
   boardAlerts,
   initialTab,
+  options = null,
 }: {
   structure: Structure;
   departments: { id: string; name: string }[];
@@ -35,6 +36,7 @@ export function AnnouncementsDesk({
   templates: AnnTemplate[];
   boardAlerts: ReactNode;
   initialTab: string;
+  options?: AudienceOptions | null;
 }) {
   const { t } = useI18n();
   const toast = useToast();
@@ -84,6 +86,9 @@ export function AnnouncementsDesk({
     <span className="flex flex-wrap items-center gap-1.5">
       <b className="font-medium">{a.title}</b>
       {a.priority === 'important' && <StatusPill tone="warning">{t('comm.pri.important')}</StatusPill>}
+      {a.priority === 'emergency' && <StatusPill tone="danger">{t('comm.pri.emergency')}</StatusPill>}
+      {a.hasPoll && <StatusPill tone="info">{t('cp.poll.badge')}</StatusPill>}
+      {(a.translated?.length ?? 0) > 0 && <StatusPill tone="neutral">{t('cp.tr.badge', { langs: a.translated!.map((l) => l.toUpperCase()).join(', ') })}</StatusPill>}
       {a.requiresAck && <StatusPill tone="info">{t('comm.ackShort')}</StatusPill>}
     </span>
   );
@@ -151,6 +156,7 @@ export function AnnouncementsDesk({
             departments={departments}
             templates={templates}
             editing={editing}
+            options={options}
             onCancelEdit={() => setEditing(null)}
             onSaved={(a, how) => {
               setEditing(null);
@@ -313,9 +319,64 @@ function Detail({ a, busy, onClose, onEdit, onRecall, onDelete, onDuplicate, onR
             </ul>
           )}
           <p className="mt-3 text-xs text-muted-foreground">
-            {[a.priority === 'important' ? t('comm.pri.important') : t('comm.pri.normal'), a.requiresAck ? t('comm.ackShort') : null, a.expiresAt ? t('comm.expiresOn', { when: fmt.dateTime(a.expiresAt) }) : null].filter(Boolean).join(' · ')}
+            {[t(`comm.pri.${a.priority}` as MessageKey), a.requiresAck ? t('comm.ackShort') : null, a.expiresAt ? t('comm.expiresOn', { when: fmt.dateTime(a.expiresAt) }) : null].filter(Boolean).join(' · ')}
           </p>
         </div>
+
+        {a.translations && Object.keys(a.translations).length > 0 && (
+          <div className="grid gap-2 sm:grid-cols-2" data-testid="ann-detail-translations">
+            {(['hi', 'kn'] as const)
+              .filter((l) => a.translations?.[l])
+              .map((l) => (
+                <div key={l} className="rounded-lg border bg-background p-3" lang={l}>
+                  <p className="text-xs font-semibold text-muted-foreground">{t(`pwb.lang.${l}` as MessageKey)}</p>
+                  <p className="text-sm font-medium">{a.translations![l]!.title}</p>
+                  <RichText body={a.translations![l]!.body} />
+                </div>
+              ))}
+          </div>
+        )}
+
+        {a.poll && (
+          <section className="rounded-lg border bg-background p-4" aria-labelledby="ann-poll-title" data-testid="ann-detail-poll">
+            <h3 id="ann-poll-title" className="text-sm font-semibold">{a.poll.question}</h3>
+            <p className="text-xs text-muted-foreground">
+              {t('cp.poll.answered', { n: fmt.number(a.poll.voted), pct: a.poll.votedPct })}
+              {a.poll.closesAt ? ` · ${a.poll.closed ? t('cp.poll.closed') : t('cp.poll.closesOn', { when: fmt.dateTime(a.poll.closesAt) })}` : ''}
+            </p>
+            <ul className="mt-3 grid gap-2">
+              {a.poll.results.map((r) => (
+                <li key={r.option} className="grid gap-1">
+                  <div className="flex justify-between text-sm">
+                    <span>{r.option}</span>
+                    <span className="tabular-nums text-muted-foreground">{t('cp.poll.votes', { n: fmt.number(r.votes), pct: r.pct })}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted" aria-hidden>
+                    <div className="h-2 rounded-full bg-primary" style={{ width: `${r.pct}%` }} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {a.external && (
+          <section className="rounded-lg border bg-background p-4" data-testid="ann-detail-outside">
+            <h3 className="text-sm font-semibold">{t('cp.out.sentAlso', { channel: a.external.channel ? t(`pwb.ch.${a.external.channel}` as MessageKey) : '' })}</h3>
+            <p className="text-xs text-muted-foreground">
+              {[a.external.templateKey, a.external.fallback.length ? t('cp.out.then', { list: a.external.fallback.map((f) => t(`pwb.ch.${f}` as MessageKey)).join(', ') }) : null].filter(Boolean).join(' · ')}
+            </p>
+            {a.external.campaign && (
+              <div className="mt-3 grid gap-3 grid-cols-2 sm:grid-cols-5">
+                <Stat label={t('pwb.comms.recipients')} value={fmt.number(a.external.campaign.recipients)} />
+                <Stat label={t('pwb.comms.sent')} value={fmt.number(a.external.campaign.sent)} />
+                <Stat label={t('cp.col.delivered')} value={fmt.number(a.external.campaign.delivered)} />
+                <Stat label={t('pwb.comms.failed')} value={fmt.number(a.external.campaign.failed + a.external.campaign.suppressed)} />
+                <Stat label={t('cp.col.cost')} value={fmt.rupees(a.external.campaign.costPaise)} />
+              </div>
+            )}
+          </section>
+        )}
 
         {(a.status === 'sent' || a.status === 'recalled') && (
           <>

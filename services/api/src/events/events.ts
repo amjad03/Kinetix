@@ -59,6 +59,10 @@ export const DomainEvents = {
   // Transport: an SOS from the bus, and a fee change after the month was billed (a move or a cancelled seat).
   TransportSosRaised: 'transport.sos_raised',
   TransportFeeAdjusted: 'transport.fee_adjusted',
+  // Communication: a notice went out (an emergency one too), and a family conversation went to the head of department.
+  AnnouncementSent: 'communication.announcement_sent',
+  EmergencyBroadcast: 'communication.emergency_broadcast',
+  ConversationEscalated: 'communication.conversation_escalated',
 } as const;
 export type DomainEventType = (typeof DomainEvents)[keyof typeof DomainEvents];
 

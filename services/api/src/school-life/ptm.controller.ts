@@ -3,7 +3,7 @@ import { and, asc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
-import { auditUser } from '../common/audit.js';
+import { audit, auditUser } from '../common/audit.js';
 import { zonedToInstant } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
@@ -19,6 +19,9 @@ const EventBody = z.object({ title: z.string().trim().min(3).max(200), eventDate
 const SlotsBody = z.object({ teacherId: z.uuid().optional(), from: Hm, to: Hm, durationMinutes: z.number().int().min(5).max(120) });
 const BookBody = z.object({ studentId: z.uuid() });
 const RescheduleBody = z.object({ toSlotId: z.uuid() });
+const MinutesBody = z
+  .object({ attendance: z.enum(['attended', 'no_show']), minutes: z.string().trim().max(4000).default(''), actionPoints: z.string().trim().max(2000).default(''), shareWithFamily: z.boolean().default(true) })
+  .refine((b) => b.attendance === 'no_show' || b.minutes.length >= 5, { message: 'Write what was discussed', path: ['minutes'] });
 
 const MAX_SLOTS_PER_CALL = 60;
 
@@ -246,6 +249,53 @@ export class PtmController {
         .where(and(eq(ptmSlots.eventId, id), eq(ptmSlots.teacherId, p.userId)))
         .orderBy(asc(ptmSlots.startsAt));
       return rows.map((r) => ({ ...r.slot, student: r.student, rollNo: r.rollNo }));
+    });
+  }
+
+  /** After the meeting: whether the family came, the minutes and the agreed action points. The family is told when shared. */
+  @Post('slots/:id/minutes')
+  @HttpCode(200)
+  @Auth('user', [...PTM_ORGANISERS, ...PTM_TEACHERS])
+  minutes(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(MinutesBody)) b: z.infer<typeof MinutesBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const slot = await this.lockSlot(tx, id);
+      if (slot.teacherId !== p.userId && !hasAny(p, PTM_ORGANISERS)) throw new NotFoundException('Slot not found');
+      if (!slot.studentId) throw new ConflictException('Nobody booked this slot');
+      if (slot.startsAt > this.svc.now()) throw new ConflictException('Minutes are written after the meeting');
+      const before = { attendance: slot.attendance, minutes: slot.minutes, actionPoints: slot.actionPoints };
+      const [row] = await tx.update(ptmSlots).set({ attendance: b.attendance, minutes: b.minutes, actionPoints: b.actionPoints, minutesAt: this.svc.now() }).where(eq(ptmSlots.id, id)).returning();
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'ptm.minutes_recorded', subjectType: 'ptm_slot', subjectId: id, before, after: { attendance: row.attendance, minutes: row.minutes, actionPoints: row.actionPoints } });
+      if (b.shareWithFamily && b.attendance === 'attended') {
+        const family = await this.svc.guardiansOf(tx, slot.studentId);
+        await this.svc.notify(tx, family, 'calendar', 'Notes from the parent-teacher meeting', b.actionPoints ? `Agreed: ${b.actionPoints.slice(0, 160)}` : b.minutes.slice(0, 160), `ptm:minutes:${id}`, { slotId: id });
+      }
+      return row;
+    });
+  }
+
+  /** The meeting in numbers, per teacher: slots, booked, attended, no-shows and minutes written. */
+  @Get('events/:id/report')
+  @Auth('user', PTM_ORGANISERS)
+  report(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const e = await this.event(tx, id);
+      const rows = await tx
+        .select({
+          teacherId: ptmSlots.teacherId,
+          teacher: users.fullName,
+          slots: sql<number>`count(*)::int`,
+          booked: sql<number>`count(${ptmSlots.studentId})::int`,
+          attended: sql<number>`count(*) filter (where ${ptmSlots.attendance} = 'attended')::int`,
+          noShow: sql<number>`count(*) filter (where ${ptmSlots.attendance} = 'no_show')::int`,
+          minutes: sql<number>`count(*) filter (where ${ptmSlots.minutes} <> '')::int`,
+        })
+        .from(ptmSlots)
+        .innerJoin(users, eq(users.id, ptmSlots.teacherId))
+        .where(eq(ptmSlots.eventId, id))
+        .groupBy(ptmSlots.teacherId, users.fullName)
+        .orderBy(asc(users.fullName));
+      const total = rows.reduce((a, r) => ({ slots: a.slots + r.slots, booked: a.booked + r.booked, attended: a.attended + r.attended, noShow: a.noShow + r.noShow, minutes: a.minutes + r.minutes }), { slots: 0, booked: 0, attended: 0, noShow: 0, minutes: 0 });
+      return { event: e, total, teachers: rows };
     });
   }
 

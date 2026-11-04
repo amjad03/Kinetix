@@ -4,7 +4,7 @@ import type { RoleName } from '../../auth/principal.js';
 import { Mailer } from '../../analytics/mailer.js';
 import { audit } from '../../common/audit.js';
 import { TextSender, WhatsAppSender } from '../../comms/channels.js';
-import { fillTemplate, toE164 } from '../../comms/comms.logic.js';
+import { fillTemplate, toE164, waParams } from '../../comms/comms.logic.js';
 import type { Tx } from '../../db/db.service.js';
 import { messageTemplates } from '../../db/schema-pathways.js';
 import { admissionCustodyItems, admissionRefundSlabs, admissionRequests, applicationDrafts } from '../../db/schema-sis.js';
@@ -130,7 +130,7 @@ export class DeskService {
       if (!this.whatsapp.connected) throw new ConflictException('WhatsApp Business is not connected for this institution');
       const to = toE164(e.e.phone);
       if (!to) throw new BadRequestException('No valid mobile number on file');
-      await this.whatsapp.send(to, t.key, vars);
+      await this.whatsapp.send({ to, template: t.waTemplateName || t.key, language: t.waLanguage || t.locale, params: waParams(t.body, vars) });
     } else if (t.channel === 'email') {
       if (!e.e.email) throw new BadRequestException('No email address on file');
       await this.mailer.send({ to: [e.e.email], subject: subject || t.key, text, attachments: [] });

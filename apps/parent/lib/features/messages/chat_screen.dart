@@ -220,6 +220,20 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  /// Takes the conversation to the teacher's head of department, with the reason.
+  Future<void> _escalate() async {
+    final l = context.l10n;
+    final text = await showDialog<String>(context: context, builder: (_) => const _EscalateDialog());
+    if (text == null || !mounted) return;
+    try {
+      await api.escalateConversation(widget.conversationId, text);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.escalateDone)));
+      await _loadLatest();
+    } on ApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.errorText(e))));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -248,6 +262,14 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
+        actions: [
+          if (conv != null && !conv.office)
+            PopupMenuButton<String>(
+              key: const Key('chatMenu'),
+              onSelected: (v) => v == 'escalate' ? _escalate() : null,
+              itemBuilder: (_) => [PopupMenuItem(key: const Key('chatEscalate'), value: 'escalate', child: Text(context.l10n.escalateTitle))],
+            ),
+        ],
       ),
       body: Column(
         children: [
@@ -390,6 +412,52 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Asks for the reason before a conversation goes to the head of department; pops with it.
+class _EscalateDialog extends StatefulWidget {
+  const _EscalateDialog();
+
+  @override
+  State<_EscalateDialog> createState() => _EscalateDialogState();
+}
+
+class _EscalateDialogState extends State<_EscalateDialog> {
+  final _reason = TextEditingController();
+
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return AlertDialog(
+      title: Text(l.escalateTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l.escalateHelp),
+          const SizedBox(height: Kx.s12),
+          TextField(key: const Key('escalateReason'), controller: _reason, maxLength: 300, maxLines: 3, decoration: InputDecoration(labelText: l.escalateReason)),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l.cancel)),
+        ListenableBuilder(
+          listenable: _reason,
+          builder: (context, _) => FilledButton(
+            key: const Key('escalateSend'),
+            onPressed: _reason.text.trim().length >= 5 ? () => Navigator.of(context).pop(_reason.text.trim()) : null,
+            child: Text(l.escalateSend),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -44,6 +44,9 @@ class Announcement {
     this.expiresAt,
     this.readAt,
     this.acknowledgedAt,
+    this.emergency = false,
+    this.language = 'en',
+    this.poll,
   });
 
   factory Announcement.fromJson(Map<String, dynamic> j) => Announcement(
@@ -60,6 +63,9 @@ class Announcement {
     readAt: _instant(j['readAt']),
     acknowledgedAt: _instant(j['acknowledgedAt']),
     pinned: j['pinned'] as bool? ?? false,
+    emergency: j['emergency'] as bool? ?? j['priority'] == 'emergency',
+    language: j['language'] as String? ?? 'en',
+    poll: j['poll'] is Map ? AnnouncementPoll.fromJson((j['poll'] as Map).cast<String, dynamic>()) : null,
   );
 
   final String id;
@@ -78,7 +84,45 @@ class Announcement {
   final DateTime? acknowledgedAt;
   final bool pinned;
 
+  /// Sent as an emergency: pinned, rings through do-not-disturb, must be acknowledged.
+  final bool emergency;
+
+  /// The language the text is in (the reader's own when the sender translated it).
+  final String language;
+  final AnnouncementPoll? poll;
+
   bool get unread => readAt == null;
+}
+
+/// A one-question poll on a notice. `results` comes once the reader has answered (or the poll closed).
+class AnnouncementPoll {
+  AnnouncementPoll({required this.question, required this.options, required this.closed, this.closesAt, this.myVote, this.results});
+
+  factory AnnouncementPoll.fromJson(Map<String, dynamic> j) => AnnouncementPoll(
+    question: j['question'] as String? ?? '',
+    options: [for (final o in (j['options'] as List? ?? const [])) o as String],
+    closesAt: _instant(j['closesAt']),
+    closed: j['closed'] as bool? ?? false,
+    myVote: (j['myVote'] as num?)?.toInt(),
+    results: j['results'] is List ? [for (final r in j['results'] as List) PollResult.fromJson((r as Map).cast<String, dynamic>())] : null,
+  );
+
+  final String question;
+  final List<String> options;
+  final DateTime? closesAt;
+  final bool closed;
+  final int? myVote;
+  final List<PollResult>? results;
+}
+
+class PollResult {
+  const PollResult({required this.option, required this.votes, required this.pct});
+
+  factory PollResult.fromJson(Map<String, dynamic> j) => PollResult(option: j['option'] as String? ?? '', votes: (j['votes'] as num?)?.toInt() ?? 0, pct: (j['pct'] as num?)?.toInt() ?? 0);
+
+  final String option;
+  final int votes;
+  final int pct;
 }
 
 /// The inbox: pinned first, then newest; with the unread count for the badge.
@@ -100,6 +144,9 @@ abstract class AnnouncementSource {
   Future<Announcement> markAnnouncementRead(String id);
   Future<Announcement> acknowledgeAnnouncement(String id);
   Future<Uint8List> announcementFile(String id, String fileId);
+
+  /// Answers the notice's poll (or changes the answer while it is open).
+  Future<Announcement> voteAnnouncement(String id, int option);
 }
 
 // ---- Light rich text: **bold**, "- " / "1. " lists, [text](https://link) ----

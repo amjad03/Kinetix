@@ -3821,4 +3821,113 @@ class AppLocalizationsKn extends AppLocalizations {
   String busFeeNext(Object date) {
     return 'ಮುಂದಿನ ಬಾಕಿ ದಿನಾಂಕ $date';
   }
+
+  @override
+  String get inboxEmergency => 'ತುರ್ತು';
+
+  @override
+  String get pollPrompt => 'ಒಂದು ಉತ್ತರ ಆಯ್ಕೆಮಾಡಿ';
+
+  @override
+  String get pollChange =>
+      'ಉತ್ತರಿಸಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದ. ಮತದಾನ ತೆರೆದಿರುವವರೆಗೆ ಉತ್ತರ ಬದಲಿಸಬಹುದು.';
+
+  @override
+  String get pollClosed => 'ಈ ಮತದಾನ ಮುಚ್ಚಿದೆ';
+
+  @override
+  String pollVotes(int votes, int pct) {
+    return '$votes ($pct%)';
+  }
+
+  @override
+  String get prefTitle => 'ಸಂಸ್ಥೆಯಿಂದ ಸಂದೇಶಗಳು';
+
+  @override
+  String get prefLinkHelp =>
+      'ಎಸ್‌ಎಂಎಸ್, ವಾಟ್ಸಾಪ್, ಇಮೇಲ್ ಮತ್ತು ಫೋನ್ ಸೂಚನೆಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ';
+
+  @override
+  String get prefIntro =>
+      'ಆ್ಯಪ್‌ನ ಹೊರಗೆ ಸಂಸ್ಥೆ ನಿಮ್ಮನ್ನು ಹೇಗೆ ಸಂಪರ್ಕಿಸಬೇಕು ಎಂದು ಆಯ್ಕೆಮಾಡಿ. ಇದನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಬದಲಿಸಬಹುದು.';
+
+  @override
+  String get prefSms => 'ಎಸ್‌ಎಂಎಸ್';
+
+  @override
+  String get prefWhatsapp => 'ವಾಟ್ಸಾಪ್';
+
+  @override
+  String get prefEmail => 'ಇಮೇಲ್';
+
+  @override
+  String get prefPush => 'ಫೋನ್ ಸೂಚನೆಗಳು';
+
+  @override
+  String get prefSmsHelp =>
+      'ಶುಲ್ಕ ಜ್ಞಾಪನೆ, ಗೈರುಹಾಜರಿ ಮತ್ತು ಸೂಚನೆಗಳು ಸಂದೇಶದ ಮೂಲಕ';
+
+  @override
+  String get prefWhatsappHelp =>
+      'ಸಂಸ್ಥೆಯ ಪರಿಶೀಲಿತ ಖಾತೆಯಿಂದ ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಸೂಚನೆಗಳು';
+
+  @override
+  String get prefEmailHelp => 'ಇಮೇಲ್ ಮೂಲಕ ಸೂಚನೆಗಳು ಮತ್ತು ಪತ್ರಗಳು';
+
+  @override
+  String get prefPushHelp => 'ಹೊಸ ಸೂಚನೆಗಳು ಮತ್ತು ಸಂದೇಶಗಳಿಗೆ ಈ ಫೋನ್‌ನಲ್ಲಿ ಸೂಚನೆ';
+
+  @override
+  String get prefNoAddress => 'ಸಂಸ್ಥೆಯ ಬಳಿ ನಿಮ್ಮ ಈ ಸಂಖ್ಯೆ ಅಥವಾ ವಿಳಾಸ ಇಲ್ಲ';
+
+  @override
+  String get prefAlwaysOn =>
+      'ಆ್ಯಪ್‌ನ ಸೂಚನೆಗಳು ಮತ್ತು ತುರ್ತು ಸೂಚನೆಗಳು ಯಾವಾಗಲೂ ನಿಮ್ಮನ್ನು ತಲುಪುತ್ತವೆ.';
+
+  @override
+  String get rsvpAsk => 'ನೀವು ಬರುತ್ತೀರಾ?';
+
+  @override
+  String rsvpAskBy(String date) {
+    return 'ನೀವು ಬರುತ್ತೀರಾ? $date ರೊಳಗೆ ಉತ್ತರಿಸಿ';
+  }
+
+  @override
+  String get rsvpGoing => 'ಬರುತ್ತೇವೆ';
+
+  @override
+  String get rsvpMaybe => 'ಬಹುಶಃ';
+
+  @override
+  String get rsvpNo => 'ಬರಲಾಗದು';
+
+  @override
+  String rsvpGuests(int count) {
+    return 'ಜೊತೆಗೆ ಅತಿಥಿಗಳು: $count';
+  }
+
+  @override
+  String get rsvpFewer => 'ಒಬ್ಬ ಅತಿಥಿ ಕಡಿಮೆ';
+
+  @override
+  String get rsvpMore => 'ಒಬ್ಬ ಅತಿಥಿ ಹೆಚ್ಚು';
+
+  @override
+  String get rsvpSaved => 'ನಿಮ್ಮ ಉತ್ತರ ಉಳಿಸಲಾಗಿದೆ';
+
+  @override
+  String get escalateTitle => 'ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರನ್ನು ಕೇಳಿ';
+
+  @override
+  String get escalateHelp =>
+      'ಶಿಕ್ಷಕರ ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರು ಈ ಸಂಭಾಷಣೆ ಓದಿ ಉತ್ತರಿಸುತ್ತಾರೆ.';
+
+  @override
+  String get escalateReason => 'ನಿಮಗೆ ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರು ಏಕೆ ಬೇಕು?';
+
+  @override
+  String get escalateSend => 'ಕಳುಹಿಸಿ';
+
+  @override
+  String get escalateDone => 'ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರನ್ನು ಕೇಳಲಾಗಿದೆ';
 }

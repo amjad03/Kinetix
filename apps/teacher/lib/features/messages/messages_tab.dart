@@ -11,6 +11,7 @@ import '../../core/realtime.dart';
 import '../../widgets/common.dart';
 import '../announcements/announcements.dart';
 import 'chat_screen.dart';
+import 'dnd_sheet.dart';
 import 'new_message_screen.dart';
 
 /// The teacher's threads with families, latest first, and the unread total for the badge.
@@ -119,7 +120,25 @@ class MessagesTab extends StatelessWidget {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              SliverAppBar.large(title: Text(l.navMessages), actions: [?profileButton]),
+              SliverAppBar.large(
+                title: Text(l.navMessages),
+                actions: [
+                  IconButton(
+                    key: const Key('dndButton'),
+                    tooltip: l.dndTitle,
+                    icon: const Icon(Icons.bedtime_outlined),
+                    onPressed: () async {
+                      final a = await DndSheet.open(context, controller.api);
+                      if (a != null && context.mounted) {
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(SnackBar(content: Text(a.dndUntil == null ? l.dndOffDone : l.dndOnUntil(Fmt.of(context).when(a.dndUntil!)))));
+                      }
+                    },
+                  ),
+                  ?profileButton,
+                ],
+              ),
               if (announcements case final a?) SliverToBoxAdapter(child: AnnouncementsCard(controller: a)),
               if (controller.error != null)
                 SliverPadding(

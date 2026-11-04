@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// App name (keep in English).
   ///
@@ -8588,9 +8595,88 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The driver has not started a run yet. The students’ list opens when the bus sets off.'**
   String get driverCrewWaiting;
+
+  /// No description provided for @inboxEmergency.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency'**
+  String get inboxEmergency;
+
+  /// No description provided for @pollPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an answer'**
+  String get pollPrompt;
+
+  /// No description provided for @pollChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for answering. You can change your answer while the poll is open.'**
+  String get pollChange;
+
+  /// No description provided for @pollClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'This poll has closed'**
+  String get pollClosed;
+
+  /// No description provided for @pollVotes.
+  ///
+  /// In en, this message translates to:
+  /// **'{votes} ({pct}%)'**
+  String pollVotes(int votes, int pct);
+
+  /// No description provided for @dndTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not disturb'**
+  String get dndTitle;
+
+  /// No description provided for @dndHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Families are told when to expect a reply and your phone gets no chat alerts. Emergencies still come through.'**
+  String get dndHelp;
+
+  /// No description provided for @dndOnUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not disturb until {when}'**
+  String dndOnUntil(String when);
+
+  /// No description provided for @dndNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note for families (optional)'**
+  String get dndNote;
+
+  /// No description provided for @dndTwoHours.
+  ///
+  /// In en, this message translates to:
+  /// **'For 2 hours'**
+  String get dndTwoHours;
+
+  /// No description provided for @dndTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Until 8 am tomorrow'**
+  String get dndTomorrow;
+
+  /// No description provided for @dndOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch off'**
+  String get dndOff;
+
+  /// No description provided for @dndOffDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not disturb is off'**
+  String get dndOffDone;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -8599,7 +8685,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
