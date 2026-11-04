@@ -2,7 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import argon2 from 'argon2';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as s from '../src/db/schema.js';
 import { createApp, createTenant, FixedClock, ownerPool } from './helpers.js';
 
@@ -11,6 +11,10 @@ describe('grievance, discipline, counselling and welfare', () => {
   const db = drizzle(owner, { schema: s });
   const start = new Date('2026-10-20T04:30:00Z');
   const clock = new FixedClock(start);
+  // A test that moves the clock and then fails must not leave it moved for the next one.
+  afterEach(() => {
+    clock.at = start;
+  });
   let app: INestApplication;
   let t: Awaited<ReturnType<typeof createTenant>>;
   let other: Awaited<ReturnType<typeof createTenant>>;
@@ -255,10 +259,14 @@ describe('grievance, discipline, counselling and welfare', () => {
     it('closes the appeal window after 15 days', async () => {
       const inc = (await post('teacher', '/v1/discipline/incidents', { studentId: ids.me, incidentOn: '2026-10-20', kind: 'Late arrival', description: 'Repeated late arrival this month.' }).expect(201)).body;
       const act = (await post('admin', `/v1/discipline/incidents/${inc.id}/actions`, { action: 'warning', detail: 'Written warning' }).expect(201)).body;
+      // The window runs from the action's own time on the institution's clock, so the result does not depend on the day the test runs.
       clock.at = days(16);
-      const r = await post('student', `/v1/discipline/actions/${act.id}/appeals`, { grounds: 'The bus was late on every one of those days.' }).expect(409);
-      expect(r.body.code).toBe('APPEAL_WINDOW_CLOSED');
-      clock.at = start;
+      try {
+        const r = await post('student', `/v1/discipline/actions/${act.id}/appeals`, { grounds: 'The bus was late on every one of those days.' }).expect(409);
+        expect(r.body.code).toBe('APPEAL_WINDOW_CLOSED');
+      } finally {
+        clock.at = start;
+      }
       await post('student', `/v1/discipline/actions/${act.id}/appeals`, { grounds: 'The bus was late on every one of those days.' }).expect(201);
     });
   });
