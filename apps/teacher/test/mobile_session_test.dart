@@ -108,7 +108,7 @@ void main() {
       var wiped = false;
       final secure = MemorySecureStore();
       final state = AppState(api, prefs, secure: secure, refresher: refresher, wipeLocal: () async => wiped = true);
-      await state.signIn(server: 'http://h', tenant: 'demo', login: 'x', password: 'y');
+      await state.signIn(server: 'http://h', tenant: 'demo', login: 'x', password: 'zynetix123');
       expect(secure.values['refresh_token'], 'r1');
       await state.signOut();
       expect(api.calls, contains('sign out'));

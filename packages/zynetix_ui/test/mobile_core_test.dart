@@ -263,6 +263,35 @@ void main() {
     });
   });
 
+  group('accessibility at 320 dp and text scale 2.0', () {
+    Future<void> small(WidgetTester t, Widget home) async {
+      t.view.physicalSize = const Size(320, 640);
+      t.view.devicePixelRatio = 1;
+      addTearDown(t.view.reset);
+      await t.pumpWidget(MaterialApp(builder: (c, child) => MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: const TextScaler.linear(2)), child: child!), home: home));
+      await t.pumpAndSettle();
+      expect(t.takeException(), isNull, reason: 'no overflow');
+      await expectLater(t, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(t, meetsGuideline(labeledTapTargetGuideline));
+    }
+
+    testWidgets('notification settings', (t) async {
+      await small(
+        t,
+        KxNotificationSettingsScreen(
+          strings: strings(),
+          load: () async => const KxNotificationPrefs(kinds: ['absence', 'fee'], pushOff: {}, quietStart: '22:00', quietEnd: '06:00'),
+          save: (p) async => p,
+        ),
+      );
+    });
+
+    testWidgets('forced update and the update banner', (t) async {
+      await small(t, KxVersionGate(check: () async => const KxVersionCheck(status: 'update_required', storeUrl: 'https://x'), strings: (_) => strings(), openStore: (_) {}, child: const SizedBox()));
+      await small(t, KxVersionGate(key: const Key('b'), check: () async => const KxVersionCheck(status: 'update_available', storeUrl: 'https://x'), strings: (_) => strings(), openStore: (_) {}, child: const Scaffold()));
+    });
+  });
+
   testWidgets('secure screen turns FLAG_SECURE on while open and off after the last one closes', (t) async {
     final calls = <Object?>[];
     t.binding.defaultBinaryMessenger.setMockMethodCallHandler(kSecureScreenChannel, (c) async {
