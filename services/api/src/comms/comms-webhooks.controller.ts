@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { Body, Controller, Get, HttpCode, Logger, NotFoundException, Param, Post, Query } from '@nestjs/common';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
 import { NOTICE_VERSION } from '../consent/consent.controller.js';
@@ -113,7 +113,7 @@ export class CommsWebhooksController {
       .select()
       .from(conversations)
       .where(and(inArray(conversations.familyId, people.map((p) => p.id)), eq(conversations.status, 'open')))
-      .orderBy(desc(sql`${conversations.lastMessageAt} nulls last`))
+      .orderBy(sql`${conversations.lastMessageAt} desc nulls last`)
       .limit(1);
     if (!c) return 'unmatched';
     const [m] = await tx.insert(messages).values({ tenantId, conversationId: c.id, senderId: c.familyId, body: `${e.text} (by ${channel === 'whatsapp' ? 'WhatsApp' : 'SMS'})`, createdAt: this.clock.now() }).returning();

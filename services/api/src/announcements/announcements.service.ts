@@ -745,7 +745,8 @@ export class AnnouncementsService implements OnModuleInit {
       .limit(200);
     const ctx = await this.readerContext(tx, userId, rows.filter((r) => r.a.poll).map((r) => r.a.id));
     const items = rows.map((r) => this.inboxItem(r.a, r.sender, toDate(r.readAt), toDate(r.acknowledgedAt), now, ctx));
-    items.sort((x, y) => Number(y.pinned) - Number(x.pinned));
+    // Emergencies first, then pinned, each newest first (the sort keeps the order within a group).
+    items.sort((x, y) => Number(y.emergency && y.pinned) - Number(x.emergency && x.pinned) || Number(y.pinned) - Number(x.pinned));
     return { unread: items.filter((i) => !i.readAt).length, pinned: items.filter((i) => i.pinned).length, items };
   }
 

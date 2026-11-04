@@ -190,7 +190,11 @@ export class CommsAdminController {
   @Get('preferences')
   @Auth('user')
   myPrefs(@CurrentPrincipal() p: UserPrincipal) {
-    return this.db.withTenant(p.tenantId, async (tx) => {
+    return this.db.withTenant(p.tenantId, (tx) => this.prefsOf(tx, p));
+  }
+
+  private async prefsOf(tx: Tx, p: UserPrincipal) {
+    {
       const prefs = await latestPrefs(tx, [p.userId]);
       const [u] = await tx.select({ phone: users.phone, email: users.email }).from(users).where(eq(users.id, p.userId));
       return {
@@ -199,7 +203,7 @@ export class CommsAdminController {
         /** In-app messages and emergency alerts always arrive. */
         alwaysOn: ['in_app', 'emergency'],
       };
-    });
+    }
   }
 
   @Put('preferences')
@@ -211,7 +215,7 @@ export class CommsAdminController {
         const [row] = await tx.insert(commChannelPrefs).values({ tenantId: p.tenantId, userId: p.userId, channel: b.channel, granted: b.granted, source: 'app', noticeVersion: NOTICE_VERSION, recordedBy: p.userId }).returning();
         await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: b.granted ? 'comms.channel_opt_in' : 'comms.channel_opt_out', subjectType: 'comm_channel_pref', subjectId: row.id, data: { channel: b.channel, source: 'app' } });
       }
-      return this.myPrefs(p);
+      return this.prefsOf(tx, p);
     });
   }
 

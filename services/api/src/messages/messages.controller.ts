@@ -781,7 +781,7 @@ export class ConversationsController {
       const values = { dndUntil: until, hours: body.hours, awayNote: body.awayNote, updatedAt: this.clock.now() };
       await tx.insert(chatAvailability).values({ tenantId: p.tenantId, userId: p.userId, ...values }).onConflictDoUpdate({ target: chatAvailability.userId, set: values });
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'conversation.availability_set', subjectType: 'user', subjectId: p.userId, data: { dndUntil: until?.toISOString() ?? null, hours: body.hours } });
-      return this.availability(p);
+      return { dndUntil: until, hours: body.hours, awayNote: body.awayNote, active: !!(until && until > this.clock.now()) };
     });
   }
 

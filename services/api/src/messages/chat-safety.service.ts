@@ -108,14 +108,14 @@ export class ChatSafetyService implements OnModuleInit {
       const rows = await tx
         .select({
           c: conversations,
-          lastFamily: sql<string | null>`(select max(m.created_at) from messages m where m.conversation_id = ${conversations.id} and m.kind = 'text' and m.sender_id = ${conversations.familyId})`,
-          lastStaff: sql<string | null>`(select max(m.created_at) from messages m where m.conversation_id = ${conversations.id} and m.kind = 'text' and m.sender_id <> ${conversations.familyId})`,
+          lastFamily: sql<Date | null>`(select max(m.created_at) from messages m where m.conversation_id = "conversations"."id" and m.kind = 'text' and m.sender_id = "conversations"."family_id")`.mapWith(messages.createdAt),
+          lastStaff: sql<Date | null>`(select max(m.created_at) from messages m where m.conversation_id = "conversations"."id" and m.kind = 'text' and m.sender_id <> "conversations"."family_id")`.mapWith(messages.createdAt),
         })
         .from(conversations)
         .where(and(eq(conversations.kind, 'teacher'), eq(conversations.status, 'open'), isNull(conversations.escalatedAt)));
       let n = 0;
       for (const r of rows) {
-        if (!overdueForEscalation(r.lastFamily ? new Date(r.lastFamily) : null, r.lastStaff ? new Date(r.lastStaff) : null, now, hours)) continue;
+        if (!overdueForEscalation(r.lastFamily, r.lastStaff, now, hours)) continue;
         if (!(await this.escalationTarget(tx, r.c.staffId))) continue;
         await this.escalate(tx, r.c, null, `No reply for ${hours} hours`);
         n++;

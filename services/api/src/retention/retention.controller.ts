@@ -10,7 +10,7 @@ import { retentionRules } from '../db/schema-pathways.js';
 import { RETENTION_TARGETS, RetentionService, type RetentionTarget } from './retention.service.js';
 
 const RuleBody = z.object({
-  target: z.enum(['vault_documents', 'notifications', 'career_assistant']),
+  target: z.enum(['vault_documents', 'notifications', 'career_assistant', 'family_chat', 'comm_send_log']),
   category: z.string().trim().toLowerCase().max(40).default(''),
   keepDays: z.number().int().min(30).max(3650),
   action: z.enum(['archive', 'delete']),
