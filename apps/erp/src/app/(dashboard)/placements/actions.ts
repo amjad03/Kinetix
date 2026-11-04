@@ -6,6 +6,7 @@ import { act, api } from '@/lib/api';
 import { optStr, read, send } from '@/lib/ops-server';
 import { failure } from '@/lib/pathways-server';
 import type { InternshipAttendance, InternshipCertificate, InternshipLink } from '@/lib/pathways-a';
+import type { ActionResult } from '@/lib/types';
 
 const PAGE = '/placements';
 const BASE = '/v1/placements/internships';
@@ -193,4 +194,76 @@ export async function saveScores(trainingId: string, v: V, scores: { studentId: 
 /** Issues the certificate now; `waive` lets the office skip the attendance minimum. */
 export async function issueCertificate(internshipId: string, waive: boolean) {
   return send<{ certificateId: string | null; reason?: string }>(`${BASE}/${id(internshipId)}/certificate`, { waiveAttendance: waive }, PAGE);
+}
+
+// ---- placements pass: kit actions, documents, results import, apprenticeship stipends --------------
+
+/** Runs a record-kit action on one row and turns a refused row into an error. */
+async function kitAction(entity: string, action: string, rowId: string, params?: Record<string, unknown>, page = PAGE): Promise<ActionResult<unknown>> {
+  const res = await send<{ failed: number; rows: { ok: boolean; message?: string }[] }>(`/v1/records/${id(entity)}/bulk`, { op: 'action', action, target: { ids: [rowId] }, ...(params ? { params } : {}) }, page);
+  if (!res.ok) return res;
+  if (res.data.failed) return { ok: false, error: res.data.rows.find((r) => !r.ok)?.message ?? 'Not done' };
+  return res;
+}
+
+export async function verifyDocument(docId: string) {
+  return kitAction('placement-documents', 'verify', docId);
+}
+export async function rejectDocument(docId: string, v: V) {
+  return kitAction('placement-documents', 'reject', docId, { reason: v.reason ?? '' });
+}
+export async function followedUp(interactionId: string) {
+  return kitAction('placement-interactions', 'followedUp', interactionId);
+}
+export async function registerContract(rowId: string, v: V) {
+  return kitAction('apprenticeships', 'registerContract', rowId, { contractNo: v.contractNo ?? '' });
+}
+export async function startApprenticeship(rowId: string) {
+  return kitAction('apprenticeships', 'start', rowId);
+}
+export async function completeApprenticeship(rowId: string, v: V) {
+  return kitAction('apprenticeships', 'complete', rowId, { certificateNo: v.certificateNo ?? '', ...(optStr(v.certificateOn) ? { certificateOn: v.certificateOn } : {}) });
+}
+export async function endApprenticeship(rowId: string) {
+  return kitAction('apprenticeships', 'terminate', rowId);
+}
+export async function referralStep(step: 'referred' | 'interviewing' | 'hired' | 'declined' | 'close', rowId: string, v: V = {}) {
+  return kitAction('placement-referrals', step, rowId, optStr(v.note) ? { note: v.note } : undefined);
+}
+export async function markReferred(rowId: string, v: V) {
+  return referralStep('referred', rowId, v);
+}
+export async function markHired(rowId: string) {
+  return referralStep('hired', rowId);
+}
+export async function closeReferral(rowId: string) {
+  return referralStep('close', rowId);
+}
+
+/** Logs a call, email or visit with a recruiter, from its page. */
+export async function logInteraction(companyId: string, v: V) {
+  return send('/v1/records/placement-interactions', { companyId, kind: v.kind, happenedOn: v.happenedOn, summary: v.summary, outcome: v.outcome ?? '', nextAction: v.nextAction ?? '', followUpOn: optStr(v.followUpOn) ?? null, ...(optStr(v.contactId) ? { contactId: v.contactId } : {}) }, `${PAGE}/companies/${companyId}`);
+}
+
+export interface ImportCheck {
+  committed: boolean;
+  summary: { lines: number; ok: number; errors: number; pass: number; fail: number; absent: number };
+  lines?: { line: number; rollNo: string; result: string | null; fullName: string | null; error: string | null }[];
+  recorded?: number;
+  debarred?: number;
+}
+
+/** A round's results (or a recruiter's shortlist) from CSV: checked without `commit`, recorded with it. */
+export async function importResults(driveId: string, roundId: string, csv: string, commit: boolean, skipErrors: boolean) {
+  if (!csv.trim()) return refuse('ivd.err.file');
+  return send<ImportCheck>(`${P}/drives/${id(driveId)}/rounds/${id(roundId)}/import`, { csv, commit, skipErrors }, `${PAGE}/drives/${driveId}`);
+}
+
+/** One month's apprenticeship stipend: the employer's payment and the DBT credit, entered in rupees. */
+export async function saveStipend(apprenticeshipId: string, v: V) {
+  const paise = (s: string | undefined) => (s && s.trim() ? Math.round(Number(s.replace(/[,₹\s]/g, '')) * 100) : undefined);
+  const paid = paise(v.employerPaid);
+  if (paid === undefined || !Number.isFinite(paid) || paid < 0) return failure('pw.err.number');
+  const dbt = paise(v.dbt);
+  return send(`${P}/apprenticeships/${id(apprenticeshipId)}/stipends`, { month: v.month, employerPaidPaise: paid, ...(dbt !== undefined && Number.isFinite(dbt) ? { dbtPaise: dbt } : {}), dbtReference: v.dbtReference ?? '', ...(optStr(v.paidOn) ? { paidOn: v.paidOn } : {}) }, `${PAGE}/apprenticeships/${apprenticeshipId}`, 'PUT');
 }

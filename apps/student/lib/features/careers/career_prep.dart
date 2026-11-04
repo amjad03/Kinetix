@@ -113,6 +113,28 @@ class _ResumeScreenState extends State<ResumeScreen> {
     if (mounted) setState(() => _saving = false);
   }
 
+  /// Adds what the student's record holds (degree with CGPA, class 10 and 12, internships, projects, skills) to the
+  /// resume, keeping what is there; the student checks it and saves.
+  Future<void> _fill() async {
+    final l = context.l10n;
+    try {
+      final d = await widget.api.resumeDraft();
+      if (!mounted) return;
+      final r = _resume!;
+      bool has(List<Map<String, String>> list, Map<String, String> e, String k) => list.any((x) => (x[k] ?? '').toLowerCase() == (e[k] ?? '').toLowerCase() && (x['degree'] ?? x['role'] ?? '') == (e['degree'] ?? e['role'] ?? ''));
+      setState(() {
+        if (_headline.text.trim().isEmpty) _headline.text = d.headline;
+        r.education.addAll(d.education.where((e) => !has(r.education, e, 'institution')));
+        r.experience.addAll(d.experience.where((e) => !has(r.experience, e, 'org')));
+        r.projects.addAll(d.projects.where((e) => !r.projects.any((x) => (x['title'] ?? '').toLowerCase() == (e['title'] ?? '').toLowerCase())));
+        _skills.text = {...Resume.words(_skills.text), ...d.skills}.join(', ');
+      });
+      say(context, l.ppFilled);
+    } catch (e) {
+      if (mounted) say(context, context.errorText(e));
+    }
+  }
+
   /// A section of entries (education, experience, projects or links) with add and remove.
   List<Widget> _section(String title, List<Map<String, String>> entries, List<_Field> fields, String Function(Map<String, String>) line, String keyName) {
     final l = context.l10n;
@@ -171,7 +193,7 @@ class _ResumeScreenState extends State<ResumeScreen> {
       (key: 'url', label: l.pjFieldLink, required: true, multiline: false),
     ];
     return Scaffold(
-      appBar: AppBar(title: Text(l.prepResume), actions: [if (r != null) TextButton(key: const Key('saveResume'), onPressed: _saving ? null : _save, child: Text(l.save))]),
+      appBar: AppBar(title: Text(l.prepResume), actions: [if (r != null) IconButton(key: const Key('fillResume'), tooltip: l.ppFillResume, onPressed: _saving ? null : _fill, icon: const Icon(Icons.auto_fix_high_outlined)), if (r != null) TextButton(key: const Key('saveResume'), onPressed: _saving ? null : _save, child: Text(l.save))]),
       body: r == null
           ? (_error == null ? const KxLoading() : Padding(padding: const EdgeInsets.all(Kx.s16), child: ErrorBanner(_error!, onRetry: _load)))
           : ListView(

@@ -4126,6 +4126,8 @@ export const TENANT_TABLES = [
   // Placements depth (migration 0173).
   'placement_company_contacts', 'placement_optins', 'interview_slots', 'placement_trainings', 'placement_training_sessions', 'placement_training_attendance',
   'placement_training_scores', 'student_progressions', 'alumni_job_posts', 'placement_feedback',
+  // Placements pass (migrations 0210-0211, schema-placements-pass.ts).
+  'placement_interactions', 'placement_documents', 'apprenticeships', 'apprenticeship_stipends', 'placement_referrals',
   // Governance and platform settings (migrations 0178-0179, schema-governance.ts)
   'role_access_rules', 'tenant_exports',
   // Library, hostel and transport depth (0168-0170).
@@ -4934,6 +4936,10 @@ export const placementCompanies = pgTable('placement_companies', {
   /** The recruiter portal key (sha256 of the secret), issued when the company is verified. */
   portalTokenHash: text('portal_token_hash'),
   portalTokenAt: timestamp('portal_token_at', { withTimezone: true }),
+  /** Recruiter relationship stage (migration 0210): prospect | contacted | engaged | recruiting | dormant. */
+  crmStage: text('crm_stage').notNull().default('prospect'),
+  /** The placement officer who looks after the company. */
+  ownerUserId: uuid('owner_user_id').references(() => users.id, { onDelete: 'set null' }),
 });
 
 export const placementDrives = pgTable('placement_drives', {
@@ -4966,6 +4972,18 @@ export const placementDrives = pgTable('placement_drives', {
   skills: text('skills').notNull().default(''),
   bond: text('bond').notNull().default(''),
   postedByRecruiter: boolean('posted_by_recruiter').notNull().default(false),
+  /** Placement pass (migration 0210): further eligibility. Empty genders = any. */
+  genders: text('genders').array().notNull().default(sql`'{}'::text[]`),
+  minTenthPct: numeric('min_tenth_pct', { precision: 5, scale: 2, mode: 'number' }),
+  minTwelfthPct: numeric('min_twelfth_pct', { precision: 5, scale: 2, mode: 'number' }),
+  /** Years of gap allowed in the student's education (null = no limit). */
+  maxGapYears: smallint('max_gap_years'),
+  /** Subjects ever failed, cleared or not (null = no limit): "no history of backlogs". */
+  maxBacklogHistory: smallint('max_backlog_history'),
+  /** Registration needs the student's placement documents verified by the cell. */
+  requireVerifiedDocs: boolean('require_verified_docs').notNull().default(false),
+  /** When eligible students were told the drive opened (once). */
+  notifiedAt: timestamp('notified_at', { withTimezone: true }),
 });
 
 export const driveRegistrations = pgTable('drive_registrations', {
@@ -4977,6 +4995,8 @@ export const driveRegistrations = pgTable('drive_registrations', {
   cgpaAt: numeric('cgpa_at', { precision: 4, scale: 2, mode: 'number' }).notNull(),
   backlogsAt: smallint('backlogs_at').notNull(),
   createdAt: createdAt(),
+  /** The resume the student registered with (placement_documents, migration 0210). */
+  resumeDocumentId: uuid('resume_document_id'),
 });
 
 export const driveRounds = pgTable('drive_rounds', {
@@ -5059,6 +5079,12 @@ export const internships = pgTable('internships', {
   /** The industry supervisor's rating out of 5. */
   supervisorRating: smallint('supervisor_rating'),
   appliedOn: date('applied_on'),
+  /** Hours worked, for the AICTE credit (hours per credit in the settings) (migration 0211). */
+  hours: numeric('hours', { precision: 6, scale: 1, mode: 'number' }),
+  /** industry | research | in_house | rural | virtual (AICTE internship policy categories). */
+  category: text('category').notNull().default('industry'),
+  /** onsite | remote | hybrid */
+  mode: text('mode').notNull().default('onsite'),
 });
 
 export const internshipDiary = pgTable('internship_diary', {

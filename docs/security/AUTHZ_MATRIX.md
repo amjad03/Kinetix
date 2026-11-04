@@ -5,9 +5,9 @@ Regenerate: `cd services/api && UPDATE_AUTHZ=1 ./node_modules/.bin/vitest run te
 
 ## Summary
 
-- Routes: 2891
+- Routes: 2904
 - Public (no @Auth, no guard): 101 (all on the allow list below unless flagged)
-- Any signed-in user (no role list): 310; open to students and families, so each must scope to the caller
+- Any signed-in user (no role list): 313; open to students and families, so each must scope to the caller
 - Flagged for review: 40
 
 Flags: `PUBLIC?` no @Auth and not on the public allow list; `BROAD` a write on a staff-sounding path open to students, families or any user; `OWNERSHIP?` an id in the path, open to non-staff, and no sign that the handler or its service reads the caller (each was reviewed: see *Reviewed* below and docs/security/SECURITY_AUDIT.md).
@@ -510,6 +510,8 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/alumni-portal/link` | placement_officer, principal, tenant_admin |  |
 | GET | `/v1/alumni-portal/me` | alumni |  |
 | PUT | `/v1/alumni-portal/me` | alumni |  |
+| GET | `/v1/alumni-portal/referrals` | alumni |  |
+| POST | `/v1/alumni-portal/referrals/:id/status` | alumni |  |
 | GET | `/v1/alumni-portal/stories` | alumni |  |
 | POST | `/v1/alumni-portal/stories` | alumni |  |
 | PUT | `/v1/alumni-portal/stories/:id` | alumni |  |
@@ -893,6 +895,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/careers/recommendations` | hod, placement_officer, principal, student, tenant_admin |  |
 | GET | `/v1/careers/resume` | student |  |
 | PUT | `/v1/careers/resume` | student |  |
+| GET | `/v1/careers/resume/draft` | student |  |
 | GET | `/v1/careers/resumes` | hod, placement_officer, principal, tenant_admin |  |
 | GET | `/v1/careers/resumes/:studentId` | guardian, hod, placement_officer, principal, student, tenant_admin |  |
 | GET | `/v1/careers/resumes/:studentId/pdf` | guardian, hod, placement_officer, principal, student, tenant_admin |  |
@@ -2243,6 +2246,9 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/placements/alumni-events` | placement_officer, principal, tenant_admin |  |
 | POST | `/v1/placements/alumni-events/:id/rsvps` | placement_officer, principal, tenant_admin |  |
 | PUT | `/v1/placements/alumni/:id` | placement_officer, principal, tenant_admin |  |
+| GET | `/v1/placements/apprenticeships/:id/stipends` | hod, placement_officer, principal, tenant_admin |  |
+| PUT | `/v1/placements/apprenticeships/:id/stipends` | placement_officer, principal, tenant_admin |  |
+| GET | `/v1/placements/brochure` | hod, placement_officer, principal, quality_officer, tenant_admin |  |
 | GET | `/v1/placements/companies` | hod, placement_officer, principal, tenant_admin |  |
 | POST | `/v1/placements/companies` | placement_officer, principal, tenant_admin |  |
 | GET | `/v1/placements/companies/:id` | hod, placement_officer, principal, tenant_admin |  |
@@ -2253,6 +2259,8 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/placements/companies/:id/verify` | placement_officer, principal, tenant_admin |  |
 | DELETE | `/v1/placements/contacts/:id` | placement_officer, principal, tenant_admin |  |
 | PUT | `/v1/placements/contacts/:id` | placement_officer, principal, tenant_admin |  |
+| DELETE | `/v1/placements/documents/:id` | student |  |
+| GET | `/v1/placements/documents/:id/file` | any signed-in user |  |
 | GET | `/v1/placements/drives` | hod, placement_officer, principal, tenant_admin |  |
 | POST | `/v1/placements/drives` | placement_officer, principal, tenant_admin |  |
 | GET | `/v1/placements/drives/:id` | hod, placement_officer, principal, tenant_admin |  |
@@ -2262,6 +2270,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/placements/drives/:id/registrations` | hod, placement_officer, principal, tenant_admin |  |
 | POST | `/v1/placements/drives/:id/registrations` | placement_officer, principal, tenant_admin |  |
 | POST | `/v1/placements/drives/:id/rounds` | placement_officer, principal, tenant_admin |  |
+| POST | `/v1/placements/drives/:id/rounds/:roundId/import` | placement_officer, principal, tenant_admin |  |
 | PUT | `/v1/placements/drives/:id/rounds/:roundId/results` | placement_officer, principal, tenant_admin |  |
 | POST | `/v1/placements/drives/:id/rounds/:roundId/slots/auto` | placement_officer, principal, tenant_admin |  |
 | GET | `/v1/placements/drives/:id/shortlist` | hod, placement_officer, principal, tenant_admin |  |
@@ -2294,12 +2303,16 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/placements/offers/:id/revoke` | placement_officer, principal, tenant_admin |  |
 | POST | `/v1/placements/offers/:id/withdraw` | placement_officer, principal, tenant_admin |  |
 | GET | `/v1/placements/optins` | hod, placement_officer, principal, tenant_admin |  |
+| POST | `/v1/placements/referrals` | student |  |
 | POST | `/v1/placements/registrations/:id/recheck` | placement_officer, principal, tenant_admin |  |
 | GET | `/v1/placements/reports` | hod, placement_officer, principal, quality_officer, tenant_admin |  |
 | GET | `/v1/placements/reports/:id` | hod, placement_officer, principal, quality_officer, tenant_admin |  |
 | PUT | `/v1/placements/slots/:id` | placement_officer, principal, tenant_admin |  |
 | GET | `/v1/placements/stats` | hod, placement_officer, principal, tenant_admin |  |
+| GET | `/v1/placements/students/:studentId/dashboard` | any signed-in user |  |
 | POST | `/v1/placements/students/:studentId/debar` | placement_officer, principal, tenant_admin |  |
+| GET | `/v1/placements/students/:studentId/documents` | any signed-in user |  |
+| POST | `/v1/placements/students/:studentId/documents` | placement_officer, principal, student, tenant_admin |  |
 | POST | `/v1/placements/students/:studentId/drives/:driveId/registration` | student |  |
 | POST | `/v1/placements/students/:studentId/drives/:driveId/withdraw` | student |  |
 | POST | `/v1/placements/students/:studentId/lift-debar` | placement_officer, principal, tenant_admin |  |

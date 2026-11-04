@@ -39,6 +39,7 @@ import { feeFlagshipSamples } from './fee-flagship.js';
 import { libraryPass } from './library-pass.js';
 import { inventoryPass } from './inventory-pass.js';
 import { transportPass } from './transport-pass.js';
+import { placementsPass } from './placements-pass.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -122,6 +123,8 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['inventory pass: HSN and GST, valued stock with batches and expiry, mess and lab stores, issue slips, write-offs, an IGST order to the books, MSME dues, lab registers, NAAC maintenance', inventoryPass],
   // After the fees and the campus transport stage: fare slabs, crew and verification, safety checks, trip sheets, boardings, a late bus, transport fees.
   ['transport pass: fare slabs, crew and driver verification, safety checks, trip sheets and the boarding log, a late bus this morning, an SOS, transport fees and a cancelled seat', transportPass],
+  // After the placements, alumni, quality settings, internships and the convocation's 2025-26 graduates.
+  ['placements pass: recruiter relationship and follow-ups, stricter and women-only drives, placement documents, training with attendance and scores, AICTE internship credits, five outgoing batches for NIRF, NAAC 5.2 and AISHE, NATS apprenticeships and alumni referrals', (c) => placementsPass(c)],
   // Last: version 1 is the live timetable as the earlier stages left it, and the diary follows the held periods.
   ['academics: bell schedule, lab batches and an open elective, allocations, unavailability, timetable versions, the teaching diary', academicsPass],
 ];

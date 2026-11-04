@@ -47,6 +47,7 @@ const TARGETS: Record<string, (id: string) => string> = {
   'detention-xlsx': (id) => `/v1/attendance-desk/detention-lists/${id}?format=xlsx`,
   'placement-shortlist': (id) => `/v1/placements/drives/${id}/shortlist?format=csv`,
   'placement-offer-letter': (id) => `/v1/placements/offers/${id}/letter`,
+  'placement-document': (id) => `/v1/placements/documents/${id}/file`,
   'staff-doc': (id) => `/v1/hr/staff-documents/${id}/file`,
   'staff-leave-doc': (id) => `/v1/hr/leave/requests/${id}/document`,
   resume: (id) => `/v1/hr/applicants/${id}/resume`,
@@ -244,8 +245,14 @@ export async function GET(req: NextRequest) {
   if (kind === 'pl-report') {
     const format = req.nextUrl.searchParams.get('format') === 'csv' ? 'csv' : 'xlsx';
     const year = req.nextUrl.searchParams.get('year') ?? '';
-    if (!/^[a-z]{3,20}$/.test(id) || !/^\d{4}$/.test(year)) return new Response('Not found', { status: 404 });
+    if (!/^[a-z0-9]{3,20}$/.test(id) || !/^\d{4}$/.test(year)) return new Response('Not found', { status: 404 });
     FIXED[kind] = `/v1/placements/reports/${id}?format=${format}&year=${year}`;
+  }
+  // The placement brochure (PDF) for a year: ?kind=placement-brochure&year=
+  if (kind === 'placement-brochure') {
+    const year = req.nextUrl.searchParams.get('year') ?? '';
+    if (!/^\d{4}$/.test(year)) return new Response('Not found', { status: 404 });
+    FIXED[kind] = `/v1/placements/brochure?year=${year}`;
   }
   const target = FIXED[kind] ? () => FIXED[kind] : TARGETS[kind];
   // Asset tags take one id or a comma-separated list.

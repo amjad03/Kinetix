@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { PlacementReport } from '@/components/placements/PlacementReport';
+import { LinkButton } from '@/components/LinkButton';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { LinkTabs } from '@/components/ui';
 import { getI18n } from '@/i18n/server';
-import { api, load, requireSection } from '@/lib/api';
+import { api, getMe, load, requireSection } from '@/lib/api';
 import type { ReportData, ReportList } from '@/lib/placements-depth';
 import { param } from '@/lib/procurement-server';
 
@@ -18,7 +19,9 @@ export async function generateMetadata(): Promise<Metadata> {
  * screen and as CSV or Excel.
  */
 export default async function PlacementReportsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  await requireSection('placements');
+  // The IQAC (quality officer) reads these tables for NAAC 5.2, NIRF and AISHE without the rest of the placement desk.
+  const me = await getMe().catch(() => null);
+  if (!me?.roles.includes('quality_officer')) await requireSection('placements');
   const sp = await searchParams;
   const { t } = await getI18n();
   const list = await load(() => api<ReportList>('/v1/placements/reports'));
@@ -32,7 +35,7 @@ export default async function PlacementReportsPage({ searchParams }: { searchPar
   const data = await load(() => api<ReportData>(`/v1/placements/reports/${id}?year=${year}`));
   return (
     <>
-      <PageHeader title={t('pd.reports')} subtitle={t('pd.rp.subtitle')} />
+      <PageHeader title={t('pd.reports')} subtitle={t('pd.rp.subtitle')} actions={<LinkButton href={`/api/download?kind=placement-brochure&year=${year}`} variant="outlined" data-testid="pl-brochure">{t('pp.brochure', { year })}</LinkButton>} />
       <LinkTabs value={id} label={t('pd.reports')} items={ids.map((r) => ({ value: r, label: t(`pd.rp.${r as 'branch'}`), href: `/placements/reports?report=${r}&year=${year}` }))} />
       {data.error !== undefined ? <ErrorState message={data.error} /> : <PlacementReport data={data.data} years={Array.from({ length: 6 }, (_, i) => thisYear - i)} criteria={list.data.criteria} />}
     </>

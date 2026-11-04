@@ -27,6 +27,7 @@ import '../core/campus_extras.dart';
 import '../core/models.dart';
 import '../core/outcomes.dart';
 import '../core/pathways.dart';
+import '../core/placement_pass.dart';
 import '../core/scholarships.dart';
 import '../core/school_life.dart';
 import '../core/self_service.dart';
@@ -1747,6 +1748,62 @@ class FakeStudentApi implements StudentApi {
     if (accept) careers['placed'] = true;
   }
 
+  /// The placement dashboard the demo and the widget tests show (the API's shape, worked figures).
+  Map<String, dynamic> placementBoard = {
+    'standing': {
+      'cgpa': 7.82, 'backlogs': 0, 'backlogHistory': 1, 'tenthPct': 88.4, 'twelfthPct': 79.5, 'gapYears': 0, 'batchYear': 2027, 'optedIn': true, 'debarredUntil': null,
+      'placedCategory': null, 'policy': 'dream', 'docsVerified': false,
+      'documents': [{'kind': 'resume', 'status': 'pending'}],
+    },
+    'counts': {'eligibleOpenDrives': 3, 'registered': 2, 'shortlisted': 1, 'offers': 1},
+    'registrations': [
+      {
+        'id': 'r1', 'driveId': 'd1', 'status': 'shortlisted', 'title': 'Acme campus drive', 'company': 'Acme Corp', 'roleTitle': 'Analyst', 'kind': 'placement',
+        'rounds': [
+          {'id': 'k1', 'seq': 1, 'name': 'Aptitude test', 'kind': 'aptitude', 'scheduledOn': '2026-11-02', 'result': 'pass', 'slot': null},
+          {'id': 'k2', 'seq': 2, 'name': 'Technical interview', 'kind': 'technical', 'scheduledOn': '2026-11-09', 'result': null, 'slot': {'startsAt': '2026-11-09T04:30:00Z', 'endsAt': '2026-11-09T04:50:00Z', 'venue': 'Seminar Hall 2', 'status': 'scheduled'}},
+        ],
+      },
+    ],
+    'offers': [
+      {'id': 'o1', 'company': 'Globex', 'category': 'dream', 'roleTitle': 'Associate', 'ctcLpa': 7.5, 'status': 'offered'},
+    ],
+    'training': [
+      {'id': 't1', 'title': 'Aptitude bootcamp', 'kind': 'aptitude', 'attendancePct': 83.3, 'scores': [{'test': 'Aptitude test 1', 'score': 38, 'maxScore': 50}]},
+    ],
+    'internships': {'credits': {'earned': 5, 'required': 14, 'short': 9, 'met': false}, 'hoursPerCredit': 45, 'items': <Map<String, dynamic>>[]},
+    'apprenticeships': <Map<String, dynamic>>[],
+    'referrals': [
+      {'id': 'f1', 'alumni': 'Deepa Rao', 'company': 'Infosys', 'role': 'Analyst', 'status': 'referred', 'note': 'Sent to the hiring manager'},
+    ],
+  };
+
+  @override
+  Future<PlacementDashboard> placementDashboard(String studentId) async {
+    calls.add('placementDashboard $studentId');
+    return PlacementDashboard.fromJson(placementBoard);
+  }
+
+  @override
+  Future<void> uploadPlacementDocument(String studentId, String kind, UploadFile file) async {
+    calls.add('uploadPlacementDocument $kind ${file.name}');
+    final docs = (placementBoard['standing'] as Map)['documents'] as List;
+    docs.removeWhere((d) => d['kind'] == kind);
+    docs.add({'kind': kind, 'status': 'pending'});
+  }
+
+  @override
+  Future<List<AlumniMentor>> alumniMentors() async {
+    calls.add('alumniMentors');
+    return const [AlumniMentor(id: 'a1', name: 'Deepa Rao', employer: 'Infosys', designation: 'Team Lead', year: 2021), AlumniMentor(id: 'a2', name: 'Rahul Shetty', employer: 'HDFC Bank', designation: 'Assistant Manager', year: 2020)];
+  }
+
+  @override
+  Future<void> requestReferral({required String alumniId, required String company, String role = '', required String message}) async {
+    calls.add('requestReferral $alumniId $company');
+    (placementBoard['referrals'] as List).insert(0, {'id': 'f-new', 'alumni': alumniId == 'a2' ? 'Rahul Shetty' : 'Deepa Rao', 'company': company, 'role': role, 'status': 'requested', 'note': ''});
+  }
+
   final List<Map<String, dynamic>> grievances = [
     {'id': 'g1', 'ticketNo': 'GRV-0001', 'category': 'fees', 'subject': 'Fee receipt is wrong', 'status': 'resolved', 'anonymous': false, 'slaDueAt': '2026-10-25T04:30:00Z', 'resolution': 'Receipt reissued', 'rating': null},
   ];
@@ -2201,6 +2258,21 @@ class FakeStudentApi implements StudentApi {
     calls.add('resume');
     _pw();
     return Resume.fromJson(resumeJson);
+  }
+
+  @override
+  Future<Resume> resumeDraft() async {
+    calls.add('resumeDraft');
+    return Resume.fromJson({
+      'headline': 'BCA student, class of 2027',
+      'education': [
+        {'institution': 'Soundarya Institute', 'degree': 'BCA', 'years': 'Graduating 2027', 'score': 'CGPA 7.82'},
+        {'institution': 'City PU College', 'degree': 'Class 12 / PUC (Karnataka PUC)', 'years': '2024', 'score': '79.5%'},
+      ],
+      'experience': [{'org': 'Acme Corp', 'role': 'Summer intern (internship)', 'years': '2026'}],
+      'projects': [{'title': 'Library app', 'detail': 'Flutter app for the college library'}],
+      'skills': ['Python', 'SQL'],
+    });
   }
 
   @override

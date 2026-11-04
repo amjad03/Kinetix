@@ -3,7 +3,7 @@
 import { Download } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { addRegistration, addRound, autoSlots, makeOffer, moveDrive, recheckRegistration, saveResults, updateSlot } from '@/app/(dashboard)/placements/actions';
+import { addRegistration, addRound, autoSlots, importResults, makeOffer, moveDrive, recheckRegistration, saveResults, updateSlot, type ImportCheck } from '@/app/(dashboard)/placements/actions';
 import { useDialog, useRun } from '@/components/procurement/useDialog';
 import { Button } from '@/components/shadcn/button';
 import { RecordPage } from '@/components/templates';
@@ -11,7 +11,7 @@ import { Card, DataTable, Dialog, SelectInput, StatusPill, TextInput, useToast, 
 import { useI18n } from '@/i18n/client';
 import { statusTone } from '@/lib/procurement';
 import { statusLabel } from '@/lib/procurement-labels';
-import { driveMoves, inRound, offerable, type DriveDetail, type DriveOffer, type EligibleList, type Registration, type Round, type Slot } from '@/lib/placements-depth';
+import { csvFromFile, driveMoves, extraCriteria, inRound, offerable, type DriveDetail, type DriveOffer, type EligibleList, type Registration, type Round, type Slot } from '@/lib/placements-depth';
 
 type Result = 'pass' | 'fail' | 'absent';
 const ROUND_KINDS = ['aptitude', 'technical', 'gd', 'interview', 'hr'] as const;
@@ -27,6 +27,8 @@ export function DriveView({ d, company, regs, eligible, slots, offers, canEdit }
   const [open, dialog] = useDialog();
   const run = useRun();
   const [results, setResults] = useState<Round | null>(null);
+  const [importing, setImporting] = useState<Round | null>(null);
+  const more = extraCriteria(d).map((c) => t(c.key as 'pp.crit.women', c.vars)).join(' · ');
   const live = !['completed', 'cancelled'].includes(d.status);
   const candidates = offerable(regs, d.rounds, offers);
   const reason = (r: string) => t(`pd.reason.${r as 'cgpa_below'}`);
@@ -35,9 +37,12 @@ export function DriveView({ d, company, regs, eligible, slots, offers, canEdit }
   type E = EligibleList['students'][number];
   const eligibleCols: Column<E>[] = [
     { id: 'student', header: t('ops.f.student'), rowHeader: true, sort: (s) => s.rollNo, cell: (s) => <>{s.fullName}<span className="block text-xs text-muted-foreground">{`${s.rollNo} · ${s.className}`}</span></> },
-    { id: 'cgpa', header: t('pl.col.cgpa'), align: 'right', sort: (s) => s.cgpa ?? 0, cell: (s) => (s.cgpa === null ? '—' : fmt.number(s.cgpa, { maximumFractionDigits: 2 })) },
+    { id: 'cgpa', header: t('pp.col.cgpa'), align: 'right', sort: (s) => s.cgpa ?? 0, cell: (s) => (s.cgpa === null ? '—' : fmt.number(s.cgpa, { maximumFractionDigits: 2 })) },
     { id: 'backlogs', header: t('pd.backlogs'), align: 'right', sort: (s) => s.backlogs, cell: (s) => s.backlogs },
     { id: 'batch', header: t('pd.batch'), hideBelow: 'md', cell: (s) => s.batchYear ?? '—' },
+    { id: 'twelfth', header: t('pp.col.twelfth'), align: 'right', hideBelow: 'lg', sort: (s) => s.twelfthPct ?? 0, cell: (s) => (s.twelfthPct == null ? '—' : fmt.number(s.twelfthPct, { maximumFractionDigits: 2 })) },
+    { id: 'gap', header: t('pp.col.gap'), align: 'right', hideBelow: 'lg', cell: (s) => s.gapYears ?? '—' },
+    { id: 'docs', header: t('pp.col.docs'), hideBelow: 'lg', cell: (s) => (s.docsVerified ? '✓' : '—') },
     { id: 'eligible', header: t('pd.eligible'), sort: (s) => (s.eligible ? 1 : 0), cell: (s) => (s.eligible ? <StatusPill tone="success">{t('ops.yes')}</StatusPill> : <span className="text-xs text-muted-foreground">{s.reasons.map(reason).join(', ')}</span>) },
     { id: 'registration', header: t('pl.col.registered'), cell: (s) => (s.registration ? <StatusPill tone={statusTone(s.registration.status)}>{regStatus(s.registration.status)}</StatusPill> : '—') },
     {
@@ -55,7 +60,7 @@ export function DriveView({ d, company, regs, eligible, slots, offers, canEdit }
   ];
   const regCols: Column<Registration>[] = [
     { id: 'student', header: t('ops.f.student'), rowHeader: true, sort: (r) => r.rollNo, cell: (r) => <>{r.fullName}<span className="block text-xs text-muted-foreground">{r.rollNo}</span></> },
-    { id: 'cgpa', header: t('pl.col.cgpa'), align: 'right', cell: (r) => fmt.number(r.cgpaAt, { maximumFractionDigits: 2 }) },
+    { id: 'cgpa', header: t('pp.col.cgpa'), align: 'right', cell: (r) => fmt.number(r.cgpaAt, { maximumFractionDigits: 2 }) },
     { id: 'backlogs', header: t('pd.backlogs'), align: 'right', cell: (r) => r.backlogsAt },
     ...d.rounds.map((round): Column<Registration> => ({ id: round.id, header: round.name, hideBelow: 'md', cell: (r) => { const x = r.rounds.find((y) => y.roundId === round.id); return x ? <StatusPill tone={x.result === 'pass' ? 'success' : 'danger'}>{t(`pd.result.${x.result}`)}</StatusPill> : '—'; } })),
     { id: 'status', header: t('ops.f.status'), cell: (r) => <StatusPill tone={statusTone(r.status)}>{regStatus(r.status)}</StatusPill> },
@@ -121,6 +126,9 @@ export function DriveView({ d, company, regs, eligible, slots, offers, canEdit }
             <Button size="sm" variant="outline" onClick={() => setResults(r)} disabled={!inRound(regs, d.rounds, r).length}>
               {t('pd.dr.results')}
             </Button>
+            <Button size="sm" variant="outline" onClick={() => setImporting(r)} disabled={!regs.length} data-testid={`round-import-${r.seq}`}>
+              {t('pp.imp.button')}
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -158,7 +166,7 @@ export function DriveView({ d, company, regs, eligible, slots, offers, canEdit }
           { label: d.kind === 'internship' ? t('pd.stipend') : t('pd.ctcLpa'), value: d.kind === 'internship' ? (d.stipendMonthly ? fmt.rupees(d.stipendMonthly * 100) : '—') : d.ctcLpa === null ? '—' : `${fmt.number(d.ctcLpa, { maximumFractionDigits: 2 })} ${t('pl.lakhs')}` },
           { label: t('pl.col.date'), value: d.driveDate ? fmt.date(d.driveDate, 'short') : '—' },
           { label: t('pd.window'), value: `${d.registrationOpensOn ? fmt.date(d.registrationOpensOn, 'short') : '…'} – ${d.registrationClosesOn ? fmt.date(d.registrationClosesOn, 'short') : '…'}` },
-          { label: t('pd.criteria'), value: t('pd.criteriaValue', { cgpa: d.minCgpa, backlogs: d.maxBacklogs }) },
+          { label: t('pd.criteria'), value: more ? `${t('pd.criteriaValue', { cgpa: d.minCgpa, backlogs: d.maxBacklogs })} · ${more}` : t('pd.criteriaValue', { cgpa: d.minCgpa, backlogs: d.maxBacklogs }) },
           { label: t('pd.eligible'), value: `${fmt.number(eligible.summary.eligible)} / ${fmt.number(eligible.summary.total)}` },
         ]}
         primary={
@@ -233,6 +241,7 @@ export function DriveView({ d, company, regs, eligible, slots, offers, canEdit }
         ]}
       />
       {dialog}
+      {importing && <ImportDialog driveId={d.id} round={importing} onClose={() => setImporting(null)} onDone={(n) => { toast.success(t('pp.imp.recorded', { n })); setImporting(null); router.refresh(); }} />}
       {results && (
         <ResultsDialog
           round={results}
@@ -296,6 +305,56 @@ function ResultsDialog({ round, regs, onClose, onSave }: { round: Round; regs: R
           {error}
         </p>
       )}
+    </Dialog>
+  );
+}
+
+/**
+ * A round's results or a recruiter's shortlist from a spreadsheet saved as CSV (a roll number column, and optionally
+ * result and remarks): checked first, line by line, then recorded; lines with problems can be left out.
+ */
+function ImportDialog({ driveId, round, onClose, onDone }: { driveId: string; round: Round; onClose: () => void; onDone: (recorded: number) => void }) {
+  const { t } = useI18n();
+  const [pending, start] = useTransition();
+  const [csv, setCsv] = useState('');
+  const [check, setCheck] = useState<ImportCheck | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const go = (commit: boolean) =>
+    start(async () => {
+      setError(null);
+      const r = await importResults(driveId, round.id, csv, commit, commit && !!check?.summary.errors);
+      if (!r.ok) return setError(r.error);
+      if (commit) return onDone(r.data.recorded ?? 0);
+      setCheck(r.data);
+    });
+  return (
+    <Dialog
+      title={t('pp.imp.title', { round: round.name })}
+      onClose={onClose}
+      busy={pending}
+      actions={
+        <>
+          <Button variant="outline" onClick={onClose} disabled={pending}>{t('ops.cancel')}</Button>
+          <Button variant="outline" onClick={() => go(false)} disabled={pending || !csv.trim()} data-testid="import-check">{t('pp.imp.check')}</Button>
+          <Button onClick={() => go(true)} disabled={pending || !check || !check.summary.ok} data-testid="import-commit">{t('pp.imp.commit', { n: check?.summary.ok ?? 0 })}</Button>
+        </>
+      }
+    >
+      <p className="mb-3 text-sm text-muted-foreground">{t('pp.imp.help')}</p>
+      <input type="file" accept=".csv,text/csv" aria-label={t('pp.imp.file')} className="mb-3 block text-sm" onChange={(e) => { const f = e.target.files?.[0]; if (f) void csvFromFile(f).then((x) => { setCsv(x); setCheck(null); }); }} />
+      <textarea className="min-h-28 w-full rounded-md border bg-background p-2 font-mono text-xs" aria-label={t('pp.imp.paste')} placeholder={'Roll no,Result,Remarks\nBCA23001,pass,'} value={csv} onChange={(e) => { setCsv(e.target.value); setCheck(null); }} />
+      {check && (
+        <div className="mt-3 grid gap-2 text-sm" data-testid="import-summary">
+          <p>{t('pp.imp.summary', { ok: check.summary.ok, errors: check.summary.errors, pass: check.summary.pass, fail: check.summary.fail, absent: check.summary.absent })}</p>
+          {(check.lines ?? []).filter((l) => l.error).length > 0 && (
+            <ul className="max-h-40 overflow-y-auto rounded-md border p-2 text-xs">
+              {(check.lines ?? []).filter((l) => l.error).map((l) => <li key={l.line}>{t('pp.imp.line', { line: l.line, roll: l.rollNo || '—', error: l.error ?? '' })}</li>)}
+            </ul>
+          )}
+          {check.summary.errors > 0 && check.summary.ok > 0 && <p className="text-xs text-muted-foreground">{t('pp.imp.skipNote')}</p>}
+        </div>
+      )}
+      {error && <p role="alert" className="mt-3 text-sm text-destructive">{error}</p>}
     </Dialog>
   );
 }
