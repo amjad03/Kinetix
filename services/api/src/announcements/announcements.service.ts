@@ -1,8 +1,14 @@
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import type { BroadcastMessage } from '@zynetix/shared';
 import { RealtimeEvents } from '@zynetix/shared';
 import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, lte, notInArray, or, sql } from 'drizzle-orm';
+import { STAFF_ADMIN_ROLES } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
+import { isHodOnly } from '../comms/comms.controller.js';
+import { CommsService, departmentOf } from '../comms/comms.service.js';
+import { hodScope, outside } from '../comms/scope.js';
+import { announcementPollVotes } from '../db/schema-comms.js';
+import { audienceRules, messageCampaigns, messageTemplates } from '../db/schema-pathways.js';
 import { BroadcastsService } from '../broadcasts/broadcasts.service.js';
 import { audit } from '../common/audit.js';
 import { Clock } from '../common/time.js';
@@ -13,23 +19,32 @@ import {
   departmentStaff,
   departments,
   guardians,
+  hostelAllotments,
+  hostelBeds,
+  hostelBlocks,
+  hostelRooms,
   jobs,
   notifications,
   sections,
   students,
   subjects,
   timetableSlots,
+  transportAssignments,
   userRoles,
   users,
   type AnnouncementAttachment,
+  type AnnouncementExternal,
+  type AnnouncementPoll,
+  type AnnouncementTranslations,
   type AnnouncementAudience,
   type AnnouncementChannel,
   type BroadcastAudience,
 } from '../db/schema.js';
+import { DomainEvents, EventBus } from '../events/events.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
-import { pct, plainText } from './announcements.logic.js';
+import { inLanguage, pct, plainText, pollResults } from './announcements.logic.js';
 
 export const ANNOUNCEMENT_SEND = 'announcements.send';
 type AppChannel = Exclude<AnnouncementChannel, 'boards'>;
@@ -41,20 +56,26 @@ const REMIND_EVERY_MS = 10 * 60_000;
 export interface AnnouncementInput {
   title: string;
   body: string;
-  priority: 'normal' | 'important';
+  priority: 'normal' | 'important' | 'emergency';
   channels: AnnouncementChannel[];
   audience: AnnouncementAudience;
   requiresAck: boolean;
   sendAt: Date | null;
   expiresAt: Date | null;
+  translations: AnnouncementTranslations;
+  poll: AnnouncementPoll | null;
+  external: AnnouncementExternal | null;
 }
 
 /** What to emit once the transaction that sent an announcement has committed. */
 export interface Fanout {
+  tenantId: string;
   announcementId: string;
-  priority: 'normal' | 'important';
+  priority: 'normal' | 'important' | 'emergency';
   userIds: string[];
   board: { message: BroadcastMessage; deviceIds: string[] } | null;
+  /** The SMS, WhatsApp or email campaign that carries the notice outside the apps. */
+  campaignId: string | null;
 }
 
 /**
@@ -74,6 +95,8 @@ export class AnnouncementsService implements OnModuleInit {
     private readonly broadcasts: BroadcastsService,
     private readonly notifications: NotificationsService,
     private readonly realtime: RealtimeGateway,
+    private readonly comms: CommsService,
+    private readonly events: EventBus,
   ) {}
 
   onModuleInit(): void {
@@ -87,6 +110,22 @@ export class AnnouncementsService implements OnModuleInit {
   async resolve(tx: Tx, a: AnnouncementAudience, channels: AnnouncementChannel[]): Promise<{ userId: string; channel: AppChannel }[]> {
     const out: { userId: string; channel: AppChannel }[] = [];
     const want = (c: AppChannel) => channels.includes(c);
+    if (a.scope === 'lists' && a.listIds?.length) {
+      // Saved audiences (Communication > Audiences) become picked people.
+      const lists = await tx.select({ rule: audienceRules.rule }).from(audienceRules).where(inArray(audienceRules.id, a.listIds));
+      const ids = new Set<string>();
+      for (const l of lists) for (const id of await this.comms.audienceUsers(tx, l.rule)) ids.add(id);
+      return this.resolve(tx, { scope: 'people', userIds: [...ids] }, channels);
+    }
+    if (a.scope === 'roles') {
+      const roles = a.roles ?? [];
+      const staffRoles = roles.filter((r) => !FAMILY_ROLES.includes(r));
+      if (want('teacher') && staffRoles.length) for (const r of await tx.selectDistinct({ id: userRoles.userId }).from(userRoles).where(inArray(userRoles.role, staffRoles as never[]))) out.push({ userId: r.id, channel: 'teacher' });
+      const kids = roles.includes('student') || roles.includes('guardian') ? (await tx.select({ id: students.id }).from(students).where(eq(students.status, 'active'))).map((s) => s.id) : [];
+      if (want('student') && roles.includes('student') && kids.length) for (const r of await tx.select({ id: students.userId }).from(students).where(and(eq(students.status, 'active'), isNotNull(students.userId)))) out.push({ userId: r.id!, channel: 'student' });
+      if (want('parent') && roles.includes('guardian') && kids.length) for (const r of await tx.selectDistinct({ id: guardians.userId }).from(guardians).innerJoin(students, eq(students.id, guardians.studentId)).where(eq(students.status, 'active'))) out.push({ userId: r.id, channel: 'parent' });
+      return this.activeOnce(tx, out);
+    }
     const studentIds = want('student') || want('parent') ? await this.scopeStudents(tx, a) : [];
     if (want('teacher')) for (const id of await this.scopeStaff(tx, a)) out.push({ userId: id, channel: 'teacher' });
     if (want('student') && studentIds.length) {
@@ -107,7 +146,11 @@ export class AnnouncementsService implements OnModuleInit {
         if (want('student') && rs.includes('student')) out.push({ userId: id, channel: 'student' });
       }
     }
-    // Active accounts only, once per app.
+    return this.activeOnce(tx, out);
+  }
+
+  /** Active accounts only, once per app. */
+  private async activeOnce(tx: Tx, out: { userId: string; channel: AppChannel }[]): Promise<{ userId: string; channel: AppChannel }[]> {
     const ids = [...new Set(out.map((o) => o.userId))];
     if (ids.length === 0) return [];
     const active = new Set((await tx.select({ id: users.id }).from(users).where(and(inArray(users.id, ids), eq(users.status, 'active')))).map((u) => u.id));
@@ -132,7 +175,22 @@ export class AnnouncementsService implements OnModuleInit {
       const programIds = await this.departmentPrograms(tx, a.departmentIds);
       if (programIds.length) rows = await tx.select({ id: students.id }).from(students).innerJoin(sections, eq(sections.id, students.sectionId)).where(and(active, inArray(sections.programId, programIds)));
     } else if (a.scope === 'people' && a.studentIds?.length) rows = await tx.select({ id: students.id }).from(students).where(inArray(students.id, a.studentIds));
-    return rows.map((r) => r.id);
+    else if (a.scope === 'hostels' && a.hostelIds?.length)
+      rows = await tx
+        .select({ id: students.id })
+        .from(hostelAllotments)
+        .innerJoin(students, eq(students.id, hostelAllotments.studentId))
+        .innerJoin(hostelBeds, eq(hostelBeds.id, hostelAllotments.bedId))
+        .innerJoin(hostelRooms, eq(hostelRooms.id, hostelBeds.roomId))
+        .innerJoin(hostelBlocks, eq(hostelBlocks.id, hostelRooms.blockId))
+        .where(and(active, isNull(hostelAllotments.vacatedOn), inArray(hostelBlocks.hostelId, a.hostelIds)));
+    else if (a.scope === 'routes' && a.routeIds?.length)
+      rows = await tx
+        .select({ id: students.id })
+        .from(transportAssignments)
+        .innerJoin(students, eq(students.id, transportAssignments.studentId))
+        .where(and(active, inArray(transportAssignments.routeId, a.routeIds), sql`(${transportAssignments.endedOn} is null or ${transportAssignments.endedOn} >= (now() at time zone 'Asia/Kolkata')::date)`));
+    return [...new Set(rows.map((r) => r.id))];
   }
 
   /** Staff in scope: everyone, a department's members and head, or the teachers and class teachers of the classes. */
@@ -153,6 +211,14 @@ export class AnnouncementsService implements OnModuleInit {
         .where(and(inScope, isNull(timetableSlots.archivedAt)));
       taught.forEach((r) => ids.add(r.id));
       (await tx.select({ id: sections.classTeacherId }).from(sections).where(inScope)).forEach((r) => r.id && ids.add(r.id));
+    } else if (a.scope === 'hostels' && a.hostelIds?.length) {
+      // The wardens of those hostels.
+      const rows = await tx.execute<{ id: string }>(sql`select warden_user_id as id from hostels where id in (${sql.join(a.hostelIds.map((h) => sql`${h}::uuid`), sql`, `)}) and warden_user_id is not null`);
+      rows.rows.forEach((r) => ids.add(r.id));
+    } else if (a.scope === 'routes' && a.routeIds?.length) {
+      // Staff who ride those routes.
+      const rows = await tx.select({ id: transportAssignments.staffUserId }).from(transportAssignments).where(and(inArray(transportAssignments.routeId, a.routeIds), isNotNull(transportAssignments.staffUserId), sql`(${transportAssignments.endedOn} is null or ${transportAssignments.endedOn} >= (now() at time zone 'Asia/Kolkata')::date)`));
+      rows.forEach((r) => r.id && ids.add(r.id));
     }
     return [...ids];
   }
@@ -164,7 +230,7 @@ export class AnnouncementsService implements OnModuleInit {
 
   /** The broadcast audience for boards, or null when the audience has no classes (picked people). */
   private async boardAudience(tx: Tx, a: AnnouncementAudience): Promise<BroadcastAudience | null> {
-    if (a.scope === 'all') return { all: true };
+    if (a.scope === 'all' || (a.scope === 'roles' && a.roles?.includes('student'))) return { all: true };
     if (a.scope === 'programs' && a.programIds?.length) return { programIds: a.programIds };
     if (a.scope === 'sections' && a.sectionIds?.length) return { sectionIds: a.sectionIds };
     if (a.scope === 'departments' && a.departmentIds?.length) {
@@ -192,6 +258,8 @@ export class AnnouncementsService implements OnModuleInit {
   async create(tx: Tx, p: UserPrincipal, input: AnnouncementInput, attachments: AnnouncementAttachment[], mode: 'draft' | 'send'): Promise<{ id: string; fanout: Fanout | null }> {
     const now = this.clock.now();
     this.check(input, now);
+    await this.assertAudience(tx, p, input.audience, input.priority);
+    await this.checkExternal(tx, input.external);
     const scheduled = mode === 'send' && input.sendAt && input.sendAt > now;
     const [a] = await tx
       .insert(announcements)
@@ -208,6 +276,10 @@ export class AnnouncementsService implements OnModuleInit {
         status: mode === 'draft' ? 'draft' : scheduled ? 'scheduled' : 'draft',
         sendAt: input.sendAt,
         expiresAt: input.expiresAt,
+        translations: input.translations,
+        poll: input.poll,
+        external: input.external,
+        departmentId: await departmentOf(tx, p.userId),
       })
       .returning();
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `announcement.${mode === 'draft' ? 'drafted' : scheduled ? 'scheduled' : 'created'}`, subjectType: 'announcement', subjectId: a.id, data: { channels: input.channels, audience: input.audience, priority: input.priority } });
@@ -222,6 +294,8 @@ export class AnnouncementsService implements OnModuleInit {
     if (a.status !== 'draft' && a.status !== 'scheduled') throw new ConflictException('Only drafts and scheduled messages can be edited. Recall it and send a new one.');
     const now = this.clock.now();
     this.check(input, now);
+    await this.assertAudience(tx, p, input.audience, input.priority);
+    await this.checkExternal(tx, input.external);
     const scheduled = mode === 'send' && input.sendAt && input.sendAt > now;
     await tx
       .update(announcements)
@@ -234,6 +308,44 @@ export class AnnouncementsService implements OnModuleInit {
 
   private check(input: AnnouncementInput, now: Date) {
     if (input.expiresAt && input.expiresAt <= (input.sendAt && input.sendAt > now ? input.sendAt : now)) throw new BadRequestException('The expiry must be after the message goes out');
+    if (input.poll?.closesAt && new Date(input.poll.closesAt) <= (input.sendAt && input.sendAt > now ? input.sendAt : now)) throw new BadRequestException('The poll must close after the message goes out');
+    if (input.priority === 'emergency' && input.sendAt && input.sendAt > now) throw new BadRequestException('An emergency message goes out now; it cannot be scheduled');
+  }
+
+  /**
+   * Who may send to this audience: an emergency is for the principal and administrators; a head of department
+   * reaches their own departments, the programmes and classes they teach, picked people and their own saved lists.
+   */
+  async assertAudience(tx: Tx, p: UserPrincipal, a: AnnouncementAudience, priority: string): Promise<void> {
+    if (priority === 'emergency' && !p.roles.some((r) => STAFF_ADMIN_ROLES.includes(r))) throw new ForbiddenException('Only the principal or an administrator sends emergency messages');
+    if (!isHodOnly(p)) return;
+    const scope = await hodScope(tx, p.userId);
+    const refuse = () => {
+      throw new ForbiddenException('A head of department sends to their own department, its programmes and classes, or picked people');
+    };
+    if (a.scope === 'all' || a.scope === 'roles' || a.scope === 'hostels' || a.scope === 'routes') refuse();
+    if (a.scope === 'departments' && outside(a.departmentIds, scope.departmentIds).length) refuse();
+    if (a.scope === 'programs' && outside(a.programIds, scope.programIds).length) refuse();
+    if (a.scope === 'sections' && outside(a.sectionIds, scope.sectionIds).length) refuse();
+    if (a.scope === 'lists' && a.listIds?.length) {
+      const own = await tx.select({ id: audienceRules.id }).from(audienceRules).where(and(inArray(audienceRules.id, a.listIds), eq(audienceRules.createdBy, p.userId)));
+      if (own.length !== a.listIds.length) refuse();
+    }
+  }
+
+  /** The outside-channel template must exist and be usable (an SMS needs its DLT registration). */
+  private async checkExternal(tx: Tx, e: AnnouncementExternal | null): Promise<void> {
+    if (!e) return;
+    const [t] = await tx.select().from(messageTemplates).where(eq(messageTemplates.id, e.templateId));
+    if (!t || !t.active) throw new NotFoundException('Message template not found');
+    if (t.channel === 'sms' && !t.dltTemplateId) throw new ConflictException('Register this text with your telecom operator (DLT) and enter its template id first');
+  }
+
+  /** The announcement, when the caller may see it: a head of department sees their own and their department's. */
+  async loadFor(tx: Tx, p: UserPrincipal, id: string) {
+    const a = await this.load(tx, id);
+    if (isHodOnly(p) && a.senderId !== p.userId && !(a.departmentId && (await hodScope(tx, p.userId)).departmentIds.includes(a.departmentId))) throw new NotFoundException('Message not found');
+    return a;
   }
 
   private async queue(tx: Tx, tenantId: string, id: string, at: Date) {
@@ -265,7 +377,7 @@ export class AnnouncementsService implements OnModuleInit {
       const out = await this.broadcasts.create(tx, sender, {
         title: a.title.slice(0, 120),
         body: plainText(a.body).slice(0, 2000),
-        priority: a.priority === 'important' ? 'important' : 'info',
+        priority: a.priority === 'emergency' ? 'emergency' : a.priority === 'important' ? 'important' : 'info',
         audience: boardAudience,
         requiresAck: false,
         ttlMinutes,
@@ -275,24 +387,51 @@ export class AnnouncementsService implements OnModuleInit {
       await tx.update(announcements).set({ broadcastId: out.message.id }).where(eq(announcements.id, id));
     }
     const userIds = [...new Set(recipients.map((r) => r.userId))];
-    if (a.priority === 'important' && userIds.length) {
-      await this.notifications.notifyUsers(tx, userIds, {
-        kind: 'announcement',
-        text: { title: a.title, body: plainText(a.body).slice(0, 240) },
-        data: { announcementId: id },
-        dedupeKey: `announcement:${id}`,
-      });
+    if ((a.priority === 'important' || a.priority === 'emergency') && userIds.length) {
+      const hi = inLanguage(a, 'hi');
+      const kn = inLanguage(a, 'kn');
+      const text = (t: { title: string; body: string }) => ({ title: t.title, body: plainText(t.body).slice(0, 240) });
+      await this.notifications.notifyUsers(
+        tx,
+        userIds,
+        { kind: 'announcement', text: { en: text(a), hi: text(hi), kn: text(kn) }, data: { announcementId: id, ...(a.priority === 'emergency' ? { urgent: '1' } : {}) }, dedupeKey: `announcement:${id}` },
+        { urgent: a.priority === 'emergency' },
+      );
+    }
+    // Outside the apps: a campaign through the engine, to the same people, filled with the notice.
+    let campaignId: string | null = null;
+    if (a.external && userIds.length) {
+      const [c] = await tx
+        .insert(messageCampaigns)
+        .values({
+          tenantId: a.tenantId,
+          title: a.title.slice(0, 160),
+          templateId: a.external.templateId,
+          audienceId: null,
+          announcementId: id,
+          vars: { title: a.title.slice(0, 120), body: plainText(a.body).slice(0, 300) },
+          sendAt: now,
+          fallback: a.external.fallback,
+          emergency: a.priority === 'emergency',
+          departmentId: a.departmentId,
+          createdBy: a.senderId,
+        })
+        .returning({ id: messageCampaigns.id });
+      campaignId = c.id;
+      await tx.update(announcements).set({ external: { ...a.external, campaignId } }).where(eq(announcements.id, id));
     }
     await tx.update(announcements).set({ status: 'sent', sentAt: now, sendAt: a.sendAt ?? now, updatedAt: now }).where(eq(announcements.id, id));
-    await audit(tx, { tenantId: a.tenantId, actorType: 'user', actorId: a.senderId, action: 'announcement.sent', subjectType: 'announcement', subjectId: id, data: { recipients: recipients.length, boards: board?.deviceIds.length ?? 0, channels: a.channels } });
-    return { announcementId: id, priority: a.priority, userIds, board };
+    await this.events.emit(tx, a.tenantId, { type: a.priority === 'emergency' ? DomainEvents.EmergencyBroadcast : DomainEvents.AnnouncementSent, aggregateType: 'announcement', aggregateId: id, actorId: a.senderId, payload: { recipients: recipients.length, channels: a.channels, priority: a.priority, external: !!campaignId } });
+    await audit(tx, { tenantId: a.tenantId, actorType: 'user', actorId: a.senderId, action: a.priority === 'emergency' ? 'announcement.emergency_sent' : 'announcement.sent', subjectType: 'announcement', subjectId: id, data: { recipients: recipients.length, boards: board?.deviceIds.length ?? 0, channels: a.channels, campaignId } });
+    return { tenantId: a.tenantId, announcementId: id, priority: a.priority, userIds, board, campaignId };
   }
 
-  /** Emits to boards and apps. Call after the transaction commits. */
-  deliver(f: Fanout | null): void {
+  /** Emits to boards and apps, and sends the outside-channel campaign. Call after the transaction commits. */
+  async deliver(f: Fanout | null): Promise<void> {
     if (!f) return;
     if (f.board) this.broadcasts.deliver(f.board.message, f.board.deviceIds);
     this.realtime.toUsers(f.userIds, RealtimeEvents.AnnouncementNew, { announcementId: f.announcementId, priority: f.priority });
+    if (f.campaignId) await this.comms.dispatch(f.tenantId, f.campaignId);
   }
 
   /** Job: sends a scheduled announcement once its time has come (a later edit queues its own job). */
@@ -312,7 +451,7 @@ export class AnnouncementsService implements OnModuleInit {
         throw e;
       }
     });
-    this.deliver(fanout);
+    await this.deliver(fanout);
     return !!fanout;
   }
 
@@ -349,7 +488,22 @@ export class AnnouncementsService implements OnModuleInit {
     const a = await this.load(tx, id);
     const [copy] = await tx
       .insert(announcements)
-      .values({ tenantId: p.tenantId, senderId: p.userId, title: a.title, body: a.body, priority: a.priority, channels: a.channels, audience: a.audience, attachments: a.attachments, requiresAck: a.requiresAck, status: 'draft' })
+      .values({
+        tenantId: p.tenantId,
+        senderId: p.userId,
+        title: a.title,
+        body: a.body,
+        priority: a.priority,
+        channels: a.channels,
+        audience: a.audience,
+        attachments: a.attachments,
+        requiresAck: a.requiresAck,
+        status: 'draft',
+        translations: a.translations,
+        poll: a.poll ? { ...a.poll, closesAt: null } : null,
+        external: a.external ? { templateId: a.external.templateId, fallback: a.external.fallback } : null,
+        departmentId: await departmentOf(tx, p.userId),
+      })
       .returning();
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'announcement.duplicated', subjectType: 'announcement', subjectId: copy.id, data: { from: id } });
     return copy.id;
@@ -390,13 +544,19 @@ export class AnnouncementsService implements OnModuleInit {
     return a;
   }
 
-  /** Sent, scheduled, draft and recalled messages, newest first, with delivery statistics. */
-  async list(tx: Tx, status?: string) {
+  /** Sent, scheduled, draft and recalled messages, newest first, with delivery statistics. A head of department sees their own and their department's. */
+  async list(tx: Tx, p: UserPrincipal, status?: string) {
+    const hod = isHodOnly(p) ? await hodScope(tx, p.userId) : null;
     const rows = await tx
       .select({ a: announcements, sender: users.fullName })
       .from(announcements)
       .innerJoin(users, eq(users.id, announcements.senderId))
-      .where(status && ['draft', 'scheduled', 'sent', 'recalled'].includes(status) ? eq(announcements.status, status as 'draft') : undefined)
+      .where(
+        and(
+          status && ['draft', 'scheduled', 'sent', 'recalled'].includes(status) ? eq(announcements.status, status as 'draft') : undefined,
+          hod ? or(eq(announcements.senderId, p.userId), hod.departmentIds.length ? inArray(announcements.departmentId, hod.departmentIds) : undefined) : undefined,
+        ),
+      )
       .orderBy(desc(sql`coalesce(${announcements.sentAt}, ${announcements.sendAt}, ${announcements.updatedAt})`))
       .limit(200);
     const stats = await this.statsFor(tx, rows.map((r) => r.a.id));
@@ -411,7 +571,20 @@ export class AnnouncementsService implements OnModuleInit {
     const stats = await this.statsFor(tx, [id]);
     const boards = r.a.broadcastId ? await this.boardStats(tx, [r.a.broadcastId]) : new Map();
     const named = await this.names(tx, [r.a.audience]);
-    return { ...this.view(r.a, r.sender, stats.get(id), r.a.broadcastId ? boards.get(r.a.broadcastId) : undefined), audiencePeople: this.picked(r.a.audience, named) };
+    // The poll's tally and the outside-channel campaign's outcome.
+    let poll = null;
+    if (r.a.poll) {
+      const votes = (await tx.select({ option: announcementPollVotes.option }).from(announcementPollVotes).where(eq(announcementPollVotes.announcementId, id))).map((v) => v.option);
+      const people = (await tx.selectDistinct({ id: announcementRecipients.userId }).from(announcementRecipients).where(eq(announcementRecipients.announcementId, id))).length;
+      poll = { ...r.a.poll, results: pollResults(r.a.poll.options, votes), voted: votes.length, votedPct: pct(votes.length, people), closed: !!r.a.poll.closesAt && new Date(r.a.poll.closesAt) <= this.clock.now() };
+    }
+    let external = null;
+    if (r.a.external) {
+      const [t] = await tx.select({ key: messageTemplates.key, channel: messageTemplates.channel }).from(messageTemplates).where(eq(messageTemplates.id, r.a.external.templateId));
+      const [c] = r.a.external.campaignId ? await tx.select().from(messageCampaigns).where(eq(messageCampaigns.id, r.a.external.campaignId)) : [];
+      external = { templateId: r.a.external.templateId, templateKey: t?.key ?? null, channel: t?.channel ?? null, fallback: r.a.external.fallback, campaign: c ? { id: c.id, status: c.status, recipients: c.recipients, sent: c.sentCount, delivered: c.deliveredCount, failed: c.failedCount, suppressed: c.suppressedCount, costPaise: c.costPaise } : null };
+    }
+    return { ...this.view(r.a, r.sender, stats.get(id), r.a.broadcastId ? boards.get(r.a.broadcastId) : undefined), audiencePeople: this.picked(r.a.audience, named), translations: r.a.translations, poll, external };
   }
 
   /** Who received it, filtered: `unread`, `unacknowledged` or everyone, optionally one channel. */
@@ -530,6 +703,10 @@ export class AnnouncementsService implements OnModuleInit {
       updatedAt: a.updatedAt,
       sender: { id: a.senderId, fullName: sender },
       attachments: a.attachments.map(({ key: _key, ...rest }) => rest),
+      translated: Object.keys(a.translations ?? {}),
+      hasPoll: !!a.poll,
+      external: a.external ? { channel: null, campaignId: a.external.campaignId ?? null } : null,
+      departmentId: a.departmentId,
       stats: {
         recipients,
         delivered: sum('delivered'),
@@ -566,7 +743,8 @@ export class AnnouncementsService implements OnModuleInit {
       .groupBy(announcements.id, users.fullName)
       .orderBy(desc(announcements.sentAt))
       .limit(200);
-    const items = rows.map((r) => this.inboxItem(r.a, r.sender, toDate(r.readAt), toDate(r.acknowledgedAt), now));
+    const ctx = await this.readerContext(tx, userId, rows.filter((r) => r.a.poll).map((r) => r.a.id));
+    const items = rows.map((r) => this.inboxItem(r.a, r.sender, toDate(r.readAt), toDate(r.acknowledgedAt), now, ctx));
     items.sort((x, y) => Number(y.pinned) - Number(x.pinned));
     return { unread: items.filter((i) => !i.readAt).length, pinned: items.filter((i) => i.pinned).length, items };
   }
@@ -580,15 +758,39 @@ export class AnnouncementsService implements OnModuleInit {
       .where(and(eq(announcementRecipients.userId, userId), eq(announcements.id, id), eq(announcements.status, 'sent')));
     if (rows.length === 0) throw new NotFoundException('Message not found');
     const r = rows[0];
-    return this.inboxItem(r.a, r.sender, r.readAt, r.acknowledgedAt, this.clock.now());
+    const ctx = await this.readerContext(tx, userId, r.a.poll ? [id] : []);
+    return this.inboxItem(r.a, r.sender, r.readAt, r.acknowledgedAt, this.clock.now(), ctx);
   }
 
-  private inboxItem(a: typeof announcements.$inferSelect, sender: string, readAt: Date | null, acknowledgedAt: Date | null, now: Date) {
+  /** The reader's language, their poll answers and, for polls that show results, the tallies. */
+  private async readerContext(tx: Tx, userId: string, pollIds: string[]) {
+    const [u] = await tx.select({ lang: users.preferredLanguage }).from(users).where(eq(users.id, userId));
+    const mine = new Map<string, number>();
+    const tallies = new Map<string, number[]>();
+    if (pollIds.length) {
+      const votes = await tx.select({ announcementId: announcementPollVotes.announcementId, userId: announcementPollVotes.userId, option: announcementPollVotes.option }).from(announcementPollVotes).where(inArray(announcementPollVotes.announcementId, pollIds));
+      for (const v of votes) {
+        if (v.userId === userId) mine.set(v.announcementId, v.option);
+        tallies.set(v.announcementId, [...(tallies.get(v.announcementId) ?? []), v.option]);
+      }
+    }
+    return { lang: u?.lang ?? 'en', mine, tallies };
+  }
+
+  private inboxItem(a: typeof announcements.$inferSelect, sender: string, readAt: Date | null, acknowledgedAt: Date | null, now: Date, ctx: { lang: string; mine: Map<string, number>; tallies: Map<string, number[]> }) {
     const live = !a.expiresAt || a.expiresAt > now;
+    const text = inLanguage(a, ctx.lang);
+    const myVote = ctx.mine.get(a.id) ?? null;
+    const closed = !!a.poll?.closesAt && new Date(a.poll.closesAt) <= now;
     return {
       id: a.id,
-      title: a.title,
-      body: a.body,
+      title: text.title,
+      body: text.body,
+      language: text.language,
+      poll: a.poll
+        ? { question: a.poll.question, options: a.poll.options, closesAt: a.poll.closesAt, closed, myVote, results: a.poll.showResults && (myVote !== null || closed) ? pollResults(a.poll.options, ctx.tallies.get(a.id) ?? []) : null }
+        : null,
+      emergency: a.priority === 'emergency',
       priority: a.priority,
       requiresAck: a.requiresAck,
       canAcknowledge: a.requiresAck || a.priority === 'important',
@@ -598,8 +800,30 @@ export class AnnouncementsService implements OnModuleInit {
       attachments: a.attachments.map(({ key: _key, ...rest }) => rest),
       readAt,
       acknowledgedAt,
-      pinned: a.priority === 'important' && live && !acknowledgedAt,
+      pinned: (a.priority === 'important' || a.priority === 'emergency') && live && !acknowledgedAt,
     };
+  }
+
+  /** A recipient answers the poll, or changes the answer while it is open. Answering also marks the notice read. */
+  async vote(tx: Tx, p: UserPrincipal, id: string, option: number) {
+    const [r] = await tx
+      .select({ a: announcements })
+      .from(announcementRecipients)
+      .innerJoin(announcements, eq(announcements.id, announcementRecipients.announcementId))
+      .where(and(eq(announcementRecipients.userId, p.userId), eq(announcements.id, id), eq(announcements.status, 'sent')))
+      .limit(1);
+    if (!r) throw new NotFoundException('Message not found');
+    const poll = r.a.poll;
+    if (!poll) throw new BadRequestException('This message has no poll');
+    if (poll.closesAt && new Date(poll.closesAt) <= this.clock.now()) throw new ConflictException('The poll has closed');
+    if (option >= poll.options.length) throw new BadRequestException('Choose one of the options');
+    const now = this.clock.now();
+    await tx
+      .insert(announcementPollVotes)
+      .values({ tenantId: p.tenantId, announcementId: id, userId: p.userId, option })
+      .onConflictDoUpdate({ target: [announcementPollVotes.announcementId, announcementPollVotes.userId], set: { option, updatedAt: now } });
+    await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'announcement.poll_answered', subjectType: 'announcement', subjectId: id, data: { option } });
+    return this.mark(tx, p, id, false);
   }
 
   /** Marks read (and with `ack`, acknowledged) on every app the person got it on; the push notification counts as read too. */

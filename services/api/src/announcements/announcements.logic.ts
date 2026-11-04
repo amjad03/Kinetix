@@ -18,6 +18,24 @@ export function unsafeLink(body: string): boolean {
   return links.some((l) => !/^https?:\/\/[^\s]+$/i.test(l));
 }
 
+/** Roles a notice can be sent to as a whole. Students and guardians reach their apps; the others the Teacher App. */
+export const AUDIENCE_ROLES = ['student', 'guardian', 'teacher', 'hod', 'principal', 'tenant_admin', 'accountant', 'librarian', 'hostel_warden', 'transport_manager', 'admissions_officer', 'exam_controller', 'counsellor', 'placement_officer', 'hr_manager', 'quality_officer'] as const;
+
+/** The notice in the reader's language when the sender wrote one, else the English. */
+export function inLanguage(a: { title: string; body: string; translations: Partial<Record<string, { title: string; body: string }>> }, lang: string): { title: string; body: string; language: string } {
+  const t = a.translations[lang];
+  return t ? { title: t.title, body: t.body, language: lang } : { title: a.title, body: a.body, language: 'en' };
+}
+
+/** Votes per option and the share of each (whole percent, rounded down). */
+export function pollResults(options: string[], votes: number[]): { option: string; votes: number; pct: number }[] {
+  const total = votes.length;
+  return options.map((option, i) => {
+    const n = votes.filter((v) => v === i).length;
+    return { option, votes: n, pct: pct(n, total) };
+  });
+}
+
 /** Percentage rounded down to a whole number (0 when nobody was targeted). */
 export const pct = (n: number, of: number) => (of > 0 ? Math.floor((n * 100) / of) : 0);
 

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CommsAdminController } from './comms-admin.controller.js';
 import { CommsController } from './comms.controller.js';
 import { CommsRecords } from './comms.records.js';
+import { CommsPassRecords } from './comms-pass.records.js';
 import { CommsService } from './comms.service.js';
 import { CommsWebhooksController } from './comms-webhooks.controller.js';
 import { channelProviders } from './providers.js';
@@ -12,7 +13,7 @@ import { channelProviders } from './providers.js';
  */
 @Module({
   controllers: [CommsController, CommsAdminController, CommsWebhooksController],
-  providers: [CommsService, CommsRecords, ...channelProviders],
+  providers: [CommsService, CommsRecords, CommsPassRecords, ...channelProviders],
   exports: [CommsService],
 })
 export class CommsModule {}

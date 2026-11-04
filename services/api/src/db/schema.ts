@@ -90,6 +90,8 @@ export interface ChatSettings {
   officeUserIds?: string[];
   /** Office roles whose holders also answer office threads (the accounts desk, the front office). Absent = accountant and admissions officer. */
   officeRoles?: string[];
+  /** A family's message to a teacher unanswered this many hours goes to the head of department (absent = 48; 0 = never). */
+  escalateAfterHours?: number;
 }
 
 export interface BoardKioskSettings {
@@ -1738,7 +1740,13 @@ export type AnnouncementChannel = 'boards' | 'teacher' | 'student' | 'parent';
 
 /** Who an announcement is for. Picked people narrow nothing else: they are added as they are. */
 export interface AnnouncementAudience {
-  scope: 'all' | 'departments' | 'programs' | 'sections' | 'people';
+  scope: 'all' | 'departments' | 'programs' | 'sections' | 'people' | 'roles' | 'hostels' | 'routes' | 'lists';
+  /** Whole roles (students, guardians, teachers, the accounts office…). */
+  roles?: string[];
+  /** Residents (and wardens) of hostels; riders of bus routes; saved audiences of Communication. */
+  hostelIds?: string[];
+  routeIds?: string[];
+  listIds?: string[];
   departmentIds?: string[];
   programIds?: string[];
   sectionIds?: string[];
@@ -1782,7 +1790,7 @@ export const announcements = pgTable(
     title: text('title').notNull(),
     /** Light markdown: **bold**, "- " and "1. " lists, [text](https://link). */
     body: text('body').notNull(),
-    priority: text('priority').$type<'normal' | 'important'>().notNull().default('normal'),
+    priority: text('priority').$type<'normal' | 'important' | 'emergency'>().notNull().default('normal'),
     channels: text('channels').array().$type<AnnouncementChannel[]>().notNull().default(sql`'{}'`),
     audience: jsonb('audience').$type<AnnouncementAudience>().notNull(),
     attachments: jsonb('attachments').$type<AnnouncementAttachment[]>().notNull().default([]),

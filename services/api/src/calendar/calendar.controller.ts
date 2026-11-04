@@ -1,5 +1,6 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
-import { and, asc, eq, gte, inArray, isNull, lte } from 'drizzle-orm';
+import { BadRequestException, Body, ConflictException, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import { and, asc, eq, gte, inArray, isNull, lte, ne, sql } from 'drizzle-orm';
+import { calendarEventRsvps } from '../db/schema-comms.js';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal, STAFF_ADMIN_ROLES } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
@@ -8,7 +9,7 @@ import { hashKioskPin, KIOSK_PIN, kioskPinParts } from '../common/kiosk-pin.js';
 import { Clock, localParts } from '../common/time.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
-import { calendarEvents, guardians, notifications, programs, sections, students, teacherSubstitutions, tenants, timetableSlots, type TenantSettings } from '../db/schema.js';
+import { calendarEvents, guardians, notifications, programs, sections, students, teacherSubstitutions, tenants, timetableSlots, users, type TenantSettings } from '../db/schema.js';
 import { specialClasses } from '../db/schema-academic-ops.js';
 import { DomainEvents, EventBus } from '../events/events.js';
 import { texts } from '../notifications/texts.js';
@@ -34,8 +35,15 @@ const EventBody = z
     notify: z.boolean().optional(),
     /** A draft is seen by staff only until published (default: published). */
     draft: z.boolean().optional(),
+    /** Ask the audience to reply going, maybe or not going, until `rsvpBy`, for up to `capacity` places (guests count). */
+    rsvp: z.boolean().default(false),
+    rsvpBy: DATE.nullable().default(null),
+    capacity: z.number().int().min(1).max(100_000).nullable().default(null),
+    venue: z.string().trim().max(160).default(''),
   })
-  .refine((b) => b.startsOn <= b.endsOn, { message: 'The last day must be on or after the first day', path: ['endsOn'] });
+  .refine((b) => b.startsOn <= b.endsOn, { message: 'The last day must be on or after the first day', path: ['endsOn'] })
+  .refine((b) => !b.rsvpBy || b.rsvpBy <= b.endsOn, { message: 'Replies must close by the last day of the event', path: ['rsvpBy'] });
+const RsvpBody = z.object({ response: z.enum(['going', 'maybe', 'not_going']), guests: z.number().int().min(0).max(10).default(0), note: z.string().trim().max(200).default('') });
 
 const PublishBody = z.object({ ids: z.array(z.uuid()).min(1).max(500), publish: z.boolean().default(true), notify: z.boolean().optional() });
 
@@ -75,9 +83,77 @@ export class CalendarController {
         .filter((e) => (mine === null ? true : e.programIds === null || e.programIds.some((id) => mine.includes(id))))
         .filter((e) => (mySections === null || e.sectionIds === null ? true : e.sectionIds.some((id) => mySections.includes(id))))
         .filter((e) => hit(e.campusIds, campusId) && hit(e.sectionIds, sectionId) && hit(e.departmentIds, departmentId) && hit(e.programIds, programId));
-      return { from, to, today, events: visible };
+      const mineRsvp = await myRsvps(tx, p.userId, visible.filter((e) => e.rsvp).map((e) => e.id));
+      return { from, to, today, events: visible.map((e) => (e.rsvp ? { ...e, myRsvp: mineRsvp.get(e.id) ?? null } : e)) };
     });
   }
+
+  /** Replies to an event that asks for RSVPs (or changes the reply until replies close). Places are counted with guests. */
+  @Post(':id/rsvp')
+  @HttpCode(200)
+  @Auth('user')
+  rsvp(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(RsvpBody)) b: z.infer<typeof RsvpBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [e] = await tx.select().from(calendarEvents).where(eq(calendarEvents.id, id)).for('update');
+      if (!e || !(await visibleTo(tx, p, e))) throw new NotFoundException('Calendar entry not found');
+      if (!e.rsvp) throw new BadRequestException('This event does not ask for replies');
+      const today = localParts(this.clock.now(), await this.timetable.tenantTimezone(tx)).date;
+      if (today > (e.rsvpBy ?? e.endsOn)) throw new ConflictException('Replies for this event have closed');
+      const guests = b.response === 'not_going' ? 0 : b.guests;
+      if (e.capacity && b.response === 'going') {
+        const [taken] = await tx
+          .select({ n: sql<number>`coalesce(sum(1 + ${calendarEventRsvps.guests}), 0)::int` })
+          .from(calendarEventRsvps)
+          .where(and(eq(calendarEventRsvps.eventId, id), eq(calendarEventRsvps.response, 'going'), ne(calendarEventRsvps.userId, p.userId)));
+        if (taken.n + 1 + guests > e.capacity) throw new ConflictException(`Only ${Math.max(0, e.capacity - taken.n)} place(s) are left`);
+      }
+      const now = this.clock.now();
+      await tx
+        .insert(calendarEventRsvps)
+        .values({ tenantId: p.tenantId, eventId: id, userId: p.userId, response: b.response, guests, note: b.note })
+        .onConflictDoUpdate({ target: [calendarEventRsvps.eventId, calendarEventRsvps.userId], set: { response: b.response, guests, note: b.note, updatedAt: now } });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'calendar.rsvp', subjectType: 'calendar_event', subjectId: id, data: { response: b.response, guests } });
+      return { eventId: id, ...(await rsvpCounts(tx, [id])).get(id), myRsvp: { response: b.response, guests, note: b.note } };
+    });
+  }
+}
+
+/** The caller's reply per event. */
+async function myRsvps(tx: Tx, userId: string, eventIds: string[]) {
+  if (!eventIds.length) return new Map<string, { response: string; guests: number; note: string }>();
+  const rows = await tx.select({ eventId: calendarEventRsvps.eventId, response: calendarEventRsvps.response, guests: calendarEventRsvps.guests, note: calendarEventRsvps.note }).from(calendarEventRsvps).where(and(eq(calendarEventRsvps.userId, userId), inArray(calendarEventRsvps.eventId, eventIds)));
+  return new Map(rows.map((r) => [r.eventId, { response: r.response, guests: r.guests, note: r.note }]));
+}
+
+/** Replies per event: going (people and places with guests), maybe, not going. */
+export async function rsvpCounts(tx: Tx, eventIds: string[]) {
+  const out = new Map<string, { going: number; places: number; maybe: number; notGoing: number }>();
+  if (!eventIds.length) return out;
+  const rows = await tx
+    .select({
+      eventId: calendarEventRsvps.eventId,
+      going: sql<number>`count(*) filter (where ${calendarEventRsvps.response} = 'going')::int`,
+      places: sql<number>`coalesce(sum(1 + ${calendarEventRsvps.guests}) filter (where ${calendarEventRsvps.response} = 'going'), 0)::int`,
+      maybe: sql<number>`count(*) filter (where ${calendarEventRsvps.response} = 'maybe')::int`,
+      notGoing: sql<number>`count(*) filter (where ${calendarEventRsvps.response} = 'not_going')::int`,
+    })
+    .from(calendarEventRsvps)
+    .where(inArray(calendarEventRsvps.eventId, eventIds))
+    .groupBy(calendarEventRsvps.eventId);
+  for (const id of eventIds) out.set(id, { going: 0, places: 0, maybe: 0, notGoing: 0 });
+  for (const r of rows) out.set(r.eventId, { going: r.going, places: r.places, maybe: r.maybe, notGoing: r.notGoing });
+  return out;
+}
+
+/** Whether the person sees the entry in their calendar (the same rules as the list). */
+async function visibleTo(tx: Tx, p: UserPrincipal, e: typeof calendarEvents.$inferSelect): Promise<boolean> {
+  const mine = await familyPrograms(tx, p);
+  if (mine === null) return true;
+  if (!e.published) return false;
+  if (e.programIds !== null && !e.programIds.some((id) => mine.includes(id))) return false;
+  if (e.sectionIds === null) return true;
+  const secs = await familySections(tx, p);
+  return e.sectionIds.some((id) => secs.includes(id));
 }
 
 /** Every entry overlapping [from, to], with program names. */
@@ -95,13 +171,18 @@ async function listBetween(tx: Tx, from: string, to: string) {
       departmentIds: calendarEvents.departmentIds,
       source: calendarEvents.source,
       published: calendarEvents.published,
+      rsvp: calendarEvents.rsvp,
+      rsvpBy: calendarEvents.rsvpBy,
+      capacity: calendarEvents.capacity,
+      venue: calendarEvents.venue,
     })
     .from(calendarEvents)
     .where(and(lte(calendarEvents.startsOn, to), gte(calendarEvents.endsOn, from)))
     .orderBy(asc(calendarEvents.startsOn), asc(calendarEvents.title));
   const ids = [...new Set(rows.flatMap((r) => r.programIds ?? []))];
   const names = ids.length ? new Map((await tx.select({ id: programs.id, name: programs.name }).from(programs).where(inArray(programs.id, ids))).map((r) => [r.id, r.name])) : new Map<string, string>();
-  return rows.map((r) => ({ ...r, programs: r.programIds?.map((id) => names.get(id) ?? '') ?? null }));
+  const counts = await rsvpCounts(tx, rows.filter((r) => r.rsvp).map((r) => r.id));
+  return rows.map((r) => ({ ...r, programs: r.programIds?.map((id) => names.get(id) ?? '') ?? null, ...(r.rsvp ? { replies: counts.get(r.id) } : {}) }));
 }
 
 /** Classes of a family's children or a student's own class. */
@@ -184,7 +265,7 @@ export class CalendarAdminController {
       await assertPrograms(tx, b.programIds);
       const [e] = await tx
         .insert(calendarEvents)
-        .values({ tenantId: p.tenantId, kind: b.kind, title: b.title, startsOn: b.startsOn, endsOn: b.endsOn, programIds: b.programIds ?? null, campusIds: b.campusIds ?? null, sectionIds: b.sectionIds ?? null, departmentIds: b.departmentIds ?? null, published: !b.draft, createdBy: p.userId })
+        .values({ tenantId: p.tenantId, kind: b.kind, title: b.title, startsOn: b.startsOn, endsOn: b.endsOn, programIds: b.programIds ?? null, campusIds: b.campusIds ?? null, sectionIds: b.sectionIds ?? null, departmentIds: b.departmentIds ?? null, published: !b.draft, createdBy: p.userId, rsvp: b.rsvp, rsvpBy: b.rsvp ? b.rsvpBy : null, capacity: b.rsvp ? b.capacity : null, venue: b.venue })
         .returning();
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'calendar.created', subjectType: 'calendar_event', subjectId: e.id, data: { kind: e.kind, title: e.title, startsOn: e.startsOn, endsOn: e.endsOn, draft: !e.published } });
       if (b.notify !== false && e.published) await this.notifications.calendarEvent(tx, e);
@@ -200,7 +281,7 @@ export class CalendarAdminController {
       await assertPrograms(tx, b.programIds);
       const [e] = await tx
         .update(calendarEvents)
-        .set({ kind: b.kind, title: b.title, startsOn: b.startsOn, endsOn: b.endsOn, programIds: b.programIds ?? null, campusIds: b.campusIds ?? null, sectionIds: b.sectionIds ?? null, departmentIds: b.departmentIds ?? null })
+        .set({ kind: b.kind, title: b.title, startsOn: b.startsOn, endsOn: b.endsOn, programIds: b.programIds ?? null, campusIds: b.campusIds ?? null, sectionIds: b.sectionIds ?? null, departmentIds: b.departmentIds ?? null, rsvp: b.rsvp, rsvpBy: b.rsvp ? b.rsvpBy : null, capacity: b.rsvp ? b.capacity : null, venue: b.venue })
         .where(eq(calendarEvents.id, id))
         .returning();
       if (!e) throw new NotFoundException('Calendar entry not found');
@@ -226,6 +307,25 @@ export class CalendarAdminController {
         if (!b.publish) await tx.update(notifications).set({ retractedAt: new Date() }).where(and(eq(notifications.dedupeKey, `calendar:${e.id}`), isNull(notifications.retractedAt)));
       }
       return { changed: rows.length };
+    });
+  }
+
+  /** Who replied to an event, with the totals; `?response=going|maybe|not_going`. Staff who run events read it. */
+  @Get(':id/rsvps')
+  @Auth('user', [...STAFF_ADMIN_ROLES, 'hod', 'teacher'])
+  rsvps(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Query('response') response?: string) {
+    const r = response ? z.enum(['going', 'maybe', 'not_going']).parse(response) : undefined;
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const [e] = await tx.select().from(calendarEvents).where(eq(calendarEvents.id, id));
+      if (!e) throw new NotFoundException('Calendar entry not found');
+      const rows = await tx
+        .select({ userId: users.id, fullName: users.fullName, response: calendarEventRsvps.response, guests: calendarEventRsvps.guests, note: calendarEventRsvps.note, at: calendarEventRsvps.updatedAt, roles: sql<string[]>`(select array_agg(distinct x.role::text) from user_roles x where x.user_id = ${users.id})` })
+        .from(calendarEventRsvps)
+        .innerJoin(users, eq(users.id, calendarEventRsvps.userId))
+        .where(and(eq(calendarEventRsvps.eventId, id), r ? eq(calendarEventRsvps.response, r) : undefined))
+        .orderBy(asc(users.fullName))
+        .limit(5000);
+      return { event: { id: e.id, title: e.title, startsOn: e.startsOn, endsOn: e.endsOn, rsvp: e.rsvp, rsvpBy: e.rsvpBy, capacity: e.capacity, venue: e.venue }, totals: (await rsvpCounts(tx, [id])).get(id), rows };
     });
   }
 
