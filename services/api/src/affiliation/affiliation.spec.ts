@@ -171,6 +171,20 @@ describe('RGUHS, KSLU and grace marks', () => {
     expect(after.result).toMatchObject({ passed: true, grace: 1, percent: 55.5, grade: 'P' });
   });
 
+  it('audit EX-3: the grace shows on the external component the marks card prints', () => {
+    const r = grade(rg, [[39, 100], [70, 100]]);
+    const before = r.components.find((c) => c.kind === 'external')!;
+    const [after] = applyGrace([{ result: r, pass: passOf(rg), scale: scaleOf(rg) }], rg.grace);
+    const ext = after.result.components.find((c) => c.kind === 'external')!;
+    expect(ext.weighted).toBe(before.weighted + 1);
+    expect(ext.grace).toBe(1);
+    expect(ext.fraction).toBe(Math.round(((before.weighted + 1) / ext.weight) * 10000) / 10000);
+    // The other components and the input are untouched.
+    expect(after.result.components.filter((c) => c.kind !== 'external')).toEqual(r.components.filter((c) => c.kind !== 'external'));
+    expect(r.components.find((c) => c.kind === 'external')!.weighted).toBe(before.weighted);
+    expect(after.result.components.reduce((s, c) => s + c.weighted, 0)).toBeCloseTo(after.result.percent, 6);
+  });
+
   it('RGUHS: no grace when two subjects fail (one subject at most, and only if it clears every failure)', () => {
     const a = grade(rg, [[39, 100], [70, 100]]);
     const b = grade(rg, [[38, 100], [70, 100]]);

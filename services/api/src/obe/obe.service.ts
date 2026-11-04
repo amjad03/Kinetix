@@ -185,7 +185,7 @@ export class ObeService {
         const config = cfg(a.subjectId);
         const kind = kindOf(a, config);
         const rows = totals.filter((t) => t.assessmentId === a.id);
-        const paper = qs.filter((q) => q.assessmentId === a.id).map((q) => ({ id: q.id, maxMarks: q.maxMarks, cos: qcos.filter((c) => c.questionId === q.id).map((c) => ({ coId: c.coId, weight: c.weight })) }));
+        const paper = qs.filter((q) => q.assessmentId === a.id).map((q) => ({ id: q.id, maxMarks: q.maxMarks, choiceGroup: q.choiceGroup, attemptAny: q.attemptAny, cos: qcos.filter((c) => c.questionId === q.id).map((c) => ({ coId: c.coId, weight: c.weight })) }));
         const perCo = new Map<string, EvidenceItem['scores']>();
         const push = (coId: string, s: EvidenceItem['scores'][number]) => perCo.set(coId, [...(perCo.get(coId) ?? []), s]);
         let basis: EvidenceItem['basis'] = 'share';

@@ -3,7 +3,7 @@
  * grace marks, the aggregate minimum, class / division, percentage equivalence and register numbers.
  * The per-subject maths stays in exams/grading.ts.
  */
-import { gradeFor, round, roundBy, type GradeScaleRules, type PassRules, type SchemeComponent, type SubjectResult } from '../exams/grading.js';
+import { gradeFor, round, roundBy, type ComponentResult, type GradeScaleRules, type PassRules, type SchemeComponent, type SubjectResult } from '../exams/grading.js';
 import type { ProfileRules } from './rules.js';
 
 /** The grade scale the exams module uses, from a profile. */
@@ -68,9 +68,27 @@ export function applyGrace<T extends { result: SubjectResult; pass: PassRules; s
     const l = lines[x.i];
     const percent = round(l.result.percent + x.need, 2);
     const g = gradeFor(l.scale, percent);
-    out[x.i] = { ...l, result: { ...l.result, percent, grade: g.grade, gradePoint: g.gradePoint, passed: true, reasons: [], grace: x.need } };
+    out[x.i] = { ...l, result: { ...l.result, percent, grade: g.grade, gradePoint: g.gradePoint, passed: true, reasons: [], grace: x.need, components: withExternalGrace(l.result.components, x.need) } };
   }
   return out;
+}
+
+/**
+ * Grace goes to the external (end-semester) marks, so a marks card that prints the components shows the external marks
+ * that pass: added to the external components in order, each up to its weight. `grace` records how much each got.
+ */
+function withExternalGrace(components: ComponentResult[], grace: number): ComponentResult[] {
+  let left = grace;
+  const out = components.map((c) => {
+    if (c.kind !== 'external' || left <= 0) return c;
+    const add = Math.min(left, Math.max(0, c.weight - c.weighted));
+    if (add <= 0) return c;
+    left -= add;
+    const weighted = round(c.weighted + add, 2);
+    return { ...c, weighted, fraction: c.weight > 0 ? round(weighted / c.weight, 4) : c.fraction, grace: add };
+  });
+  // No external component with room (grace needs one, so not expected): leave the components as they were.
+  return left > 1e-9 ? components : out;
 }
 
 /** Total marks over the maximum across subjects, for the aggregate minimum and the marks card. */
