@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getI18n } from '@/i18n/server';
 import { act, api } from '@/lib/api';
 import type { ActionResult, Audience, DeliveryReport, Priority } from '@/lib/types';
-import type { AnnAudience, AnnChannel, Announcement, AnnPreview, AnnRecipient, AnnTemplate, AppChannel, FileInput, PeopleResult } from '@/lib/communication';
+import type { AnnAudience, AnnChannel, Announcement, AnnPoll, AnnPreview, AnnPriority, AnnRecipient, AnnTemplate, AnnTranslations, AppChannel, FileInput, PeopleResult } from '@/lib/communication';
 
 export interface BroadcastInput {
   title: string;
@@ -64,12 +64,15 @@ export async function deliveryReport(id: string): Promise<ActionResult<DeliveryR
 export interface AnnouncementWrite {
   title: string;
   body: string;
-  priority: 'normal' | 'important';
+  priority: AnnPriority;
   channels: AnnChannel[];
   audience: AnnAudience;
   requiresAck: boolean;
   sendAt: string | null;
   expiresAt: string | null;
+  translations: AnnTranslations;
+  poll: AnnPoll | null;
+  external: { templateId: string; fallback: string[] } | null;
   attachments: FileInput[];
   keepAttachmentIds: string[];
   mode: 'draft' | 'send';

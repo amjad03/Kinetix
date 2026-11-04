@@ -183,12 +183,16 @@ export type Channel = (typeof CHANNELS)[number];
 export const LOCALES_OFFERED = ['en', 'hi', 'kn'] as const;
 export const AUDIENCE_ROLES = ['student', 'guardian', 'teacher', 'hod', 'principal', 'tenant_admin', 'librarian', 'accountant', 'hostel_warden', 'transport_manager'] as const;
 
-export interface MessageTemplate { id: string; key: string; channel: Channel; locale: 'en' | 'hi' | 'kn'; subject: string; body: string; dltTemplateId: string | null; active: boolean; placeholders: string[] }
+export interface MessageTemplate { id: string; key: string; channel: Channel; locale: 'en' | 'hi' | 'kn'; subject: string; body: string; dltTemplateId: string | null; active: boolean; placeholders: string[]; dltHeader?: string; dltContentType?: string; waTemplateName?: string; waLanguage?: string }
 export interface AudienceRow { id: string; name: string; rule: { roles?: string[]; sectionIds?: string[]; userIds?: string[] } }
-export interface CampaignRow { id: string; title: string; channel: Channel; templateKey: string; audience: string; sendAt: string; status: string; recipients: number; sentCount: number; failedCount: number; suppressedCount?: number; repeat?: string; repeatUntil?: string | null }
+export interface CampaignRow { id: string; title: string; channel: Channel; templateKey: string; audience: string; sendAt: string; status: string; recipients: number; sentCount: number; failedCount: number; suppressedCount?: number; repeat?: string; repeatUntil?: string | null; deliveredCount?: number; costPaise?: number; fallback?: string[]; emergency?: boolean }
 export interface CampaignDetail extends CampaignRow {
   delivery: Record<string, number>;
-  failures: { userId: string; fullName: string; error: string | null; attempts: number; nextAttemptAt: string | null }[];
+  failures: { userId: string; fullName: string; error: string | null; attempts: number; nextAttemptAt: string | null; channel?: string; status?: string }[];
+  /** Deliveries per channel of the chain and status, with their cost in paise. */
+  byChannel?: { channel: string; status: string; n: number; cost: number }[];
+  /** Deliveries waiting for quiet hours or a cap to pass. */
+  waiting?: { reason: string; n: number; until: string }[];
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

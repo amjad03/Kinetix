@@ -40,6 +40,7 @@ export function sendLogEntity(): RecordEntity {
         step: commSendLog.step,
         units: commSendLog.units,
         costPaise: commSendLog.costPaise,
+        cost: sql<number>`${commSendLog.costPaise} / 100.0`,
         error: commSendLog.error,
         emergency: commSendLog.emergency,
         department: departments.name,
@@ -51,6 +52,8 @@ export function sendLogEntity(): RecordEntity {
         channel: { label: 'Channel', options: SEND_CHANNELS, where: (v) => eq(commSendLog.channel, v) },
         status: { label: 'Status', options: SEND_STATUSES, where: (v) => eq(commSendLog.status, v as 'accepted') },
         emergency: { label: 'Emergency', options: choices({ yes: 'Emergency only' }), where: (v) => (v === 'yes' ? eq(commSendLog.emergency, true) : undefined) },
+        // One campaign's or notice's sends (from its detail).
+        source: { label: 'Message', where: (v) => (/^[0-9a-f-]{36}$/i.test(v) ? eq(commSendLog.sourceId, v) : undefined) },
       },
       sorts: { attempted: commSendLog.attemptedAt, recipient: users.fullName, cost: commSendLog.costPaise, status: commSendLog.status },
       defaultSort: { id: 'attempted', dir: 'desc' },
@@ -86,7 +89,7 @@ export function creditLedgerEntity(): RecordEntity {
     roles: { read: CREDIT_ROLES, write: CREDIT_ROLES },
     label: (r) => `${labelOf(LEDGER_KINDS, r.kind)} ${r.units}`,
     list: {
-      select: { id: commCreditLedger.id, createdAt: commCreditLedger.createdAt, channel: commCreditLedger.channel, kind: commCreditLedger.kind, units: commCreditLedger.units, amountPaise: commCreditLedger.amountPaise, reference: commCreditLedger.reference, note: commCreditLedger.note, by: users.fullName },
+      select: { id: commCreditLedger.id, createdAt: commCreditLedger.createdAt, channel: commCreditLedger.channel, kind: commCreditLedger.kind, units: commCreditLedger.units, amountPaise: commCreditLedger.amountPaise, amount: sql<number>`${commCreditLedger.amountPaise} / 100.0`, reference: commCreditLedger.reference, note: commCreditLedger.note, by: users.fullName },
       joins: (q) => q.leftJoin(users, eq(users.id, commCreditLedger.createdBy)),
       search: [commCreditLedger.reference, commCreditLedger.note, users.fullName],
       filters: {

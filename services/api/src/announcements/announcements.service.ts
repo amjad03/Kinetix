@@ -44,7 +44,7 @@ import { DomainEvents, EventBus } from '../events/events.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { RealtimeGateway } from '../realtime/realtime.gateway.js';
-import { inLanguage, pct, plainText, pollResults } from './announcements.logic.js';
+import { AUDIENCE_ROLES, inLanguage, pct, plainText, pollResults } from './announcements.logic.js';
 
 export const ANNOUNCEMENT_SEND = 'announcements.send';
 type AppChannel = Exclude<AnnouncementChannel, 'boards'>;
@@ -562,7 +562,8 @@ export class AnnouncementsService implements OnModuleInit {
     const stats = await this.statsFor(tx, rows.map((r) => r.a.id));
     const boards = await this.boardStats(tx, rows.map((r) => r.a.broadcastId).filter((x): x is string => !!x));
     const named = await this.names(tx, rows.map((r) => r.a.audience));
-    return rows.map((r) => ({ ...this.view(r.a, r.sender, stats.get(r.a.id), r.a.broadcastId ? boards.get(r.a.broadcastId) : undefined), audiencePeople: this.picked(r.a.audience, named) }));
+    const extras = await this.extrasFor(tx, rows.map((r) => r.a));
+    return rows.map((r) => ({ ...this.view(r.a, r.sender, stats.get(r.a.id), r.a.broadcastId ? boards.get(r.a.broadcastId) : undefined), audiencePeople: this.picked(r.a.audience, named), ...extras.get(r.a.id) }));
   }
 
   async detail(tx: Tx, id: string) {
@@ -571,20 +572,37 @@ export class AnnouncementsService implements OnModuleInit {
     const stats = await this.statsFor(tx, [id]);
     const boards = r.a.broadcastId ? await this.boardStats(tx, [r.a.broadcastId]) : new Map();
     const named = await this.names(tx, [r.a.audience]);
-    // The poll's tally and the outside-channel campaign's outcome.
-    let poll = null;
-    if (r.a.poll) {
-      const votes = (await tx.select({ option: announcementPollVotes.option }).from(announcementPollVotes).where(eq(announcementPollVotes.announcementId, id))).map((v) => v.option);
-      const people = (await tx.selectDistinct({ id: announcementRecipients.userId }).from(announcementRecipients).where(eq(announcementRecipients.announcementId, id))).length;
-      poll = { ...r.a.poll, results: pollResults(r.a.poll.options, votes), voted: votes.length, votedPct: pct(votes.length, people), closed: !!r.a.poll.closesAt && new Date(r.a.poll.closesAt) <= this.clock.now() };
+    return { ...this.view(r.a, r.sender, stats.get(id), r.a.broadcastId ? boards.get(r.a.broadcastId) : undefined), audiencePeople: this.picked(r.a.audience, named), ...(await this.extrasFor(tx, [r.a])).get(id) };
+  }
+
+  /** Per notice, in a few queries for the whole page: its translations, the poll's tally and the outside-channel campaign's outcome. */
+  private async extrasFor(tx: Tx, list: (typeof announcements.$inferSelect)[]) {
+    const out = new Map<string, { translations: AnnouncementTranslations; poll: unknown; external: unknown }>();
+    const polled = list.filter((a) => a.poll).map((a) => a.id);
+    const votes = polled.length ? await tx.select({ id: announcementPollVotes.announcementId, option: announcementPollVotes.option }).from(announcementPollVotes).where(inArray(announcementPollVotes.announcementId, polled)) : [];
+    const people = polled.length
+      ? await tx.select({ id: announcementRecipients.announcementId, n: sql<number>`count(distinct ${announcementRecipients.userId})::int` }).from(announcementRecipients).where(inArray(announcementRecipients.announcementId, polled)).groupBy(announcementRecipients.announcementId)
+      : [];
+    const ext = list.filter((a) => a.external);
+    const tpls = ext.length ? await tx.select({ id: messageTemplates.id, key: messageTemplates.key, channel: messageTemplates.channel }).from(messageTemplates).where(inArray(messageTemplates.id, ext.map((a) => a.external!.templateId))) : [];
+    const campIds = ext.map((a) => a.external!.campaignId).filter((x): x is string => !!x);
+    const camps = campIds.length ? await tx.select().from(messageCampaigns).where(inArray(messageCampaigns.id, campIds)) : [];
+    const now = this.clock.now();
+    for (const a of list) {
+      let poll = null;
+      if (a.poll) {
+        const v = votes.filter((x) => x.id === a.id).map((x) => x.option);
+        poll = { ...a.poll, results: pollResults(a.poll.options, v), voted: v.length, votedPct: pct(v.length, people.find((p) => p.id === a.id)?.n ?? 0), closed: !!a.poll.closesAt && new Date(a.poll.closesAt) <= now };
+      }
+      let external = null;
+      if (a.external) {
+        const t = tpls.find((x) => x.id === a.external!.templateId);
+        const c = camps.find((x) => x.id === a.external!.campaignId);
+        external = { templateId: a.external.templateId, templateKey: t?.key ?? null, channel: t?.channel ?? null, fallback: a.external.fallback, campaign: c ? { id: c.id, status: c.status, recipients: c.recipients, sent: c.sentCount, delivered: c.deliveredCount, failed: c.failedCount, suppressed: c.suppressedCount, costPaise: c.costPaise } : null };
+      }
+      out.set(a.id, { translations: a.translations ?? {}, poll, external });
     }
-    let external = null;
-    if (r.a.external) {
-      const [t] = await tx.select({ key: messageTemplates.key, channel: messageTemplates.channel }).from(messageTemplates).where(eq(messageTemplates.id, r.a.external.templateId));
-      const [c] = r.a.external.campaignId ? await tx.select().from(messageCampaigns).where(eq(messageCampaigns.id, r.a.external.campaignId)) : [];
-      external = { templateId: r.a.external.templateId, templateKey: t?.key ?? null, channel: t?.channel ?? null, fallback: r.a.external.fallback, campaign: c ? { id: c.id, status: c.status, recipients: c.recipients, sent: c.sentCount, delivered: c.deliveredCount, failed: c.failedCount, suppressed: c.suppressedCount, costPaise: c.costPaise } : null };
-    }
-    return { ...this.view(r.a, r.sender, stats.get(id), r.a.broadcastId ? boards.get(r.a.broadcastId) : undefined), audiencePeople: this.picked(r.a.audience, named), translations: r.a.translations, poll, external };
+    return out;
   }
 
   /** Who received it, filtered: `unread`, `unacknowledged` or everyone, optionally one channel. */
@@ -705,7 +723,6 @@ export class AnnouncementsService implements OnModuleInit {
       attachments: a.attachments.map(({ key: _key, ...rest }) => rest),
       translated: Object.keys(a.translations ?? {}),
       hasPoll: !!a.poll,
-      external: a.external ? { channel: null, campaignId: a.external.campaignId ?? null } : null,
       departmentId: a.departmentId,
       stats: {
         recipients,
@@ -857,6 +874,28 @@ export class AnnouncementsService implements OnModuleInit {
     const f = a.attachments.find((x) => x.id === attachmentId);
     if (!f) throw new NotFoundException('Attachment not found');
     return f;
+  }
+
+  async audienceOptions(tx: Tx, p: UserPrincipal) {
+    const hod = isHodOnly(p);
+    const hostels = hod ? [] : (await tx.execute<{ id: string; name: string }>(sql`select id, name from hostels order by sort_order, name`)).rows;
+    const routes = hod ? [] : (await tx.execute<{ id: string; name: string }>(sql`select id, name from transport_routes where active order by name`)).rows;
+    const lists = await tx.select({ id: audienceRules.id, name: audienceRules.name }).from(audienceRules).where(hod ? eq(audienceRules.createdBy, p.userId) : undefined).orderBy(asc(audienceRules.name));
+    const templates = await tx
+      .select({ id: messageTemplates.id, key: messageTemplates.key, channel: messageTemplates.channel, locale: messageTemplates.locale, dltTemplateId: messageTemplates.dltTemplateId })
+      .from(messageTemplates)
+      .where(and(eq(messageTemplates.active, true), eq(messageTemplates.locale, 'en'), inArray(messageTemplates.channel, ['sms', 'whatsapp', 'email'])))
+      .orderBy(asc(messageTemplates.key), asc(messageTemplates.channel));
+    return {
+      roles: hod ? [] : AUDIENCE_ROLES,
+      hostels,
+      routes,
+      lists,
+      // An SMS text needs its DLT registration before it can carry a notice.
+      outsideTemplates: templates.filter((t) => t.channel !== 'sms' || !!t.dltTemplateId),
+      canEmergency: p.roles.some((r) => STAFF_ADMIN_ROLES.includes(r)),
+      scopes: hod ? ['departments', 'programs', 'sections', 'people', 'lists'] : ['all', 'roles', 'departments', 'programs', 'sections', 'hostels', 'routes', 'lists', 'people'],
+    };
   }
 
   /** Staff, parents, students and student records matching a name, phone or roll number, for picking individuals. */

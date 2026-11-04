@@ -5,10 +5,15 @@ export type AppChannel = Exclude<AnnChannel, 'boards'>;
 export const CHANNELS: AnnChannel[] = ['boards', 'teacher', 'student', 'parent'];
 export const APP_CHANNELS: AppChannel[] = ['teacher', 'student', 'parent'];
 export type AnnStatus = 'draft' | 'scheduled' | 'sent' | 'recalled';
-export type AudienceScope = 'all' | 'departments' | 'programs' | 'sections' | 'people';
+export type AudienceScope = 'all' | 'departments' | 'programs' | 'sections' | 'people' | 'roles' | 'hostels' | 'routes' | 'lists';
+export type AnnPriority = 'normal' | 'important' | 'emergency';
 
 export interface AnnAudience {
   scope: AudienceScope;
+  roles?: string[];
+  hostelIds?: string[];
+  routeIds?: string[];
+  listIds?: string[];
   departmentIds?: string[];
   programIds?: string[];
   sectionIds?: string[];
@@ -30,11 +35,50 @@ export interface ChannelStats {
   acknowledged: number;
 }
 
+/** The notice in Hindi and Kannada. */
+export type AnnTranslations = Partial<Record<'hi' | 'kn', { title: string; body: string }>>;
+export interface AnnPoll {
+  question: string;
+  options: string[];
+  closesAt: string | null;
+  showResults: boolean;
+}
+export interface AnnPollTally extends AnnPoll {
+  results: { option: string; votes: number; pct: number }[];
+  voted: number;
+  votedPct: number;
+  closed: boolean;
+}
+export interface AnnExternal {
+  templateId: string;
+  templateKey: string | null;
+  channel: string | null;
+  fallback: string[];
+  campaign: { id: string; status: string; recipients: number; sent: number; delivered: number; failed: number; suppressed: number; costPaise: number } | null;
+}
+
+/** What the composer offers beyond classes (GET /v1/announcements/audience-options). */
+export interface AudienceOptions {
+  roles: string[];
+  hostels: { id: string; name: string }[];
+  routes: { id: string; name: string }[];
+  lists: { id: string; name: string }[];
+  outsideTemplates: { id: string; key: string; channel: 'sms' | 'whatsapp' | 'email'; locale: string }[];
+  canEmergency: boolean;
+  scopes: AudienceScope[];
+}
+
 export interface Announcement {
   id: string;
   title: string;
   body: string;
-  priority: 'normal' | 'important';
+  priority: AnnPriority;
+  /** Languages it was translated into (list), and the translations themselves (detail). */
+  translated?: string[];
+  translations?: AnnTranslations;
+  hasPoll?: boolean;
+  poll?: AnnPollTally | null;
+  external?: AnnExternal | null;
   channels: AnnChannel[];
   audience: AnnAudience;
   requiresAck: boolean;

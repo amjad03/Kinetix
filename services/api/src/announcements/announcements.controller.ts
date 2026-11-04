@@ -196,6 +196,16 @@ export class AnnouncementsController {
     });
   }
 
+  /**
+   * What the composer offers beyond classes: whole roles, hostels, bus routes, saved lists (a head of department sees
+   * only their own) and the registered SMS, WhatsApp and email templates a notice can also go out through.
+   */
+  @Get('audience-options')
+  @Auth('user', BROADCAST_ROLES)
+  audienceOptions(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => this.svc.audienceOptions(tx, p));
+  }
+
   /** Staff, parents and students by name, phone or roll number, to send to individuals. */
   @Get('people')
   @Auth('user', BROADCAST_ROLES)

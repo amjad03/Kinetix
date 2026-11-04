@@ -6,7 +6,7 @@ import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { StatGrid, StatTile } from '@/components/StatTile';
 import { ErrorState } from '@/components/States';
 import { api, getMe, load, requireSection } from '@/lib/api';
-import type { Announcement, AnnTemplate } from '@/lib/communication';
+import type { Announcement, AnnTemplate, AudienceOptions } from '@/lib/communication';
 import { TIMEZONE } from '@/lib/school';
 import { getI18n } from '@/i18n/server';
 import type { SentBroadcast, Structure } from '@/lib/types';
@@ -22,13 +22,14 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function MessagesPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   await requireSection('school');
   const { tab } = await searchParams;
-  const [me, structure, items, templates, departments, sent] = await Promise.all([
+  const [me, structure, items, templates, departments, sent, options] = await Promise.all([
     getMe(),
     load(() => api<Structure>('/v1/admin/structure')),
     load(() => api<Announcement[]>('/v1/announcements')),
     load(() => api<AnnTemplate[]>('/v1/announcements/templates')),
     load(() => api<{ id: string; name: string }[]>('/v1/departments')),
     load(() => api<SentBroadcast[]>('/v1/broadcasts')),
+    load(() => api<AudienceOptions>('/v1/announcements/audience-options')),
   ]);
   const { t, fmt } = await getI18n();
   const failed = structure.error ?? items.error ?? templates.error;
@@ -67,7 +68,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
         <StatTile label={t('comm.stat.readRate')} value={reached ? `${Math.floor((read * 100) / reached)}%` : '—'} />
         <StatTile label={t('comm.stat.pendingAck')} value={fmt.number(pendingAck)} tone={pendingAck > 0 ? 'warning' : 'default'} />
       </StatGrid>
-      <AnnouncementsDesk structure={structure.data!} departments={departments.data ?? []} items={list} templates={templates.data!} boardAlerts={boardAlerts} initialTab={tab ?? 'compose'} />
+      <AnnouncementsDesk structure={structure.data!} departments={departments.data ?? []} items={list} templates={templates.data!} boardAlerts={boardAlerts} initialTab={tab ?? 'compose'} options={options.data ?? null} />
     </>
   );
 }
