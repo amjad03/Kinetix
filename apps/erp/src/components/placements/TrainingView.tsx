@@ -79,7 +79,7 @@ export function TrainingView({ tr, canEdit }: { tr: TrainingDetail; canEdit: boo
           ) : undefined
         }
         overview={
-          <div className="grid gap-6">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6">
             {tr.description && <p className="whitespace-pre-wrap text-sm">{tr.description}</p>}
             <DataTable label={t('pd.sessions')} columns={sessionCols} rows={tr.sessions} rowId={(s) => s.id} empty={t('pd.tr.noSessions')} />
           </div>

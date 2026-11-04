@@ -62,6 +62,33 @@ export async function placementsPass(c: Ctx, o: { files?: boolean } = {}): Promi
     { returning: false },
   );
 
+  // ---- the final year's published results so far (CGPA and backlogs drive eligibility) --------------------
+  // The exam stage publishes this term's model examination for the third semester; the final year's eligibility
+  // reads the results of the semesters already done, published last academic year.
+  const finalSections = c.sections.filter((s) => final.some((st) => st.sectionId === s.id));
+  const hasResults = new Set((await k.q<{ studentId: string }>(`select distinct r.student_id from exam_results r join exam_sessions es on es.id = r.session_id where r.tenant_id = $1 and es.status in ('published', 'locked')`, [t])).map((x) => x.studentId));
+  for (const sec of finalSections) {
+    const pupils = sec.students.filter((st) => !hasResults.has(st.id));
+    const subs = await k.q<{ id: string; credits: number }>(`select id, coalesce(credits, 4) as credits from subjects where tenant_id = $1 and program_id = $2 and term < $3 order by term desc, code limit 4`, [t, sec.programId, sec.term]);
+    if (!pupils.length || !subs.length) continue;
+    const prev = sec.term - 1;
+    const session = await k.one<{ id: string }>('exam_sessions', { academicYearId: c.years.prev, programId: sec.programId, term: prev, name: `${sec.def.name} Semester ${prev}: End-semester Examination, April 2026`, kind: 'regular', startsOn: '2026-04-15', endsOn: '2026-04-30', status: 'published', publishedAt: at('2026-06-05', '11:00'), processedAt: at('2026-06-02'), createdBy: c.byEmail.principal.id });
+    const results = await k.ins<{ id: string; studentId: string }>('exam_results', pupils.map((st) => {
+      const cgpa = Math.round((5.2 + st.ability * 4.3) * 100) / 100;
+      const fails = st.ability < 0.3 ? 1 : 0;
+      const credits = subs.reduce((s, x) => s + Number(x.credits), 0);
+      return { sessionId: session.id, studentId: st.id, sgpa: cgpa, cgpa, creditsAttempted: credits, creditsEarned: credits - (fails ? Number(subs[0].credits) : 0), creditPoints: Math.round(cgpa * credits), outcome: fails ? 'fail' : 'pass' };
+    }));
+    await k.ins('exam_result_lines', results.flatMap((res) => {
+      const st = pupils.find((x) => x.id === res.studentId)!;
+      return subs.map((x, i) => {
+        const passed = !(st.ability < 0.3 && i === 0);
+        const pct = passed ? Math.round(48 + st.ability * 45) : 31;
+        return { resultId: res.id, subjectId: x.id, credits: Number(x.credits), percent: pct, grade: passed ? (pct >= 80 ? 'A+' : pct >= 70 ? 'A' : pct >= 60 ? 'B+' : 'B') : 'F', gradePoint: passed ? Math.min(10, Math.round(pct / 10)) : 0, passed };
+      });
+    }), { returning: false });
+  }
+
   // ---- recruiter relationship ---------------------------------------------------------------------
   const companies = await k.q<{ id: string; name: string }>(`select id, name from placement_companies where tenant_id = $1 order by name`, [t]);
   if (!companies.length) return;

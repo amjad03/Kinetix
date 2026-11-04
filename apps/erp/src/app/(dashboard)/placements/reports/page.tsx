@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { LinkTabs } from '@/components/ui';
 import { getI18n } from '@/i18n/server';
-import { api, load, requireSection } from '@/lib/api';
+import { api, getMe, load, requireSection } from '@/lib/api';
 import type { ReportData, ReportList } from '@/lib/placements-depth';
 import { param } from '@/lib/procurement-server';
 
@@ -19,7 +19,9 @@ export async function generateMetadata(): Promise<Metadata> {
  * screen and as CSV or Excel.
  */
 export default async function PlacementReportsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  await requireSection('placements');
+  // The IQAC (quality officer) reads these tables for NAAC 5.2, NIRF and AISHE without the rest of the placement desk.
+  const me = await getMe().catch(() => null);
+  if (!me?.roles.includes('quality_officer')) await requireSection('placements');
   const sp = await searchParams;
   const { t } = await getI18n();
   const list = await load(() => api<ReportList>('/v1/placements/reports'));

@@ -37,7 +37,7 @@ export function DriveView({ d, company, regs, eligible, slots, offers, canEdit }
   type E = EligibleList['students'][number];
   const eligibleCols: Column<E>[] = [
     { id: 'student', header: t('ops.f.student'), rowHeader: true, sort: (s) => s.rollNo, cell: (s) => <>{s.fullName}<span className="block text-xs text-muted-foreground">{`${s.rollNo} · ${s.className}`}</span></> },
-    { id: 'cgpa', header: t('pl.col.cgpa'), align: 'right', sort: (s) => s.cgpa ?? 0, cell: (s) => (s.cgpa === null ? '—' : fmt.number(s.cgpa, { maximumFractionDigits: 2 })) },
+    { id: 'cgpa', header: t('pp.col.cgpa'), align: 'right', sort: (s) => s.cgpa ?? 0, cell: (s) => (s.cgpa === null ? '—' : fmt.number(s.cgpa, { maximumFractionDigits: 2 })) },
     { id: 'backlogs', header: t('pd.backlogs'), align: 'right', sort: (s) => s.backlogs, cell: (s) => s.backlogs },
     { id: 'batch', header: t('pd.batch'), hideBelow: 'md', cell: (s) => s.batchYear ?? '—' },
     { id: 'twelfth', header: t('pp.col.twelfth'), align: 'right', hideBelow: 'lg', sort: (s) => s.twelfthPct ?? 0, cell: (s) => (s.twelfthPct == null ? '—' : fmt.number(s.twelfthPct, { maximumFractionDigits: 2 })) },
@@ -60,7 +60,7 @@ export function DriveView({ d, company, regs, eligible, slots, offers, canEdit }
   ];
   const regCols: Column<Registration>[] = [
     { id: 'student', header: t('ops.f.student'), rowHeader: true, sort: (r) => r.rollNo, cell: (r) => <>{r.fullName}<span className="block text-xs text-muted-foreground">{r.rollNo}</span></> },
-    { id: 'cgpa', header: t('pl.col.cgpa'), align: 'right', cell: (r) => fmt.number(r.cgpaAt, { maximumFractionDigits: 2 }) },
+    { id: 'cgpa', header: t('pp.col.cgpa'), align: 'right', cell: (r) => fmt.number(r.cgpaAt, { maximumFractionDigits: 2 }) },
     { id: 'backlogs', header: t('pd.backlogs'), align: 'right', cell: (r) => r.backlogsAt },
     ...d.rounds.map((round): Column<Registration> => ({ id: round.id, header: round.name, hideBelow: 'md', cell: (r) => { const x = r.rounds.find((y) => y.roundId === round.id); return x ? <StatusPill tone={x.result === 'pass' ? 'success' : 'danger'}>{t(`pd.result.${x.result}`)}</StatusPill> : '—'; } })),
     { id: 'status', header: t('ops.f.status'), cell: (r) => <StatusPill tone={statusTone(r.status)}>{regStatus(r.status)}</StatusPill> },
