@@ -141,7 +141,10 @@ class AppState extends ChangeNotifier {
         }
       } on ApiException catch (e) {
         // Offline: stay on the sign-in screen but keep the token for the next attempt.
-        if (e.status == 401) await tokens.delete();
+        if (e.status == 401) {
+          await tokens.delete();
+          await refreshTokens.delete();
+        }
         api.token = null;
       }
     }
