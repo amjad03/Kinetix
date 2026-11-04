@@ -92,6 +92,13 @@ describe('Companies Act depreciation (Schedule II)', () => {
     // 5% residual over 5 years: 1 − 0.05^(1/5) = 45.07%.
     expect(scheduleIiWdvRate({ costPaise: 100_000_00, salvagePaise: 5_000_00, usefulLifeYears: 5 })).toBe(45.07);
   });
+
+  it('gives a donated (zero-cost) or lifeless asset no WDV rate, and no depreciation, instead of NaN', () => {
+    expect(scheduleIiWdvRate({ costPaise: 0, salvagePaise: 0, usefulLifeYears: 5 })).toBe(0);
+    expect(scheduleIiWdvRate({ costPaise: 10_000_00, salvagePaise: 500_00, usefulLifeYears: 0 })).toBe(0);
+    const y = companiesActSchedule({ costPaise: 0, salvagePaise: 0, usefulLifeYears: 5, method: 'wdv', wdvRatePct: null, putToUseOn: '2025-04-01' }, '2025-26');
+    expect(y.map((r) => r.depreciationPaise)).toEqual([0]);
+  });
 });
 
 describe('Income-tax Act depreciation (block of assets)', () => {

@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import type { Tx } from '../db/db.service.js';
+import { todayIn } from '../common/lht-kit.js';
 import { businessRules } from '../db/schema.js';
 import { ruleInForce } from './governance.logic.js';
 
@@ -7,7 +8,9 @@ import { ruleInForce } from './governance.logic.js';
  * Values from the approved, dated rule `domain/key` in the rule registry, or null when none is in force today.
  * Callers fall back to their own per-domain configuration when this is null.
  */
-export async function governedParams(tx: Tx, domain: string, key: string, today: string = new Date().toISOString().slice(0, 10)): Promise<Record<string, unknown> | null> {
+export async function governedParams(tx: Tx, domain: string, key: string, today?: string): Promise<Record<string, unknown> | null> {
+  // The institution's date (IST), not the UTC one: from midnight to 05:30 IST the UTC date is still yesterday.
+  today ??= await todayIn(tx, new Date());
   const rows = await tx.select().from(businessRules).where(and(eq(businessRules.domain, domain), eq(businessRules.key, key), eq(businessRules.status, 'approved')));
   return ruleInForce(rows, today)?.params ?? null;
 }

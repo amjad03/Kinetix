@@ -13,6 +13,7 @@ import { FacilitiesService, FACILITY_ROLES, isFacilityManager } from './faciliti
 import { TICKET_CATEGORIES } from './facilities.controller.js';
 import { STAFF_ROLES } from './inventory.controller.js';
 import { roomOptions } from './inventory.records.js';
+import { LOCAL_TODAY } from '../common/local-today-sql.js';
 
 /**
  * Facilities as record kit entities: the rooms, labs and halls master (capacity, bookable, facilities), facility
@@ -158,7 +159,7 @@ export class FacilitiesRecords implements OnModuleInit {
         filters: {
           status: { label: 'Status', options: BOOKING_STATUS, where: (v) => (BOOKING_STATUS.some((o) => o.value === v) ? eq(facilityBookings.status, v) : undefined) },
           room: { label: 'Room', options: roomOptions, where: (v) => uuidEq(facilityBookings.roomId, v) },
-          when: { label: 'When', options: opt([['upcoming', 'Upcoming'], ['today', 'Today'], ['past', 'Past']]), where: (v) => (v === 'upcoming' ? sql`${facilityBookings.onDate} >= current_date` : v === 'today' ? sql`${facilityBookings.onDate} = current_date` : v === 'past' ? sql`${facilityBookings.onDate} < current_date` : undefined) },
+          when: { label: 'When', options: opt([['upcoming', 'Upcoming'], ['today', 'Today'], ['past', 'Past']]), where: (v) => (v === 'upcoming' ? sql`${facilityBookings.onDate} >= ${LOCAL_TODAY}` : v === 'today' ? sql`${facilityBookings.onDate} = ${LOCAL_TODAY}` : v === 'past' ? sql`${facilityBookings.onDate} < ${LOCAL_TODAY}` : undefined) },
         },
         sorts: { date: facilityBookings.onDate, room: rooms.name, title: facilityBookings.title, created: facilityBookings.createdAt },
         defaultSort: { id: 'date', dir: 'asc' },

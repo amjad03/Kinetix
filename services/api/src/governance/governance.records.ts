@@ -3,15 +3,17 @@ import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { businessRules, documentRetentionPolicies, incidents } from '../db/schema.js';
 import { qualified } from '../campus-life/kit-shared.js';
+import { todayIn } from '../common/lht-kit.js';
 import { RecordRegistry, type CustomAction, type KitCtx, type RecordEntity } from '../records/entity.js';
 import { choices, kitEntity, parseParams, rowOf } from '../research/kit.js';
 import { GOVERNANCE_ROLES } from './governance.controller.js';
 import { INCIDENT_CATEGORIES, INCIDENT_SEVERITIES, RULE_DOMAINS, type IncidentStatus, type RuleDomain } from './governance.logic.js';
 import { GovernanceService } from './governance.service.js';
+import { LOCAL_TODAY } from '../common/local-today-sql.js';
 
 const RULE_STATUSES = ['draft', 'in_review', 'approved', 'retired'] as const;
 const INCIDENT_STATUSES = ['open', 'investigating', 'mitigated', 'resolved', 'closed'] as const;
-const today = () => new Date().toISOString().slice(0, 10);
+
 const Note = z.object({ note: z.string().trim().min(2, 'Write a note').max(2000) });
 const OptionalNote = z.object({ note: z.string().trim().max(2000).optional() });
 
@@ -76,11 +78,11 @@ export class GovernanceRecords implements OnModuleInit {
         params: sql<string>`${businessRules.params}::text`,
         authorName: sql<string | null>`(select u.full_name from users u where u.id = ${qualified('business_rules', 'author_id')})`,
         approverName: sql<string | null>`(select u.full_name from users u where u.id = ${qualified('business_rules', 'approver_id')})`,
-        inForce: sql<boolean>`${businessRules.status} = 'approved' and ${businessRules.effectiveFrom} <= current_date and (${businessRules.effectiveTo} is null or ${businessRules.effectiveTo} >= current_date)`,
+        inForce: sql<boolean>`${businessRules.status} = 'approved' and ${businessRules.effectiveFrom} <= ${LOCAL_TODAY} and (${businessRules.effectiveTo} is null or ${businessRules.effectiveTo} >= ${LOCAL_TODAY})`,
       },
       filters: {
         status: { label: 'Status', options: choices(RULE_STATUSES), where: (v) => ((RULE_STATUSES as readonly string[]).includes(v) ? eq(businessRules.status, v) : undefined) },
-        inForce: { label: 'In force today', options: choices(['yes']), where: (v) => (v === 'yes' ? sql`${businessRules.status} = 'approved' and ${businessRules.effectiveFrom} <= current_date and (${businessRules.effectiveTo} is null or ${businessRules.effectiveTo} >= current_date)` : undefined) },
+        inForce: { label: 'In force today', options: choices(['yes']), where: (v) => (v === 'yes' ? sql`${businessRules.status} = 'approved' and ${businessRules.effectiveFrom} <= ${LOCAL_TODAY} and (${businessRules.effectiveTo} is null or ${businessRules.effectiveTo} >= ${LOCAL_TODAY})` : undefined) },
       },
       sorts: { version: businessRules.version, status: businessRules.status },
       search: [businessRules.title, businessRules.key, businessRules.description],
@@ -108,7 +110,8 @@ export class GovernanceRecords implements OnModuleInit {
           label: 'New version',
           apply: async (ctx, id) => {
             const r = await rowOf(ctx, businessRules, id);
-            const row = await gov.draftRule(ctx.tx, ctx.p, { domain: r.domain as RuleDomain, key: String(r.key), title: String(r.title), description: String(r.description ?? ''), params: (r.params ?? {}) as Record<string, unknown>, effectiveFrom: today() > String(r.effective_from ?? r.effectiveFrom) ? today() : String(r.effective_from ?? r.effectiveFrom) });
+            const day = await todayIn(ctx.tx, new Date());
+            const row = await gov.draftRule(ctx.tx, ctx.p, { domain: r.domain as RuleDomain, key: String(r.key), title: String(r.title), description: String(r.description ?? ''), params: (r.params ?? {}) as Record<string, unknown>, effectiveFrom: day > String(r.effective_from ?? r.effectiveFrom) ? day : String(r.effective_from ?? r.effectiveFrom) });
             return `Draft v${row.version} started`;
           },
         },

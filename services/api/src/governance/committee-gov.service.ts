@@ -97,6 +97,7 @@ export class CommitteeGovService {
       present.map((a) => ({ memberId: a.memberId, role: a.role, canSign: a.hasAccount })),
       signoffs.filter((s) => s.current && s.valid).map((s) => ({ memberId: s.memberId, role: attendance.find((a) => a.memberId === s.memberId)?.role ?? 'member', decision: s.decision as 'approve' | 'object' })),
     );
+    const today = await this.today(tx);
     return {
       ...m,
       committee: c ? { id: c.id, name: c.name, kind: c.kind, quorumPct: c.quorumPct } : null,
@@ -105,7 +106,7 @@ export class CommitteeGovService {
       quorum: { members: onDay.length, needed, present: present.length, met: att.length ? present.length >= needed : null },
       signoffs,
       approval,
-      actions: acts.map((a) => ({ ...a.a, ownerName: a.owner, overdue: ['open', 'in_progress'].includes(a.a.status) && a.a.dueOn < this.now().toISOString().slice(0, 10) })),
+      actions: acts.map((a) => ({ ...a.a, ownerName: a.owner, overdue: ['open', 'in_progress'].includes(a.a.status) && a.a.dueOn < today })),
     };
   }
 

@@ -6,6 +6,7 @@ import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { Clock } from '../common/time.js';
+import { tenantToday } from '../common/tenant-today.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { hostelComplaints, hostelRooms, invItems, invPurchaseOrders, invStock, invStockMoves, invVendors, students } from '../db/schema.js';
@@ -69,7 +70,7 @@ export class HostelWorkOrdersController {
         .where(status ? eq(hostelWorkOrders.status, status) : undefined)
         .orderBy(desc(hostelWorkOrders.createdAt))
         .limit(300);
-      const today = this.clock.now().toISOString().slice(0, 10);
+      const today = await tenantToday(tx, this.clock);
       return rows.map((r) => ({ ...r.w, room: r.room, complaint: r.complaint, overdue: !!r.w.dueOn && r.w.dueOn < today && !['done', 'verified'].includes(r.w.status) }));
     });
   }
@@ -263,7 +264,7 @@ export class CanteenOpsController {
   @Auth('user')
   feedback(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(FeedbackBody)) b: z.infer<typeof FeedbackBody>) {
     return this.db.withTenant(p.tenantId, async (tx) => {
-      if (b.mealDate > this.clock.now().toISOString().slice(0, 10)) throw new BadRequestException('You can rate a meal only after it has been served');
+      if (b.mealDate > (await tenantToday(tx, this.clock))) throw new BadRequestException('You can rate a meal only after it has been served');
       // A parent may rate on behalf of a linked child; that child is stored, and each child has one rating per meal.
       if (b.studentId) await assertCanSeeStudent(tx, p, b.studentId, []);
       const [st] = b.studentId ? [{ id: b.studentId }] : await tx.select({ id: students.id }).from(students).where(eq(students.userId, p.userId));

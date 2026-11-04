@@ -19,6 +19,7 @@ import { ProcurementService } from './procurement.service.js';
 import { applyStockMove, ensureCategory } from './stock.js';
 import { GST_RATES, gstinProblem, hsnProblem, isGstRate } from './stores.logic.js';
 import { invIssueSlips, invWriteOffs } from '../db/schema-procurement.js';
+import { LOCAL_TODAY } from '../common/local-today-sql.js';
 
 /**
  * Stores, buying and assets as record kit entities (docs/requirements/RECORD_DEPTH_KIT.md): items, stores, categories,
@@ -434,7 +435,7 @@ export class InventoryRecords implements OnModuleInit {
         search: [invVendors.name, invItems.name, invItems.sku, invRateContracts.reference],
         filters: {
           vendor: { label: 'Vendor', options: vendorOptions, where: (v) => uuidEq(invRateContracts.vendorId, v) },
-          state: { label: 'Status', options: opt([['current', 'In force'], ['expired', 'Expired'], ['inactive', 'Stopped']]), where: (v) => (v === 'current' ? inForce : v === 'expired' ? sql`${invRateContracts.validTo} < current_date` : v === 'inactive' ? eq(invRateContracts.active, false) : undefined) },
+          state: { label: 'Status', options: opt([['current', 'In force'], ['expired', 'Expired'], ['inactive', 'Stopped']]), where: (v) => (v === 'current' ? inForce : v === 'expired' ? sql`${invRateContracts.validTo} < ${LOCAL_TODAY}` : v === 'inactive' ? eq(invRateContracts.active, false) : undefined) },
         },
         sorts: { vendor: invVendors.name, item: invItems.name, rate: invRateContracts.ratePaise, validTo: invRateContracts.validTo },
         defaultSort: { id: 'validTo', dir: 'desc' },
@@ -645,7 +646,7 @@ export class InventoryRecords implements OnModuleInit {
   // ---- gate register ------------------------------------------------------------------------------
 
   private gate(): RecordEntity {
-    const overdue = sql<boolean>`${invGateEntries.kind} = 'returnable' and ${invGateEntries.status} = 'open' and ${invGateEntries.expectedReturnOn} < current_date`;
+    const overdue = sql<boolean>`${invGateEntries.kind} = 'returnable' and ${invGateEntries.status} = 'open' and ${invGateEntries.expectedReturnOn} < ${LOCAL_TODAY}`;
     const settle = (to: 'returned' | 'closed') => async (ctx: KitCtx, id: string) => {
       const [g] = await ctx.tx.select().from(invGateEntries).where(eq(invGateEntries.id, id));
       if (!g || g.status !== 'open') throw new ConflictException('This entry is not open');
@@ -776,7 +777,7 @@ export class InventoryRecords implements OnModuleInit {
           status: { label: 'Status', options: ASSET_STATUS, where: (v) => (inList(ASSET_STATUS)(v) ? eq(assets.status, v) : undefined) },
           department: { label: 'Department', options: departmentOptions, where: (v) => uuidEq(assets.departmentId, v) },
           room: { label: 'Room', options: roomOptions, where: (v) => uuidEq(assets.roomId, v) },
-          warranty: { label: 'Warranty', options: opt([['under', 'Under warranty'], ['ending', 'Ends within 60 days'], ['none', 'No warranty']]), where: (v) => (v === 'under' ? sql`${assets.warrantyUntil} >= current_date` : v === 'ending' ? sql`${assets.warrantyUntil} between current_date and current_date + 60` : v === 'none' ? sql`(${assets.warrantyUntil} is null or ${assets.warrantyUntil} < current_date)` : undefined) },
+          warranty: { label: 'Warranty', options: opt([['under', 'Under warranty'], ['ending', 'Ends within 60 days'], ['none', 'No warranty']]), where: (v) => (v === 'under' ? sql`${assets.warrantyUntil} >= ${LOCAL_TODAY}` : v === 'ending' ? sql`${assets.warrantyUntil} between ${LOCAL_TODAY} and ${LOCAL_TODAY} + 60` : v === 'none' ? sql`(${assets.warrantyUntil} is null or ${assets.warrantyUntil} < ${LOCAL_TODAY})` : undefined) },
         },
         sorts: { tag: assets.tag, name: assets.name, category: assets.category, purchasedOn: assets.purchasedOn, cost: assets.costPaise, room: rooms.name, department: departments.name },
         defaultSort: { id: 'tag', dir: 'asc' },
@@ -923,7 +924,7 @@ export class InventoryRecords implements OnModuleInit {
   // ---- AMC contracts ------------------------------------------------------------------------------
 
   private amc(): RecordEntity {
-    const state = sql<string>`case when ${amcContracts.status} = 'cancelled' then 'cancelled' when ${amcContracts.endsOn} < current_date then 'expired' when ${amcContracts.endsOn} <= current_date + 60 then 'expiring' else 'active' end`;
+    const state = sql<string>`case when ${amcContracts.status} = 'cancelled' then 'cancelled' when ${amcContracts.endsOn} < ${LOCAL_TODAY} then 'expired' when ${amcContracts.endsOn} <= ${LOCAL_TODAY} + 60 then 'expiring' else 'active' end`;
     const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-10-15');
     return {
       key: 'amc-contracts',

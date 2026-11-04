@@ -341,7 +341,8 @@ export class HostelPassController {
         select (select count(*)::int from hostels) as hostels, (select count(*)::int from hostel_blocks) as blocks,
           (select count(*)::int from hostel_rooms where status <> 'closed') as rooms,
           (select count(*)::int from hostel_beds b join hostel_rooms r on r.id = b.room_id where r.status <> 'closed') as beds,
-          (select count(*)::int from hostel_allotments where vacated_on is null) as residents`)
+          (select count(*)::int from hostel_allotments a join hostel_beds b on b.id = a.bed_id join hostel_rooms r on r.id = b.room_id
+            where a.vacated_on is null and a.starts_on <= ${today}::date and r.status <> 'closed') as residents`)
       ).rows;
       const byCategory = await tx.execute<{ category: string; residents: number }>(sql`
         select coalesce((select ha.category from hostel_applications ha where ha.student_id = a.student_id order by ha.created_at desc limit 1), 'general') as category, count(*)::int as residents

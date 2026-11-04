@@ -18,7 +18,7 @@ import { SystemLookups } from '../db/system-lookups.service.js';
 import { GPS_ADAPTERS } from './gps-adapter.js';
 import { usersWithRoles } from '../common/lht-kit.js';
 import { transportRouteOverrides } from '../db/schema-lht.js';
-import { lateMinutes, offRouteM } from './transport-rules.js';
+import { lateMinutes, offRouteM, passValidUntil } from './transport-rules.js';
 import { TransportPassService } from './transport-pass.service.js';
 import { feeInvoices } from '../db/schema.js';
 import { transportBoardings } from '../db/schema-integrations.js';
@@ -536,7 +536,7 @@ export class TransportController {
         .from(feeInvoices)
         .where(and(eq(feeInvoices.studentId, studentId), sql`${feeInvoices.title} ilike 'transport%'`));
       const months = Number((await readSettings(tx, p.tenantId, 'transport')).rules.passValidMonths) || 12;
-      const passUntil = new Date(Date.parse(`${crew.starts_on}T00:00:00Z`) + months * 30.44 * 86_400_000).toISOString().slice(0, 10);
+      const passUntil = passValidUntil(String(crew.starts_on), months);
       return {
         assigned: true as const,
         ...a,

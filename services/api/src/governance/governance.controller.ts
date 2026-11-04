@@ -5,6 +5,7 @@ import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit, changesOf } from '../common/audit.js';
 import { Clock } from '../common/time.js';
+import { tenantToday } from '../common/tenant-today.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService } from '../db/db.service.js';
 import { businessRules, documentRetentionPolicies, incidents, incidentUpdates, users, vaultDocuments } from '../db/schema.js';
@@ -80,8 +81,8 @@ export class GovernanceController {
   @Get('rules/resolve')
   @Auth('user', TASK_ROLES)
   resolveRule(@CurrentPrincipal() p: UserPrincipal, @Query('domain') domain: string, @Query('key') key: string, @Query('on') on?: string) {
-    const day = on && iso.safeParse(on).success ? on : this.clock.now().toISOString().slice(0, 10);
     return this.db.withTenant(p.tenantId, async (tx) => {
+      const day = on && iso.safeParse(on).success ? on : await tenantToday(tx, this.clock);
       const rows = await tx.select().from(businessRules).where(and(eq(businessRules.domain, domain), eq(businessRules.key, key)));
       const hit = ruleInForce(rows, day);
       if (!hit) throw new NotFoundException(`No approved rule "${domain}/${key}" is in force on ${day}`);

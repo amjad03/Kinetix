@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cancelCredit, changeDelta, lateMinutes, monthsBetween, moveDelta, occupancyPct, offRouteM, overlappingSlabs, parsePassCode, routeSuggestions, seatDays, seatFee, slabFee, toSegmentM } from './transport-rules.js';
+import { cancelCredit, changeDelta, lateMinutes, monthsBetween, moveDelta, occupancyPct, offRouteM, overlappingSlabs, parsePassCode, passValidUntil, routeSuggestions, seatDays, seatFee, slabFee, toSegmentM } from './transport-rules.js';
 
 describe('transport rules', () => {
   it('charges a full month or the days ridden', () => {
@@ -93,5 +93,18 @@ describe('transport rules', () => {
     ]);
     // An over-full route and an under-used one whose vehicles fit each other's riders: swap them.
     expect(routeSuggestions([{ id: 'a', name: 'A', vehicleId: 'v1', regNo: 'V1', capacity: 17, riders: 20, stops: here }, { id: 'b', name: 'B', vehicleId: 'v2', regNo: 'V2', capacity: 52, riders: 12, stops: far }], [])).toEqual([{ kind: 'swap', routeId: 'a', withRouteId: 'b' }]);
+  });
+});
+
+describe('passValidUntil', () => {
+  it('runs whole calendar months to the day before the same date', () => {
+    expect(passValidUntil('2026-06-01', 12)).toBe('2027-05-31');
+    expect(passValidUntil('2026-06-15', 1)).toBe('2026-07-14');
+  });
+  it('clamps a month-end start to the shorter month, and handles leap years', () => {
+    expect(passValidUntil('2026-01-31', 1)).toBe('2026-02-28');
+    expect(passValidUntil('2027-12-31', 2)).toBe('2028-02-29');
+    expect(passValidUntil('2028-01-30', 1)).toBe('2028-02-29');
+    expect(passValidUntil('2026-01-28', 1)).toBe('2026-02-27');
   });
 });

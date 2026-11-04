@@ -54,6 +54,22 @@ export function moveDelta(month: string, fromPaise: number, toPaise: number, sta
 }
 
 /** The months from `fromMonth` through `toMonth` (both YYYY-MM), in order. */
+/**
+ * The last day a bus pass issued on `from` is valid for `months` calendar months: the day before the same date that
+ * many months on, clamped to the end of a shorter month (31 Jan + 1 month runs to 28 Feb, not 2 Mar).
+ */
+export function passValidUntil(from: string, months: number): string {
+  const [y, m, d] = from.split('-').map(Number);
+  const total = m - 1 + months;
+  const ty = y + Math.floor(total / 12);
+  const tm = (total % 12) + 1;
+  const dim = new Date(Date.UTC(ty, tm, 0)).getUTCDate();
+  const same = Date.UTC(ty, tm - 1, Math.min(d, dim));
+  // A start on the last days of a long month lands on the shorter month's end: that end is the last valid day.
+  const end = d > dim ? same : same - 86_400_000;
+  return new Date(end).toISOString().slice(0, 10);
+}
+
 export function monthsBetween(fromMonth: string, toMonth: string): string[] {
   const out: string[] = [];
   let [y, m] = fromMonth.split('-').map(Number);
