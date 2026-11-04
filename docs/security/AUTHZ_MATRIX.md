@@ -5,9 +5,9 @@ Regenerate: `cd services/api && UPDATE_AUTHZ=1 ./node_modules/.bin/vitest run te
 
 ## Summary
 
-- Routes: 2891
-- Public (no @Auth, no guard): 101 (all on the allow list below unless flagged)
-- Any signed-in user (no role list): 310; open to students and families, so each must scope to the caller
+- Routes: 2919
+- Public (no @Auth, no guard): 103 (all on the allow list below unless flagged)
+- Any signed-in user (no role list): 321; open to students and families, so each must scope to the caller
 - Flagged for review: 40
 
 Flags: `PUBLIC?` no @Auth and not on the public allow list; `BROAD` a write on a staff-sounding path open to students, families or any user; `OWNERSHIP?` an id in the path, open to non-staff, and no sign that the handler or its service reads the caller (each was reviewed: see *Reviewed* below and docs/security/SECURITY_AUDIT.md).
@@ -229,6 +229,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/admin/calendar` | principal, tenant_admin |  |
 | DELETE | `/v1/admin/calendar/:id` | principal, tenant_admin |  |
 | PUT | `/v1/admin/calendar/:id` | principal, tenant_admin |  |
+| GET | `/v1/admin/calendar/:id/rsvps` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/admin/calendar/publish` | principal, tenant_admin |  |
 | GET | `/v1/admin/classes` | hod, principal, tenant_admin |  |
 | GET | `/v1/admin/consents` | principal, tenant_admin |  |
@@ -601,11 +602,13 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/announcements/:id/recipients` | hod, principal, tenant_admin |  |
 | POST | `/v1/announcements/:id/remind` | hod, principal, tenant_admin |  |
 | POST | `/v1/announcements/:id/send` | hod, principal, tenant_admin |  |
+| GET | `/v1/announcements/audience-options` | hod, principal, tenant_admin |  |
 | GET | `/v1/announcements/inbox` | any signed-in user |  |
 | GET | `/v1/announcements/inbox/:id` | any signed-in user |  |
 | POST | `/v1/announcements/inbox/:id/ack` | any signed-in user |  |
 | GET | `/v1/announcements/inbox/:id/attachments/:attachmentId` | any signed-in user |  |
 | POST | `/v1/announcements/inbox/:id/read` | any signed-in user |  |
+| POST | `/v1/announcements/inbox/:id/vote` | any signed-in user |  |
 | GET | `/v1/announcements/people` | hod, principal, tenant_admin |  |
 | POST | `/v1/announcements/preview` | hod, principal, tenant_admin |  |
 | GET | `/v1/announcements/templates` | hod, principal, tenant_admin |  |
@@ -767,6 +770,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/broadcasts/:id/displayed` | device token; board token |  |
 | GET | `/v1/broadcasts/pending` | device token; board token |  |
 | GET | `/v1/calendar` | any signed-in user |  |
+| POST | `/v1/calendar/:id/rsvp` | any signed-in user |  |
 | GET | `/v1/campus-life/achievements` | guardian, hod, principal, student, teacher, tenant_admin |  |
 | GET | `/v1/campus-life/action-items` | any signed-in user |  |
 | POST | `/v1/campus-life/action-items/:actionId/status` | any signed-in user |  |
@@ -943,10 +947,23 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/comms/campaigns` | hod, principal, tenant_admin |  |
 | GET | `/v1/comms/campaigns/:id` | hod, principal, tenant_admin |  |
 | POST | `/v1/comms/campaigns/:id/cancel` | hod, principal, tenant_admin |  |
+| GET | `/v1/comms/channels` | principal, tenant_admin |  |
+| PUT | `/v1/comms/channels/:channel` | principal, tenant_admin |  |
+| GET | `/v1/comms/credits` | accountant, principal, tenant_admin |  |
+| POST | `/v1/comms/credits` | accountant, principal, tenant_admin |  |
+| GET | `/v1/comms/credits/ledger` | accountant, principal, tenant_admin |  |
+| GET | `/v1/comms/log` | hod, principal, tenant_admin |  |
+| GET | `/v1/comms/preferences` | any signed-in user |  |
+| PUT | `/v1/comms/preferences` | any signed-in user |  |
+| POST | `/v1/comms/preferences/record` | principal, tenant_admin |  |
+| GET | `/v1/comms/preferences/register` | principal, tenant_admin |  |
+| GET | `/v1/comms/reports/summary` | accountant, hod, principal, tenant_admin |  |
 | POST | `/v1/comms/run` | hod, principal, tenant_admin |  |
 | GET | `/v1/comms/templates` | hod, principal, tenant_admin |  |
 | POST | `/v1/comms/templates` | hod, principal, tenant_admin |  |
 | PUT | `/v1/comms/templates/:id` | hod, principal, tenant_admin |  |
+| GET | `/v1/comms/webhooks/:provider/:tenantId/:token` | PUBLIC |  |
+| POST | `/v1/comms/webhooks/:provider/:tenantId/:token` | PUBLIC |  |
 | GET | `/v1/connectors` | principal, tenant_admin |  |
 | POST | `/v1/connectors` | tenant_admin |  |
 | DELETE | `/v1/connectors/:id` | tenant_admin |  |
@@ -994,15 +1011,24 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/conversations` | any signed-in user |  |
 | POST | `/v1/conversations` | any signed-in user |  |
 | POST | `/v1/conversations/:id/assign` | any signed-in user |  |
+| POST | `/v1/conversations/:id/block` | any signed-in user |  |
+| POST | `/v1/conversations/:id/escalate` | any signed-in user |  |
 | GET | `/v1/conversations/:id/messages` | any signed-in user |  |
 | POST | `/v1/conversations/:id/messages` | any signed-in user |  |
 | GET | `/v1/conversations/:id/messages/:messageId/attachment` | any signed-in user |  |
+| POST | `/v1/conversations/:id/messages/:messageId/report` | any signed-in user |  |
 | POST | `/v1/conversations/:id/mute` | any signed-in user |  |
 | POST | `/v1/conversations/:id/read` | any signed-in user |  |
 | POST | `/v1/conversations/:id/status` | any signed-in user |  |
+| GET | `/v1/conversations/blocks` | any signed-in user |  |
+| POST | `/v1/conversations/blocks/:blockId/lift` | any signed-in user |  |
 | PUT | `/v1/conversations/class-teachers/:sectionId` | principal, tenant_admin |  |
 | GET | `/v1/conversations/contacts` | any signed-in user |  |
 | GET | `/v1/conversations/families/:studentId` | any signed-in user |  |
+| GET | `/v1/conversations/me/availability` | any signed-in user |  |
+| PUT | `/v1/conversations/me/availability` | any signed-in user |  |
+| GET | `/v1/conversations/moderation` | principal, tenant_admin |  |
+| POST | `/v1/conversations/moderation/:reportId` | principal, tenant_admin |  |
 | GET | `/v1/conversations/settings` | any signed-in user |  |
 | PUT | `/v1/conversations/settings` | principal, tenant_admin |  |
 | GET | `/v1/conversations/students` | any signed-in user |  |
@@ -2365,11 +2391,13 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/ptm/events/:id/close` | principal, tenant_admin |  |
 | GET | `/v1/ptm/events/:id/my-schedule` | hod, principal, teacher |  |
 | POST | `/v1/ptm/events/:id/remind` | hod, principal, principal, teacher, tenant_admin |  |
+| GET | `/v1/ptm/events/:id/report` | principal, tenant_admin |  |
 | GET | `/v1/ptm/events/:id/slots` | guardian, hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/ptm/events/:id/slots` | hod, principal, principal, teacher, tenant_admin |  |
 | GET | `/v1/ptm/my-bookings` | guardian |  |
 | POST | `/v1/ptm/slots/:id/book` | guardian |  |
 | POST | `/v1/ptm/slots/:id/cancel` | guardian, hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/ptm/slots/:id/minutes` | hod, principal, principal, teacher, tenant_admin |  |
 | POST | `/v1/ptm/slots/:id/reschedule` | guardian |  |
 | POST | `/v1/public/admissions/:slug/applicant-login` | PUBLIC |  |
 | GET | `/v1/public/admissions/:slug/applications/:appId/allotments` | PUBLIC |  |
