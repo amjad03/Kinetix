@@ -55,4 +55,4 @@ Closed in this pass: FEE-1, HR-1, HR-2.
 ## Tests run
 
 - `src/hr/payroll-math.spec.ts`: the two new tests failed before the fix and pass after it. All HR unit specs (`src/hr/`) passed.
-- `test/fees-gateways.e2e.spec.ts`: all five gateway flows passed with the fix. The new concurrent-refund assertion is in the Razorpay case. Its failing run against the old code was stopped by the hard stop, so the before/after comparison was not completed.
+- `test/fees-gateways.e2e.spec.ts`: in a run with the fix, the concurrent-refund assertion sat in the shared helper and passed in all five gateway flows. Cashfree and CCAvenue then failed their own later "last refund" checks, because the extra refund changed which refund was last. I moved the assertion into the Razorpay case alone and fixed a duplicate `const co` that this introduced (commit `263aed0`). **That final version has not been run**: my last run waited 400 s on the shared heavy lock and never started. The run against the old code (to show it fails there) was also stopped. Rerun the file before merging.
