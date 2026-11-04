@@ -85,6 +85,15 @@ class FakeParentApi implements ParentApi {
   List<LmsCourseSummary> lmsCourseList = const [LmsCourseSummary(courseId: 'c1', title: 'Mathematics 7 B', subject: 'Mathematics', moduleCount: 2, overall: 82, letter: 'A')];
   ApiException? lmsError;
 
+  ChildLmsSummary lmsSummaryResult = ChildLmsSummary(courses: [ChildCourseProgress(courseId: 'c1', completionPct: 40, itemsDone: 4, itemsTotal: 10, lastActiveAt: DateTime(2026, 10, 20), overdue: 2, liveHeld: 2, liveJoined: 0, riskLevel: 'high', reasons: const ['inactive', 'overdue', 'missed_live'])], certificates: 1);
+
+  @override
+  Future<ChildLmsSummary> lmsSummary(String childId) async {
+    calls.add('lmsSummary $childId');
+    if (lmsError != null) throw lmsError!;
+    return lmsSummaryResult;
+  }
+
   @override
   Future<List<LmsCourseSummary>> lmsCourses(String childId) async {
     calls.add('lmsCourses $childId');

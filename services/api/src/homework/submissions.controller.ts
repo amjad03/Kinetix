@@ -30,6 +30,8 @@ import { guardians, homework, homeworkSubmissions, students, subjects, type Subm
 import { homeworkExtensions, homeworkGroups } from '../db/schema-life.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { handInVerdict, type HandInPolicy } from './assignment-rules.js';
+import { plagiarismHook } from './plagiarism-hook.js';
+import { EventBus } from '../events/events.js';
 import { UploadScanService } from '../scanning/upload-scan.js';
 import { ObjectStorage } from '../storage/storage.service.js';
 import { addDays, isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
@@ -64,6 +66,7 @@ export class SubmissionsController {
     private readonly scans: UploadScanService,
     private readonly notifications: NotificationsService,
     private readonly clock: Clock,
+    private readonly events: EventBus,
   ) {}
 
   /**
@@ -138,6 +141,7 @@ export class SubmissionsController {
           .onConflictDoUpdate({ target: [homeworkSubmissions.homeworkId, homeworkSubmissions.studentId], set: v });
       }
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'homework.submitted', subjectType: 'homework', subjectId: id, data: { studentId, files: files.length, late: hw.verdict.late, attempt: hw.verdict.attempt, ...(hw.groupMates.length ? { group: hw.groupMates } : {}) } });
+      await plagiarismHook(tx, { events: this.events, notifications: this.notifications }, { tenantId: p.tenantId, homeworkId: id, studentId, text, groupMates: hw.groupMates });
       return this.one(tx, id, studentId, hw.dueEnd);
     });
   }
@@ -183,6 +187,8 @@ export class SubmissionsController {
           marks: homeworkSubmissions.marks,
           penaltyPct: homeworkSubmissions.penaltyPct,
           attempts: homeworkSubmissions.attempts,
+          similarityPct: homeworkSubmissions.similarityPct,
+          rubricSelections: homeworkSubmissions.rubricSelections,
         })
         .from(students)
         .leftJoin(homeworkSubmissions, and(eq(homeworkSubmissions.studentId, students.id), eq(homeworkSubmissions.homeworkId, id)))

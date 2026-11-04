@@ -94,7 +94,7 @@ class LearnTabState extends State<LearnTab> with SingleTickerProviderStateMixin 
           SyllabusView(study: widget.study, ask: ask),
           LabsView(student: widget.study.student),
           CodeLabView(api: widget.study.api),
-          CoursesView(api: widget.study.api, studentId: widget.study.student.id),
+          CoursesView(api: widget.study.api, studentId: widget.study.student.id, prefs: widget.state.prefs),
         ],
       ),
     );

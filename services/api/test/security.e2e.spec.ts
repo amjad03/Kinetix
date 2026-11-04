@@ -90,9 +90,9 @@ describe('security controls', () => {
     const dev = loadEnv();
     expect(productionProblems(dev)).toEqual([]);
     const prod = { ...dev, DEPLOYMENT: 'production' as const, SMS_PROVIDER: 'console' as const, PAYMENTS_PROVIDER: 'demo' as const, RAZORPAY_FAKE: true, METRICS_TOKEN: undefined, CORS_ORIGINS: [], MFA_ENFORCED_ROLES: [] };
-    expect(productionProblems(prod).join('\n')).toMatch(/JWT_SECRET[\s\S]*FAKE[\s\S]*demo[\s\S]*console[\s\S]*METRICS_TOKEN[\s\S]*CORS_ORIGINS[\s\S]*MFA_ENFORCED_ROLES/);
+    expect(productionProblems(prod).join('\n')).toMatch(/JWT_SECRET[\s\S]*FAKE[\s\S]*demo[\s\S]*console[\s\S]*METRICS_TOKEN[\s\S]*CORS_ORIGINS[\s\S]*SCORM_CONTENT_ORIGIN[\s\S]*MFA_ENFORCED_ROLES/);
     expect(() => loadEnv({ ...process.env, DEPLOYMENT: 'production' })).toThrow(/DEPLOYMENT=production/);
-    const ok = { ...dev, DEPLOYMENT: 'production' as const, JWT_SECRET: 'x'.repeat(40), SMS_PROVIDER: 'msg91' as const, PAYMENTS_PROVIDER: 'razorpay' as const, METRICS_TOKEN: 'm'.repeat(30), CORS_ORIGINS: ['https://erp.example.in'], MFA_ENFORCED_ROLES: ['tenant_admin', 'principal'] };
+    const ok = { ...dev, DEPLOYMENT: 'production' as const, JWT_SECRET: 'x'.repeat(40), SMS_PROVIDER: 'msg91' as const, PAYMENTS_PROVIDER: 'razorpay' as const, METRICS_TOKEN: 'm'.repeat(30), CORS_ORIGINS: ['https://erp.example.in'], MFA_ENFORCED_ROLES: ['tenant_admin', 'principal'], SCORM_CONTENT_ORIGIN: 'https://content.example-usercontent.in' };
     expect(productionProblems(ok)).toEqual([]);
   });
 

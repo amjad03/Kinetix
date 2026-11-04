@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, inArray, isNotNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
+import { lmsQuizAttempts, lmsQuizzes } from '../db/schema-life.js';
 import type { UserPrincipal } from '../auth/principal.js';
 import type { Tx } from '../db/db.service.js';
 import { assessments, departments, guardians, homework, homeworkSubmissions, lmsCourses, lmsGradeCategories, lmsGradeOverrides, marks, students, subjects, timetableSlots } from '../db/schema.js';
@@ -31,6 +32,17 @@ export class LmsService {
     return !!slot;
   }
 
+  /** The rows (courses, quizzes) the person manages, checked in three queries for the whole list instead of one per row. */
+  async manageable<T extends { sectionId: string; subjectId: string }>(tx: Tx, p: UserPrincipal, rows: T[]): Promise<T[]> {
+    if (p.roles.some((r) => r === 'principal' || r === 'tenant_admin')) return rows;
+    if (!p.roles.some((r) => r === 'teacher' || r === 'hod') || !rows.length) return [];
+    const headed = p.roles.includes('hod')
+      ? new Set((await tx.select({ id: subjects.id }).from(subjects).innerJoin(departments, eq(departments.id, subjects.departmentId)).where(eq(departments.headUserId, p.userId))).map((s) => s.id))
+      : new Set<string>();
+    const slots = new Set((await tx.selectDistinct({ sectionId: timetableSlots.sectionId, subjectId: timetableSlots.subjectId }).from(timetableSlots).where(eq(timetableSlots.teacherId, p.userId))).map((s) => `${s.sectionId}:${s.subjectId}`));
+    return rows.filter((r) => headed.has(r.subjectId) || slots.has(`${r.sectionId}:${r.subjectId}`));
+  }
+
   async assertManage(tx: Tx, p: UserPrincipal, c: { sectionId: string; subjectId: string }): Promise<void> {
     if (!(await this.canManage(tx, p, c))) throw new ForbiddenException('You do not teach this course');
   }
@@ -54,11 +66,24 @@ export class LmsService {
     const markRows = ass.length && ids.length ? await tx.select().from(marks).where(and(inArray(marks.assessmentId, ass.map((a) => a.id)), inArray(marks.studentId, ids))) : [];
     const hw = await tx.select({ id: homework.id }).from(homework).where(and(eq(homework.sectionId, c.sectionId), eq(homework.subjectId, c.subjectId)));
     const subs = hw.length && ids.length ? await tx.select({ studentId: homeworkSubmissions.studentId }).from(homeworkSubmissions).where(and(inArray(homeworkSubmissions.homeworkId, hw.map((h) => h.id)), inArray(homeworkSubmissions.studentId, ids))) : [];
+    // Quizzes: each student's best submitted attempt per quiz of this class and subject (published or closed).
+    const quizRows = cats.some((x) => x.source === 'quiz') && ids.length
+      ? await tx
+          .select({ quizId: lmsQuizAttempts.quizId, studentId: lmsQuizAttempts.studentId, score: sql<number>`max(${lmsQuizAttempts.score})::float8`, max: sql<number>`max(${lmsQuizAttempts.maxScore})::float8` })
+          .from(lmsQuizAttempts)
+          .innerJoin(lmsQuizzes, eq(lmsQuizzes.id, lmsQuizAttempts.quizId))
+          .where(and(eq(lmsQuizzes.sectionId, c.sectionId), eq(lmsQuizzes.subjectId, c.subjectId), inArray(lmsQuizAttempts.studentId, ids), isNotNull(lmsQuizAttempts.submittedAt), opts.publishedOnly ? eq(lmsQuizAttempts.needsMarking, false) : undefined))
+          .groupBy(lmsQuizAttempts.quizId, lmsQuizAttempts.studentId)
+      : [];
     const ovr = cats.length && ids.length ? await tx.select().from(lmsGradeOverrides).where(and(inArray(lmsGradeOverrides.categoryId, cats.map((x) => x.id)), inArray(lmsGradeOverrides.studentId, ids))) : [];
     const rows: GradeRow[] = roster.map((s) => {
       const cells: GradeCell[] = cats.map((cat) => {
         const o = ovr.find((x) => x.categoryId === cat.id && x.studentId === s.id);
         if (o) return { categoryId: cat.id, percent: o.percent, overridden: true };
+        if (cat.source === 'quiz') {
+          const mine = quizRows.filter((x) => x.studentId === s.id && x.max > 0);
+          return { categoryId: cat.id, percent: mine.length ? percentOf(mine.reduce((t, x) => t + Math.max(0, x.score), 0), mine.reduce((t, x) => t + x.max, 0)) : null, overridden: false };
+        }
         if (cat.source === 'homework') return { categoryId: cat.id, percent: hw.length ? percentOf(subs.filter((x) => x.studentId === s.id).length, hw.length) : null, overridden: false };
         let earned = 0;
         let max = 0;

@@ -7,10 +7,25 @@ import { audit } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
 import { DbService, type Tx } from '../db/db.service.js';
 import { assessments, homework, homeworkSubmissions, marks, students, subjects } from '../db/schema.js';
-import { rubrics } from '../db/schema-g1.js';
+import { rubrics, rubricScores } from '../db/schema-g1.js';
 import { homeworkExtensions, homeworkGroups } from '../db/schema-life.js';
 import { isSchoolAdmin, TeacherService } from '../teacher/teacher.service.js';
 import { markAfterPenalty } from './assignment-rules.js';
+
+/** Rubric points to marks: the chosen level of each criterion, scaled to the assignment's maximum. */
+export function rubricMarks(criteria: { name: string; levels: { points: number }[] }[], selections: number[], maxMarks: number): { total: number; maxTotal: number; marks: number } {
+  if (selections.length !== criteria.length) throw new BadRequestException(`Choose a level for each of the ${criteria.length} criteria`);
+  let total = 0;
+  let maxTotal = 0;
+  criteria.forEach((c, i) => {
+    const lvl = c.levels[selections[i]];
+    if (!lvl) throw new BadRequestException(`"${c.name}" has no level ${selections[i] + 1}`);
+    total += Number(lvl.points);
+    maxTotal += Math.max(...c.levels.map((l) => Number(l.points)));
+  });
+  if (maxTotal <= 0) throw new BadRequestException('The rubric gives no points');
+  return { total, maxTotal, marks: Math.round((total / maxTotal) * maxMarks * 100) / 100 };
+}
 
 const Day = z.iso.date();
 const SettingsBody = z.object({
@@ -24,6 +39,7 @@ const SettingsBody = z.object({
 });
 const ExtensionBody = z.object({ dueOn: Day, reason: z.string().trim().max(300).default('') });
 const GroupsBody = z.object({ groups: z.array(z.object({ name: z.string().trim().min(1).max(80), studentIds: z.array(z.uuid()).min(1).max(20) })).max(100) });
+const RubricMarkBody = z.object({ studentId: z.uuid(), selections: z.array(z.number().int().min(0).max(20)).min(1).max(30) });
 const MarksBody = z.object({ entries: z.array(z.object({ studentId: z.uuid(), marks: z.number().min(0).max(1000).nullable() })).min(1).max(500) });
 
 /**
@@ -141,6 +157,42 @@ export class AssignmentDepthController {
       }
       await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'homework.marked', subjectType: 'homework', subjectId: id, data: { students: out.length } });
       return out;
+    });
+  }
+
+  /** The assignment's rubric (criteria and levels) and each student's chosen levels, for marking by rubric. */
+  @Get('homework/:id/rubric')
+  @Auth('user')
+  rubric(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const hw = await this.staff(tx, p, id);
+      if (!hw.rubricId) throw new NotFoundException('This assignment has no rubric');
+      const [r] = await tx.select().from(rubrics).where(eq(rubrics.id, hw.rubricId));
+      if (!r) throw new NotFoundException('Rubric not found');
+      const subs = await tx.select({ studentId: homeworkSubmissions.studentId, selections: homeworkSubmissions.rubricSelections, marks: homeworkSubmissions.marks }).from(homeworkSubmissions).where(eq(homeworkSubmissions.homeworkId, id));
+      return { rubricId: r.id, name: r.name, criteria: r.criteria, maxMarks: hw.maxMarks, students: subs };
+    });
+  }
+
+  /** Marks one hand-in by the rubric: the levels give points, scaled to the maximum marks, less any late penalty. */
+  @Put('homework/:id/rubric-marks')
+  @Auth('user')
+  rubricMark(@CurrentPrincipal() p: UserPrincipal, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodBody(RubricMarkBody)) b: z.infer<typeof RubricMarkBody>) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const hw = await this.staff(tx, p, id);
+      if (!hw.rubricId) throw new ConflictException('Choose a rubric for this assignment first');
+      if (!hw.maxMarks) throw new ConflictException('Set the maximum marks first');
+      const [r] = await tx.select().from(rubrics).where(eq(rubrics.id, hw.rubricId));
+      if (!r) throw new NotFoundException('Rubric not found');
+      const [sub] = await tx.select().from(homeworkSubmissions).where(and(eq(homeworkSubmissions.homeworkId, id), eq(homeworkSubmissions.studentId, b.studentId)));
+      if (!sub) throw new ConflictException('Marks go only to students who handed in');
+      const out = rubricMarks(r.criteria, b.selections, hw.maxMarks);
+      const value = markAfterPenalty(out.marks, hw.maxMarks, sub.penaltyPct);
+      await tx.update(homeworkSubmissions).set({ marks: value, rubricSelections: b.selections }).where(and(eq(homeworkSubmissions.homeworkId, id), eq(homeworkSubmissions.studentId, b.studentId)));
+      await tx.delete(rubricScores).where(and(eq(rubricScores.rubricId, r.id), eq(rubricScores.studentId, b.studentId), eq(rubricScores.contextKind, 'homework'), eq(rubricScores.contextId, id)));
+      await tx.insert(rubricScores).values({ tenantId: p.tenantId, rubricId: r.id, studentId: b.studentId, contextKind: 'homework', contextId: id, selections: b.selections, total: out.total, maxTotal: out.maxTotal, scoredBy: p.userId });
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'homework.rubric_marked', subjectType: 'homework', subjectId: id, before: { marks: sub.marks }, after: { marks: value }, data: { studentId: b.studentId, selections: b.selections, points: out.total, of: out.maxTotal } });
+      return { studentId: b.studentId, points: out.total, maxPoints: out.maxTotal, marks: value, penaltyPct: sub.penaltyPct };
     });
   }
 

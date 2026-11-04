@@ -12,6 +12,10 @@ import { assessments, conceptVideos, homework, lmsAnnouncements, lmsCourses, lms
 import { worksheets } from '../db/schema-g1.js';
 import { lmsItemProgress } from '../db/schema-life.js';
 import { itemAccess } from './lms-access.js';
+import { completionOf, courseCompletions, openPrerequisites } from './lms-completion.js';
+import { scormPackages } from '../db/schema-integrations.js';
+import { lmsLiveSessions } from '../db/schema-lms.js';
+import { lmsQuizzes } from '../db/schema-life.js';
 import { csv } from '../hr/exports.js';
 import { LMS_STAFF, LmsService } from './lms.service.js';
 import { naturalAsc } from '../common/natural-order.js';
@@ -19,15 +23,28 @@ import { naturalAsc } from '../common/natural-order.js';
 const CourseBody = z.object({ sectionId: z.uuid(), subjectId: z.uuid(), title: z.string().trim().min(1).max(120).optional(), description: z.string().trim().max(1000).default('') });
 const CoursePatch = z.object({ title: z.string().trim().min(1).max(120).optional(), description: z.string().trim().max(1000).optional(), status: z.enum(['draft', 'published']).optional() });
 const ModuleBody = z.object({ title: z.string().trim().min(1).max(120) });
+export const ITEM_KINDS = ['topic', 'video', 'homework', 'assessment', 'file', 'link', 'worksheet', 'case_study', 'simulation', 'virtual_lab', 'ppt', 'pdf', 'page', 'scorm', 'quiz', 'live'] as const;
+/** Web addresses only (no javascript: or data: links in course content). */
+const WebUrl = z.url().max(500).refine((u) => /^https?:\/\//i.test(u), 'Use a web address (https://)');
+export const ItemFields = {
+  /** A lesson page's text (Markdown-like plain text). */
+  body: z.string().max(50_000).optional(),
+  completionRule: z.enum(['view', 'mark_done', 'pass']).optional(),
+  passPct: z.number().int().min(0).max(100).nullable().optional(),
+  durationMin: z.number().int().min(0).max(1000).nullable().optional(),
+  sizeKb: z.number().int().min(0).max(5_000_000).nullable().optional(),
+  offline: z.boolean().optional(),
+};
 const ItemBody = z.object({
-  kind: z.enum(['topic', 'video', 'homework', 'assessment', 'file', 'link', 'worksheet', 'case_study', 'simulation', 'virtual_lab', 'ppt', 'pdf']),
+  kind: z.enum(ITEM_KINDS),
   title: z.string().trim().min(1).max(160),
   refId: z.uuid().optional(),
-  url: z.url().max(500).optional(),
+  url: WebUrl.optional(),
+  ...ItemFields,
 });
 const AnnounceBody = z.object({ title: z.string().trim().min(1).max(120), body: z.string().trim().max(2000).default('') });
 const CategoriesBody = z.object({
-  categories: z.array(z.object({ name: z.string().trim().min(1).max(60), source: z.enum(['homework', 'test', 'assignment', 'internal', 'exam', 'practical']), weight: z.number().gt(0).max(100) })).min(1).max(10),
+  categories: z.array(z.object({ name: z.string().trim().min(1).max(60), source: z.enum(['homework', 'test', 'assignment', 'internal', 'exam', 'practical', 'quiz']), weight: z.number().gt(0).max(100) })).min(1).max(10),
 });
 const OverrideBody = z.object({ studentId: z.uuid(), categoryId: z.uuid(), percent: z.number().min(0).max(100).nullable(), reason: z.string().trim().min(3).max(300) });
 
@@ -70,10 +87,19 @@ export class LmsController {
         .innerJoin(subjects, eq(subjects.id, lmsCourses.subjectId))
         .innerJoin(sections, eq(sections.id, lmsCourses.sectionId))
         .where(sectionId ? eq(lmsCourses.sectionId, z.uuid().parse(sectionId)) : undefined)
-        .orderBy(...naturalAsc(sections.displayName), asc(subjects.name));
-      const out = [];
-      for (const r of rows) if (await this.lms.canManage(tx, p, r.c)) out.push({ ...r.c, subject: r.subject, section: r.section });
-      return out;
+        .orderBy(...naturalAsc(sections.displayName), asc(subjects.name))
+        .limit(2000);
+      const mine = await this.lms.manageable(tx, p, rows.map((r) => ({ ...r.c, subject: r.subject, section: r.section })));
+      if (!mine.length) return [];
+      // Content and engagement at a glance: items, students who opened something in the last 7 days.
+      const counts = await tx.execute<{ course_id: string; items: number; active: number }>(sql`
+        select m.course_id, count(distinct i.id)::int as items,
+               count(distinct p.student_id) filter (where p.last_viewed_at > now() - interval '7 days')::int as active
+        from lms_modules m left join lms_items i on i.module_id = m.id left join lms_item_progress p on p.item_id = i.id
+        where m.course_id in (${sql.join(mine.map((c) => sql`${c.id}::uuid`), sql`, `)})
+        group by m.course_id`);
+      const by = new Map(counts.rows.map((r) => [r.course_id, r]));
+      return mine.map((c) => ({ ...c, items: by.get(c.id)?.items ?? 0, activeLearners: by.get(c.id)?.active ?? 0 }));
     });
   }
 
@@ -95,7 +121,8 @@ export class LmsController {
         for (const { c, subject } of courses) {
           const [mods] = await tx.select({ n: count() }).from(lmsModules).where(eq(lmsModules.courseId, c.id));
           const g = (await this.lms.gradebook(tx, c, { publishedOnly: true, studentIds: [s.id] })).rows[0];
-          out.push({ studentId: s.id, studentName: s.fullName, courseId: c.id, title: c.title, subject, moduleCount: mods.n, overall: g?.overall ?? null, letter: g?.letter ?? null });
+          const done = (await courseCompletions(tx, this.lms, c, [s.id], new Date())).get(s.id);
+          out.push({ studentId: s.id, studentName: s.fullName, courseId: c.id, title: c.title, subject, moduleCount: mods.n, overall: g?.overall ?? null, letter: g?.letter ?? null, completionPct: done?.pct ?? 0, itemsDone: done?.done ?? 0, itemsTotal: done?.total ?? 0, certificate: c.certificate });
         }
       }
       return out;
@@ -121,20 +148,26 @@ export class LmsController {
       const all = mods.length ? await tx.select().from(lmsItems).where(inArray(lmsItems.moduleId, mods.map((m) => m.id))).orderBy(asc(lmsItems.position)) : [];
       // Students and families see what is released for them; an item behind a prerequisite shows as locked.
       let items: (typeof all[number] & { locked?: boolean; completed?: boolean })[] = all;
+      let completion = null;
+      let prerequisites: { id: string; title: string }[] = [];
       if (viewer) {
         const done = await tx.select({ itemId: lmsItemProgress.itemId, completedAt: lmsItemProgress.completedAt }).from(lmsItemProgress).where(and(eq(lmsItemProgress.studentId, viewer), inArray(lmsItemProgress.itemId, all.length ? all.map((i) => i.id) : [id])));
         const completed = new Set(done.filter((d) => d.completedAt).map((d) => d.itemId));
         const now = new Date();
+        // A course that asks for other courses first shows its content locked until they are complete.
+        prerequisites = await openPrerequisites(tx, this.lms, c, viewer, now);
         items = all.flatMap((i) => {
           const a = itemAccess(i, viewer!, now, completed);
           if (!a.visible) return [];
+          const locked = a.locked || prerequisites.length > 0;
           const { audienceStudentIds: _audience, ...rest } = i;
-          return [{ ...rest, audienceStudentIds: null, locked: a.locked, completed: completed.has(i.id), ...(a.locked ? { url: null, refId: null } : {}) }];
+          return [{ ...rest, audienceStudentIds: null, locked, completed: completed.has(i.id), ...(locked ? { url: null, refId: null, body: '' } : {}) }];
         });
+        completion = completionOf(all, viewer, now, completed, grade?.overall ?? null, { completionPct: c.completionPct, minGradePct: c.minGradePct });
       }
       const announcements = await tx.select().from(lmsAnnouncements).where(eq(lmsAnnouncements.courseId, id)).orderBy(desc(lmsAnnouncements.createdAt)).limit(20);
       const [meta] = await tx.select({ subject: subjects.name, section: sections.displayName }).from(subjects).innerJoin(sections, eq(sections.id, c.sectionId)).where(eq(subjects.id, c.subjectId));
-      return { ...c, ...meta, canManage: manage, grade, modules: mods.map((m) => ({ ...m, items: items.filter((i) => i.moduleId === m.id) })), announcements };
+      return { ...c, ...meta, canManage: manage, grade, completion, prerequisites, modules: mods.map((m) => ({ ...m, items: items.filter((i) => i.moduleId === m.id) })), announcements };
     });
   }
 
@@ -184,7 +217,11 @@ export class LmsController {
       await this.lms.assertManage(tx, p, c);
       await this.checkRef(tx, c, b);
       const [mx] = await tx.select({ n: max(lmsItems.position) }).from(lmsItems).where(eq(lmsItems.moduleId, id));
-      const [row] = await tx.insert(lmsItems).values({ tenantId: p.tenantId, moduleId: id, position: (mx?.n ?? 0) + 1, kind: b.kind, title: b.title, refId: b.refId ?? null, url: b.url ?? null }).returning();
+      const [row] = await tx
+        .insert(lmsItems)
+        .values({ tenantId: p.tenantId, moduleId: id, position: (mx?.n ?? 0) + 1, kind: b.kind, title: b.title, refId: b.refId ?? null, url: b.url ?? null, body: b.body ?? '', completionRule: b.completionRule ?? (b.kind === 'quiz' || b.kind === 'scorm' ? 'pass' : 'view'), passPct: b.passPct ?? null, durationMin: b.durationMin ?? null, sizeKb: b.sizeKb ?? null, offline: b.offline ?? !['live', 'scorm', 'simulation', 'virtual_lab'].includes(b.kind) })
+        .returning();
+      await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: 'lms.item_added', subjectType: 'lms_course', subjectId: c.id, data: { itemId: row.id, kind: b.kind, title: b.title } });
       return row;
     });
   }
@@ -267,7 +304,22 @@ export class LmsController {
   }
 
   /** Content items must point at something that exists (and, for homework and assessments, in this class); files and links need a URL. */
-  private async checkRef(tx: Tx, c: { sectionId: string; subjectId: string }, b: z.infer<typeof ItemBody>) {
+  private async checkRef(tx: Tx, c: { id: string; sectionId: string; subjectId: string }, b: z.infer<typeof ItemBody>) {
+    if (b.kind === 'page') {
+      if (!b.body?.trim()) throw new BadRequestException('Write the lesson text');
+      return;
+    }
+    if (b.kind === 'scorm' || b.kind === 'quiz' || b.kind === 'live') {
+      if (!b.refId) throw new BadRequestException('Choose the content to link');
+      const ok =
+        b.kind === 'scorm'
+          ? (await tx.select({ id: scormPackages.id }).from(scormPackages).where(eq(scormPackages.id, b.refId)))[0]
+          : b.kind === 'quiz'
+            ? (await tx.select({ id: lmsQuizzes.id }).from(lmsQuizzes).where(and(eq(lmsQuizzes.id, b.refId), eq(lmsQuizzes.sectionId, c.sectionId), eq(lmsQuizzes.subjectId, c.subjectId))))[0]
+            : (await tx.select({ id: lmsLiveSessions.id }).from(lmsLiveSessions).where(and(eq(lmsLiveSessions.id, b.refId), eq(lmsLiveSessions.courseId, c.id))))[0];
+      if (!ok) throw new BadRequestException('That content was not found for this class');
+      return;
+    }
     if (['file', 'link', 'simulation', 'virtual_lab', 'ppt', 'pdf'].includes(b.kind)) {
       if (!b.url) throw new BadRequestException('Add the address of the file or link');
       return;

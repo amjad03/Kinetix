@@ -59,6 +59,8 @@ locals {
       # prod: the API refuses to start with test-only settings (services/api/src/config/env.ts productionProblems).
       DEPLOYMENT         = var.environment == "prod" ? "production" : "staging"
       CORS_ORIGINS       = "https://${var.erp_domain}"
+      # SCORM and cmi5 packages are served only from this origin, sandboxed (integrations/scorm.controller.ts).
+      SCORM_CONTENT_ORIGIN = "https://${var.content_domain}"
       MFA_ENFORCED_ROLES = "tenant_admin,principal,accountant,hr_manager,exam_controller"
     },
     # Traces to an OTLP/HTTP collector (docs/operations/observability.md); unset = no tracing.

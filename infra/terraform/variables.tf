@@ -64,8 +64,13 @@ variable "erp_domain" {
   type        = string
 }
 
+variable "content_domain" {
+  description = "Host name that serves teacher-uploaded SCORM and cmi5 packages, kept apart from the API so package scripts never run on its origin (SECURITY_AUDIT X1). Prefer a separate registrable domain, e.g. content.zynetixusercontent.in; it points at the ALB like api_domain and must be on the certificate."
+  type        = string
+}
+
 variable "acm_certificate_arn" {
-  description = "ACM certificate in the same region covering api_domain and erp_domain (issued/validated outside Terraform)."
+  description = "ACM certificate in the same region covering api_domain, erp_domain and content_domain (issued/validated outside Terraform)."
   type        = string
   validation {
     condition     = can(regex("^arn:aws[a-z-]*:acm:ap-south-[12]:[0-9]{12}:certificate/.+$", var.acm_certificate_arn))

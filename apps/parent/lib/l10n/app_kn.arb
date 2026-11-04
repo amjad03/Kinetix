@@ -1179,5 +1179,16 @@
   "escalateHelp": "ಶಿಕ್ಷಕರ ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರು ಈ ಸಂಭಾಷಣೆ ಓದಿ ಉತ್ತರಿಸುತ್ತಾರೆ.",
   "escalateReason": "ನಿಮಗೆ ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರು ಏಕೆ ಬೇಕು?",
   "escalateSend": "ಕಳುಹಿಸಿ",
-  "escalateDone": "ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರನ್ನು ಕೇಳಲಾಗಿದೆ"
+  "escalateDone": "ವಿಭಾಗ ಮುಖ್ಯಸ್ಥರನ್ನು ಕೇಳಲಾಗಿದೆ",
+  "lpChildProgress": "{total} ರಲ್ಲಿ {done} ಮುಗಿದಿವೆ",
+  "lpLastActive": "ಕೊನೆಯ ಬಾರಿ ಸಕ್ರಿಯ {when}",
+  "lpNeverActive": "ಇನ್ನೂ ತೆರೆದಿಲ್ಲ",
+  "lpNeedsAttention": "ಗಮನ ಬೇಕು",
+  "lpReasonInactive": "ಇತ್ತೀಚೆಗೆ ಸಕ್ರಿಯರಾಗಿಲ್ಲ",
+  "lpReasonLowEngagement": "ಕೋರ್ಸ್‌ನ ಕಡಿಮೆ ಭಾಗ ತೆರೆಯುತ್ತಾರೆ",
+  "lpReasonLowQuiz": "ರಸಪ್ರಶ್ನೆಯಲ್ಲಿ ಕಡಿಮೆ ಅಂಕ",
+  "lpReasonOverdue": "ಮನೆಗೆಲಸ ಬಾಕಿ",
+  "lpReasonMissedLive": "ಲೈವ್ ತರಗತಿಗಳು ತಪ್ಪುತ್ತಿವೆ",
+  "lpLiveAttended": "ಲೈವ್ ತರಗತಿಗಳು: {held} ರಲ್ಲಿ {joined}",
+  "lpCertificatesEarned": "{count} ಪೂರ್ಣತೆ ಪ್ರಮಾಣಪತ್ರಗಳು ಗಳಿಸಿದ್ದಾರೆ"
 }

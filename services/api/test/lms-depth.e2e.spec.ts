@@ -123,7 +123,7 @@ describe('lms depth', () => {
   });
 
   it('runs a quiz from a pool, with a time limit, attempts, marking and item analysis', async () => {
-    const quiz = (await http().post('/v1/lms/quizzes').set(as('teacher')).send({ sectionId: t.section.id, subjectId: t.subject.id, title: 'Unit 1 quiz', opensAt: new Date(start.getTime() - 3600_000), closesAt: new Date(start.getTime() + 86400_000), durationMin: 20, maxAttempts: 2, drawCount: 2 }).expect(201)).body;
+    const quiz = (await http().post('/v1/lms/quizzes').set(as('teacher')).send({ sectionId: t.section.id, subjectId: t.subject.id, title: 'Unit 1 quiz', opensAt: new Date(start.getTime() - 3600_000), closesAt: new Date(start.getTime() + 86400_000), durationMin: 20, maxAttempts: 2, drawCount: 2, shuffleOptions: false }).expect(201)).body;
     await http().post('/v1/lms/quizzes').set(as('teacher2')).send({ sectionId: t.section.id, subjectId: t.subject.id, title: 'Not mine', opensAt: start, closesAt: new Date(start.getTime() + 3600_000) }).expect(403);
     await http().post(`/v1/lms/quizzes/${quiz.id}/questions`).set(as('teacher')).send({ kind: 'mcq', text: 'Pick one', options: [{ text: 'A', correct: true }, { text: 'B', correct: true }] }).expect(400);
     const q1 = (await http().post(`/v1/lms/quizzes/${quiz.id}/questions`).set(as('teacher')).send({ kind: 'mcq', text: 'Goodwill is a', options: [{ text: 'Fictitious asset', correct: false }, { text: 'Intangible asset', correct: true }], marks: 2 }).expect(201)).body;

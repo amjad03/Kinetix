@@ -429,6 +429,17 @@ export const lmsQuizzes = pgTable('lms_quizzes', {
   status: text('status').$type<'draft' | 'published' | 'closed'>().notNull().default('draft'),
   createdBy: userRef('created_by'),
   createdAt: createdAt(),
+  /** LMS pass (migration 0214): share of a question's marks taken off for a wrong answer (0 = none); options shuffled per attempt. */
+  negativePct: integer('negative_pct').notNull().default(0),
+  shuffleOptions: boolean('shuffle_options').notNull().default(true),
+  /** off; record (log tab switches, copy and paste); strict (also submit the attempt after maxViolations). */
+  proctoring: text('proctoring').$type<'off' | 'record' | 'strict'>().notNull().default('off'),
+  maxViolations: integer('max_violations').notNull().default(5),
+  /** When students may see the right answers: never, after they submit, or after the quiz closes. */
+  review: text('review').$type<'never' | 'after_submit' | 'after_close'>().notNull().default('after_close'),
+  passPct: integer('pass_pct').notNull().default(40),
+  /** The internal-marks assessment its best scores were pushed to. */
+  pushedAssessmentId: uuid('pushed_assessment_id'),
 });
 
 export interface QuizOption {
@@ -458,6 +469,9 @@ export const lmsQuizQuestions = pgTable('lms_quiz_questions', {
   tests: jsonb('tests').$type<CodeTest[]>().notNull().default([]),
   /** The course outcome this question tests, so quiz results feed CO attainment (migration 0184). */
   coId: uuid('co_id'),
+  /** LMS pass (migration 0214): easy | medium | hard (from the bank), and marks taken off a wrong answer instead of the quiz's share. */
+  difficulty: text('difficulty'),
+  negativeMarks: num('negative_marks'),
 });
 
 export interface QuizResult {
@@ -483,6 +497,11 @@ export const lmsQuizAttempts = pgTable(
     startedAt: ts('started_at').notNull().defaultNow(),
     dueAt: ts('due_at').notNull(),
     submittedAt: ts('submitted_at'),
+    /** LMS pass (migration 0214): per question, the order its options were shown in; proctoring signals counted, flagged, auto-submitted. */
+    optionOrders: jsonb('option_orders').$type<Record<string, number[]>>().notNull().default({}),
+    violations: integer('violations').notNull().default(0),
+    flagged: boolean('flagged').notNull().default(false),
+    autoSubmitted: boolean('auto_submitted').notNull().default(false),
   },
   (t) => [uniqueIndex('lms_quiz_attempts_uq').on(t.quizId, t.studentId, t.attemptNo)],
 );

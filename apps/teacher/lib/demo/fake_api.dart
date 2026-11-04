@@ -20,6 +20,7 @@ import '../core/growth_models.dart';
 import '../core/hr_models.dart';
 import '../core/insights_models.dart';
 import '../core/library_models.dart';
+import '../core/lms_models.dart';
 import '../core/models.dart';
 import '../core/obe_models.dart';
 import '../core/offline_key.dart';
@@ -1139,6 +1140,53 @@ class FakeTeacherApi implements TeacherApi {
 
   @override
   Future<List<CourseFileVersion>> courseFiles() async => courseFileList;
+
+  // LMS: my courses, live classes, at-risk students, moderation and quizzes.
+  List<TeacherCourse> lmsCourseList = const [TeacherCourse(id: 'lc1', title: 'Financial Accounting (BCom Sem 3 A)', section: 'BCom Sem 3 A', subject: 'Financial Accounting', published: true, items: 14, activeLearners: 38)];
+  TeacherCourseDetail lmsCourseDetail = const TeacherCourseDetail(id: 'lc1', title: 'Financial Accounting (BCom Sem 3 A)', published: true, completionPct: 80, certificate: true, modules: [TeacherCourseModule(id: 'm1', title: 'Unit 1: Foundations', items: [TeacherCourseItem(id: 'it1', kind: 'page', title: 'Unit 1 summary'), TeacherCourseItem(id: 'it2', kind: 'quiz', title: 'Unit 1 quiz', completionRule: 'pass')])]);
+  List<RiskStudent> riskList = const [RiskStudent(id: 's9', name: 'Ravi Kumar', rollNo: '25BCM009', level: 'high', reasons: ['inactive', 'low_engagement', 'low_quiz'], engagementPct: 12, quizPct: 22), RiskStudent(id: 's1', name: 'Sahana Gowda', rollNo: '25BCM001', level: 'none', reasons: [], engagementPct: 92, quizPct: 81)];
+  List<TeacherLive> liveList = [TeacherLive(id: 'lv1', title: 'Revision before IA 2', startsAt: DateTime(2026, 11, 2, 16), durationMin: 60, joined: 41, hasPeriod: true)];
+  List<LiveJoinRow> joinRows = const [LiveJoinRow(studentId: 's1', name: 'Sahana Gowda', rollNo: '25BCM001', suggested: 'present', joins: 1), LiveJoinRow(studentId: 's9', name: 'Ravi Kumar', rollNo: '25BCM009', suggested: 'absent', joins: 0)];
+  List<ModerationRow> moderationList = const [ModerationRow(kind: 'post', id: 'fp1', text: 'Can someone share last year’s answers?', author: 'Kiran Rao', held: true, reports: 1)];
+  List<TeacherQuiz> quizList = const [TeacherQuiz(id: 'q1', title: 'Unit 1 quiz', section: 'BCom Sem 3 A', subject: 'Financial Accounting', status: 'closed', attempts: 52, toMark: 1, flagged: 3)];
+  List<TeacherQuizAttempt> attemptList = const [TeacherQuizAttempt(id: 'qa1', name: 'Ravi Kumar', rollNo: '25BCM009', score: 3, maxScore: 10, violations: 6, flagged: true), TeacherQuizAttempt(id: 'qa2', name: 'Sahana Gowda', rollNo: '25BCM001', score: 8, maxScore: 10, needsMarking: true, unmarked: ['qq5'])];
+  final lmsActions = <String>[];
+
+  @override
+  Future<List<TeacherCourse>> lmsCourses() async => lmsCourseList;
+  @override
+  Future<TeacherCourseDetail> lmsCourse(String id) async => lmsCourseDetail;
+  @override
+  Future<void> setLmsCoursePublished(String id, bool published) async => lmsActions.add('publish $id $published');
+  @override
+  Future<void> addLessonPage(String moduleId, {required String title, required String body}) async => lmsActions.add('page $moduleId $title');
+  @override
+  Future<void> addCourseLink(String moduleId, {required String title, required String url}) async => lmsActions.add('link $moduleId $url');
+  @override
+  Future<List<RiskStudent>> courseAtRisk(String courseId) async => riskList;
+  @override
+  Future<List<TeacherLive>> courseLive(String courseId) async => liveList;
+  @override
+  Future<void> scheduleLive(String courseId, {required String title, required DateTime startsAt, required int durationMin, required String joinUrl}) async => lmsActions.add('live $title $durationMin');
+  @override
+  Future<List<LiveJoinRow>> liveAttendance(String liveId) async => joinRows;
+  @override
+  Future<void> confirmLiveAttendance(String liveId, List<({String studentId, String status})> entries) async => lmsActions.add('attendance $liveId ${entries.map((e) => '${e.studentId}:${e.status}').join(',')}');
+  @override
+  Future<List<ModerationRow>> forumQueue(String courseId) async => moderationList;
+  @override
+  Future<void> moderateForum(String kind, String id, String action) async => lmsActions.add('moderate $kind $id $action');
+  @override
+  Future<List<TeacherQuiz>> lmsQuizzes() async => quizList;
+  @override
+  Future<List<TeacherQuizAttempt>> quizAttempts(String quizId) async => attemptList;
+  @override
+  Future<void> markQuizAnswer(String attemptId, String questionId, double marks) async => lmsActions.add('mark $attemptId $questionId $marks');
+  @override
+  Future<({int students, int absent})> pushQuizMarks(String quizId) async {
+    lmsActions.add('push $quizId');
+    return (students: 60, absent: 8);
+  }
 
   @override
   Future<CourseFileVersion> buildCourseFile(String sectionId, String subjectId) async {

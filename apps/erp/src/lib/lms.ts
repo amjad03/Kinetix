@@ -1,7 +1,7 @@
 // Shapes of v1/lms (services/api/src/lms).
 
-export const LMS_SOURCES = ['homework', 'test', 'assignment', 'internal', 'exam', 'practical'] as const;
-export const LMS_KINDS = ['topic', 'video', 'homework', 'assessment', 'file', 'link'] as const;
+export const LMS_SOURCES = ['homework', 'test', 'assignment', 'internal', 'exam', 'practical', 'quiz'] as const;
+export const LMS_KINDS = ['topic', 'video', 'homework', 'assessment', 'file', 'link', 'worksheet', 'case_study', 'simulation', 'virtual_lab', 'ppt', 'pdf', 'page', 'scorm', 'quiz', 'live'] as const;
 
 export interface LmsCourseRow {
   id: string;
@@ -9,14 +9,21 @@ export interface LmsCourseRow {
   status: 'draft' | 'published';
   subject: string;
   section: string;
+  /** Items and students active in the last 7 days (the courses list). */
+  items?: number;
+  activeLearners?: number;
 }
 
-export interface LmsItem { id: string; kind: (typeof LMS_KINDS)[number]; title: string; refId: string | null; url: string | null; position: number; releaseAt?: string | null; prerequisiteItemId?: string | null; audienceStudentIds?: string[] | null }
+export interface LmsItem { id: string; kind: (typeof LMS_KINDS)[number]; title: string; refId: string | null; url: string | null; position: number; releaseAt?: string | null; prerequisiteItemId?: string | null; audienceStudentIds?: string[] | null; body?: string; completionRule?: 'view' | 'mark_done' | 'pass'; passPct?: number | null; durationMin?: number | null; sizeKb?: number | null }
 export interface LmsModule { id: string; title: string; position: number; items: LmsItem[] }
 export interface LmsCourse extends LmsCourseRow {
   sectionId: string;
   description: string;
   canManage: boolean;
+  subjectId?: string;
+  completionPct?: number;
+  minGradePct?: number | null;
+  certificate?: boolean;
   modules: LmsModule[];
   announcements: { id: string; title: string; body: string; createdAt: string }[];
 }

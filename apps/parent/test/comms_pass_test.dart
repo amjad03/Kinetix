@@ -4,7 +4,6 @@ import 'package:zynetix_parent/core/communication.dart';
 import 'package:zynetix_parent/features/calendar/calendar_screen.dart';
 import 'package:zynetix_parent/features/privacy/channel_prefs.dart';
 
-import 'package:zynetix_parent/l10n/app_localizations.dart';
 import 'package:zynetix_parent/l10n/l10n.dart';
 import 'package:zynetix_ui/zynetix_ui.dart';
 

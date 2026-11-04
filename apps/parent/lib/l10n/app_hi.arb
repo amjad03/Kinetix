@@ -1179,5 +1179,16 @@
   "escalateHelp": "शिक्षक के विभागाध्यक्ष यह बातचीत पढ़कर उत्तर देंगे।",
   "escalateReason": "आपको विभागाध्यक्ष की ज़रूरत क्यों है?",
   "escalateSend": "भेजें",
-  "escalateDone": "विभागाध्यक्ष से पूछा गया है"
+  "escalateDone": "विभागाध्यक्ष से पूछा गया है",
+  "lpChildProgress": "{total} में से {done} पूरे",
+  "lpLastActive": "पिछली बार सक्रिय {when}",
+  "lpNeverActive": "अभी खोला नहीं",
+  "lpNeedsAttention": "ध्यान दें",
+  "lpReasonInactive": "हाल में सक्रिय नहीं",
+  "lpReasonLowEngagement": "पाठ्यक्रम का कम हिस्सा खोलता है",
+  "lpReasonLowQuiz": "क्विज़ में कम अंक",
+  "lpReasonOverdue": "गृहकार्य बाकी",
+  "lpReasonMissedLive": "लाइव कक्षाएँ छूट रही हैं",
+  "lpLiveAttended": "लाइव कक्षाएँ: {held} में से {joined}",
+  "lpCertificatesEarned": "{count} पूर्णता प्रमाणपत्र मिले"
 }

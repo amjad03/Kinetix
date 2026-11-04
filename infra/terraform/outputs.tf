@@ -1,5 +1,5 @@
 output "alb_dns_name" {
-  description = "Point api_domain and erp_domain here (CNAME/alias) unless route53_zone_id is set."
+  description = "Point api_domain and erp_domain here (CNAME/alias) unless route53_zone_id is set; always point content_domain here yourself (it is usually in another zone)."
   value       = aws_lb.main.dns_name
 }
 

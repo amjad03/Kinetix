@@ -6031,4 +6031,159 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get prefAlwaysOn => 'ಆ್ಯಪ್‌ನ ಸೂಚನೆಗಳು ಮತ್ತು ತುರ್ತು ಸೂಚನೆಗಳು ಯಾವಾಗಲೂ ನಿಮ್ಮನ್ನು ತಲುಪುತ್ತವೆ.';
+
+  @override
+  String lpProgress(int done, int total) {
+    return '$total ರಲ್ಲಿ $done ಮುಗಿದಿವೆ';
+  }
+
+  @override
+  String lpOfflineCopy(String when) {
+    return '$when ರ ಆಫ್‌ಲೈನ್ ಪ್ರತಿ';
+  }
+
+  @override
+  String get lpOfflineNone => 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಇನ್ನೂ ಪ್ರತಿ ಇಲ್ಲ. ಆಫ್‌ಲೈನ್ ಓದಲು ಒಮ್ಮೆ ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ.';
+
+  @override
+  String lpPendingSync(int count) {
+    return 'ಆನ್‌ಲೈನ್ ಆದಾಗ $count ಆಫ್‌ಲೈನ್ ಹಂತಗಳನ್ನು ಕಳುಹಿಸಲಾಗುತ್ತದೆ';
+  }
+
+  @override
+  String get lpLive => 'ಲೈವ್ ತರಗತಿಗಳು';
+
+  @override
+  String get lpJoin => 'ಸೇರಿ';
+
+  @override
+  String get lpJoined => 'ಸೇರಿದ್ದೀರಿ';
+
+  @override
+  String get lpLiveOpensSoon => '15 ನಿಮಿಷ ಮೊದಲು ತೆರೆಯುತ್ತದೆ';
+
+  @override
+  String lpLiveAt(String course, String when) {
+    return '$course · $when';
+  }
+
+  @override
+  String get lpAchievements => 'ಪ್ರಮಾಣಪತ್ರಗಳು ಮತ್ತು ಕಲಿಕೆಯ ಹಾದಿಗಳು';
+
+  @override
+  String get lpCertificates => 'ಪ್ರಮಾಣಪತ್ರಗಳು';
+
+  @override
+  String get lpNoCertificates => 'ಇನ್ನೂ ಪ್ರಮಾಣಪತ್ರಗಳಿಲ್ಲ. ಒಂದು ಕೋರ್ಸ್ ಮುಗಿಸಿ ಪಡೆಯಿರಿ.';
+
+  @override
+  String get lpPaths => 'ಕಲಿಕೆಯ ಹಾದಿಗಳು';
+
+  @override
+  String get lpNoPaths => 'ನಿಮ್ಮ ತರಗತಿಗೆ ಇನ್ನೂ ಕಲಿಕೆಯ ಹಾದಿಗಳಿಲ್ಲ.';
+
+  @override
+  String lpPathProgress(int pct) {
+    return 'ಹಾದಿಯ $pct% ಮುಗಿದಿದೆ';
+  }
+
+  @override
+  String get lpOptional => 'ಐಚ್ಛಿಕ';
+
+  @override
+  String get lpGetCertificate => 'ನನ್ನ ಪ್ರಮಾಣಪತ್ರ ಪಡೆಯಿರಿ';
+
+  @override
+  String get lpCertificateReady => 'ನೀವು ಈ ಕೋರ್ಸ್ ಪೂರ್ಣಗೊಳಿಸಿದ್ದೀರಿ.';
+
+  @override
+  String get lpCertificateTaken => 'ಪ್ರಮಾಣಪತ್ರ ನೀಡಲಾಗಿದೆ';
+
+  @override
+  String lpNeedsCourses(String names) {
+    return 'ಮೊದಲು ಈ ಕೋರ್ಸ್‌ಗಳನ್ನು ಮುಗಿಸಿ: $names';
+  }
+
+  @override
+  String get lpLocked => 'ಮೊದಲು ಇದರ ಹಿಂದಿನ ವಿಷಯವನ್ನು ಮುಗಿಸಿ';
+
+  @override
+  String get lpMarkDone => 'ಮುಗಿದಿದೆ ಎಂದು ಗುರುತಿಸಿ';
+
+  @override
+  String get lpMarkedDone => 'ಮುಗಿದಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ';
+
+  @override
+  String get lpQuizInTab => 'ಈ ರಸಪ್ರಶ್ನೆಯನ್ನು ರಸಪ್ರಶ್ನೆ ಟ್ಯಾಬ್‌ನಿಂದ ತೆರೆಯಿರಿ';
+
+  @override
+  String lpSizeKb(int kb) {
+    return '$kb ಕೆಬಿ';
+  }
+
+  @override
+  String lpMinutes(int min) {
+    return '$min ನಿಮಿಷ';
+  }
+
+  @override
+  String get lpRuleView => 'ತೆರೆದಾಗ ಮುಗಿಯುತ್ತದೆ';
+
+  @override
+  String get lpRuleMarkDone => 'ಮುಗಿದಾಗ ಗುರುತಿಸಿ';
+
+  @override
+  String get lpRulePass => 'ಉತ್ತೀರ್ಣರಾದಾಗ ಮುಗಿಯುತ್ತದೆ';
+
+  @override
+  String get lpKindPage => 'ಪಾಠ';
+
+  @override
+  String get lpKindVideo => 'ವೀಡಿಯೊ';
+
+  @override
+  String get lpKindFile => 'ಫೈಲ್';
+
+  @override
+  String get lpKindLink => 'ಲಿಂಕ್';
+
+  @override
+  String get lpKindScorm => 'ಸಂವಾದಾತ್ಮಕ ಪಾಠ';
+
+  @override
+  String get lpKindQuiz => 'ರಸಪ್ರಶ್ನೆ';
+
+  @override
+  String get lpKindLive => 'ಲೈವ್ ತರಗತಿ';
+
+  @override
+  String get lpKindOther => 'ವಿಷಯ';
+
+  @override
+  String get lpProctorNotice => 'ನೀವು ಆ್ಯಪ್ ಬಿಟ್ಟಾಗ ಈ ರಸಪ್ರಶ್ನೆ ದಾಖಲಿಸುತ್ತದೆ.';
+
+  @override
+  String lpProctorStrict(int max) {
+    return 'ಆ್ಯಪ್ ಅನ್ನು $max ಬಾರಿ ಬಿಟ್ಟರೆ ರಸಪ್ರಶ್ನೆ ಸಲ್ಲಿಕೆಯಾಗುತ್ತದೆ.';
+  }
+
+  @override
+  String lpNegativeNotice(int pct) {
+    return 'ತಪ್ಪು ಉತ್ತರಕ್ಕೆ ಅದರ $pct% ಅಂಕ ಕಡಿತ; ಖಾಲಿ ಬಿಟ್ಟರೆ ಏನೂ ಇಲ್ಲ.';
+  }
+
+  @override
+  String get lpAutoSubmitted => 'ನೀವು ರಸಪ್ರಶ್ನೆಯನ್ನು ಹಲವು ಬಾರಿ ಬಿಟ್ಟಿದ್ದರಿಂದ ಅದು ಸಲ್ಲಿಕೆಯಾಗಿದೆ.';
+
+  @override
+  String get lpRevoked => 'ಹಿಂಪಡೆಯಲಾಗಿದೆ';
+
+  @override
+  String get lpOpenFailed => 'ಲಿಂಕ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ';
+
+  @override
+  String get lpVerify => 'ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಪರಿಶೀಲಿಸಿ';
+
+  @override
+  String get lpCourseProgress => 'ನಿಮ್ಮ ಪ್ರಗತಿ';
 }

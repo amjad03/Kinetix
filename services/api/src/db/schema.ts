@@ -1935,6 +1935,9 @@ export const homeworkSubmissions = pgTable(
     late: boolean('late').notNull().default(false),
     penaltyPct: integer('penalty_pct').notNull().default(0),
     attempts: integer('attempts').notNull().default(1),
+    /** LMS pass (migration 0214): the highest similarity the plagiarism check found, and the rubric levels chosen. */
+    similarityPct: numeric('similarity_pct', { precision: 5, scale: 2, mode: 'number' }),
+    rubricSelections: jsonb('rubric_selections').$type<number[]>(),
   },
   (t) => [primaryKey({ columns: [t.homeworkId, t.studentId] })],
 );
@@ -4188,6 +4191,9 @@ export const TENANT_TABLES = [
   'elections', 'election_posts', 'election_candidates', 'election_voters', 'election_ballots', 'event_external_registrations', 'event_duty_leaves',
   'grievance_routes', 'antiragging_undertakings', 'pwd_accommodations', 'mentor_messages', 'learner_rules',
   'contact_suppressions', 'homework_extensions', 'homework_groups', 'lms_item_progress', 'lms_quizzes', 'lms_quiz_questions', 'lms_quiz_attempts',
+  // LMS production pass (migrations 0214-0215, schema-lms.ts).
+  'lms_quiz_events', 'lms_live_sessions', 'lms_live_joins', 'forum_reports', 'lms_settings',
+  'lms_learning_paths', 'lms_path_steps', 'lms_certificates', 'lms_xapi_statements', 'lms_xapi_state',
   // HR depth (0165–0167)
   'staff_experience', 'staff_publications', 'staff_documents', 'comp_off_credits', 'attendance_regularisations', 'job_interviews', 'job_interview_scores', 'salary_component_rates',
   // Fee holds on hall tickets, results and TCs (migration 0181; schema-fee-depth.ts).
@@ -5527,6 +5533,11 @@ export const lmsCourses = pgTable(
     status: text('status').$type<'draft' | 'published'>().notNull().default('draft'),
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
+    /** Completion (migration 0214): share of the items to finish, the lowest running grade, a certificate, and courses to finish first. */
+    completionPct: integer('completion_pct').notNull().default(100),
+    minGradePct: numeric('min_grade_pct', { precision: 5, scale: 2, mode: 'number' }),
+    certificate: boolean('certificate').notNull().default(false),
+    prerequisiteCourseIds: uuid('prerequisite_course_ids').array().notNull().default(sql`'{}'`),
   },
   (t) => [unique('lms_courses_offering_uq').on(t.sectionId, t.subjectId)],
 );
@@ -5539,7 +5550,7 @@ export const lmsModules = pgTable('lms_modules', {
   position: integer('position').notNull(),
 });
 
-export type LmsItemKind = 'topic' | 'video' | 'homework' | 'assessment' | 'file' | 'link' | 'worksheet' | 'case_study' | 'simulation' | 'virtual_lab' | 'ppt' | 'pdf';
+export type LmsItemKind = 'topic' | 'video' | 'homework' | 'assessment' | 'file' | 'link' | 'worksheet' | 'case_study' | 'simulation' | 'virtual_lab' | 'ppt' | 'pdf' | 'page' | 'scorm' | 'quiz' | 'live';
 
 /** A content item in a module: a link to an existing topic, video, homework or assessment, or a file or web link. */
 export const lmsItems = pgTable('lms_items', {
@@ -5555,6 +5566,14 @@ export const lmsItems = pgTable('lms_items', {
   releaseAt: timestamp('release_at', { withTimezone: true }),
   prerequisiteItemId: uuid('prerequisite_item_id'),
   audienceStudentIds: uuid('audience_student_ids').array(),
+  /** LMS pass (migration 0214): a lesson page's text; how the item counts as done (opened, marked done, or a pass mark on a quiz or package); low-bandwidth hints. */
+  body: text('body').notNull().default(''),
+  completionRule: text('completion_rule').$type<'view' | 'mark_done' | 'pass'>().notNull().default('view'),
+  passPct: integer('pass_pct'),
+  durationMin: integer('duration_min'),
+  sizeKb: integer('size_kb'),
+  offline: boolean('offline').notNull().default(true),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const lmsAnnouncements = pgTable('lms_announcements', {
@@ -5573,7 +5592,7 @@ export const lmsGradeCategories = pgTable('lms_grade_categories', {
   tenantId: tenantId(),
   courseId: uuid('course_id').notNull().references(() => lmsCourses.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
-  source: text('source').$type<'homework' | 'test' | 'assignment' | 'internal' | 'exam' | 'practical'>().notNull(),
+  source: text('source').$type<'homework' | 'test' | 'assignment' | 'internal' | 'exam' | 'practical' | 'quiz'>().notNull(),
   weight: numeric('weight', { precision: 5, scale: 2, mode: 'number' }).notNull(),
   position: integer('position').notNull(),
 });

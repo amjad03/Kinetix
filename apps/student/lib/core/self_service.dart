@@ -135,7 +135,7 @@ class QuizQuestion {
 
 /// An attempt in progress: the questions drawn for it, the answers saved so far and when time is up.
 class QuizAttempt {
-  const QuizAttempt({required this.attemptId, required this.title, required this.dueAt, required this.questions, this.instructions = '', this.answers = const {}});
+  const QuizAttempt({required this.attemptId, required this.title, required this.dueAt, required this.questions, this.instructions = '', this.answers = const {}, this.negativePct = 0, this.proctoring = 'off', this.maxViolations = 5});
 
   factory QuizAttempt.fromJson(Map<String, dynamic> j) => QuizAttempt(
     attemptId: _s(j['attemptId']),
@@ -143,6 +143,9 @@ class QuizAttempt {
     instructions: _s(j['instructions']),
     dueAt: _time(j['dueAt']) ?? DateTime.now(),
     questions: [for (final q in _maps(j['questions'])) QuizQuestion.fromJson(q)],
+    negativePct: _int(j['negativePct']),
+    proctoring: j['proctoring'] is String ? j['proctoring'] as String : 'off',
+    maxViolations: j['maxViolations'] == null ? 5 : _int(j['maxViolations']),
     answers: {
       for (final e in ((j['answers'] as Map?) ?? const {}).entries)
         '${e.key}': e.value is List ? [for (final x in e.value as List) _int(x)] : '${e.value}',
@@ -158,6 +161,13 @@ class QuizAttempt {
   /// By question id: a [String] (short and code answers, or the option index of a single choice as
   /// the server stores it) or a list of option indexes.
   final Map<String, Object> answers;
+
+  /// Share of a question's marks a wrong choice answer loses (0 = none).
+  final int negativePct;
+
+  /// off; record (leaving the app is logged for the teacher); strict (also submits after [maxViolations]).
+  final String proctoring;
+  final int maxViolations;
 }
 
 /// How each question went once an attempt is submitted ([correct] is null while a teacher marks it).

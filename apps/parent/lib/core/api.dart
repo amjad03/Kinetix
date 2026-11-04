@@ -379,6 +379,9 @@ abstract class ParentApi implements AnnouncementSource, ChannelPrefSource {
   /// The published LMS courses of a student with the running grade (`GET /v1/lms/my`).
   Future<List<LmsCourseSummary>> lmsCourses(String childId);
 
+  /// A child's progress in each course, how active they are, what is overdue and why a course flags them (`GET /v1/lms/students/:id/summary`).
+  Future<ChildLmsSummary> lmsSummary(String childId);
+
   /// One course: modules, content, announcements and the grade breakdown (`GET /v1/lms/courses/:id`).
   Future<LmsCourseDetail> lmsCourse(String courseId, String childId);
 
@@ -1078,6 +1081,9 @@ class HttpParentApi implements ParentApi {
     // Nothing useful from the server: the app words it from the status (l10n/l10n.dart).
     return '';
   }
+
+  @override
+  Future<ChildLmsSummary> lmsSummary(String childId) async => ChildLmsSummary.fromJson((await _send('GET', '/v1/lms/students/$childId/summary') as Map).cast<String, dynamic>());
 
   @override
   Future<List<LmsCourseSummary>> lmsCourses(String childId) async =>

@@ -69,6 +69,7 @@ operators; the one place that spliced request data (analytics classroom date ran
 | O15 | Low | ERP "return after sign-in" path allowed control characters (`/\t/evil.example` becomes `//evil.example` in browsers: open redirect). | `apps/erp/src/lib/return-path.ts` | Control characters refused. | `return-path.test.ts` |
 | O16 | Low | JWT verification did not pin the algorithm. | `src/auth/tokens.service.ts` | `algorithms: ['HS256']`. | all sign-in suites |
 | O17 | Low | Analytics classroom range spliced dates into `sql.raw` (validated upstream by a regex). | `src/analytics/queries.ts` | Bound parameters. | `analytics.e2e` |
+| O18 (X1, fixed in the LMS pass) | Medium | SCORM packages (teacher-uploaded HTML and JS) were served from the API origin, framed by a same-origin player that exposed its own tracking link to the package. | `src/integrations/scorm.controller.ts`, `package-tokens.ts`, `xapi.controller.ts`, `src/setup.ts`, `src/config/env.ts`, `infra/terraform/{alb,ecs,variables}.tf` | Package files are served only from a separate content host (`SCORM_CONTENT_ORIGIN`, Terraform `content_domain`, required with `DEPLOYMENT=production`, must differ from the API host); on that host `contentHostGuard` answers nothing but `/v1/scorm/content/*` and the health checks, and package files are refused on every other host. Every file carries `Content-Security-Policy: sandbox allow-scripts allow-forms allow-popups…` without `allow-same-origin` (an opaque origin: no cookies, storage or DOM of any ZYNETIX page, no top navigation), `connect-src` limited to the content origin (cmi5: plus the xAPI endpoint), `frame-ancestors` the player's origin. The player frames the package with the same sandbox attribute, a nonce-only script CSP, and talks to it by `postMessage` from its own frame only. Content links are signed separately (scope `c`, no learner) and cannot save tracking; the player link (scope `p`) cannot read files; cmi5 gets a one-use fetch link and a per-learner credential. Signed with a key of their own (not shared with other signed values). | `test/lms-pass.e2e.spec.ts` "SCORM on its own sandboxed origin" (3 tests) and "cmi5 over xAPI" (2), `integrations.e2e` SCORM, `security.e2e` production check |
 
 Checked and in order: XSS in the ERP (three `dangerouslySetInnerHTML`: API-drawn QR SVG, and the document editor whose
 template colours are schema-validated hex/palette tokens and text escaped; no rich-text HTML in messages, which are plain
@@ -108,7 +109,7 @@ rules, non-root containers (API and ERP `node`, code runner uid 10001 with secco
 
 | # | Sev | Item | Recommendation |
 | --- | --- | --- | --- |
-| X1 | Medium | SCORM packages (teacher-uploaded HTML and JS) are served from the API origin. Bearer tokens are not cookies, so a malicious package cannot ride a session, but it runs script on the API origin. | Serve `/v1/scorm/content` from a separate cookie-less origin (e.g. `content.<domain>` on CloudFront) with `Content-Security-Policy: sandbox allow-scripts`. |
+| ~~X1~~ | Fixed | SCORM packages served from the API origin: fixed as O18 (separate content host, sandboxed files, split signed links). Before go-live, point `content_domain` (ideally a separate registrable domain) at the ALB and add it to the certificate. | Done. |
 | X2 | Medium | P4 above (staff PAN/UAN, fee payee bank details). | As above. |
 | — | Low | DNS rebinding between the address check and the request (SSRF). | Route outbound requests to tenant-typed hosts through an egress proxy or NAT with a deny list for the VPC and 169.254.0.0/16. |
 | — | Low | ERP CSP keeps `'unsafe-inline'` for scripts (Next.js bootstrap). | Move to per-request nonces (`proxy.ts`) once the pages are checked. |
@@ -142,4 +143,4 @@ Tests that fail today for reasons unrelated to this audit (fixed calendar dates 
 - [ ] Data-processing agreement with each institution; privacy notice lists MSG91, FCM, Razorpay/PayU, AI/ASR providers in India.
 - [ ] DPDP: grievance officer published per institution; consent flows for under-18s verified with a pilot school; retention
       rules set (health visits, counselling, recordings).
-- [ ] Open items X1 and X2 scheduled; X1 before SCORM is offered to schools.
+- [ ] Open item X2 scheduled. X1 is fixed (O18): `content_domain` in DNS and on the ACM certificate before SCORM is offered to schools.

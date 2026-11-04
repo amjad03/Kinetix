@@ -6019,4 +6019,159 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prefAlwaysOn => 'Notices in the app and emergency alerts always reach you.';
+
+  @override
+  String lpProgress(int done, int total) {
+    return '$done of $total done';
+  }
+
+  @override
+  String lpOfflineCopy(String when) {
+    return 'Offline copy from $when';
+  }
+
+  @override
+  String get lpOfflineNone => 'No copy on this phone yet. Connect once to keep your courses for offline reading.';
+
+  @override
+  String lpPendingSync(int count) {
+    return '$count offline steps will be sent when you are back online';
+  }
+
+  @override
+  String get lpLive => 'Live classes';
+
+  @override
+  String get lpJoin => 'Join';
+
+  @override
+  String get lpJoined => 'Joined';
+
+  @override
+  String get lpLiveOpensSoon => 'Opens 15 minutes before';
+
+  @override
+  String lpLiveAt(String course, String when) {
+    return '$course · $when';
+  }
+
+  @override
+  String get lpAchievements => 'Certificates and learning paths';
+
+  @override
+  String get lpCertificates => 'Certificates';
+
+  @override
+  String get lpNoCertificates => 'No certificates yet. Finish a course to earn one.';
+
+  @override
+  String get lpPaths => 'Learning paths';
+
+  @override
+  String get lpNoPaths => 'No learning paths for your class yet.';
+
+  @override
+  String lpPathProgress(int pct) {
+    return '$pct% of the path done';
+  }
+
+  @override
+  String get lpOptional => 'optional';
+
+  @override
+  String get lpGetCertificate => 'Get my certificate';
+
+  @override
+  String get lpCertificateReady => 'You have completed this course.';
+
+  @override
+  String get lpCertificateTaken => 'Certificate issued';
+
+  @override
+  String lpNeedsCourses(String names) {
+    return 'Finish these courses first: $names';
+  }
+
+  @override
+  String get lpLocked => 'Finish the item before this one first';
+
+  @override
+  String get lpMarkDone => 'Mark as done';
+
+  @override
+  String get lpMarkedDone => 'Marked as done';
+
+  @override
+  String get lpQuizInTab => 'Open this quiz from the Quizzes tab';
+
+  @override
+  String lpSizeKb(int kb) {
+    return '$kb KB';
+  }
+
+  @override
+  String lpMinutes(int min) {
+    return '$min min';
+  }
+
+  @override
+  String get lpRuleView => 'Done when opened';
+
+  @override
+  String get lpRuleMarkDone => 'Mark it done when finished';
+
+  @override
+  String get lpRulePass => 'Done when you pass';
+
+  @override
+  String get lpKindPage => 'Lesson';
+
+  @override
+  String get lpKindVideo => 'Video';
+
+  @override
+  String get lpKindFile => 'File';
+
+  @override
+  String get lpKindLink => 'Link';
+
+  @override
+  String get lpKindScorm => 'Interactive lesson';
+
+  @override
+  String get lpKindQuiz => 'Quiz';
+
+  @override
+  String get lpKindLive => 'Live class';
+
+  @override
+  String get lpKindOther => 'Material';
+
+  @override
+  String get lpProctorNotice => 'This quiz records when you leave the app.';
+
+  @override
+  String lpProctorStrict(int max) {
+    return 'Leaving the app $max times submits the quiz.';
+  }
+
+  @override
+  String lpNegativeNotice(int pct) {
+    return 'A wrong answer loses $pct% of its marks; a blank one loses nothing.';
+  }
+
+  @override
+  String get lpAutoSubmitted => 'Your quiz was submitted because you left it too many times.';
+
+  @override
+  String get lpRevoked => 'Revoked';
+
+  @override
+  String get lpOpenFailed => 'Could not open the link';
+
+  @override
+  String get lpVerify => 'Check online';
+
+  @override
+  String get lpCourseProgress => 'Your progress';
 }

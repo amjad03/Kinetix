@@ -63,8 +63,7 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -72,8 +71,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -85,20 +83,15 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
-    Locale('kn'),
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
 
   /// App name (keep in English).
   ///
@@ -8673,10 +8666,375 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Do not disturb is off'**
   String get dndOffDone;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses (LMS)'**
+  String get lmsTitle;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Content, live classes, students at risk, discussions and quizzes'**
+  String get lmsBody;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses for your classes yet. They are created per class and subject.'**
+  String get lmsNoCourses;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'{items} items · {active} active this week'**
+  String lmsCourseStats(int items, int active);
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get lmsDraft;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get lmsPublish;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpublish'**
+  String get lmsUnpublish;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get lmsTabContent;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get lmsTabLive;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'At risk'**
+  String get lmsTabRisk;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderation'**
+  String get lmsTabModeration;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes'**
+  String get lmsTabQuizzes;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a lesson page'**
+  String get lmsAddPage;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a link'**
+  String get lmsAddLink;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get lmsFieldTitle;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson text'**
+  String get lmsFieldBody;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Web address (https://)'**
+  String get lmsFieldUrl;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get lmsSave;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get lmsCancel;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get lmsAdded;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete at {pct}% of the items'**
+  String lmsCompletionRule(int pct);
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Gives a certificate'**
+  String get lmsGivesCertificate;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'No content in this unit yet'**
+  String get lmsNoItems;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule a live class'**
+  String get lmsSchedule;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Length (minutes)'**
+  String get lmsMinutes;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting link'**
+  String get lmsMeetingLink;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts in (hours from now)'**
+  String get lmsStartsIn;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'No live classes yet'**
+  String get lmsNoLive;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} joined'**
+  String lmsJoinedCount(int n);
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance from joins'**
+  String get lmsAttendanceFromJoins;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance saved'**
+  String get lmsAttendanceSaved;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as attendance'**
+  String get lmsSaveAttendance;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance marked'**
+  String get lmsMarked;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Present'**
+  String get lmsPresent;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Late'**
+  String get lmsLate;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent'**
+  String get lmsAbsent;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'No student is at risk in this course'**
+  String get lmsNoRisk;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'High risk'**
+  String get lmsRiskHigh;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium risk'**
+  String get lmsRiskMedium;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Low risk'**
+  String get lmsRiskLow;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'inactive'**
+  String get lmsReasonInactive;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'opens little'**
+  String get lmsReasonLowEngagement;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'low quiz scores'**
+  String get lmsReasonLowQuiz;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'homework overdue'**
+  String get lmsReasonOverdue;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'misses live classes'**
+  String get lmsReasonMissedLive;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Opened {pct}% of the items'**
+  String lmsEngagement(int pct);
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is waiting for moderation'**
+  String get lmsNothingToModerate;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval'**
+  String get lmsHeld;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Reported {n} times'**
+  String lmsReported(int n);
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get lmsApprove;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get lmsHide;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get lmsDone;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'No quizzes yet'**
+  String get lmsNoQuizzes;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'{attempts} attempts · {toMark} to mark · {flagged} flagged'**
+  String lmsQuizStats(int attempts, int toMark, int flagged);
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Left the quiz {n} times'**
+  String lmsFlagged(int n);
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted automatically'**
+  String get lmsAutoSubmitted;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'To mark'**
+  String get lmsToMark;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks for the answer'**
+  String get lmsMarkAnswer;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Send best scores to internal marks'**
+  String get lmsPushMarks;
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent for {students} students ({absent} absent). Submit them in the marks register.'**
+  String lmsPushed(int students, int absent);
+
+  /// Teacher LMS: courses, live classes, at-risk students, moderation and quizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'{score} of {max}'**
+  String lmsScore(String score, String max);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -8685,8 +9043,7 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

@@ -1408,6 +1408,20 @@
       "when": 1791506242000,
       "tag": "0213_comms_engagement_safety",
       "breakpoints": true
+    },
+    {
+      "idx": 201,
+      "version": "7",
+      "when": 1791506302000,
+      "tag": "0214_lms_authoring_quiz_live_forum",
+      "breakpoints": true
+    },
+    {
+      "idx": 202,
+      "version": "7",
+      "when": 1791506342000,
+      "tag": "0215_lms_paths_certificates_xapi",
+      "breakpoints": true
     }
   ]
 }

@@ -20,6 +20,10 @@ export function configureApp(app: NestExpressApplication): void {
   // Request id, trace context, metrics and an access log line per request (observability/).
   const tracer = app.get<Tracer>(TRACER);
   app.use(observabilityMiddleware(tracer, env.LOG_FORMAT === 'json' ? (line) => process.stdout.write(JSON.stringify({ timestamp: new Date().toISOString(), level: 'info', ...line }) + '\n') : () => undefined));
+  // The SCORM/cmi5 content host answers only package files (SECURITY_AUDIT X1).
+  app.use(contentHostGuard(env));
+  // cmi5 units run sandboxed (origin "null") and send xAPI with their own launch token: any origin, no credentials.
+  app.use('/v1/xapi', xapiCors);
   // Bearer tokens, no cookies: any origin is harmless in development; production lists the ERP and portals (CORS_ORIGINS).
   app.enableCors(env.CORS_ORIGINS.length ? { origin: env.CORS_ORIGINS, maxAge: 600 } : undefined);
   app.disable('x-powered-by');
@@ -64,6 +68,39 @@ export function securityHeaders(req: Request, res: Response, next: NextFunction)
     res.setHeader('X-Frame-Options', 'DENY');
   }
   if (req.headers.authorization) res.setHeader('Cache-Control', 'no-store');
+  next();
+}
+
+/** Paths the separate content host serves: package files, and the load balancer's health checks. */
+const CONTENT_PATHS = /^\/(v1\/scorm\/content\/|health$|ready$)/;
+
+/**
+ * With SCORM_CONTENT_ORIGIN set, requests that arrive on the content host get only package files (anything else is
+ * 404), and package files are not served on any other host, so teacher-uploaded script never runs on the API's origin.
+ */
+export function contentHostGuard(env: Pick<Env, 'SCORM_CONTENT_ORIGIN'>) {
+  const host = env.SCORM_CONTENT_ORIGIN ? new URL(env.SCORM_CONTENT_ORIGIN).host.toLowerCase() : null;
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!host) return next();
+    const onContent = (req.headers.host ?? '').toLowerCase() === host;
+    const isContent = req.path.startsWith('/v1/scorm/content/');
+    if (onContent ? CONTENT_PATHS.test(req.path) : !isContent) return next();
+    res.status(404).json({ statusCode: 404, message: onContent ? 'Not found' : 'Package files are served from the content host', code: 'NOT_FOUND' });
+  };
+}
+
+/** CORS for the xAPI endpoints a cmi5 unit calls: any origin (the unit is sandboxed), never credentials. */
+export function xapiCors(req: Request, res: Response, next: NextFunction): void {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Experience-API-Version, If-Match, If-None-Match');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Expose-Headers', 'ETag, Last-Modified, X-Experience-API-Version, X-Experience-API-Consistent-Through');
+  res.setHeader('X-Experience-API-Version', '1.0.3');
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Max-Age', '600');
+    res.status(204).end();
+    return;
+  }
   next();
 }
 

@@ -1,5 +1,7 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, lt, notInArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, lt, notInArray, or, sql } from 'drizzle-orm';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { lmsSettingsOf, lmsTexts } from './lms-settings.js';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
@@ -29,6 +31,7 @@ export class LmsExtController {
     private readonly db: DbService,
     private readonly lms: LmsService,
     private readonly clock: Clock,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /** The signed-in person's access to a course: staff who manage it, or a student or guardian of its class (published only). */
@@ -49,10 +52,10 @@ export class LmsExtController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const a = await this.access(tx, p, id);
       const rows = await tx
-        .select({ id: forumThreads.id, title: forumThreads.title, pinned: forumThreads.pinned, locked: forumThreads.locked, hidden: forumThreads.hidden, createdAt: forumThreads.createdAt, lastPostAt: forumThreads.lastPostAt, author: users.fullName, replies: sql<number>`(select count(*)::int from forum_posts fp where fp.thread_id = ${forumThreads.id} and not fp.hidden)` })
+        .select({ id: forumThreads.id, title: forumThreads.title, pinned: forumThreads.pinned, locked: forumThreads.locked, hidden: forumThreads.hidden, held: forumThreads.held, createdAt: forumThreads.createdAt, lastPostAt: forumThreads.lastPostAt, author: users.fullName, replies: sql<number>`(select count(*)::int from forum_posts fp where fp.thread_id = ${forumThreads.id} and not fp.hidden and not fp.held)`, reports: sql<number>`(select count(*)::int from forum_reports fr where fr.thread_id = ${forumThreads.id} and fr.status = 'open')` })
         .from(forumThreads)
         .innerJoin(users, eq(users.id, forumThreads.authorId))
-        .where(and(eq(forumThreads.courseId, id), a.manage ? undefined : eq(forumThreads.hidden, false)))
+        .where(and(eq(forumThreads.courseId, id), a.manage ? undefined : and(eq(forumThreads.hidden, false), or(eq(forumThreads.held, false), eq(forumThreads.authorId, p.userId)))))
         .orderBy(desc(forumThreads.pinned), desc(forumThreads.lastPostAt))
         .limit(200);
       return rows;
@@ -65,8 +68,10 @@ export class LmsExtController {
     return this.db.withTenant(p.tenantId, async (tx) => {
       const a = await this.access(tx, p, id);
       if (!a.manage && !a.student) throw new ForbiddenException('Only the class and its teachers can post here');
-      const [row] = await tx.insert(forumThreads).values({ tenantId: p.tenantId, courseId: id, authorId: p.userId, title: b.title, body: b.body }).returning();
-      await auditUser(tx, p, 'lms.forum.thread', 'forum_thread', row.id, { courseId: id });
+      // Pre-moderation: a student's new discussion waits for a teacher when the institution asks for it.
+      const held = !a.manage && (await lmsSettingsOf(tx, p.tenantId)).forumModeration === 'hold_students';
+      const [row] = await tx.insert(forumThreads).values({ tenantId: p.tenantId, courseId: id, authorId: p.userId, title: b.title, body: b.body, held, createdAt: this.clock.now(), lastPostAt: this.clock.now() }).returning();
+      await auditUser(tx, p, 'lms.forum.thread', 'forum_thread', row.id, { courseId: id, held });
       return row;
     });
   }
@@ -78,15 +83,16 @@ export class LmsExtController {
       const [t] = await tx.select().from(forumThreads).where(eq(forumThreads.id, threadId));
       if (!t) throw new NotFoundException('Discussion not found');
       const a = await this.access(tx, p, t.courseId);
-      if (t.hidden && !a.manage) throw new NotFoundException('Discussion not found');
+      if ((t.hidden || (t.held && t.authorId !== p.userId)) && !a.manage) throw new NotFoundException('Discussion not found');
       const [author] = await tx.select({ n: users.fullName }).from(users).where(eq(users.id, t.authorId));
       const posts = await tx
-        .select({ id: forumPosts.id, body: forumPosts.body, hidden: forumPosts.hidden, createdAt: forumPosts.createdAt, authorId: forumPosts.authorId, author: users.fullName })
+        .select({ id: forumPosts.id, body: forumPosts.body, hidden: forumPosts.hidden, held: forumPosts.held, editedAt: forumPosts.editedAt, createdAt: forumPosts.createdAt, authorId: forumPosts.authorId, author: users.fullName })
         .from(forumPosts)
         .innerJoin(users, eq(users.id, forumPosts.authorId))
-        .where(and(eq(forumPosts.threadId, threadId), a.manage ? undefined : eq(forumPosts.hidden, false)))
-        .orderBy(asc(forumPosts.createdAt));
-      return { ...t, author: author?.n ?? '', canModerate: a.manage, posts: posts.map((x) => ({ ...x, body: x.hidden ? '' : x.body })) };
+        .where(and(eq(forumPosts.threadId, threadId), a.manage ? undefined : and(eq(forumPosts.hidden, false), or(eq(forumPosts.held, false), eq(forumPosts.authorId, p.userId)))))
+        .orderBy(asc(forumPosts.createdAt))
+        .limit(1000);
+      return { ...t, author: author?.n ?? '', canModerate: a.manage, mine: t.authorId === p.userId, posts: posts.map((x) => ({ ...x, mine: x.authorId === p.userId, body: x.hidden && !a.manage ? '' : x.body })) };
     });
   }
 
@@ -99,8 +105,17 @@ export class LmsExtController {
       const a = await this.access(tx, p, t.courseId);
       if (!a.manage && !a.student) throw new ForbiddenException('Only the class and its teachers can post here');
       if (t.locked && !a.manage) throw new ConflictException('This discussion is locked');
-      const [row] = await tx.insert(forumPosts).values({ tenantId: p.tenantId, threadId, authorId: p.userId, body: b.body }).returning();
-      await tx.update(forumThreads).set({ lastPostAt: new Date() }).where(eq(forumThreads.id, threadId));
+      const held = !a.manage && (await lmsSettingsOf(tx, p.tenantId)).forumModeration === 'hold_students';
+      const [row] = await tx.insert(forumPosts).values({ tenantId: p.tenantId, threadId, authorId: p.userId, body: b.body, held, createdAt: this.clock.now() }).returning();
+      if (!held) {
+        await tx.update(forumThreads).set({ lastPostAt: this.clock.now() }).where(eq(forumThreads.id, threadId));
+        // The author of the discussion hears about replies (not about their own).
+        if (t.authorId !== p.userId) {
+          const [me] = await tx.select({ n: users.fullName }).from(users).where(eq(users.id, p.userId));
+          await this.notifications.notifyUsers(tx, [t.authorId], { kind: 'message', text: lmsTexts.forumReply({ title: t.title, author: me?.n ?? '' }), data: { threadId, courseId: t.courseId }, dedupeKey: `lms-forum-reply:${row.id}` });
+        }
+      }
+      await auditUser(tx, p, 'lms.forum.reply', 'forum_thread', threadId, { postId: row.id, held });
       return row;
     });
   }
