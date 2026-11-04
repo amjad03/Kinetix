@@ -21,6 +21,7 @@ import { allotBed, decidePass, defaultHostel, gateMove, residentOf, transfer, va
 import { HOSTEL_ROLES } from './hostel.controller.js';
 import { ALLOT_CATEGORIES, parseCategoryPoints } from './hostel-rules.js';
 import { blockScope, complaintScope, roomScope, studentScope } from './hostel-scope.js';
+import { LOCAL_TODAY } from '../common/local-today-sql.js';
 
 /**
  * The hostel's lists as record kit entities: hostels, room types, blocks, rooms and beds; residents (allot, vacate
@@ -1175,10 +1176,10 @@ export class HostelRecords implements OnModuleInit {
       roles: { read: HOSTEL_ROLES, write: HOSTEL_ROLES },
       label: (r) => `${r.name} · ${r.hostelName}`,
       list: {
-        select: { id: hostelStaff.id, hostelId: hostelStaff.hostelId, hostelName: hostels.name, userId: hostelStaff.userId, name: users.fullName, role: hostelStaff.role, fromOn: hostelStaff.fromOn, untilOn: hostelStaff.untilOn, phone: hostelStaff.phone, blocks: sql<string>`coalesce((select string_agg(k.name, ', ' order by k.name) from hostel_blocks k where k.id = any(${hostelStaff.blockIds})), '')`, current: sql<boolean>`${hostelStaff.untilOn} is null or ${hostelStaff.untilOn} >= current_date` },
+        select: { id: hostelStaff.id, hostelId: hostelStaff.hostelId, hostelName: hostels.name, userId: hostelStaff.userId, name: users.fullName, role: hostelStaff.role, fromOn: hostelStaff.fromOn, untilOn: hostelStaff.untilOn, phone: hostelStaff.phone, blocks: sql<string>`coalesce((select string_agg(k.name, ', ' order by k.name) from hostel_blocks k where k.id = any(${hostelStaff.blockIds})), '')`, current: sql<boolean>`${hostelStaff.untilOn} is null or ${hostelStaff.untilOn} >= ${LOCAL_TODAY}` },
         joins: (q) => q.innerJoin(hostels, eq(hostels.id, hostelStaff.hostelId)).innerJoin(users, eq(users.id, hostelStaff.userId)),
         search: [users.fullName, hostels.name],
-        filters: { hostel: { label: 'Hostel', options: hostelOptions, where: (v) => uuidEq(hostelStaff.hostelId, v) }, role: choiceFilter('Role', hostelStaff.role, STAFF_ROLES), current: yesNo('Current', sql`(${hostelStaff.untilOn} is null or ${hostelStaff.untilOn} >= current_date)`, sql`${hostelStaff.untilOn} < current_date`, ['Serving now', 'Past']) },
+        filters: { hostel: { label: 'Hostel', options: hostelOptions, where: (v) => uuidEq(hostelStaff.hostelId, v) }, role: choiceFilter('Role', hostelStaff.role, STAFF_ROLES), current: yesNo('Current', sql`(${hostelStaff.untilOn} is null or ${hostelStaff.untilOn} >= ${LOCAL_TODAY})`, sql`${hostelStaff.untilOn} < ${LOCAL_TODAY}`, ['Serving now', 'Past']) },
         sorts: { name: users.fullName, hostel: hostels.name, from: hostelStaff.fromOn },
         defaultSort: { id: 'hostel', dir: 'asc' },
         tiebreak: [users.fullName],
@@ -1235,7 +1236,7 @@ export class HostelRecords implements OnModuleInit {
           hostel: { label: 'Hostel', options: hostelOptions, where: (v) => uuidEq(hostelDuties.hostelId, v) },
           shift: choiceFilter('Shift', hostelDuties.shift, SHIFTS),
           status: choiceFilter('Status', hostelDuties.status, DUTY_STATUSES),
-          when: { label: 'When', options: choices(['upcoming', 'Today and later'], ['past', 'Past']), where: (v) => (v === 'upcoming' ? sql`${hostelDuties.dutyOn} >= current_date` : v === 'past' ? sql`${hostelDuties.dutyOn} < current_date` : undefined) },
+          when: { label: 'When', options: choices(['upcoming', 'Today and later'], ['past', 'Past']), where: (v) => (v === 'upcoming' ? sql`${hostelDuties.dutyOn} >= ${LOCAL_TODAY}` : v === 'past' ? sql`${hostelDuties.dutyOn} < ${LOCAL_TODAY}` : undefined) },
         },
         sorts: { day: hostelDuties.dutyOn, name: users.fullName, hostel: hostels.name },
         defaultSort: { id: 'day', dir: 'asc' },

@@ -3,6 +3,7 @@ import { and, eq, max, ne } from 'drizzle-orm';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { audit, changesOf } from '../common/audit.js';
 import { Clock } from '../common/time.js';
+import { tenantToday } from '../common/tenant-today.js';
 import type { Tx } from '../db/db.service.js';
 import { businessRules, incidents, incidentUpdates } from '../db/schema.js';
 import { DomainEvents, EventBus } from '../events/events.js';
@@ -54,7 +55,7 @@ export class GovernanceService {
     const [r] = await tx.select().from(businessRules).where(eq(businessRules.id, id)).for('update');
     if (!r) throw new NotFoundException('Rule not found');
     if (!canMoveRule(r.status, to)) throw new ConflictException(`A rule that is ${r.status} cannot become ${to}`);
-    const [row] = await tx.update(businessRules).set({ status: to, effectiveTo: to === 'retired' ? this.clock.now().toISOString().slice(0, 10) : r.effectiveTo }).where(eq(businessRules.id, id)).returning();
+    const [row] = await tx.update(businessRules).set({ status: to, effectiveTo: to === 'retired' ? await tenantToday(tx, this.clock) : r.effectiveTo }).where(eq(businessRules.id, id)).returning();
     await audit(tx, { tenantId: p.tenantId, actorType: 'user', actorId: p.userId, action: `rule.${to}`, subjectType: 'business_rule', subjectId: id, changes: { status: { before: r.status, after: to } } });
     if (to === 'in_review') {
       await this.tasks.createForRole(tx, p.tenantId, ['principal', 'tenant_admin'], { ownerId: p.userId, title: `Approve rule ${r.domain}/${r.key} v${r.version}`, description: r.title, sourceModule: 'business_rules', sourceId: id, priority: 'normal', slaHours: 72, escalateRole: 'tenant_admin' });
