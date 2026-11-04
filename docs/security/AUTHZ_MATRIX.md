@@ -1806,7 +1806,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/integrity/homework/:id` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/integrity/homework/:id/check` | hod, principal, teacher, tenant_admin |  |
 | PUT | `/v1/integrity/matches/:id` | hod, principal, teacher, tenant_admin |  |
-| GET | `/v1/inventory/batches` | principal, store_keeper, tenant_admin |  |
+| GET | `/v1/inventory/batches` | accountant, principal, store_keeper, tenant_admin |  |
 | GET | `/v1/inventory/books/month` | accountant, principal, tenant_admin |  |
 | POST | `/v1/inventory/books/month` | accountant, principal, tenant_admin |  |
 | GET | `/v1/inventory/budget/:departmentId` | accountant, canteen_manager, hod, hostel_warden, librarian, principal, store_keeper, teacher, tenant_admin, transport_manager |  |
