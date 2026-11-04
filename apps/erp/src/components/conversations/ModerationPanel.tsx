@@ -79,7 +79,7 @@ export function ModerationPanel({ reports, total, status, blocks }: { reports: M
     },
   ];
   return (
-    <div className="grid gap-6" data-testid="fs-moderation">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6" data-testid="fs-moderation">
       <LinkTabs
         label={t('fs.mod.title')}
         value={status}

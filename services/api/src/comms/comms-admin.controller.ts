@@ -357,7 +357,8 @@ export class CommsAdminController {
       const inRange = and(gte(commSendLog.attemptedAt, start), lt(commSendLog.attemptedAt, end), dept);
       const counts = {
         sent: sql<number>`count(*) filter (where ${commSendLog.status} in ('accepted', 'delivered', 'read', 'bounced') or (${commSendLog.status} = 'failed' and ${commSendLog.providerMessageId} is not null))::int`,
-        delivered: sql<number>`count(*) filter (where ${commSendLog.status} in ('delivered', 'read'))::int`,
+        // An in-app message is in the app as soon as it is handed over.
+        delivered: sql<number>`count(*) filter (where ${commSendLog.status} in ('delivered', 'read') or (${commSendLog.channel} = 'in_app' and ${commSendLog.status} = 'accepted'))::int`,
         read: sql<number>`count(*) filter (where ${commSendLog.status} = 'read')::int`,
         failed: sql<number>`count(*) filter (where ${commSendLog.status} in ('failed', 'bounced'))::int`,
         suppressed: sql<number>`count(*) filter (where ${commSendLog.status} = 'suppressed')::int`,

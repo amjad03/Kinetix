@@ -39,6 +39,7 @@ import { feeFlagshipSamples } from './fee-flagship.js';
 import { libraryPass } from './library-pass.js';
 import { inventoryPass } from './inventory-pass.js';
 import { transportPass } from './transport-pass.js';
+import { commsPass } from './comms-pass.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -122,6 +123,8 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   ['inventory pass: HSN and GST, valued stock with batches and expiry, mess and lab stores, issue slips, write-offs, an IGST order to the books, MSME dues, lab registers, NAAC maintenance', inventoryPass],
   // After the fees and the campus transport stage: fare slabs, crew and verification, safety checks, trip sheets, boardings, a late bus, transport fees.
   ['transport pass: fare slabs, crew and driver verification, safety checks, trip sheets and the boarding log, a late bus this morning, an SOS, transport fees and a cancelled seat', transportPass],
+  // After hostels, transport, the calendar and the operations stage's chats and PTM: channels, credits, consent, campaigns, notices, chat safety.
+  ['communication pass: channels and DLT, credits, consent per channel, campaigns with fallback and cost, notices with polls and translations, an emergency, RSVPs, chat moderation and escalation, PTM minutes', commsPass],
   // Last: version 1 is the live timetable as the earlier stages left it, and the diary follows the held periods.
   ['academics: bell schedule, lab batches and an open elective, allocations, unavailability, timetable versions, the teaching diary', academicsPass],
 ];

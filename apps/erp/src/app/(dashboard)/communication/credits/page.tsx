@@ -21,7 +21,7 @@ export default async function CreditsPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader title={t('nav.commsCredits')} subtitle={t('cp.credits.subtitle')} />
-      <div className="grid gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
         <ChannelsPanel channels={[]} credits={credits.data!} canEdit={false} canTopUp onlyCredits />
         {records.error !== undefined ? <ErrorState message={records.error} /> : <CreditLedgerList meta={records.data.meta} page={records.data.page} state={records.data.state} />}
       </div>

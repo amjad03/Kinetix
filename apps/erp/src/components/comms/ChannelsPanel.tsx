@@ -35,7 +35,7 @@ export function ChannelsPanel({ channels, credits, canEdit, canTopUp, onlyCredit
   ];
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <StatGrid min={180}>
         {credits.map((c) => (
           <StatTile

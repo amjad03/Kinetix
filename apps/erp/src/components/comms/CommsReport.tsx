@@ -21,7 +21,7 @@ export function CommsReport({ summary, from, to }: { summary: CommsSummary; from
   const chLabel = (c: string) => t(`cp.ch.${c}` as MessageKey);
   const maxDay = Math.max(1, ...summary.byDay.map((d) => d.sent));
   return (
-    <div className="grid gap-6" data-testid="cp-report">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6" data-testid="cp-report">
       <FormRow component="form" method="get">
         <input type="hidden" name="tab" value="reports" />
         <FormField label={t('cp.r.from')}>
