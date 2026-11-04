@@ -1,12 +1,13 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm';
+import { makeQrCode } from '../attendance-governance/attendance-rules.js';
 import type { BoardPrincipal } from '../auth/principal.js';
 import { audit } from '../common/audit.js';
 import { localParts } from '../common/time.js';
 import { Clock } from '../common/time.js';
 import type { Tx } from '../db/db.service.js';
 import { pollCoMap } from '../db/schema-assist.js';
-import { boardSessions, coSets, courseOutcomes, devices, polls, examPapers, examSeats, examSessions, invigilationDuties, rooms, sections, subjects, users } from '../db/schema.js';
+import { announcements, boardSessions, coSets, courseOutcomes, devices, polls, tenants, examPapers, examSeats, examSessions, invigilationDuties, rooms, sections, subjects, users } from '../db/schema.js';
 import { SessionsService } from '../sessions/sessions.service.js';
 import { TimetableService } from '../timetable/timetable.service.js';
 import { DayTimetableService } from '../timetable/day-timetable.service.js';
@@ -48,6 +49,58 @@ export class BoardSyncService {
       myPeriods: mine.periods,
       currentSlotId: current?.id ?? null,
     };
+  }
+
+  /**
+   * The board's screensaver between classes (device token, nobody signed in): the institution, the room, the period on now
+   * and the next one, and the notices sent to boards that have not expired (emergency and important first, at most six).
+   */
+  async idle(tx: Tx, deviceId: string) {
+    const roomId = await this.roomOf(tx, deviceId);
+    const at = this.clock.now();
+    const now = localParts(at, await this.timetable.tenantTimezone(tx));
+    const hm = now.time.slice(0, 5);
+    const [inst] = await tx.select({ name: tenants.name }).from(tenants);
+    const [room] = roomId ? await tx.select({ name: rooms.name }).from(rooms).where(eq(rooms.id, roomId)) : [];
+    const [day] = roomId ? await this.days.forRoom(tx, roomId, now.date, now.date) : [];
+    const periods = (day?.periods ?? []).map((x) => ({ section: x.section, subject: x.subject, teacher: x.teacher, startsAt: x.startsAt, endsAt: x.endsAt, kind: x.kind }));
+    const notices = await tx
+      .select({ id: announcements.id, title: announcements.title, body: announcements.body, priority: announcements.priority, sentAt: announcements.sentAt })
+      .from(announcements)
+      .where(
+        and(
+          eq(announcements.status, 'sent'),
+          sql`'boards' = any(${announcements.channels})`,
+          isNull(announcements.recalledAt),
+          sql`(${announcements.expiresAt} is null or ${announcements.expiresAt} > ${at})`,
+          gte(announcements.sentAt, new Date(at.getTime() - 14 * 86_400_000)),
+        ),
+      )
+      .orderBy(sql`case ${announcements.priority} when 'emergency' then 0 when 'important' then 1 else 2 end`, desc(announcements.sentAt))
+      .limit(6);
+    return {
+      institution: inst?.name ?? '',
+      room: room?.name ?? null,
+      date: now.date,
+      time: hm,
+      holiday: day?.holiday ?? null,
+      current: periods.find((x) => x.startsAt <= hm && hm < x.endsAt) ?? null,
+      next: periods.find((x) => x.startsAt > hm) ?? null,
+      periods,
+      notices: notices.map((n) => ({ ...n, body: n.body.slice(0, 600), sentAt: n.sentAt?.toISOString() ?? null })),
+    };
+  }
+
+  /**
+   * The rotating self-mark code for the period the board's teacher is teaching here now, to show full screen so the class scans
+   * it with the Student App (the same code the Teacher App shows; scans are checked the same way).
+   */
+  async attendanceQr(tx: Tx, p: BoardPrincipal, secret: string, ttlSeconds: number) {
+    const slot = await this.timetable.currentSlotForTeacher(tx, p.teacherId, await this.roomOf(tx, p.deviceId));
+    if (!slot) throw new NotFoundException('You have no class in this room right now');
+    const now = localParts(this.clock.now(), await this.timetable.tenantTimezone(tx));
+    const [names] = await tx.select({ section: sections.displayName, subject: subjects.name }).from(sections).innerJoin(subjects, eq(subjects.id, slot.subjectId)).where(eq(sections.id, slot.sectionId));
+    return { ...makeQrCode(secret, p.tenantId, slot.id, now.date, this.clock.now()), ttlSeconds, slotId: slot.id, date: now.date, section: names?.section ?? '', subject: names?.subject ?? '' };
   }
 
   private async roomOf(tx: Tx, deviceId: string): Promise<string | null> {

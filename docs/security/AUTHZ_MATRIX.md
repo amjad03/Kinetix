@@ -5,9 +5,9 @@ Regenerate: `cd services/api && UPDATE_AUTHZ=1 ./node_modules/.bin/vitest run te
 
 ## Summary
 
-- Routes: 3045
-- Public (no @Auth, no guard): 114 (all on the allow list below unless flagged)
-- Any signed-in user (no role list): 338; open to students and families, so each must scope to the caller
+- Routes: 3057
+- Public (no @Auth, no guard): 117 (all on the allow list below unless flagged)
+- Any signed-in user (no role list): 345; open to students and families, so each must scope to the caller
 - Flagged for review: 40
 
 Flags: `PUBLIC?` no @Auth and not on the public allow list; `BROAD` a write on a staff-sounding path open to students, families or any user; `OWNERSHIP?` an id in the path, open to non-staff, and no sign that the handler or its service reads the caller (each was reviewed: see *Reviewed* below and docs/security/SECURITY_AUDIT.md).
@@ -737,6 +737,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/auth/mfa/verify` | PUBLIC |  |
 | POST | `/v1/auth/otp/request` | PUBLIC |  |
 | POST | `/v1/auth/otp/verify` | PUBLIC |  |
+| POST | `/v1/auth/refresh` | PUBLIC |  |
 | GET | `/v1/auth/sso/callback` | PUBLIC |  |
 | POST | `/v1/auth/sso/exchange` | PUBLIC |  |
 | GET | `/v1/auth/sso/providers` | PUBLIC |  |
@@ -926,6 +927,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/chat/threads/:id/sync` | any signed-in user |  |
 | POST | `/v1/chat/threads/:id/typing` | any signed-in user |  |
 | GET | `/v1/class-notes/:token` | PUBLIC |  |
+| POST | `/v1/classroom/attendance-qr` | board token |  |
 | GET | `/v1/classroom/buzzer` | board token |  |
 | POST | `/v1/classroom/buzzer/lock` | board token |  |
 | POST | `/v1/classroom/buzzer/reset` | board token |  |
@@ -1118,6 +1120,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/devices/me/exam-room` | device token |  |
 | GET | `/v1/devices/me/exam-room/plan` | device token; board token |  |
 | POST | `/v1/devices/me/health` | device token; board token |  |
+| GET | `/v1/devices/me/idle` | device token |  |
 | POST | `/v1/devices/me/pairing-codes` | device token |  |
 | GET | `/v1/devices/me/profiles` | device token; board token |  |
 | POST | `/v1/devices/me/profiles/:userId/unlock` | device token; board token |  |
@@ -2148,12 +2151,15 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/me/mfa/backup-codes` | any signed-in user |  |
 | POST | `/v1/me/mfa/confirm` | any signed-in user |  |
 | POST | `/v1/me/mfa/enrol` | any signed-in user |  |
+| GET | `/v1/me/notification-preferences` | any signed-in user |  |
+| PUT | `/v1/me/notification-preferences` | any signed-in user |  |
 | POST | `/v1/me/password` | any signed-in user |  |
 | DELETE | `/v1/me/photo` | any signed-in user |  |
 | POST | `/v1/me/photo` | any signed-in user |  |
 | GET | `/v1/me/sessions` | any signed-in user |  |
 | DELETE | `/v1/me/sessions/:id` | any signed-in user |  |
 | POST | `/v1/me/sessions/revoke-others` | any signed-in user |  |
+| POST | `/v1/me/sign-out` | any signed-in user |  |
 | GET | `/v1/mentoring/assignments` | counsellor, hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/mentoring/assignments` | hod, principal, tenant_admin |  |
 | POST | `/v1/mentoring/assignments/:id/end` | hod, principal, tenant_admin |  |
@@ -2439,6 +2445,10 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/placements/trainings/:id` | hod, placement_officer, principal, tenant_admin |  |
 | PUT | `/v1/placements/trainings/:id/scores` | placement_officer, principal, tenant_admin |  |
 | POST | `/v1/placements/trainings/:id/sessions` | placement_officer, principal, tenant_admin |  |
+| GET | `/v1/platform/app-releases` | any signed-in user (+PlatformAdminGuard) |  |
+| PUT | `/v1/platform/app-releases` | any signed-in user (+PlatformAdminGuard) |  |
+| GET | `/v1/platform/client-errors` | any signed-in user (+PlatformAdminGuard) |  |
+| POST | `/v1/platform/client-errors/:id/resolve` | any signed-in user (+PlatformAdminGuard) |  |
 | GET | `/v1/platform/content-licenses` | any signed-in user (+PlatformAdminGuard) |  |
 | PUT | `/v1/platform/content-licenses` | any signed-in user (+PlatformAdminGuard) |  |
 | DELETE | `/v1/platform/content-licenses/:id` | any signed-in user (+PlatformAdminGuard) |  |
@@ -2527,6 +2537,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/public/admissions/:slug/enquiries` | PUBLIC |  |
 | GET | `/v1/public/admissions/:slug/landing/:cycleId` | PUBLIC |  |
 | POST | `/v1/public/admissions/:slug/status` | PUBLIC |  |
+| GET | `/v1/public/app-versions/check` | PUBLIC |  |
 | GET | `/v1/public/bi-export/:id/:dataset` | PUBLIC |  |
 | GET | `/v1/public/boards/:slug/:file` | PUBLIC |  |
 | GET | `/v1/public/branding/:slug` | PUBLIC |  |
@@ -2535,6 +2546,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/public/careers/:slug/openings/:id` | PUBLIC |  |
 | POST | `/v1/public/careers/:slug/openings/:id/apply` | PUBLIC |  |
 | GET | `/v1/public/checkout/:slug/:paymentId` | PUBLIC |  |
+| POST | `/v1/public/client-errors` | PUBLIC |  |
 | GET | `/v1/public/disclosure/:slug` | PUBLIC |  |
 | GET | `/v1/public/disclosure/:slug/policies/:versionId` | PUBLIC |  |
 | GET | `/v1/public/events/:slug` | PUBLIC |  |

@@ -1450,6 +1450,20 @@
       "when": 1791506443000,
       "tag": "0219_governance_compliance_disclosure_dpdp",
       "breakpoints": true
+    },
+    {
+      "idx": 207,
+      "version": "7",
+      "when": 1791506444000,
+      "tag": "0220_mobile_sessions_releases_crashes",
+      "breakpoints": true
+    },
+    {
+      "idx": 208,
+      "version": "7",
+      "when": 1791506445000,
+      "tag": "0221_user_notification_prefs",
+      "breakpoints": true
     }
   ]
 }

@@ -36,6 +36,13 @@ export const userSessions = pgTable(
     createdAt: createdAt(),
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    /** Migration 0220: `mobile` sign-ins get a rotating refresh token (SHA-256 of its secret here). */
+    client: text('client').$type<'web' | 'mobile'>().notNull().default('web'),
+    refreshHash: text('refresh_hash'),
+    /** The refresh token just replaced: presenting it within a minute is a race, later a theft (the session ends). */
+    refreshPrevHash: text('refresh_prev_hash'),
+    refreshExpiresAt: timestamp('refresh_expires_at', { withTimezone: true }),
+    refreshedAt: timestamp('refreshed_at', { withTimezone: true }),
   },
   (t) => [index('user_sessions_user_idx').on(t.userId, t.revokedAt)],
 );

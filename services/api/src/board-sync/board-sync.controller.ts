@@ -1,4 +1,6 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { QR_TTL_SECONDS } from '../attendance-governance/attendance-rules.js';
+import { ENV, type Env } from '../config/env.js';
 import { z } from 'zod';
 import { ZodBody } from '../common/zod-body.js';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
@@ -14,6 +16,7 @@ export class BoardSyncController {
   constructor(
     private readonly db: DbService,
     private readonly svc: BoardSyncService,
+    @Inject(ENV) private readonly env: Env,
   ) {}
 
   /** The signed-in teacher's current period in this room (null between periods). */
@@ -39,6 +42,21 @@ export class BoardSyncController {
   @Auth('board')
   openNow(@CurrentPrincipal() p: BoardPrincipal) {
     return this.db.withTenant(p.tenantId, (tx) => this.svc.openNow(tx, p));
+  }
+
+  /** The class's self-mark code, shown full screen on the board (the Student App scans it). Rotates every 30 seconds. */
+  @Post('classroom/attendance-qr')
+  @HttpCode(200)
+  @Auth('board')
+  attendanceQr(@CurrentPrincipal() p: BoardPrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => this.svc.attendanceQr(tx, p, this.env.JWT_SECRET, QR_TTL_SECONDS));
+  }
+
+  /** The screensaver between classes: room, the period on now and next, and notices sent to boards (device token). */
+  @Get('devices/me/idle')
+  @Auth('device')
+  idle(@CurrentPrincipal() p: DevicePrincipal) {
+    return this.db.withTenant(p.tenantId, (tx) => this.svc.idle(tx, p.deviceId));
   }
 
   /** Exam room mode: works with the device token alone, so the room shows the paper before any teacher signs in. */

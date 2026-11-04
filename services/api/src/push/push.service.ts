@@ -7,6 +7,8 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { jobs, notifications, pushDevices, tenants, users } from '../db/schema.js';
 import { chatAvailability, commChannelPrefs } from '../db/schema-comms.js';
 import { qualitySettings } from '../quality-hub/settings.catalogue.js';
+import { userNotificationPrefs } from '../db/schema-mobile.js';
+import { personalQuietUntil } from '../mobile/mobile.logic.js';
 import { LOCK_SCREEN, OPEN_APP, type Lang } from '../notifications/texts.js';
 import { JobsService, type Job } from '../jobs/jobs.service.js';
 import { PushSender, type PushMessage } from './push-sender.js';
@@ -63,7 +65,21 @@ export class PushService implements OnModuleInit {
           .filter((a) => (a.dndUntil && a.dndUntil > now) || outsideOfficeHours(now, tz, a.hours))
           .map((a) => a.userId),
       );
-      const keep = rows.filter((r) => r.urgent || (!off.has(r.userId) && !(r.kind === 'message' && away.has(r.userId))));
+      // Their own settings in the app (Profile → Notifications): kinds without a push, and personal quiet hours,
+      // which hold the push until they end (the notification is already in the app's inbox).
+      const own = new Map((await tx.select().from(userNotificationPrefs).where(inArray(userNotificationPrefs.userId, people))).map((p) => [p.userId, p]));
+      const held = new Map<number, Set<string>>();
+      const keep = rows.filter((r) => {
+        if (r.urgent) return true;
+        if (off.has(r.userId) || (r.kind === 'message' && away.has(r.userId))) return false;
+        const mine = own.get(r.userId);
+        if (mine?.pushOff.includes(r.kind)) return false;
+        const wait = mine?.quietStart && mine.quietEnd ? personalQuietUntil(now, tz, mine.quietStart, mine.quietEnd) : null;
+        if (!wait) return true;
+        held.set(wait.getTime(), (held.get(wait.getTime()) ?? new Set()).add(r.id));
+        return false;
+      });
+      for (const [at, ids] of held) await tx.insert(jobs).values({ tenantId: job.tenantId, kind: PUSH_SEND, payload: { ids: [...ids].join(',') }, runAfter: new Date(at) });
       // Quiet hours: a non-urgent push waits until they end (the notification is already in the app).
       const quiet = await qualitySettings(tx, job.tenantId, 'communication');
       const until = quiet.rules.quietHoursOn ? quietUntil(now, tz, Number(quiet.rules.quietHoursStart), Number(quiet.rules.quietHoursEnd)) : null;
