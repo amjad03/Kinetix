@@ -386,11 +386,17 @@ describe('new roles, annotations, delegation, DPDP and the alumni portal', () =>
       expect((await q<{ full_name: string }>('select full_name from users where id = $1', [t.studentUser.id]))[0].full_name).not.toBe('Erased user');
 
       await post('leaver', '/v1/dpdp/me/requests', { kind: 'erasure' }).expect(201);
+      // The leaver's phone is registered for pushes and has a session with its address and browser.
+      await q(`insert into push_devices (tenant_id, user_id, token, platform, app) values ($1, $2, 'leaver-fcm-token', 'android', 'parent')`, [t.tenantId, ids.leaver]);
+      await q(`insert into user_sessions (tenant_id, user_id, label, ip, user_agent) values ($1, $2, 'Phone', '203.0.113.9', 'Mozilla/5.0 (Linux; Android 14)')`, [t.tenantId, ids.leaver]);
       const pending = (await get('principal', '/v1/dpdp/requests?status=pending').expect(200)).body as { id: string; userId: string }[];
       const mine = pending.find((x) => x.userId === ids.leaver)!;
       expect((await post('principal', `/v1/dpdp/requests/${mine.id}/process`, { decision: 'approve' }).expect(200)).body.status).toBe('completed');
       const u = (await q<{ full_name: string; email: string | null; status: string }>('select full_name, email, status from users where id = $1', [ids.leaver]))[0];
       expect(u).toMatchObject({ full_name: 'Erased user', email: null, status: 'disabled' });
+      // No pushes reach the erased person's phone, and their sessions are revoked without the address or browser.
+      expect(await q('select id from push_devices where user_id = $1', [ids.leaver])).toEqual([]);
+      expect((await q<{ ip: string | null; user_agent: string | null; revoked: boolean }>('select ip, user_agent, revoked_at is not null as revoked from user_sessions where user_id = $1', [ids.leaver])).every((r) => r.ip === null && r.user_agent === null && r.revoked)).toBe(true);
       await http().post('/v1/auth/login').send({ tenant: t.slug, login: 'leelever@rd.in', password: 'pw' }).expect(401);
     });
 
