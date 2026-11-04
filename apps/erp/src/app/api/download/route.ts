@@ -118,7 +118,21 @@ export async function GET(req: NextRequest) {
     const user = sp.get('user') ?? '';
     if (id === 'nirf-rp') FIXED[kind] = `/v1/research/reports/nirf-rp.xlsx${/^\d{4}$/.test(toYear) ? `?toYear=${toYear}` : ''}`;
     else if (id === 'profile') FIXED[kind] = `/v1/research/reports/faculty-profile.xlsx${UUID.test(user) ? `?userId=${user}` : ''}`;
-    else return new Response('Not found', { status: 404 });
+    // ?kind=research&id=nba-aishe&year=2025[&dept=<uuid>], ?kind=research&id=grant-statement&grant=<uuid>[&from&to]
+    else if (id === 'nba-aishe') {
+      const year = sp.get('year') ?? '';
+      const dept = sp.get('dept') ?? '';
+      const q = new URLSearchParams({ ...(/^\d{4}$/.test(year) ? { year } : {}), ...(UUID.test(dept) ? { departmentId: dept } : {}) }).toString();
+      FIXED[kind] = `/v1/research/reports/nba-aishe.xlsx${q ? `?${q}` : ''}`;
+    } else if (id === 'grant-statement') {
+      const grant = sp.get('grant') ?? '';
+      if (!UUID.test(grant)) return new Response('Not found', { status: 404 });
+      const day = /^\d{4}-\d{2}-\d{2}$/;
+      const from = sp.get('from') ?? '';
+      const to = sp.get('to') ?? '';
+      const q = new URLSearchParams({ ...(day.test(from) ? { from } : {}), ...(day.test(to) ? { to } : {}) }).toString();
+      FIXED[kind] = `/v1/research/grants/${grant}/statement.xlsx${q ? `?${q}` : ''}`;
+    } else return new Response('Not found', { status: 404 });
   }
   // Form 24Q: ?kind=q24&fy=2026&quarter=1..4&annexure=1|2
   if (kind === 'q24') {

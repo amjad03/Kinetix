@@ -1,6 +1,6 @@
 'use client';
 import { useRef, useState, useTransition } from 'react';
-import { addDataset, allocateScholar, importDoi, moveStage, recordThesisViva, runSimilarity, scheduleThesisViva, setCapacity, setExaminers, thesisDetail, uploadDatasetFile } from '@/app/(dashboard)/research/actions';
+import { addDataset, allocateScholar, depositShodhganga, importDoi, moveStage, recordSimilarityReport, recordThesisViva, runSimilarity, scheduleThesisViva, setCapacity, setExaminers, thesisDetail, uploadDatasetFile } from '@/app/(dashboard)/research/actions';
 import { ActionButton, Bar, FormDialog, Grid, InfoDialog, Pill, Tabbed, useToast, type Col } from '@/components/ops/kit';
 import { Heading, ReadError, readBase64, useRead } from '@/components/pathways/shared';
 import { StatGrid, StatTile } from '@/components/StatTile';
@@ -257,7 +257,7 @@ function DatasetFileDialog({ dataset, onClose }: { dataset: DatasetRow; onClose:
 function ThesisDialog({ row, canEdit, onClose, toast }: { row: ThesisRow; canEdit: boolean; onClose: () => void; toast: (m: string) => void }) {
   const { t, fmt } = useI18n();
   const d = useRead(() => thesisDetail(row.id));
-  const [dlg, setDlg] = useState<'stage' | 'examiners' | 'viva' | { record: string } | null>(null);
+  const [dlg, setDlg] = useState<'stage' | 'examiners' | 'viva' | 'report' | 'shodhganga' | { record: string } | null>(null);
   const done = (m?: string) => {
     setDlg(null);
     if (m) {
@@ -285,8 +285,12 @@ function ThesisDialog({ row, canEdit, onClose, toast }: { row: ThesisRow; canEdi
               {stageOptions.length > 0 && <Button size="small" onClick={() => setDlg('stage')}>{t('rsd.moveStage')}</Button>}
               <Button size="small" onClick={() => setDlg('examiners')}>{t('rsd.setExaminers')}</Button>
               <Button size="small" onClick={() => setDlg('viva')}>{t('rsd.scheduleViva')}</Button>
+              {['draft', 'submitted'].includes(x.stage) && <Button size="small" onClick={() => setDlg('report')} data-testid="rsp-similarity-report">{t('rsp.th.report')}</Button>}
+              {x.stage === 'awarded' && !x.shodhgangaHandle && <Button size="small" onClick={() => setDlg('shodhganga')} data-testid="rsp-shodhganga">{t('rsp.th.shodhganga')}</Button>}
             </Bar>
           )}
+          {x.similarity?.level && <p className="text-[13px] leading-[19px] mb-2" data-testid="rsp-ugc-level">{t('rsp.th.level', { engine: t(`rsp.engine.${x.similarity.engine}` as MessageKey), level: t(`rsp.level.${x.similarity.level}` as MessageKey) })}{x.similarity.reportRef ? ` · ${x.similarity.reportRef}` : ''}</p>}
+          {x.shodhgangaHandle && <p className="text-[13px] leading-[19px] mb-2">{t('rsp.th.deposited', { handle: x.shodhgangaHandle, date: x.shodhgangaDepositedOn ? fmt.date(x.shodhgangaDepositedOn, 'short') : '-' })}</p>}
           {!x.hasText && <p className="text-[13px] leading-[19px] text-muted-foreground mb-2">{t('rsd.noText')}</p>}
           {x.similarity && x.similarity.matches.length > 0 && (
             <>
@@ -345,6 +349,32 @@ function ThesisDialog({ row, canEdit, onClose, toast }: { row: ThesisRow; canEdi
                 { name: 'panel', label: t('rsd.f.panel'), required: true },
               ]}
               onSubmit={(v) => scheduleThesisViva(x.id, v)}
+              onClose={done}
+            />
+          )}
+          {dlg === 'report' && (
+            <FormDialog
+              title={t('rsp.th.report')}
+              intro={<p className="text-[13px] leading-[19px]">{t('rsp.th.reportHint', { limit: x.similarityLimitPercent })}</p>}
+              fields={[
+                { name: 'engine', label: t('rsp.th.engine'), kind: 'select', required: true, init: 'urkund', options: (['urkund', 'drillbit', 'turnitin', 'ithenticate', 'other'] as const).map((e) => ({ value: e, label: t(`rsp.engine.${e}` as MessageKey) })) },
+                { name: 'scorePercent', label: t('rsp.th.score'), kind: 'number', required: true },
+                { name: 'reportRef', label: t('rsp.th.reportRef'), required: true },
+                { name: 'reportUrl', label: t('rsp.th.reportUrl') },
+              ]}
+              onSubmit={(v) => recordSimilarityReport(x.id, v)}
+              onClose={done}
+            />
+          )}
+          {dlg === 'shodhganga' && (
+            <FormDialog
+              title={t('rsp.th.shodhganga')}
+              intro={<p className="text-[13px] leading-[19px]">{t('rsp.th.shodhgangaHint')}</p>}
+              fields={[
+                { name: 'handle', label: t('rsp.th.handle'), required: true },
+                { name: 'depositedOn', label: t('ops.f.date'), kind: 'date', required: true },
+              ]}
+              onSubmit={(v) => depositShodhganga(x.id, v)}
               onClose={done}
             />
           )}

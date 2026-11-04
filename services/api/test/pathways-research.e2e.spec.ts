@@ -133,7 +133,7 @@ describe('research: supervisors, thesis, viva, datasets, DOI import, research of
     await put('coord', `${R}/theses/${b.id}/examiners`, { examiners: [{ name: 'Prof. Iyer', affiliation: 'IIM Bangalore' }, { name: 'Dr. Menon', affiliation: 'Kerala University' }] }).expect(200);
     await post('coord', `${R}/theses/${b.id}/stage`, { to: 'examination' }).expect(409);
     const check = (await post('coord', `${R}/theses/${b.id}/similarity`).expect(200)).body;
-    expect(check).toMatchObject({ engine: 'internal', withinLimit: false, limitPercent: 25 });
+    expect(check).toMatchObject({ engine: 'internal', withinLimit: false, limitPercent: 10, level: 'level_3' });
     expect(check.scorePercent).toBeGreaterThan(60);
     expect(check.matches[0].title).toBe('Bookkeeping habits of village shops');
     await post('coord', `${R}/theses/${b.id}/stage`, { to: 'examination' }).expect(409);

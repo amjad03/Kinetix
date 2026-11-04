@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ResearchList } from '@/components/research/ResearchLists';
 import { OrcidImport, ResearchReports, type FacultyRow, type NaacC3, type NirfRp, type Profile } from '@/components/research/ResearchReports';
 import { ResearchOfficeDesk } from '@/components/research/ResearchOfficeDesk';
+import { ClaimIncentive, DoiAdd, ResearchPassReports, type AisheReport, type GrantStatement, type NbaReport, type NirfParams } from '@/components/research/ResearchPass';
 import { StatTile } from '@/components/StatTile';
 import { EmptyState, ErrorState } from '@/components/States';
 import { LinkTabs } from '@/components/ui';
@@ -29,10 +30,10 @@ const VIEWS = ['overview', 'outputs', 'funding', 'collab', 'scholars', 'faciliti
 type View = (typeof VIEWS)[number];
 /** The registers of each view, in tab order. */
 const LISTS: Partial<Record<View, string[]>> = {
-  outputs: ['research-publications', 'research-patents', 'research-conferences', 'research-recognitions'],
-  funding: ['research-calls', 'research-proposals', 'research-projects', 'research-grants', 'grant-ucs', 'research-seed-grants'],
+  outputs: ['research-publications', 'research-profiles', 'research-patents', 'research-conferences', 'research-recognitions', 'research-incentive-claims'],
+  funding: ['research-calls', 'research-proposals', 'research-projects', 'research-grants', 'grant-heads', 'grant-releases', 'grant-ucs', 'research-seed-grants', 'research-incentive-schemes'],
   collab: ['research-consultancies', 'research-mous', 'research-mou-activities'],
-  scholars: ['research-scholars', 'scholar-dc-meetings', 'scholar-coursework'],
+  scholars: ['research-scholars', 'scholar-progress-reports', 'scholar-dc-meetings', 'scholar-coursework', 'research-centres'],
   facilities: ['research-equipment', 'research-equipment-usage', 'research-ethics'],
 };
 
@@ -57,9 +58,30 @@ const LIST_LABEL: Record<string, MessageKey> = {
   'research-equipment': 'rsx.list.equipment',
   'research-equipment-usage': 'rsx.list.usage',
   'research-ethics': 'rsx.list.ethics',
+  'research-profiles': 'rsp.list.profiles',
+  'research-incentive-claims': 'rsp.list.claims',
+  'research-incentive-schemes': 'rsp.list.schemes',
+  'grant-heads': 'rsp.list.heads',
+  'grant-releases': 'rsp.list.releases',
+  'research-centres': 'rsp.list.centres',
+  'scholar-progress-reports': 'rsp.list.progress',
 };
 
 type Sp = Record<string, string | string[] | undefined>;
+
+/** What a teacher can claim an incentive for: open schemes, and their own papers and patents. */
+async function claimOptions() {
+  const [schemes, pubs, pats] = await Promise.all([
+    safe(api<RecordsPage<{ id: string; name: string; kind: string; active: boolean }>>('/v1/records/research-incentive-schemes?pageSize=100&f.active=yes'), null),
+    safe(api<RecordsPage<{ id: string; title: string; year: number }>>('/v1/records/research-publications?pageSize=100&sort=year:desc'), null),
+    safe(api<RecordsPage<{ id: string; title: string; status: string }>>('/v1/records/research-patents?pageSize=100'), null),
+  ]);
+  return {
+    schemes: (schemes?.rows ?? []).map((s) => ({ value: s.id, label: s.name, kind: s.kind })),
+    publications: (pubs?.rows ?? []).map((p) => ({ value: p.id, label: `${p.title} (${p.year})` })),
+    patents: (pats?.rows ?? []).filter((p) => ['published', 'granted'].includes(p.status)).map((p) => ({ value: p.id, label: p.title })),
+  };
+}
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 /**
@@ -84,7 +106,18 @@ export default async function ResearchPage({ searchParams }: { searchParams: Pro
   if (lists) {
     const entity = lists.includes(one(sp.list) ?? '') ? one(sp.list)! : lists[0];
     const records = await loadRecords(entity, sp);
-    const faculty = entity === 'research-publications' ? await safe(api<FacultyRow[]>('/v1/research/reports/faculty'), []) : [];
+    const faculty = entity === 'research-publications' && records.error === undefined && records.data.meta.can.write && (me?.roles ?? []).some((r) => RESEARCH_STAFF.includes(r)) ? await safe(api<FacultyRow[]>('/v1/research/reports/faculty'), []) : [];
+    // A teacher claims an incentive for their own paper or patent from the claims list.
+    const claim = entity === 'research-incentive-claims' ? await claimOptions() : null;
+    const toolbar =
+      entity === 'research-publications' && records.error === undefined && records.data.meta.can.write ? (
+        <div key="pub-tools" className="flex flex-wrap gap-2">
+          <DoiAdd />
+          <OrcidImport faculty={faculty.map((f) => ({ value: f.id, label: f.name }))} />
+        </div>
+      ) : claim ? (
+        <ClaimIncentive key="claim" schemes={claim.schemes} publications={claim.publications} patents={claim.patents} />
+      ) : undefined;
     return (
       <>
         <PageHeader title={t('nav.research')} subtitle={t(`rsx.viewSub.${view}` as MessageKey)} />
@@ -104,7 +137,7 @@ export default async function ResearchPage({ searchParams }: { searchParams: Pro
         {records.error !== undefined ? (
           <ErrorState message={records.error} />
         ) : (
-          <ResearchList entity={entity} meta={records.data.meta} page={records.data.page} state={records.data.state} extraParams={{ view, list: entity }} toolbar={entity === 'research-publications' && records.data.meta.can.write ? <OrcidImport key="orcid" faculty={faculty.map((f) => ({ value: f.id, label: f.name }))} /> : undefined} />
+          <ResearchList entity={entity} meta={records.data.meta} page={records.data.page} state={records.data.state} extraParams={{ view, list: entity }} toolbar={toolbar} />
         )}
       </>
     );
@@ -114,19 +147,33 @@ export default async function ResearchPage({ searchParams }: { searchParams: Pro
     const user = one(sp.user);
     const userId = user && /^[0-9a-f-]{36}$/i.test(user) ? user : null;
     const data = await load(async () => {
-      const [faculty, nirf, naac, profile] = await Promise.all([
+      const [faculty, nirf, naac, profile, params, nba, aishe, grants] = await Promise.all([
         api<FacultyRow[]>('/v1/research/reports/faculty'),
         api<NirfRp>('/v1/research/reports/nirf-rp'),
         api<NaacC3>('/v1/research/reports/naac-c3'),
         userId ? safe(api<Profile>(`/v1/research/reports/faculty-profile?userId=${userId}`), null) : Promise.resolve(null),
+        api<NirfParams>('/v1/research/reports/nirf-params'),
+        api<NbaReport>('/v1/research/reports/nba'),
+        api<AisheReport>('/v1/research/reports/aishe'),
+        safe(api<RecordsPage<{ id: string; agency: string; sanctionRef: string | null; projectTitle: string }>>('/v1/records/research-grants?pageSize=100'), null),
       ]);
-      return { faculty, nirf, naac, profile };
+      const grant = one(sp.grant);
+      const grantId = grant && /^[0-9a-f-]{36}$/i.test(grant) ? grant : (grants?.rows[0]?.id ?? null);
+      const statement = grantId ? await safe(api<GrantStatement>(`/v1/research/grants/${grantId}/statement`), null) : null;
+      return { faculty, nirf, naac, profile, params, nba, aishe, grants: grants?.rows ?? [], grantId, statement };
     });
     return (
       <>
         <PageHeader title={t('nav.research')} subtitle={t('rsx.viewSub.reports')} />
         {tabs}
-        {data.error !== undefined ? <ErrorState message={data.error} /> : <ResearchReports faculty={data.data.faculty} userId={userId} profile={data.data.profile} nirf={data.data.nirf} naac={data.data.naac} />}
+        {data.error !== undefined ? (
+          <ErrorState message={data.error} />
+        ) : (
+          <div className="flex flex-col gap-6">
+            <ResearchReports faculty={data.data.faculty} userId={userId} profile={data.data.profile} nirf={data.data.nirf} naac={data.data.naac} />
+            <ResearchPassReports params={data.data.params} nba={data.data.nba} aishe={data.data.aishe} grants={data.data.grants.map((g) => ({ value: g.id, label: `${g.agency}${g.sanctionRef ? ` (${g.sanctionRef})` : ''} · ${g.projectTitle}` }))} grantId={data.data.grantId} statement={data.data.statement} />
+          </div>
+        )}
       </>
     );
   }

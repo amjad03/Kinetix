@@ -68,6 +68,38 @@ export async function importDoi(v: V) {
   return send<{ title: string }>(`${BASE}/publications/import-doi`, { doi: v.doi }, PAGE);
 }
 
+/**
+ * Records a publication from its DOI; when the registry cannot be reached and the typed-in title, venue and year are
+ * given, it is kept as pending and completed later (the answer says which).
+ */
+export async function addByDoi(v: V) {
+  const year = Number(v.year);
+  const fallback = optStr(v.title) && optStr(v.venue) && Number.isInteger(year) ? { title: v.title.trim(), venue: v.venue.trim(), year, kind: v.kind || 'journal' } : undefined;
+  return send<{ title: string; lookup: string }>(`${BASE}/publications/import-doi`, { doi: v.doi ?? '', ...(fallback ? { fallback } : {}) }, PAGE);
+}
+
+/** Fills in the publications recorded while the DOI registry was unreachable. */
+export async function refreshPendingDois() {
+  return send<{ checked: number; updated: number; stillPending: number; registryOffline: boolean }>(`${BASE}/publications/refresh-pending`, undefined, PAGE);
+}
+
+/** Claims an incentive for one's own publication or patent under a scheme. */
+export async function claimIncentive(v: V) {
+  const subject = v.subject ?? '';
+  const [kind, subjectId] = subject.split(':');
+  return send<{ amountPaise: number; basis: string }>(`${BASE}/incentives/claims`, { schemeId: v.schemeId, ...(kind === 'patent' ? { patentId: subjectId } : { publicationId: subjectId }) }, PAGE);
+}
+
+/** Records the e-copy deposit of an awarded thesis with Shodhganga. */
+export async function depositShodhganga(thesisId: string, v: V) {
+  return send(`${BASE}/theses/${id(thesisId)}/shodhganga`, { handle: v.handle ?? '', depositedOn: v.depositedOn }, PAGE);
+}
+
+/** Records the report of the university's plagiarism detection software for a thesis. */
+export async function recordSimilarityReport(thesisId: string, v: V) {
+  return send(`${BASE}/theses/${id(thesisId)}/similarity/external`, { engine: v.engine || 'urkund', scorePercent: Number(v.scorePercent), reportRef: v.reportRef ?? '', ...(optStr(v.reportUrl) ? { reportUrl: v.reportUrl.trim() } : {}) }, PAGE);
+}
+
 /** Records the public works of an ORCID iD for a teacher (yourself when none is chosen). */
 export async function importOrcid(v: V) {
   return send<{ found: number; added: number; skipped: number; incomplete: number }>(`${BASE}/publications/import-orcid`, { orcid: v.orcid ?? '', ...(optStr(v.ownerUserId) ? { ownerUserId: v.ownerUserId } : {}) }, PAGE);
