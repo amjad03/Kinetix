@@ -89,9 +89,16 @@ export interface SubjectResult {
   externalAbsent: boolean;
 }
 
+/**
+ * Half-up rounding to `d` decimals that survives binary floating point: 4.015 × 100 is 401.49999999999994 in
+ * IEEE-754, so adding Number.EPSILON (which vanishes next to numbers above 1) still rounded 4.015 down to 4.01.
+ * Trimming the scaled value to 15 significant digits first removes that representation error.
+ */
 export const round = (n: number, d = 2) => {
+  if (!Number.isFinite(n)) return n;
   const f = 10 ** d;
-  return Math.round((n + Number.EPSILON) * f) / f;
+  const scaled = Number((Math.abs(n) * f).toPrecision(15));
+  return (Math.sign(n) * Math.round(scaled)) / f;
 };
 
 /** How a university rounds SGPA/CGPA: half up (7.455 → 7.46) or cut off (7.459 → 7.45). */

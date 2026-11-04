@@ -27,6 +27,8 @@
  * between the COs it tests ("equal"); "off" leaves totals-only results out.
  */
 
+import { round as roundHalfUp } from '../exams/grading.js';
+
 export interface LevelRule {
   level: number;
   /** Minimum percentage (of students attaining the threshold, or the class average) for this level. */
@@ -87,7 +89,8 @@ export function withDefaults(c: Partial<AttainmentConfig> | null | undefined): R
   return { ...DEFAULT_ATTAINMENT_CONFIG, ...(c ?? {}) } as Required<AttainmentConfig>;
 }
 
-export const round = (n: number, d: number) => Math.round((n + Number.EPSILON) * 10 ** d) / 10 ** d;
+/** Half-up rounding shared with the result maths (safe for ties such as 2.135 that binary floats store just below). */
+export const round = (n: number, d: number) => roundHalfUp(n, d);
 
 export interface EvidenceItem {
   /** Assessment (or question) the marks come from. */

@@ -5,7 +5,9 @@
  * No database here, so each rule is tested on its own (exam-cell.logic.spec.ts).
  */
 
-const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+import { round } from '../exams/grading.js';
+
+const round2 = (n: number) => round(n, 2);
 
 // ---- registration fees -----------------------------------------------------------------------
 

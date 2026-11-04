@@ -77,7 +77,11 @@ export async function subjectAttendance(tx: Tx, studentIds: string[], thresholdP
   });
 }
 
-/** Overall attendance per student (all subjects together), after condonation. */
+/**
+ * Overall attendance per student (all subjects together) in the student's current term, after condonation. Only
+ * records taken in a class of the same academic year and term as the student's class now count: without this a
+ * semester 3 student's eligibility pooled semesters 1 and 2 as well (a moved student keeps the term's records).
+ */
 export async function overallAttendance(tx: Tx, studentIds: string[], thresholdPct: number): Promise<Map<string, { pct: number | null; condonedPoints: number; effectivePct: number | null; eligible: boolean }>> {
   const out = new Map<string, { pct: number | null; condonedPoints: number; effectivePct: number | null; eligible: boolean }>();
   if (studentIds.length === 0) return out;
@@ -89,7 +93,12 @@ export async function overallAttendance(tx: Tx, studentIds: string[], thresholdP
       absent: sql<number>`count(*) filter (where ${attendanceRecords.status} = 'absent')::int`,
     })
     .from(attendanceRecords)
-    .where(inArray(attendanceRecords.studentId, studentIds))
+    .where(
+      and(
+        inArray(attendanceRecords.studentId, studentIds),
+        sql`${attendanceRecords.sectionId} in (select rs.id from sections rs join sections cs on cs.academic_year_id = rs.academic_year_id and cs.term = rs.term join students st on st.section_id = cs.id where st.id = ${attendanceRecords.studentId})`,
+      ),
+    )
     .groupBy(attendanceRecords.studentId);
   const condoned = await condonedPoints(tx, studentIds);
   const byStudent = new Map(rows.map((r) => [r.studentId, r]));

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { PdfWriter, toCsv } from '../common/pdf.js';
-import { cgpa, GRADE_SCALE_PRESETS, gradeFor, SCHEME_PRESETS, sgpa, subjectResult, validateBands, validateWeights, type SchemeComponent } from './grading.js';
+import { attendancePct, effectivePct } from '../attendance-governance/attendance-rules.js';
+import { round as obeRound } from '../obe/attainment.js';
+import { cgpa, GRADE_SCALE_PRESETS, gradeFor, round, roundBy, SCHEME_PRESETS, sgpa, subjectResult, validateBands, validateWeights, type SchemeComponent } from './grading.js';
 import { allocateSeats, overlaps, slotGroups } from './seating.js';
 
 const bu = GRADE_SCALE_PRESETS['bu-nep'];
@@ -107,3 +109,44 @@ describe('documents', () => {
     expect(toCsv([['a,b', '=1+1', 'x"y', 5]])).toBe('"a,b",\'=1+1,"x""y",5\r\n');
   });
 });
+
+describe('audit: rounding and attendance thresholds', () => {
+  it('rounds ties half up even where binary floats store them just below (4.015, 8.135, 66.845)', () => {
+    expect(round(4.015, 2)).toBe(4.02);
+    expect(round(2.135, 2)).toBe(2.14);
+    expect(round(8.135, 2)).toBe(8.14);
+    expect(round(66.845, 2)).toBe(66.85);
+    expect(round(1.005, 2)).toBe(1.01);
+    expect(round(7.4549, 2)).toBe(7.45);
+    expect(round(0, 2)).toBe(0);
+    expect(roundBy(8.135, 2, 'half_up')).toBe(8.14);
+    expect(roundBy(8.139, 2, 'truncate')).toBe(8.13);
+    expect(obeRound(2.135, 2)).toBe(2.14);
+    // Every x.xx5 between 0 and 100 rounds up.
+    for (let i = 5; i < 100_000; i += 10) expect(round(i / 1000, 2)).toBe((Math.floor(i / 10) + 1) / 100);
+  });
+
+  it('SGPA on an exact tie rounds half up (162.7 credit points over 20 credits = 8.135 -> 8.14)', () => {
+    const lines = [
+      { credits: 4, gradePoint: 8.15, passed: true },
+      { credits: 4, gradePoint: 8.15, passed: true },
+      { credits: 4, gradePoint: 8.1, passed: true },
+      { credits: 4, gradePoint: 8.1, passed: true },
+      { credits: 4, gradePoint: 8.175, passed: true },
+    ];
+    expect(sgpa(lines).sgpa).toBe(8.14);
+    expect(cgpa([{ creditsAttempted: 20, creditPoints: 162.7 }])).toBe(8.14);
+  });
+
+  it('never rounds attendance up to the threshold: 599 of 799 (74.97%) stays short of 75%', () => {
+    expect(attendancePct(599, 0, 200)).toBe(74.9);
+    expect(attendancePct(3, 0, 1)).toBe(75);
+    expect(attendancePct(29, 0, 71)).toBe(29);
+    expect(attendancePct(2, 0, 1)).toBe(66.6);
+    expect(attendancePct(0, 0, 0)).toBeNull();
+    expect(effectivePct(attendancePct(599, 0, 200), 0)! < 75).toBe(true);
+    expect(effectivePct(74.9, 5)).toBe(79.9);
+    expect(effectivePct(98.5, 5)).toBe(100);
+  });
+});
+
