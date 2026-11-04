@@ -309,7 +309,7 @@ RESEARCH_SPECS['research-scholars'].columns.splice(
   { key: 'registrationNo', header: 'rsp.col.regNo', hideBelow: 'md' },
   { key: 'mode', header: 'rsp.col.mode', kind: 'choice', defaultHidden: true },
   { key: 'fellowship', header: 'rsp.col.fellowship', kind: 'choice', defaultHidden: true },
-  { key: 'centreId', from: 'centreIdName', header: 'rsp.col.centre', defaultHidden: true },
+  { key: 'centreId', from: 'centreName', header: 'rsp.col.centre', defaultHidden: true },
   { key: 'lastReportTo', header: 'rsp.col.lastReport', kind: 'date', sortKey: false, defaultHidden: true },
   { key: 'submitBy', header: 'rsp.col.submitBy', kind: 'date', sortKey: false, defaultHidden: true },
 );
@@ -327,7 +327,7 @@ Object.assign(RESEARCH_SPECS, {
       { key: 'scopusAuthorId', header: 'rsp.col.scopus', hideBelow: 'md' },
       { key: 'wosResearcherId', header: 'rsp.col.wos', hideBelow: 'lg' },
       { key: 'googleScholarId', header: 'rsp.col.scholar', defaultHidden: true },
-      { key: 'vidwanId', header: 'rsp.col.vidwan', hideBelow: 'lg' },
+      { key: 'vidwanId', header: 'rsp.col.vidwan', defaultHidden: true },
       { key: 'scopusHIndex', header: 'rsp.col.hScopus', kind: 'number', hideBelow: 'sm' },
       { key: 'publications', header: 'rsx.list.publications', kind: 'number', sortKey: false, hideBelow: 'md' },
       { key: 'verifiedAt', header: 'rsp.col.verified', kind: 'date', sortKey: false },
@@ -354,7 +354,7 @@ Object.assign(RESEARCH_SPECS, {
     columns: [
       { key: 'subject', header: 'rsx.col.title', kind: 'wrap', sortKey: false },
       { key: 'userId', from: 'userIdName', header: 'rsx.col.teacher' },
-      { key: 'schemeId', from: 'schemeIdName', header: 'rsp.col.scheme', hideBelow: 'lg' },
+      { key: 'schemeId', from: 'schemeName', header: 'rsp.col.scheme', hideBelow: 'lg' },
       { key: 'basis', header: 'rsp.col.basis', hideBelow: 'md' },
       { key: 'amount', header: 'rsx.col.amount', kind: 'money' },
       { key: 'status', header: 'rsx.col.status', kind: 'choice', tone: status(['paid', 'approved'], ['claimed'], ['rejected']) },

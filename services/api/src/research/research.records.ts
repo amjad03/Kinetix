@@ -842,6 +842,7 @@ function scholarsEntity() {
       dcMeetings: sql<number>`(select count(*)::int from scholar_dc_meetings d where d.scholar_id = "research_scholars"."id")`,
       nextDcDue: sql<string | null>`(select d.next_due_on::text from scholar_dc_meetings d where d.scholar_id = "research_scholars"."id" order by d.held_on desc limit 1)`,
       courseworkDone: sql<string>`(select count(*) filter (where c.status in ('passed', 'exempted'))::text || ' / ' || count(*)::text from scholar_coursework c where c.scholar_id = "research_scholars"."id")`,
+      centreName: sql<string | null>`(select c.code || ' ' || c.name from research_centres c where c.id = "research_scholars"."centre_id")`,
       lastReportTo: sql<string | null>`(select max(r.period_to)::text from scholar_progress_reports r where r.scholar_id = "research_scholars"."id")`,
       submitBy: sql<string>`((${researchScholars.enrolledOn} + make_interval(years => case when ${researchScholars.gender} = 'female' then 8 else 6 end))::date - 1)::text`,
     },

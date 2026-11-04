@@ -3,6 +3,7 @@
 import { optStr, read, send } from '@/lib/ops-server';
 import { MAX_UPLOAD_BYTES, parseExaminers, parsePanel, splitList, uploadType, type ThesisDetail } from '@/lib/pathways-a';
 import { failure, parseFailure } from '@/lib/pathways-server';
+import { claimSubject, doiFallback } from '@/lib/research-pass';
 
 const PAGE = '/research';
 const BASE = '/v1/research';
@@ -73,8 +74,7 @@ export async function importDoi(v: V) {
  * given, it is kept as pending and completed later (the answer says which).
  */
 export async function addByDoi(v: V) {
-  const year = Number(v.year);
-  const fallback = optStr(v.title) && optStr(v.venue) && Number.isInteger(year) ? { title: v.title.trim(), venue: v.venue.trim(), year, kind: v.kind || 'journal' } : undefined;
+  const fallback = doiFallback(v);
   return send<{ title: string; lookup: string }>(`${BASE}/publications/import-doi`, { doi: v.doi ?? '', ...(fallback ? { fallback } : {}) }, PAGE);
 }
 
@@ -85,9 +85,9 @@ export async function refreshPendingDois() {
 
 /** Claims an incentive for one's own publication or patent under a scheme. */
 export async function claimIncentive(v: V) {
-  const subject = v.subject ?? '';
-  const [kind, subjectId] = subject.split(':');
-  return send<{ amountPaise: number; basis: string }>(`${BASE}/incentives/claims`, { schemeId: v.schemeId, ...(kind === 'patent' ? { patentId: subjectId } : { publicationId: subjectId }) }, PAGE);
+  const subject = claimSubject(v.subject ?? '');
+  if (!subject) return failure('rsp.claim.choose');
+  return send<{ amountPaise: number; basis: string }>(`${BASE}/incentives/claims`, { schemeId: v.schemeId, ...subject }, PAGE);
 }
 
 /** Records the e-copy deposit of an awarded thesis with Shodhganga. */

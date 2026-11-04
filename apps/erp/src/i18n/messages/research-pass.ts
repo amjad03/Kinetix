@@ -94,6 +94,7 @@ export default area(
     "rsp.claim.intro":
       "The scheme sets the amount: the best rate the paper qualifies for, a share for a co-author, within the yearly limit.",
     "rsp.claim.for": "For",
+    "rsp.claim.choose": "Choose the paper or patent to claim for",
     "rsp.claim.patent": "Patent",
     "rsp.claim.submit": "Claim",
     "rsp.claim.done": "Claimed {amount}",
@@ -473,6 +474,7 @@ export default area(
       "rsp.claim.intro":
         "राशि योजना तय करती है: शोध-पत्र जिस सर्वोत्तम दर के योग्य है, सह-लेखक का हिस्सा, वार्षिक सीमा के भीतर।",
       "rsp.claim.for": "किसके लिए",
+      "rsp.claim.choose": "जिस शोध-पत्र या पेटेंट के लिए दावा है उसे चुनें",
       "rsp.claim.patent": "पेटेंट",
       "rsp.claim.submit": "दावा करें",
       "rsp.claim.done": "{amount} का दावा किया गया",
@@ -854,6 +856,7 @@ export default area(
       "rsp.claim.intro":
         "ಮೊತ್ತವನ್ನು ಯೋಜನೆ ನಿಗದಿಪಡಿಸುತ್ತದೆ: ಪ್ರಬಂಧ ಅರ್ಹವಾದ ಅತ್ಯುತ್ತಮ ದರ, ಸಹ ಲೇಖಕರ ಪಾಲು, ವಾರ್ಷಿಕ ಮಿತಿಯೊಳಗೆ.",
       "rsp.claim.for": "ಯಾವುದಕ್ಕೆ",
+      "rsp.claim.choose": "ಹಕ್ಕು ಸಲ್ಲಿಸುವ ಪ್ರಬಂಧ ಅಥವಾ ಪೇಟೆಂಟ್ ಆಯ್ಕೆಮಾಡಿ",
       "rsp.claim.patent": "ಪೇಟೆಂಟ್",
       "rsp.claim.submit": "ಹಕ್ಕು ಸಲ್ಲಿಸಿ",
       "rsp.claim.done": "{amount} ಹಕ್ಕು ಸಲ್ಲಿಸಲಾಗಿದೆ",

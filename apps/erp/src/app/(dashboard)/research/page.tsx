@@ -14,6 +14,7 @@ import { safe } from '@/lib/depth-ui';
 import type { ResearchKpis, ResearchProject } from '@/lib/campus-life';
 import type { DatasetRow, OfficeSummary, ScholarRow, SupervisorRow, ThesisRow } from '@/lib/pathways-a';
 import type { RecordsPage } from '@/lib/records';
+import { RESEARCH_LISTS } from '@/lib/research-pass';
 import { loadRecords } from '@/lib/records-server';
 import { getI18n } from '@/i18n/server';
 import type { MessageKey } from '@/i18n/messages';
@@ -29,13 +30,7 @@ const RESEARCH_STAFF = ['principal', 'tenant_admin', 'research_coordinator'];
 const VIEWS = ['overview', 'outputs', 'funding', 'collab', 'scholars', 'facilities', 'reports'] as const;
 type View = (typeof VIEWS)[number];
 /** The registers of each view, in tab order. */
-const LISTS: Partial<Record<View, string[]>> = {
-  outputs: ['research-publications', 'research-profiles', 'research-patents', 'research-conferences', 'research-recognitions', 'research-incentive-claims'],
-  funding: ['research-calls', 'research-proposals', 'research-projects', 'research-grants', 'grant-heads', 'grant-releases', 'grant-ucs', 'research-seed-grants', 'research-incentive-schemes'],
-  collab: ['research-consultancies', 'research-mous', 'research-mou-activities'],
-  scholars: ['research-scholars', 'scholar-progress-reports', 'scholar-dc-meetings', 'scholar-coursework', 'research-centres'],
-  facilities: ['research-equipment', 'research-equipment-usage', 'research-ethics'],
-};
+const LISTS: Partial<Record<View, readonly string[]>> = RESEARCH_LISTS;
 
 /** Each register's name in the list switcher. */
 const LIST_LABEL: Record<string, MessageKey> = {

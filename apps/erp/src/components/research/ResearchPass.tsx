@@ -230,7 +230,7 @@ export function ResearchPassReports({ params, nba, aishe, grants, grantId, state
 
       <Card>
         <h2 className="m-0 mb-1 text-base font-semibold">{t('rsp.aishe.title', { year: aishe.year })}</h2>
-        <p className="m-0 mb-3 text-[13px] text-muted-foreground">{t('rsp.aishe.asOn', { date: fmt.date(aishe.asOn, 'short') })}</p>
+        <p className="m-0 mb-3 text-[13px] text-muted-foreground">{t('rsp.aishe.asOn', { date: fmt.date(aishe.asOn, 'day') })}</p>
         <Grid
           testId="rsp-aishe"
           min={640}
@@ -259,7 +259,7 @@ export function ResearchPassReports({ params, nba, aishe, grants, grantId, state
         ) : (
           <>
             <p className="m-0 mb-3 text-[13px] text-muted-foreground">
-              {statement.grant.project} · {statement.grant.pi} · {t('rsp.gs.period', { from: fmt.date(statement.period.from, 'short'), to: fmt.date(statement.period.to, 'short') })}
+              {statement.grant.project} · {statement.grant.pi} · {t('rsp.gs.period', { from: fmt.date(statement.period.from, 'day'), to: fmt.date(statement.period.to, 'day') })}
             </p>
             {!statement.releasesRecorded && <p className="m-0 mb-3 text-[13px] text-amber-ink">{t('rsp.gs.noReleases')}</p>}
             <StatGrid min={150}>

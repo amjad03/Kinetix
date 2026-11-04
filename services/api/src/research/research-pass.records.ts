@@ -330,6 +330,7 @@ function claimsEntity(clock: Clock, notifications: NotificationsService) {
       decisionNote: { label: 'Note', kind: 'textarea', column: researchIncentiveClaims.decisionNote, create: false, edit: false },
     },
     extra: {
+      schemeName: sql<string>`(select s.name from research_incentive_schemes s where s.id = ${researchIncentiveClaims.schemeId})`,
       subject: sql<string>`coalesce((select p.title from publications p where p.id = ${researchIncentiveClaims.publicationId}), (select t.title from patents t where t.id = ${researchIncentiveClaims.patentId}), '')`,
       createdAt: researchIncentiveClaims.createdAt,
     },
