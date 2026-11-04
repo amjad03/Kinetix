@@ -5,7 +5,8 @@ import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/States';
 import { LinkTabs } from '@/components/ui';
 import { api, ApiError, getMe, load, requireSection } from '@/lib/api';
-import type { ChatSettingsView, FamilyThread, FamilyThreadPage } from '@/lib/communication';
+import type { Availability, ChatBlock, ChatSettingsView, FamilyThread, FamilyThreadPage, ModerationReport } from '@/lib/communication';
+import { ModerationPanel } from '@/components/conversations/ModerationPanel';
 import { TIMEZONE } from '@/lib/school';
 import { getI18n } from '@/i18n/server';
 import type { Structure } from '@/lib/types';
@@ -22,23 +23,38 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * Communication > Conversations: two-way chat with parents and students. Staff see their own and the
  * office's threads; leaders can open any thread for safeguarding (each read is audited by the API).
  */
-export default async function ConversationsPage({ searchParams }: { searchParams: Promise<{ t?: string; view?: string; tab?: string }> }) {
+export default async function ConversationsPage({ searchParams }: { searchParams: Promise<{ t?: string; view?: string; tab?: string; status?: string }> }) {
   await requireSection('conversations');
-  const { t: selected, view, tab } = await searchParams;
+  const { t: selected, view, tab, status } = await searchParams;
   const { t } = await getI18n();
   const me = await getMe();
   const isLeader = me.roles.some((r) => r === 'principal' || r === 'tenant_admin');
   const settingsTab = tab === 'settings' && isLeader;
+  const moderationTab = tab === 'moderation' && isLeader;
   const tabs = isLeader ? (
     <LinkTabs
       label={t('nav.conversations')}
-      value={settingsTab ? 'settings' : 'chat'}
+      value={settingsTab ? 'settings' : moderationTab ? 'moderation' : 'chat'}
       items={[
         { value: 'chat', label: t('fc.tab.chat'), href: '/conversations' },
+        { value: 'moderation', label: t('fs.mod.title'), href: '/conversations?tab=moderation' },
         { value: 'settings', label: t('fc.tab.settings'), href: '/conversations?tab=settings' },
       ]}
     />
   ) : null;
+
+  if (moderationTab) {
+    const st = status === 'actioned' || status === 'dismissed' ? status : 'open';
+    const [queue, blocks] = await Promise.all([load(() => api<{ rows: ModerationReport[]; total: number }>(`/v1/conversations/moderation?status=${st}`)), load(() => api<ChatBlock[]>('/v1/conversations/blocks'))]);
+    if (queue.error !== undefined) return <ErrorState message={queue.error} />;
+    return (
+      <>
+        <PageHeader title={t('nav.conversations')} subtitle={t('fs.mod.subtitle')} />
+        {tabs}
+        <ModerationPanel reports={queue.data.rows} total={queue.data.total} status={st} blocks={blocks.data ?? []} />
+      </>
+    );
+  }
 
   if (settingsTab) {
     const [settings, people] = await Promise.all([load(() => api<ChatSettingsView>('/v1/conversations/settings')), load(() => api<{ id: string; fullName: string }[]>('/v1/chat/people'))]);
@@ -54,10 +70,11 @@ export default async function ConversationsPage({ searchParams }: { searchParams
   }
 
   const allView = view === 'all' && isLeader;
-  const [threads, structure, people] = await Promise.all([
+  const [threads, structure, people, availability] = await Promise.all([
     load(() => api<FamilyThread[]>(`/v1/conversations${allView ? '?all=true' : ''}`)),
     load(() => api<Structure>('/v1/admin/structure')),
     load(() => api<{ id: string; fullName: string }[]>('/v1/chat/people')),
+    load(() => api<Availability>('/v1/conversations/me/availability')),
   ]);
   if (threads.error !== undefined) return <ErrorState message={threads.error} />;
   const id = selected && UUID.test(selected) ? selected : allView ? undefined : threads.data[0]?.id;
@@ -86,6 +103,7 @@ export default async function ConversationsPage({ searchParams }: { searchParams
         allView={allView}
         isLeader={isLeader}
         timeZone={TIMEZONE}
+        availability={availability.data ?? null}
       />
     </>
   );

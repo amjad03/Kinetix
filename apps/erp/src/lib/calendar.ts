@@ -16,6 +16,26 @@ export interface CalendarEvent {
   programs: string[] | null;
   /** False for a draft: staff see it, students and families do not until it is published. */
   published?: boolean;
+  /** Asks for replies (going, maybe, not going) until `rsvpBy`, for up to `capacity` places. */
+  rsvp?: boolean;
+  rsvpBy?: string | null;
+  capacity?: number | null;
+  venue?: string;
+  replies?: RsvpTotals;
+}
+
+export interface RsvpTotals {
+  going: number;
+  places: number;
+  maybe: number;
+  notGoing: number;
+}
+
+/** Who replied to an event (GET /v1/admin/calendar/:id/rsvps). */
+export interface RsvpList {
+  event: { id: string; title: string; startsOn: string; endsOn: string; rsvp: boolean; rsvpBy: string | null; capacity: number | null; venue: string };
+  totals: RsvpTotals;
+  rows: { userId: string; fullName: string; response: 'going' | 'maybe' | 'not_going'; guests: number; note: string; at: string; roles: string[] | null }[];
 }
 
 export interface CalendarList {
@@ -35,6 +55,10 @@ export interface CalendarInput {
   notify: boolean;
   /** Keep it a draft (staff only) until published. */
   draft?: boolean;
+  rsvp?: boolean;
+  rsvpBy?: string | null;
+  capacity?: number | null;
+  venue?: string;
 }
 
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;

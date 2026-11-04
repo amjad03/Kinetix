@@ -1,8 +1,8 @@
 'use client';
 import { usePathname, useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition, type ReactNode } from 'react';
-import { FormField, TextInput } from '@/components/ui';
-import { createCalendarEvent, deleteCalendarEvent, publishCalendarEvents, updateCalendarEvent } from '@/app/(dashboard)/calendar/actions';
+import { DataTable, Dialog as UiDialog, FormField, TextInput, type Column } from '@/components/ui';
+import { calendarRsvps, createCalendarEvent, deleteCalendarEvent, publishCalendarEvents, updateCalendarEvent } from '@/app/(dashboard)/calendar/actions';
 import { PageHeader, SectionTitle } from '@/components/PageHeader';
 import { EmptyState } from '@/components/States';
 import { useI18n } from '@/i18n/client';
@@ -18,6 +18,7 @@ import {
   type CalendarEvent,
   type CalendarInput,
   type CalendarKind,
+  type RsvpList,
 } from '@/lib/calendar';
 import { weekdayShort } from '@/lib/dates';
 
@@ -272,8 +273,16 @@ function EntryList({ events, today, onEdit, onDelete }: { events: CalendarEvent[
                 {days > 1 && ` · ${t.plural('cal.days', days)}`}
                 {' · '}
                 {e.programs?.length ? t('cal.forPrograms', { programs: e.programs.join(', ') }) : t('cal.forAll')}
+                {e.venue ? ` · ${e.venue}` : ''}
               </p>
+              {e.rsvp && e.replies && (
+                <p className="text-[13px] leading-[19px]" data-testid="calendar-rsvp-totals">
+                  {t('rsvp.totals', { going: fmt.number(e.replies.going), places: fmt.number(e.replies.places), maybe: fmt.number(e.replies.maybe), no: fmt.number(e.replies.notGoing) })}
+                  {e.capacity ? ` · ${t('rsvp.of', { n: fmt.number(e.capacity) })}` : ''}
+                </p>
+              )}
             </div>
+            {onEdit && e.rsvp && <RsvpButton event={e} />}
             {onEdit && e.published === false && <PublishButton id={e.id} />}
             {onEdit && (
               <Tooltip title={t('common.edit')}>
@@ -306,11 +315,15 @@ function EventDialog({ event, date, programs, onClose }: { event?: CalendarEvent
   const [programIds, setProgramIds] = useState<string[]>(event?.programIds ?? []);
   const [notify, setNotify] = useState(true);
   const [draft, setDraft] = useState(event ? event.published === false : false);
+  const [rsvp, setRsvp] = useState(!!event?.rsvp);
+  const [rsvpBy, setRsvpBy] = useState(event?.rsvpBy ?? '');
+  const [capacity, setCapacity] = useState(event?.capacity ? String(event.capacity) : '');
+  const [venue, setVenue] = useState(event?.venue ?? '');
   const [touched, setTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
-  const input: CalendarInput = { kind, title, startsOn, endsOn, programIds: scope === 'all' ? null : programIds, notify, ...(event ? {} : { draft }) };
+  const input: CalendarInput = { kind, title, startsOn, endsOn, programIds: scope === 'all' ? null : programIds, notify, ...(event ? {} : { draft }), rsvp: kind === 'event' && rsvp, rsvpBy: rsvpBy || null, capacity: capacity ? Math.max(1, Math.round(Number(capacity))) : null, venue };
   const problem = calendarProblem(input);
   const show = (p: ReturnType<typeof calendarProblem>[]) => (touched && problem && p.includes(problem) ? t(`cal.problem.${problem}`) : undefined);
   const names = new Map(programs.map((p) => [p.id, p.name]));
@@ -424,6 +437,24 @@ function EventDialog({ event, date, programs, onClose }: { event?: CalendarEvent
               {t('cal.dialog.holidayHelp')}
             </p>
           )}
+          {kind === 'event' && (
+            <div className="grid gap-3 rounded-[10px] border p-3" data-testid="calendar-rsvp">
+              <FormControlLabel control={<Checkbox checked={rsvp} onChange={(e) => setRsvp(e.target.checked)} data-testid="calendar-rsvp-on" />} label={t('rsvp.ask')} />
+              <FormField label={t('rsvp.venue')}>
+                <TextInput value={venue} onChange={(e) => setVenue(e.target.value)} slotProps={{ htmlInput: { maxLength: 160 } }} />
+              </FormField>
+              {rsvp && (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <FormField label={t('rsvp.by')}>
+                    <TextInput type="date" value={rsvpBy} onChange={(e) => setRsvpBy(e.target.value)} data-testid="calendar-rsvp-by" />
+                  </FormField>
+                  <FormField label={t('rsvp.capacity')} helper={t('rsvp.capacityHelp')}>
+                    <TextInput type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} slotProps={{ htmlInput: { min: 1 } }} data-testid="calendar-rsvp-capacity" />
+                  </FormField>
+                </div>
+              )}
+            </div>
+          )}
           <div>
             <FormControlLabel
               control={<Checkbox checked={notify} onChange={(e) => setNotify(e.target.checked)} data-testid="calendar-notify" />}
@@ -490,6 +521,51 @@ function DeleteDialog({ event, onClose }: { event: CalendarEvent; onClose: (mess
         </Button>
       </DialogActions>
     </Dialog>
+  );
+}
+
+/** Opens who replied to an event, with the totals and an export. */
+function RsvpButton({ event }: { event: CalendarEvent }) {
+  const { t, fmt } = useI18n();
+  const [list, setList] = useState<RsvpList | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  const cols: Column<RsvpList['rows'][number]>[] = [
+    { id: 'name', header: t('rsvp.col.person'), rowHeader: true, cell: (r) => r.fullName, sort: (r) => r.fullName },
+    { id: 'response', header: t('rsvp.col.reply'), cell: (r) => t(`rsvp.r.${r.response}`), sort: (r) => r.response },
+    { id: 'guests', header: t('rsvp.col.guests'), cell: (r) => fmt.number(r.guests), align: 'right', sort: (r) => r.guests },
+    { id: 'note', header: t('rsvp.col.note'), cell: (r) => r.note || '-' },
+    { id: 'at', header: t('rsvp.col.at'), cell: (r) => fmt.dateTime(r.at), sort: (r) => r.at, hideBelow: 'md' },
+  ];
+  return (
+    <>
+      <Button
+        size="small"
+        variant="outlined"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            const r = await calendarRsvps(event.id);
+            if (r.ok) setList(r.data);
+            else setError(r.error);
+          })
+        }
+        data-testid="calendar-rsvp-list"
+      >
+        {t('rsvp.who')}
+      </Button>
+      {(list || error) && (
+        <UiDialog title={t('rsvp.listTitle', { title: event.title })} size="lg" onClose={() => (setList(null), setError(null))}>
+          {error && <p className="text-sm text-red-ink">{error}</p>}
+          {list && (
+            <div className="grid gap-3">
+              <p className="text-sm">{t('rsvp.totals', { going: fmt.number(list.totals.going), places: fmt.number(list.totals.places), maybe: fmt.number(list.totals.maybe), no: fmt.number(list.totals.notGoing) })}</p>
+              <DataTable rows={list.rows} columns={cols} rowId={(r) => r.userId} label={t('rsvp.listTitle', { title: event.title })} exportName="rsvps" />
+            </div>
+          )}
+        </UiDialog>
+      )}
+    </>
   );
 }
 

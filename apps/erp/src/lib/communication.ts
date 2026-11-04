@@ -176,6 +176,11 @@ export interface FamilyThread {
   unread: number;
   statusChangedAt: string | null;
   createdAt: string;
+  /** With the head of department since (escalated by the family, the teacher, or after a long wait). */
+  escalatedAt?: string | null;
+  escalatedTo?: { id: string; fullName: string } | null;
+  /** Reports on its messages waiting for a leader. */
+  openReports?: number;
 }
 
 export interface FamilyMessage {
@@ -188,6 +193,47 @@ export interface FamilyMessage {
   attachment: { name: string; type: string; size: number } | null;
   createdAt: string;
   status: Tick | null;
+  /** Removed by a moderator (the text is replaced, except for leaders). */
+  hidden?: boolean;
+  /** Leaders only: why the language filter flagged it. */
+  flag?: string | null;
+}
+
+export interface ModerationReport {
+  id: string;
+  reason: string;
+  note: string;
+  status: 'open' | 'actioned' | 'dismissed';
+  action: string | null;
+  resolutionNote: string;
+  createdAt: string;
+  resolvedAt: string | null;
+  reporter: string | null;
+  conversationId: string;
+  message: { id: string; body: string; createdAt: string; hidden: boolean; senderId: string };
+  sender: string;
+  student: string;
+  staff: string;
+  family: string;
+  senderBlocked: boolean;
+}
+
+export interface ChatBlock {
+  id: string;
+  userId: string;
+  fullName: string;
+  reason: string;
+  until: string | null;
+  staffId: string | null;
+  createdAt: string;
+  blockedBy: string | null;
+}
+
+export interface Availability {
+  dndUntil: string | null;
+  hours: OfficeHours | null;
+  awayNote: string;
+  active: boolean;
 }
 
 export interface OfficeHours {
@@ -202,6 +248,9 @@ export interface FamilyThreadPage {
   officeHours: OfficeHours | null;
   afterHours: boolean;
   canWrite: boolean;
+  away?: { until: string | null; note: string; hours: OfficeHours | null } | null;
+  escalated?: { at: string; to: string | null; reason: string | null } | null;
+  blocked?: { reason: string; until: string | null } | null;
 }
 
 export interface ChatSettingsView {
@@ -209,6 +258,8 @@ export interface ChatSettingsView {
   officeHours: OfficeHours | null;
   timezone: string;
   kind: 'school' | 'college' | 'university';
+  /** Hours a family's message may wait before it goes to the head of department (0 = never). */
+  escalateAfterHours?: number;
   officeUserIds?: string[];
   /** Roles whose holders also answer office threads, and the roles that may be chosen. */
   officeRoles?: string[];

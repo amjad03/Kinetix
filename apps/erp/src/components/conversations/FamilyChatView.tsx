@@ -1,16 +1,17 @@
 'use client';
 
-import { BellOff, BellRing, Building2, Check, CheckCheck, ChevronLeft, CircleCheck, Clock, FileText, Info, Lock, LockOpen, MessageCircle, Paperclip, Plus, Search, Send, ShieldCheck, UserRoundCog, X } from 'lucide-react';
+import { ArrowUpRight, BellOff, BellRing, Building2, Check, CheckCheck, ChevronLeft, CircleCheck, Clock, FileText, Flag, Info, Lock, LockOpen, MessageCircle, Moon, Paperclip, Plus, Search, Send, ShieldCheck, UserRoundCog, UserX, X } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { assignThread, markFamilyRead, muteThread, searchStudents, sendFamilyMessage, setThreadStatus, startFamilyThread, studentFamily } from '@/app/(dashboard)/conversations/actions';
 import { initials } from '@/components/initials';
 import { Button } from '@/components/shadcn/button';
 import { Input } from '@/components/shadcn/input';
-import { Dialog, StatusPill } from '@/components/ui';
+import { Dialog, StatusPill, useToast } from '@/components/ui';
+import { AvailabilityDialog, BlockDialog, EscalateDialog, ReportDialog } from './SafetyDialogs';
 import { useI18n } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/messages';
-import { ATTACH_ACCEPT, ATTACH_TYPES, MAX_FILE_BYTES, fileSize, fileToBase64, type FamilyMessage, type FamilyThread, type FamilyThreadPage, type ThreadStatus } from '@/lib/communication';
+import { ATTACH_ACCEPT, ATTACH_TYPES, MAX_FILE_BYTES, fileSize, fileToBase64, type Availability, type FamilyMessage, type FamilyThread, type FamilyThreadPage, type ThreadStatus } from '@/lib/communication';
 import { cn } from '@/lib/utils';
 
 type Filter = 'all' | 'unread' | 'open' | 'closed' | 'resolved';
@@ -42,7 +43,10 @@ export function FamilyChatView({
   allView,
   isLeader,
   timeZone,
+  availability = null,
 }: {
+  /** The signed-in member of staff's do-not-disturb and chat hours. */
+  availability?: Availability | null;
   meId: string;
   threads: FamilyThread[];
   open: FamilyThreadPage | null;
@@ -64,6 +68,11 @@ export function FamilyChatView({
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [newOpen, setNewOpen] = useState(false);
+  const [reporting, setReporting] = useState<string | null>(null);
+  const [escalating, setEscalating] = useState(false);
+  const [blocking, setBlocking] = useState(false);
+  const [dnd, setDnd] = useState(false);
+  const toast = useToast();
   const [busy, start] = useTransition();
   const scroller = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -195,9 +204,14 @@ export function FamilyChatView({
               </Button>
             )}
             {!allView && (
+              <>
+              <Button size="icon" variant={availability?.active ? 'secondary' : 'outline'} className="size-8" aria-label={t('fs.dnd.title')} title={availability?.active ? t('fs.dnd.onUntil', { when: fmt.dateTime(availability.dndUntil!) }) : t('fs.dnd.title')} aria-pressed={!!availability?.active} onClick={() => setDnd(true)} data-testid="fc-dnd">
+                <Moon />
+              </Button>
               <Button size="icon" variant="outline" className="size-8" aria-label={t('fc.new')} onClick={() => setNewOpen(true)} data-testid="fc-new">
                 <Plus />
               </Button>
+              </>
             )}
           </div>
           <div className="flex items-end gap-2">
@@ -243,6 +257,8 @@ export function FamilyChatView({
                   {t('fc.about', { student: current.student.fullName, className: current.className })} · {current.kind === 'office' ? t('fc.officeWith', { name: current.staff.fullName }) : t('fc.with', { name: current.staff.fullName })}
                 </span>
               </div>
+              {current.escalatedTo && <StatusPill tone="warning">{t('fs.esc.badge', { name: current.escalatedTo.fullName })}</StatusPill>}
+              {(current.openReports ?? 0) > 0 && isLeader && <StatusPill tone="danger">{t('fs.reportsOpen', { n: current.openReports! })}</StatusPill>}
               <StatusPill tone={STATUS_TONE[current.status]}>{t(`fc.status.${current.status}` as MessageKey)}</StatusPill>
               <Button size="icon" variant={info ? 'secondary' : 'ghost'} aria-label={t('fc.info')} aria-pressed={info} onClick={() => setInfo((v) => !v)} className="hidden xl:inline-flex">
                 <Info />
@@ -257,7 +273,7 @@ export function FamilyChatView({
             <div ref={scroller} className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto bg-background px-4 py-5 md:px-6" aria-live="polite" data-testid="fc-messages">
               {open.messages.length === 0 && <p className="m-auto text-sm text-muted-foreground">{t('fc.startHint')}</p>}
               {open.messages.map((m, i) => (
-                <MessageRow key={m.id} m={m} thread={current} meId={meId} sep={i === 0 || dayKey(m.createdAt, timeZone) !== dayKey(open.messages[i - 1].createdAt, timeZone)} timeZone={timeZone} />
+                <MessageRow key={m.id} m={m} thread={current} meId={meId} sep={i === 0 || dayKey(m.createdAt, timeZone) !== dayKey(open.messages[i - 1].createdAt, timeZone)} timeZone={timeZone} onReport={canAct ? setReporting : undefined} />
               ))}
             </div>
             {error && <p role="alert" className="border-t bg-red-soft px-4 py-2 text-sm text-red-ink">{error}</p>}
@@ -363,6 +379,16 @@ export function FamilyChatView({
                 {current.muted ? t('fc.unmute') : t('fc.mute')}
               </Button>
               <Assign staff={staff.filter((s) => s.id !== current.staff.id)} busy={busy} onAssign={(id) => act(() => assignThread(current.id, id))} />
+              {current.kind === 'teacher' && !current.escalatedAt && current.staff.id === meId && (
+                <Button variant="outline" disabled={busy} onClick={() => setEscalating(true)} data-testid="fc-escalate">
+                  <ArrowUpRight />
+                  {t('fs.esc.title')}
+                </Button>
+              )}
+              <Button variant="outline" disabled={busy} onClick={() => setBlocking(true)} data-testid="fc-block">
+                <UserX />
+                {t('fs.block.title')}
+              </Button>
             </div>
           )}
           {readOnly && isLeader && <Assign staff={staff.filter((s) => s.id !== current.staff.id)} busy={busy} onAssign={(id) => act(() => assignThread(current.id, id))} />}
@@ -384,11 +410,15 @@ export function FamilyChatView({
       )}
 
       {newOpen && <NewThread onClose={() => setNewOpen(false)} onCreated={(id) => (setNewOpen(false), select(id))} />}
+      {reporting && current && <ReportDialog threadId={current.id} messageId={reporting} onClose={(m) => (setReporting(null), m && toast.success(m))} />}
+      {escalating && current && <EscalateDialog threadId={current.id} onClose={(m) => (setEscalating(false), m && (toast.success(m), router.refresh()))} />}
+      {blocking && current && <BlockDialog threadId={current.id} onClose={(m) => (setBlocking(false), m && (toast.success(m), router.refresh()))} />}
+      {dnd && <AvailabilityDialog current={availability} onClose={(m) => (setDnd(false), m && (toast.success(m), router.refresh()))} />}
     </div>
   );
 }
 
-function MessageRow({ m, thread, meId, sep, timeZone }: { m: FamilyMessage; thread: FamilyThread; meId: string; sep: boolean; timeZone: string }) {
+function MessageRow({ m, thread, meId, sep, timeZone, onReport }: { m: FamilyMessage; thread: FamilyThread; meId: string; sep: boolean; timeZone: string; onReport?: (messageId: string) => void }) {
   const { t, fmt } = useI18n();
   const fromStaff = m.side === 'staff';
   const mine = m.senderId === meId;
@@ -404,9 +434,14 @@ function MessageRow({ m, thread, meId, sep, timeZone }: { m: FamilyMessage; thre
         <div className={cn('flex max-w-[78%] items-end gap-2.5 md:max-w-[70%]', fromStaff && 'flex-row-reverse self-end')} data-testid="fc-message" data-side={m.side}>
           {!fromStaff && <Avatar name={m.senderName} size="sm" />}
           <div className="min-w-0">
-            <div className={cn('rounded-[14px] border px-3 py-2 text-[13.5px] break-words whitespace-pre-wrap', fromStaff ? 'rounded-br-[4px] border-primary bg-primary text-primary-foreground' : 'rounded-bl-[4px] bg-card')}>
+            <div className={cn('rounded-[14px] border px-3 py-2 text-[13.5px] break-words whitespace-pre-wrap', fromStaff ? 'rounded-br-[4px] border-primary bg-primary text-primary-foreground' : 'rounded-bl-[4px] bg-card', m.hidden && 'opacity-60 italic')} data-hidden={m.hidden ? '' : undefined}>
               {fromStaff && !mine && <div className="mb-0.5 text-xs font-semibold opacity-80">{m.senderName}</div>}
               {m.body}
+              {m.flag && (
+                <span className="mt-1 block text-[11px] font-semibold not-italic" data-testid="fc-flag">
+                  {t(`fs.reason.filter.${m.flag}` as MessageKey)}
+                </span>
+              )}
               {m.attachment && file && (
                 <a href={file} className={cn('mt-1.5 flex min-w-[200px] items-center gap-2.5 rounded-[10px] border p-2 text-foreground no-underline', fromStaff ? 'border-transparent bg-card' : 'bg-background')} data-testid="fc-attachment">
                   {m.attachment.type.startsWith('image/') ? (
@@ -428,6 +463,12 @@ function MessageRow({ m, thread, meId, sep, timeZone }: { m: FamilyMessage; thre
             </div>
             <div className={cn('mt-1 flex items-center gap-1 text-[11px] text-muted-foreground', fromStaff && 'justify-end')}>
               {fmt.time(m.createdAt)}
+              {onReport && !mine && !fromStaff && !m.hidden && (
+                <button type="button" className="ml-1 inline-flex items-center gap-0.5 hover:text-foreground" onClick={() => onReport(m.id)} aria-label={t('fs.report.title')} data-testid="fc-report">
+                  <Flag className="size-3" />
+                  {t('fs.report.short')}
+                </button>
+              )}
               {m.status && (
                 <span title={t(`fc.tick.${m.status}` as MessageKey)} aria-label={t(`fc.tick.${m.status}` as MessageKey)} data-testid="fc-tick" data-status={m.status}>
                   {m.status === 'sent' ? <Check className="size-3.5" /> : <CheckCheck className={cn('size-3.5', m.status === 'read' && 'text-sky-600')} />}

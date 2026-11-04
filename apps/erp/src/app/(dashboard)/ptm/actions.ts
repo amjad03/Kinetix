@@ -21,6 +21,11 @@ export async function remindFamilies(eventId: string) {
   return send(`${BASE}/events/${encodeURIComponent(eventId)}/remind`, undefined, '/ptm');
 }
 
+/** Records whether the family came, the minutes and the action points (and tells the family when shared). */
+export async function recordMinutes(slotId: string, v: V) {
+  return send(`${BASE}/slots/${encodeURIComponent(slotId)}/minutes`, { attendance: v.attendance === 'no_show' ? 'no_show' : 'attended', minutes: v.minutes ?? '', actionPoints: v.actionPoints ?? '', shareWithFamily: v.share !== 'no' }, '/ptm');
+}
+
 export async function cancelBooking(slotId: string) {
   return send(`${BASE}/slots/${encodeURIComponent(slotId)}/cancel`, undefined, '/ptm');
 }
