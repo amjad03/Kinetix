@@ -6,11 +6,13 @@ import { nextNumber } from '../common/ops.js';
 import { tenantToday } from '../common/tenant-today.js';
 import { Clock } from '../common/time.js';
 import { conferences, grantExpenses, patents, publications, researchGrants, researchProjects, researchProposals, researchScholars } from '../db/schema.js';
+import { researchCentres, researchGrantReleases } from '../db/schema-research.js';
 import { grantUtilisationCertificates, researchCalls, researchConsultancies, researchEquipment, researchEquipmentUsage, researchEthicsApprovals, researchMouActivities, researchMous, researchRecognitions, researchSeedGrants, scholarCoursework, scholarDcMeetings } from '../db/schema-research.js';
 import { hasRole, RecordRegistry, type FieldOption, type KitCtx } from '../records/entity.js';
 import { choices, kitEntity, parseParams, rowOf } from './kit.js';
 import { moveProposal } from './proposal-flow.js';
 import { normalizeDoi } from './research-rules.js';
+import { duplicateOf } from './publication-dupes.js';
 import { FACULTY_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES } from './roles.js';
 
 /**
@@ -48,6 +50,8 @@ const equipmentOptions = async (ctx: KitCtx): Promise<FieldOption[]> => (await c
 const equipmentLookup = async (ctx: KitCtx, text: string) => (await ctx.tx.select({ id: researchEquipment.id }).from(researchEquipment).where(sql`lower(${researchEquipment.code}) = ${text.toLowerCase()}`).limit(1))[0]?.id ?? null;
 const callOptions = async (ctx: KitCtx): Promise<FieldOption[]> => (await ctx.tx.select({ id: researchCalls.id, agency: researchCalls.agency, title: researchCalls.title, deadline: researchCalls.deadline }).from(researchCalls).orderBy(desc(researchCalls.deadline))).map((r) => ({ value: r.id, label: `${r.agency}: ${r.title} (${r.deadline})` }));
 const callLookup = async (ctx: KitCtx, text: string) => (await ctx.tx.select({ id: researchCalls.id }).from(researchCalls).where(sql`lower(${researchCalls.title}) = ${text.toLowerCase()}`).limit(1))[0]?.id ?? null;
+const centreOptions = async (ctx: KitCtx): Promise<FieldOption[]> => (await ctx.tx.select({ id: researchCentres.id, code: researchCentres.code, name: researchCentres.name }).from(researchCentres).orderBy(asc(researchCentres.sortOrder), asc(researchCentres.name))).map((r) => ({ value: r.id, label: `${r.code} ${r.name}` }));
+const centreLookup = async (ctx: KitCtx, text: string) => (await ctx.tx.select({ id: researchCentres.id }).from(researchCentres).where(sql`lower(${researchCentres.code}) = ${text.toLowerCase()} or lower(${researchCentres.name}) = ${text.toLowerCase()}`).limit(1))[0]?.id ?? null;
 const proposalOptions = async (ctx: KitCtx): Promise<FieldOption[]> => (await ctx.tx.select({ id: researchProposals.id, title: researchProposals.title }).from(researchProposals).orderBy(desc(researchProposals.createdAt))).map((r) => ({ value: r.id, label: r.title }));
 
 const PUB_KINDS = ['journal', 'conference', 'book', 'book_chapter'];
@@ -87,6 +91,8 @@ function publicationsEntity() {
       citations: { label: 'Citations', kind: 'number', column: publications.citations, int: true, min: 0, max: 1_000_000, help: 'Excluding self-citations (Scopus or Web of Science)' },
       impactFactor: { label: 'Impact factor', kind: 'number', column: publications.impactFactor, min: 0, max: 1000 },
       quartile: { label: 'Quartile', kind: 'select', column: publications.quartile, options: choices(['Q1', 'Q2', 'Q3', 'Q4']) },
+      ugcCareGroup: { label: 'UGC-CARE group', kind: 'select', column: publications.ugcCareGroup, options: choices(['I', 'II'], { I: 'Group I', II: 'Group II' }), help: 'Group I: journals UGC-CARE lists itself; group II: journals in its indexed databases' },
+      metadataSource: { label: 'Details from', kind: 'select', column: publications.metadataSource, options: choices(['manual', 'crossref', 'orcid', 'pending'], { manual: 'Entered by hand', crossref: 'Crossref', orcid: 'ORCID', pending: 'Waiting for the DOI registry' }), create: false, edit: false, noImport: true },
       status: { label: 'Status', kind: 'select', column: publications.status, options: choices(['accepted', 'published', 'retracted']), bulk: true, help: 'A retracted paper stays on record and stops counting in reports' },
       retractedOn: { label: 'Retracted on', kind: 'date', column: publications.retractedOn },
       retractionNote: { label: 'Retraction note', kind: 'textarea', column: publications.retractionNote, max: 1000 },
@@ -98,6 +104,7 @@ function publicationsEntity() {
     search: [publications.title, publications.venue, publications.doi, sql`${publications.authors}::text`],
     filters: {
       year: { label: 'Year', where: (v) => (/^\d{4}$/.test(v) ? eq(publications.year, Number(v)) : undefined) },
+      indexed: { label: 'Indexed in', options: INDEXES, where: (v) => (['scopus', 'wos', 'ugc_care', 'pubmed', 'other'].includes(v) ? sql`${v} = any(${publications.indexedIn})` : undefined) },
     },
     defaultSort: { id: 'year', dir: 'desc' },
     scope: mine(authorOf),
@@ -110,13 +117,12 @@ function publicationsEntity() {
         const doi = normalizeDoi(String(r.doi));
         if (!doi) return 'That is not a valid DOI';
         if (doi !== r.doi) await ctx.tx.update(publications).set({ doi }).where(eq(publications.id, id));
-        const [dup] = await ctx.tx.select({ id: publications.id }).from(publications).where(and(sql`lower(${publications.doi}) = ${doi.toLowerCase()}`, ne(publications.id, id))).limit(1);
-        if (dup) return 'A publication with that DOI is already recorded';
-      } else {
-        // Without a DOI a paper is one record per title and year, however many co-authors record it.
-        const [dup] = await ctx.tx.select({ id: publications.id }).from(publications).where(and(sql`lower(${publications.title}) = ${String(r.title).toLowerCase()}`, eq(publications.year, Number(r.year)), ne(publications.id, id))).limit(1);
-        if (dup) return 'This publication is already recorded (same title and year); add yourself as an author there';
       }
+      // One record per paper however many co-authors record it: the same DOI, or the same title (punctuation and case
+      // aside) within a year.
+      const dup = await duplicateOf(ctx.tx, { doi: r.doi ? normalizeDoi(String(r.doi)) : null, title: String(r.title), year: Number(r.year), exceptId: id });
+      if (dup) return dup.reason === 'doi' ? 'A publication with that DOI is already recorded' : `This publication is already recorded (${dup.title}, ${dup.year}); add yourself as an author there`;
+      if (r.ugcCareGroup && !(r.indexedIn as string[]).includes('ugc_care')) return 'A UGC-CARE group is for a paper indexed in UGC-CARE';
       if (r.issn && !/^\d{4}-\d{3}[\dXx]$/.test(String(r.issn))) return 'Use an ISSN like 1234-567X';
       if (r.status === 'retracted' && !r.retractedOn) return 'Give the date of the retraction';
       if (r.status !== 'retracted' && r.retractedOn) await ctx.tx.update(publications).set({ retractedOn: null }).where(eq(publications.id, id));
@@ -278,6 +284,7 @@ function projectsEntity() {
       piUserId: { label: 'Principal investigator', kind: 'user', column: researchProjects.piUserId, required: true, filter: true },
       departmentId: { label: 'Department', kind: 'department', column: researchProjects.departmentId, bulk: true },
       sponsorOrg: { label: 'Sponsor', kind: 'text', column: researchProjects.sponsorOrg, max: 160 },
+      centreId: { label: 'Research centre', kind: 'ref', column: researchProjects.centreId, options: centreOptions, lookup: centreLookup, bulk: true },
       startsOn: { label: 'Starts on', kind: 'date', column: researchProjects.startsOn, required: true, example: '2026-07-01' },
       endsOn: { label: 'Ends on', kind: 'date', column: researchProjects.endsOn },
       status: { label: 'Status', kind: 'select', column: researchProjects.status, options: choices(['active', 'on_hold', 'completed', 'cancelled']), bulk: true },
@@ -317,6 +324,8 @@ function grantsEntity() {
       scheme: { label: 'Scheme', kind: 'text', column: researchGrants.scheme, max: 160, example: 'Core Research Grant' },
       sanctionRef: { label: 'Sanction reference', kind: 'text', column: researchGrants.sanctionRef, max: 80, example: 'CRG/2026/000123' },
       sanctioned: { label: 'Amount sanctioned', kind: 'money', column: researchGrants.sanctionedPaise, required: true, min: 1, example: '2500000' },
+      agencyKind: { label: 'Agency kind', kind: 'select', column: researchGrants.agencyKind, options: choices(['government', 'non_government', 'international', 'industry']), bulk: true, help: 'NAAC 3.1 counts government and non-government grants apart', example: 'Government' },
+      overheadPct: { label: 'Overhead (%)', kind: 'number', column: researchGrants.overheadPct, min: 0, max: 50, help: 'The institution\'s overhead on what is released', example: '10' },
       startsOn: { label: 'Starts on', kind: 'date', column: researchGrants.startsOn, required: true, example: '2026-07-01' },
       endsOn: { label: 'Ends on', kind: 'date', column: researchGrants.endsOn, required: true, example: '2029-06-30' },
       status: { label: 'Status', kind: 'select', column: researchGrants.status, options: choices(['active', 'closed', 'cancelled']), bulk: true },
@@ -326,14 +335,18 @@ function grantsEntity() {
       spent: sql<number>`(${spent})::float8 / 100`,
       balance: sql<number>`(${researchGrants.sanctionedPaise} - ${spent})::float8 / 100`,
       ucs: sql<number>`(select count(*)::int from grant_utilisation_certificates u where u.grant_id = "research_grants"."id")`,
+      released: sql<number>`coalesce((select sum(r.amount_paise) from research_grant_releases r where r.grant_id = "research_grants"."id"), 0)::float8 / 100`,
+      overhead: sql<number>`round(coalesce((select sum(r.amount_paise) from research_grant_releases r where r.grant_id = "research_grants"."id"), 0) * ${researchGrants.overheadPct} / 100.0)::float8 / 100`,
     },
     sorts: { spent },
     search: [researchGrants.agency, researchGrants.scheme, researchGrants.sanctionRef],
     defaultSort: { id: 'startsOn', dir: 'desc' },
     importKey: ['sanctionRef'],
-    exportExtra: [{ key: 'spent', header: 'Spent (INR)' }, { key: 'balance', header: 'Balance (INR)' }],
+    exportExtra: [{ key: 'released', header: 'Released (INR)' }, { key: 'spent', header: 'Spent (INR)' }, { key: 'balance', header: 'Balance (INR)' }, { key: 'overhead', header: 'Overhead (INR)' }],
     validate: async (ctx, id) => {
       const r = await rowOf(ctx, researchGrants, id);
+      const [rel] = await ctx.tx.select({ v: sql<number>`coalesce(sum(${researchGrantReleases.amountPaise}), 0)::bigint`.mapWith(Number) }).from(researchGrantReleases).where(eq(researchGrantReleases.grantId, id));
+      if (Number(r.sanctionedPaise) < rel.v) return 'The sanction cannot be less than what the agency has released';
       if (after(r.endsOn, r.startsOn)) return 'The end date is before the start date';
       const [s] = await ctx.tx.select({ v: sql<number>`coalesce(sum(${grantExpenses.amountPaise}), 0)::bigint`.mapWith(Number) }).from(grantExpenses).where(eq(grantExpenses.grantId, id));
       if (Number(r.sanctionedPaise) < s.v) return 'The sanction cannot be less than what has already been spent';
@@ -405,6 +418,12 @@ function conferencesEntity() {
       heldOn: { label: 'Held on', kind: 'date', column: conferences.heldOn, required: true, example: '2026-09-12' },
       location: { label: 'Place', kind: 'text', column: conferences.location, max: 120 },
       paperTitle: { label: 'Paper presented', kind: 'text', column: conferences.paperTitle, max: 300 },
+      eventKind: { label: 'Event', kind: 'select', column: conferences.eventKind, options: choices(['conference', 'seminar', 'workshop', 'fdp', 'symposium'], { fdp: 'Faculty development programme' }), bulk: true, example: 'Conference' },
+      theme: { label: 'About', kind: 'select', column: conferences.theme, options: choices(['subject', 'research_methodology', 'ipr', 'entrepreneurship'], { subject: 'The subject', ipr: 'IPR', research_methodology: 'Research methodology' }), help: 'NAAC 3.2.2 counts workshops on research methodology, IPR and entrepreneurship' },
+      endsOn: { label: 'Ends on', kind: 'date', column: conferences.endsOn },
+      participants: { label: 'Participants', kind: 'number', column: conferences.participants, int: true, min: 0, max: 100000, help: 'For events organised' },
+      sponsor: { label: 'Sponsored by', kind: 'text', column: conferences.sponsor, max: 160 },
+      sponsored: { label: 'Sponsorship', kind: 'money', column: conferences.sponsoredPaise },
       userId: { label: 'Teacher', kind: 'user', column: conferences.userId, filter: true },
     },
     search: [conferences.name, conferences.paperTitle, conferences.location],
@@ -417,6 +436,8 @@ function conferencesEntity() {
       const r = await rowOf(ctx, conferences, id);
       if (!staff(ctx) && r.userId !== ctx.p.userId) return 'You can record only your own conferences';
       if (r.role === 'presented' && !r.paperTitle) return 'Give the title of the paper presented';
+      if (after(r.endsOn, r.heldOn)) return 'The event ends before it starts';
+      if (r.role !== 'organised' && (r.participants || Number(r.sponsoredPaise) > 0)) return 'Participants and sponsorship are for events organised';
       return null;
     },
   });
@@ -804,6 +825,17 @@ function scholarsEntity() {
       supervisorUserId: { label: 'Supervisor', kind: 'user', column: researchScholars.supervisorUserId, required: true, filter: true },
       projectId: { label: 'Project', kind: 'ref', column: researchScholars.projectId, options: projectOptions, lookup: projectLookup },
       enrolledOn: { label: 'Registered on', kind: 'date', column: researchScholars.enrolledOn, required: true, example: '2025-08-01' },
+      registrationNo: { label: 'Registration no.', kind: 'text', column: researchScholars.registrationNo, max: 40, example: 'BCU/PHD/2025/014' },
+      mode: { label: 'Mode', kind: 'select', column: researchScholars.mode, options: choices(['full_time', 'part_time']), bulk: true, example: 'Full time' },
+      departmentId: { label: 'Department', kind: 'department', column: researchScholars.departmentId, bulk: true },
+      centreId: { label: 'Research centre', kind: 'ref', column: researchScholars.centreId, options: centreOptions, lookup: centreLookup, bulk: true },
+      fellowship: { label: 'Fellowship', kind: 'select', column: researchScholars.fellowship, options: choices(['none', 'jrf', 'srf', 'institute', 'other'], { jrf: 'JRF', srf: 'SRF', institute: 'Institute fellowship' }), example: 'JRF' },
+      fellowshipAgency: { label: 'Fellowship from', kind: 'text', column: researchScholars.fellowshipAgency, max: 120, example: 'UGC' },
+      entrance: { label: 'Admitted through', kind: 'select', column: researchScholars.entrance, options: choices(['net', 'gate', 'set', 'entrance_test', 'exempt'], { net: 'UGC-NET / CSIR-NET', gate: 'GATE', set: 'SET / SLET', entrance_test: 'University entrance test', exempt: 'Exempted' }) },
+      gender: { label: 'Gender', kind: 'select', column: researchScholars.gender, options: choices(['female', 'male', 'other']), help: 'For AISHE; women get two more years to submit (UGC 2022)' },
+      category: { label: 'Category', kind: 'select', column: researchScholars.category, options: choices(['general', 'sc', 'st', 'obc', 'ews'], { sc: 'SC', st: 'ST', obc: 'OBC', ews: 'EWS' }) },
+      courseworkCompletedOn: { label: 'Coursework completed on', kind: 'date', column: researchScholars.courseworkCompletedOn },
+      synopsisApprovedOn: { label: 'Synopsis approved on', kind: 'date', column: researchScholars.synopsisApprovedOn },
       thesisTitle: { label: 'Thesis title', kind: 'text', column: researchScholars.thesisTitle, max: 300 },
       status: { label: 'Status', kind: 'select', column: researchScholars.status, options: choices(['enrolled', 'thesis_submitted', 'awarded', 'withdrawn']), create: false, edit: false },
     },
@@ -811,12 +843,25 @@ function scholarsEntity() {
       dcMeetings: sql<number>`(select count(*)::int from scholar_dc_meetings d where d.scholar_id = "research_scholars"."id")`,
       nextDcDue: sql<string | null>`(select d.next_due_on::text from scholar_dc_meetings d where d.scholar_id = "research_scholars"."id" order by d.held_on desc limit 1)`,
       courseworkDone: sql<string>`(select count(*) filter (where c.status in ('passed', 'exempted'))::text || ' / ' || count(*)::text from scholar_coursework c where c.scholar_id = "research_scholars"."id")`,
+      lastReportTo: sql<string | null>`(select max(r.period_to)::text from scholar_progress_reports r where r.scholar_id = "research_scholars"."id")`,
+      submitBy: sql<string>`((${researchScholars.enrolledOn} + make_interval(years => case when ${researchScholars.gender} = 'female' then 8 else 6 end))::date - 1)::text`,
     },
     filters: { dcDue: { label: 'Doctoral committee', options: choices(['overdue', 'never_met']), where: (v) => (v === 'overdue' ? sql`(select d.next_due_on from scholar_dc_meetings d where d.scholar_id = "research_scholars"."id" order by d.held_on desc limit 1) < ${TODAY}` : v === 'never_met' ? sql`not exists (select 1 from scholar_dc_meetings d where d.scholar_id = "research_scholars"."id")` : undefined) } },
     search: [researchScholars.fullName, researchScholars.thesisTitle],
     defaultSort: { id: 'fullName', dir: 'asc' },
     scope: mine((me) => eq(researchScholars.supervisorUserId, me)),
     importKey: ['fullName'],
+    validate: async (ctx, id) => {
+      const r = await rowOf(ctx, researchScholars, id);
+      if (r.registrationNo) {
+        const [d] = await ctx.tx.select({ id: researchScholars.id }).from(researchScholars).where(and(eq(researchScholars.registrationNo, String(r.registrationNo)), ne(researchScholars.id, id))).limit(1);
+        if (d) return 'Another scholar has that registration number';
+      }
+      if (r.fellowship !== 'none' && !r.fellowshipAgency) return 'Give who awards the fellowship';
+      if (after(r.courseworkCompletedOn, r.enrolledOn) || after(r.synopsisApprovedOn, r.enrolledOn)) return 'Coursework and the synopsis come after registration';
+      if (r.synopsisApprovedOn && !r.courseworkCompletedOn) return 'The synopsis is approved after the coursework is completed';
+      return null;
+    },
   });
 }
 

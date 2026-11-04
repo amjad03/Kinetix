@@ -16,6 +16,8 @@ import { hasRole } from '../placements/placements.access.js';
 import { DoiResolver } from './doi.js';
 import { normalizeOrcid, OrcidResolver, validOrcid } from './orcid.js';
 import { hIndex, normalizeDoi } from './research-rules.js';
+import { duplicateOf } from './publication-dupes.js';
+import { researchIncentiveClaims, researchProfiles } from '../db/schema-research.js';
 import { FACULTY_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES } from './roles.js';
 
 const OrcidBody = z.object({ orcid: z.string().trim().min(16).max(60), ownerUserId: z.uuid().optional() });
@@ -78,17 +80,13 @@ export class ResearchReportsController {
           incomplete++;
           continue;
         }
-        const [dup] = await tx
-          .select({ id: publications.id })
-          .from(publications)
-          .where(doi ? sql`lower(${publications.doi}) = ${doi.toLowerCase()}` : and(sql`lower(${publications.title}) = ${title.toLowerCase()}`, eq(publications.year, year)))
-          .limit(1);
+        const dup = await duplicateOf(tx, { doi, title, year });
         if (dup) {
           skipped++;
           continue;
         }
         const authors = rec?.authors?.length ? rec.authors : [{ name: me.name, userId: owner }];
-        await tx.insert(publications).values({ tenantId: p.tenantId, ownerUserId: owner, title, kind: rec?.kind ?? KINDS[w.type] ?? 'journal', venue: rec?.venue ?? w.venue ?? 'Unknown venue', year, doi, issn: rec?.issn ?? null, authors });
+        await tx.insert(publications).values({ tenantId: p.tenantId, ownerUserId: owner, title, kind: rec?.kind ?? KINDS[w.type] ?? 'journal', venue: rec?.venue ?? w.venue ?? 'Unknown venue', year, doi, issn: rec?.issn ?? null, authors, metadataSource: rec ? 'crossref' : 'orcid' });
         added++;
       }
       await auditUser(tx, p, 'research.orcid_imported', 'user', owner, { orcid: id, found: works.length, added, skipped });
@@ -97,6 +95,19 @@ export class ResearchReportsController {
   }
 
   // ---- faculty research profile -----------------------------------------------------------------
+
+  /** The teacher's own research for the Teacher App: identifiers, the profile summary and lists, and incentive claims. */
+  @Get('me')
+  @Auth('user', FACULTY_ROLES)
+  me(@CurrentPrincipal() p: UserPrincipal) {
+    return this.db.withTenant(p.tenantId, async (tx) => {
+      const d = await this.profileOf(tx, p.userId);
+      const [ids] = await tx.select().from(researchProfiles).where(eq(researchProfiles.userId, p.userId));
+      const claims = (await tx.execute(sql`select c.id, c.basis, c.amount_paise as "amountPaise", c.status, c.paid_on::text as "paidOn", coalesce(pb.title, pt.title, '') as subject
+        from ${researchIncentiveClaims} c left join publications pb on pb.id = c.publication_id left join patents pt on pt.id = c.patent_id where c.user_id = ${p.userId} order by c.created_at desc limit 50`)).rows;
+      return { ...d, ids: ids ?? null, claims };
+    });
+  }
 
   /** One teacher's research: publications (as owner or co-author, retracted ones apart), citations and h-index, projects, grants, IPR, consultancy, recognitions and scholars. */
   @Get('reports/faculty-profile')

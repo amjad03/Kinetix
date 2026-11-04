@@ -15,7 +15,8 @@ import { DbService, type Tx } from '../db/db.service.js';
 import { publications, researchProjects, users } from '../db/schema.js';
 import { researchDatasets } from '../db/schema-pathways.js';
 import { ObjectStorage } from '../storage/storage.service.js';
-import { DoiResolver } from './doi.js';
+import { DoiLookup } from './doi-lookup.js';
+import { duplicateOf } from './publication-dupes.js';
 import { FACULTY_ROLES, RESEARCH_ROLES, RESEARCH_VIEW_ROLES } from './research.controller.js';
 import { normalizeDoi } from './research-rules.js';
 
@@ -32,7 +33,12 @@ const DatasetBody = z
     keywords: z.array(z.string().trim().min(1).max(40)).max(12).default([]),
   })
   .refine((b) => b.access !== 'embargoed' || !!b.embargoUntil, { message: 'An embargoed dataset needs an end date', path: ['embargoUntil'] });
-const ImportBody = z.object({ doi: z.string().trim().min(5).max(200), projectId: z.uuid().optional() });
+const ImportBody = z.object({
+  doi: z.string().trim().min(5).max(200),
+  projectId: z.uuid().optional(),
+  /** Typed-in details used when the registry cannot be reached: the record is kept as pending and filled in later. */
+  fallback: z.object({ title: z.string().trim().min(3).max(300), venue: z.string().trim().min(1).max(200), year: z.number().int().min(1950).max(2100), kind: z.enum(['journal', 'conference', 'book', 'book_chapter']).default('journal') }).optional(),
+});
 
 /** Research datasets with files and access rules, and publication import from a DOI. */
 @Controller('v1/research')
@@ -40,7 +46,7 @@ export class DatasetsController {
   constructor(
     private readonly db: DbService,
     private readonly storage: ObjectStorage,
-    private readonly doi: DoiResolver,
+    private readonly doi: DoiLookup,
     private readonly clock: Clock,
     private readonly scans: UploadScanService,
   ) {}
@@ -125,25 +131,30 @@ export class DatasetsController {
 
   // ---- DOI import -------------------------------------------------------------------------------
 
-  /** Records a publication from its DOI by reading the registry (Crossref). Authors can be matched to faculty afterwards. */
+  /**
+   * Records a publication from its DOI. The registry (Crossref) is read through the cache; when it cannot be reached the
+   * typed-in fallback details are kept as a pending record (filled in by "Refresh pending DOIs"), else 502 REGISTRY_OFFLINE.
+   * A DOI or a title (any punctuation, the same or the next year) already on record is refused as a duplicate.
+   */
   @Post('publications/import-doi')
   @Auth('user', FACULTY_ROLES)
   async importDoi(@CurrentPrincipal() p: UserPrincipal, @Body(new ZodBody(ImportBody)) b: z.infer<typeof ImportBody>) {
     const doi = normalizeDoi(b.doi);
     if (!doi) throw new BadRequestException({ message: 'That is not a valid DOI', code: 'INVALID_DOI' });
-    let rec;
-    try {
-      rec = await this.doi.resolve(doi);
-    } catch {
-      throw new BadGatewayException('The DOI registry could not be reached. Try again in a moment, or enter the details by hand.');
-    }
-    if (!rec) throw new NotFoundException('No publication is registered with that DOI');
+    const { source, record } = await this.doi.lookup(p.tenantId, doi);
+    if (source === 'not_found') throw new NotFoundException('No publication is registered with that DOI');
+    if (source === 'offline' && !b.fallback) throw new BadGatewayException({ message: 'The DOI registry could not be reached. Enter the title, venue and year and the record is completed when the registry is back.', code: 'REGISTRY_OFFLINE' });
+    const rec = record ?? { ...b.fallback!, issn: null, authors: [] as { name: string }[] };
     return this.db.withTenant(p.tenantId, async (tx) => {
+      const dup = await duplicateOf(tx, { doi, title: rec.title, year: rec.year });
+      if (dup) throw new ConflictException({ message: dup.reason === 'doi' ? 'A publication with that DOI is already recorded' : 'This publication is already recorded (same title); add yourself as an author there', code: 'DUPLICATE_PUBLICATION', existingId: dup.id });
+      const [me] = await tx.select({ name: users.fullName }).from(users).where(eq(users.id, p.userId));
+      const authors = rec.authors.length ? rec.authors : [{ name: me?.name ?? '', userId: p.userId }];
       const [row] = await orConflict('A publication with that DOI is already recorded', () =>
-        tx.insert(publications).values({ tenantId: p.tenantId, ownerUserId: p.userId, doi, title: rec.title, kind: rec.kind, venue: rec.venue, year: rec.year, issn: rec.issn, authors: rec.authors, projectId: b.projectId ?? null }).returning(),
+        tx.insert(publications).values({ tenantId: p.tenantId, ownerUserId: p.userId, doi, title: rec.title, kind: rec.kind, venue: rec.venue, year: rec.year, issn: rec.issn, authors, projectId: b.projectId ?? null, metadataSource: record ? 'crossref' : 'pending' }).returning(),
       );
-      await auditUser(tx, p, 'research.publication_imported', 'publication', row.id, { doi });
-      return row;
+      await auditUser(tx, p, 'research.publication_imported', 'publication', row.id, { doi, source });
+      return { ...row, lookup: source };
     });
   }
 }

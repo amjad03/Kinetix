@@ -42,6 +42,12 @@ export function fromCrossref(w: CrossrefWork): DoiRecord | null {
   };
 }
 
+/** How a DOI look-up was answered: by the registry, from the copy kept the last time, or not at all. */
+export type DoiSource = 'registry' | 'cache' | 'offline' | 'not_found';
+
+/** A cached copy younger than this is used without asking the registry again. */
+export const DOI_CACHE_DAYS = 30;
+
 /** Crossref's public API: no account is needed. A short timeout keeps a slow registry from holding a request. */
 @Injectable()
 export class CrossrefDoiResolver extends DoiResolver {
