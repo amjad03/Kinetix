@@ -3813,4 +3813,114 @@ class AppLocalizationsEn extends AppLocalizations {
   String busFeeNext(Object date) {
     return 'Next due on $date';
   }
+
+  @override
+  String get inboxEmergency => 'Emergency';
+
+  @override
+  String get pollPrompt => 'Choose an answer';
+
+  @override
+  String get pollChange =>
+      'Thank you for answering. You can change your answer while the poll is open.';
+
+  @override
+  String get pollClosed => 'This poll has closed';
+
+  @override
+  String pollVotes(int votes, int pct) {
+    return '$votes ($pct%)';
+  }
+
+  @override
+  String get prefTitle => 'Messages from the school';
+
+  @override
+  String get prefLinkHelp => 'Choose SMS, WhatsApp, email and phone alerts';
+
+  @override
+  String get prefIntro =>
+      'Choose how the institution may reach you outside the app. You can change this at any time.';
+
+  @override
+  String get prefSms => 'SMS';
+
+  @override
+  String get prefWhatsapp => 'WhatsApp';
+
+  @override
+  String get prefEmail => 'Email';
+
+  @override
+  String get prefPush => 'Phone alerts';
+
+  @override
+  String get prefSmsHelp =>
+      'Fee reminders, absences and notices by text message';
+
+  @override
+  String get prefWhatsappHelp =>
+      'Notices on WhatsApp from the institution’s verified account';
+
+  @override
+  String get prefEmailHelp => 'Notices and letters by email';
+
+  @override
+  String get prefPushHelp =>
+      'Alerts on this phone for new notices and messages';
+
+  @override
+  String get prefNoAddress =>
+      'The institution does not have this number or address for you';
+
+  @override
+  String get prefAlwaysOn =>
+      'Notices in the app and emergency alerts always reach you.';
+
+  @override
+  String get rsvpAsk => 'Will you come?';
+
+  @override
+  String rsvpAskBy(String date) {
+    return 'Will you come? Reply by $date';
+  }
+
+  @override
+  String get rsvpGoing => 'Going';
+
+  @override
+  String get rsvpMaybe => 'Maybe';
+
+  @override
+  String get rsvpNo => 'Can’t come';
+
+  @override
+  String rsvpGuests(int count) {
+    return 'Guests with you: $count';
+  }
+
+  @override
+  String get rsvpFewer => 'One guest fewer';
+
+  @override
+  String get rsvpMore => 'One guest more';
+
+  @override
+  String get rsvpSaved => 'Your reply is saved';
+
+  @override
+  String get escalateTitle => 'Ask the head of department';
+
+  @override
+  String get escalateHelp =>
+      'The head of the teacher’s department will read this conversation and reply.';
+
+  @override
+  String get escalateReason => 'Why do you need the head of department?';
+
+  @override
+  String get escalateSend => 'Send';
+
+  @override
+  String get escalateDone => 'The head of department has been asked';
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../features/privacy/channel_prefs.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -63,7 +64,7 @@ class OtpChallenge {
 }
 
 /// Everything the Parent App asks of the ZYNETIX Cloud API. Tests use a fake.
-abstract class ParentApi implements AnnouncementSource {
+abstract class ParentApi implements AnnouncementSource, ChannelPrefSource {
   String get baseUrl;
   set baseUrl(String value);
 
@@ -302,6 +303,9 @@ abstract class ParentApi implements AnnouncementSource {
   /// Text, a photo or PDF ([attachment]), or both.
   Future<ChatMessage> sendMessage(String conversationId, String body, {UploadFile? attachment});
 
+  /// Takes a teacher's conversation to the head of department (`POST /v1/conversations/:id/escalate`).
+  Future<void> escalateConversation(String conversationId, String reason);
+
   /// A photo or PDF sent in a conversation.
   Future<Uint8List> messageFile(String conversationId, String messageId);
 
@@ -312,6 +316,9 @@ abstract class ParentApi implements AnnouncementSource {
   /// The academic calendar for the children's classes between [from] and [to] (default: today
   /// and the next 90 days).
   Future<CalendarRange> calendar({DateTime? from, DateTime? to});
+
+  /// Replies to an event that asks for RSVPs (`POST /v1/calendar/:id/rsvp`).
+  Future<void> rsvp(String eventId, String response, int guests);
 
   /// The student's timetable for [days] days from [from] (default: this week from Monday), as they have it: their lab
   /// batch, their elective, substitutes, special classes and holidays.
@@ -834,6 +841,24 @@ class HttpParentApi implements ParentApi {
   @override
   Future<Announcement> acknowledgeAnnouncement(String id) async =>
       Announcement.fromJson(await _send('POST', '/v1/announcements/inbox/$id/ack') as Map<String, dynamic>);
+
+  @override
+  Future<Announcement> voteAnnouncement(String id, int option) async =>
+      Announcement.fromJson(await _send('POST', '/v1/announcements/inbox/$id/vote', body: {'option': option}) as Map<String, dynamic>);
+
+  @override
+  Future<void> escalateConversation(String conversationId, String reason) async => _send('POST', '/v1/conversations/$conversationId/escalate', body: {'reason': reason});
+
+  @override
+  Future<void> rsvp(String eventId, String response, int guests) async => _send('POST', '/v1/calendar/$eventId/rsvp', body: {'response': response, 'guests': guests});
+
+  @override
+  Future<List<ChannelPref>> channelPrefs() async => _prefsOf(await _send('GET', '/v1/comms/preferences'));
+
+  @override
+  Future<List<ChannelPref>> setChannelPref(String channel, bool granted) async => _prefsOf(await _send('PUT', '/v1/comms/preferences', body: {'channel': channel, 'granted': granted}));
+
+  List<ChannelPref> _prefsOf(dynamic j) => [for (final c in ((j as Map)['channels'] as List)) ChannelPref.fromJson((c as Map).cast<String, dynamic>())];
 
   @override
   Future<Uint8List> announcementFile(String id, String fileId) => _download('/v1/announcements/inbox/$id/attachments/$fileId');

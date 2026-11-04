@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../features/messages/dnd_sheet.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -57,6 +58,10 @@ class ApiException implements Exception {
 
 /// Everything the Teacher App asks of the ZYNETIX Cloud API. Tests use a fake.
 abstract class TeacherApi implements AnnouncementSource {
+  /// Chat do-not-disturb (`/v1/conversations/me/availability`).
+  Future<Availability> availability();
+  Future<Availability> setAvailability(DateTime? dndUntil, String awayNote);
+
   String get baseUrl;
   set baseUrl(String value);
 
@@ -1292,6 +1297,19 @@ class HttpTeacherApi implements TeacherApi {
 
   @override
   Future<Announcement> acknowledgeAnnouncement(String id) async => Announcement.fromJson(await _send('POST', '/v1/announcements/inbox/$id/ack'));
+
+  @override
+  Future<Announcement> voteAnnouncement(String id, int option) async => Announcement.fromJson(await _send('POST', '/v1/announcements/inbox/$id/vote', body: {'option': option}));
+
+  @override
+  Future<Availability> availability() async => Availability.fromJson(await _send('GET', '/v1/conversations/me/availability'));
+
+  @override
+  Future<Availability> setAvailability(DateTime? dndUntil, String awayNote) async {
+    // Keeps the teacher's own chat hours as they are.
+    final now = await _send('GET', '/v1/conversations/me/availability') as Map<String, dynamic>;
+    return Availability.fromJson(await _send('PUT', '/v1/conversations/me/availability', body: {'dndUntil': dndUntil?.toUtc().toIso8601String(), 'hours': now['hours'], 'awayNote': awayNote}));
+  }
 
   @override
   Future<Uint8List> announcementFile(String id, String fileId) async =>

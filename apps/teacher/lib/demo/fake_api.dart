@@ -2,6 +2,7 @@
 /// (`--dart-define=ZYNETIX_DEMO=true`) use them through DemoTeacherApi (demo_api.dart).
 library;
 
+import '../features/messages/dnd_sheet.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -744,9 +745,23 @@ class FakeTeacherApi implements TeacherApi {
       readAt: DateTime.now().subtract(const Duration(days: 2)),
       pinned: false,
     ),
+    Announcement(
+      id: 'an-poll',
+      title: 'Annual Day on 12 December',
+      body: 'Annual Day is on 12 December at 10 am. Please answer the poll.',
+      important: false,
+      requiresAck: false,
+      canAcknowledge: false,
+      sentAt: DateTime.now().subtract(const Duration(days: 4)),
+      senderName: 'Principal',
+      attachments: const [],
+      readAt: DateTime.now().subtract(const Duration(days: 4)),
+      pinned: false,
+      poll: AnnouncementPoll(question: 'Will you attend?', options: const ['Yes', 'No', 'Not sure'], closed: false),
+    ),
   ];
 
-  Announcement _withState(Announcement a, {DateTime? readAt, DateTime? acknowledgedAt}) => Announcement(
+  Announcement _withState(Announcement a, {DateTime? readAt, DateTime? acknowledgedAt, AnnouncementPoll? poll}) => Announcement(
     id: a.id,
     title: a.title,
     body: a.body,
@@ -759,8 +774,45 @@ class FakeTeacherApi implements TeacherApi {
     attachments: a.attachments,
     readAt: readAt ?? a.readAt,
     acknowledgedAt: acknowledgedAt ?? a.acknowledgedAt,
-    pinned: a.important && (acknowledgedAt ?? a.acknowledgedAt) == null && (a.expiresAt == null || a.expiresAt!.isAfter(DateTime.now())),
+    pinned: (a.important || a.emergency) && (acknowledgedAt ?? a.acknowledgedAt) == null && (a.expiresAt == null || a.expiresAt!.isAfter(DateTime.now())),
+    emergency: a.emergency,
+    language: a.language,
+    poll: poll ?? a.poll,
   );
+  /// Votes already given on the fake's polls (one other person said "Yes").
+  final Map<String, List<int>> pollVotes = {'an-poll': [0]};
+
+  // ── Chat do-not-disturb ───────────────────────────────────────────────────────────────────
+
+  Availability dnd = const Availability();
+
+  @override
+  Future<Availability> availability() async {
+    calls.add('availability');
+    return dnd;
+  }
+
+  @override
+  Future<Availability> setAvailability(DateTime? dndUntil, String awayNote) async {
+    calls.add('setAvailability ${dndUntil != null} $awayNote');
+    return dnd = Availability(dndUntil: dndUntil, awayNote: awayNote);
+  }
+
+  @override
+  Future<Announcement> voteAnnouncement(String id, int option) async {
+    calls.add('announcementVote $id $option');
+    final i = announcementList.indexWhere((a) => a.id == id);
+    if (i < 0) throw ApiException(404, 'Message not found');
+    final a = announcementList[i];
+    final p = a.poll;
+    if (p == null) throw ApiException(400, 'This message has no poll');
+    if (p.closed) throw ApiException(409, 'The poll has closed');
+    final votes = [...?pollVotes[id], option];
+    pollVotes[id] = votes;
+    final results = [for (var k = 0; k < p.options.length; k++) PollResult(option: p.options[k], votes: votes.where((v) => v == k).length, pct: (votes.where((v) => v == k).length * 100) ~/ votes.length)];
+    return announcementList[i] = _withState(a, readAt: a.readAt ?? DateTime.now(), poll: AnnouncementPoll(question: p.question, options: p.options, closed: false, closesAt: p.closesAt, myVote: option, results: results));
+  }
+
 
   @override
   Future<AnnouncementInbox> announcements() async {

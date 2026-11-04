@@ -1152,7 +1152,7 @@ enum CalendarKind { holiday, exam, event }
 
 /// A holiday (no classes), exam days or an event, for one or more days.
 class CalendarEvent {
-  CalendarEvent({required this.id, required this.kind, required this.title, required this.startsOn, required this.endsOn, this.programs});
+  CalendarEvent({required this.id, required this.kind, required this.title, required this.startsOn, required this.endsOn, this.programs, this.rsvp = false, this.rsvpBy, this.venue = '', this.myRsvp, this.myGuests = 0});
 
   factory CalendarEvent.fromJson(Map<String, dynamic> j) => CalendarEvent(
     id: j['id'] as String,
@@ -1161,7 +1161,23 @@ class CalendarEvent {
     startsOn: parseIsoDate(j['startsOn'] as String),
     endsOn: parseIsoDate(j['endsOn'] as String),
     programs: j['programs'] == null ? null : _strings(j['programs']),
+    rsvp: j['rsvp'] as bool? ?? false,
+    rsvpBy: j['rsvpBy'] == null ? null : parseIsoDate(j['rsvpBy'] as String),
+    venue: j['venue'] as String? ?? '',
+    myRsvp: (j['myRsvp'] as Map?)?['response'] as String?,
+    myGuests: ((j['myRsvp'] as Map?)?['guests'] as num?)?.toInt() ?? 0,
   );
+
+  /// Asks the family to reply (going, maybe, not going) until [rsvpBy].
+  final bool rsvp;
+  final DateTime? rsvpBy;
+  final String venue;
+
+  /// The family's reply: going, maybe or not_going (null: not replied).
+  final String? myRsvp;
+  final int myGuests;
+
+  CalendarEvent withReply(String response, int guests) => CalendarEvent(id: id, kind: kind, title: title, startsOn: startsOn, endsOn: endsOn, programs: programs, rsvp: rsvp, rsvpBy: rsvpBy, venue: venue, myRsvp: response, myGuests: guests);
 
   final String id;
   final CalendarKind kind;

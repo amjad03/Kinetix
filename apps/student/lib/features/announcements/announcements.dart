@@ -77,6 +77,12 @@ class AnnouncementsController extends ChangeNotifier {
     _replace(updated);
     return updated;
   }
+
+  Future<Announcement> vote(Announcement a, int option) async {
+    final updated = await api.voteAnnouncement(a.id, option);
+    _replace(updated);
+    return updated;
+  }
 }
 
 /// Announcements: important ones pinned on top until they expire or are acknowledged, then the rest
@@ -268,6 +274,20 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
     }
   }
 
+  bool _voting = false;
+
+  Future<void> _vote(int option) async {
+    setState(() => _voting = true);
+    try {
+      final a = await widget.controller.vote(_a, option);
+      if (mounted) setState(() => _a = a);
+    } on ApiException catch (e) {
+      if (mounted) _snack(context.errorText(e));
+    } finally {
+      if (mounted) setState(() => _voting = false);
+    }
+  }
+
   Future<void> _open(AttachedFile f) async {
     setState(() => _opening = f.id);
     try {
@@ -290,7 +310,10 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(Kx.s16, Kx.s8, Kx.s16, Kx.s32),
         children: [
-          if (a.important) Align(alignment: Alignment.centerLeft, child: Pill(context.l10n.inboxImportant, icon: Icons.priority_high, background: c.tertiaryContainer, foreground: c.onTertiaryContainer)),
+          if (a.emergency)
+            Align(alignment: Alignment.centerLeft, child: Pill(context.l10n.inboxEmergency, key: const Key('announcementEmergency'), icon: Icons.warning_amber_rounded, background: c.errorContainer, foreground: c.onErrorContainer))
+          else if (a.important)
+            Align(alignment: Alignment.centerLeft, child: Pill(context.l10n.inboxImportant, icon: Icons.priority_high, background: c.tertiaryContainer, foreground: c.onTertiaryContainer)),
           const SizedBox(height: Kx.s8),
           Text(a.title, key: const Key('announcementTitle'), style: context.text.headlineSmall),
           const SizedBox(height: Kx.s4),
@@ -300,6 +323,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
           ),
           const SizedBox(height: Kx.s16),
           RichBody(a.body),
+          if (a.poll != null) ...[const SizedBox(height: Kx.s24), PollCard(poll: a.poll!, busy: _voting, onVote: _vote)],
           if (a.attachments.isNotEmpty) ...[
             const SizedBox(height: Kx.s24),
             Text(context.l10n.inboxFiles, style: context.text.titleSmall),
@@ -340,6 +364,93 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
             ],
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// The notice's poll: the choices to answer (or change while it is open) and, once answered, how everyone answered.
+class PollCard extends StatelessWidget {
+  const PollCard({super.key, required this.poll, required this.busy, required this.onVote});
+
+  final AnnouncementPoll poll;
+  final bool busy;
+  final ValueChanged<int> onVote;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final open = !poll.closed;
+    return Card(
+      key: const Key('announcementPoll'),
+      child: Padding(
+        padding: const EdgeInsets.all(Kx.s16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [Icon(Icons.how_to_vote_outlined, color: c.primary), const SizedBox(width: Kx.s8), Expanded(child: Text(poll.question, style: context.text.titleMedium))]),
+            const SizedBox(height: Kx.s4),
+            Text(
+              poll.closed ? context.l10n.pollClosed : poll.myVote != null ? context.l10n.pollChange : context.l10n.pollPrompt,
+              style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant),
+            ),
+            const SizedBox(height: Kx.s12),
+            for (var i = 0; i < poll.options.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: Kx.s8),
+                child: _Choice(
+                  key: Key('pollOption-$i'),
+                  label: poll.options[i],
+                  chosen: poll.myVote == i,
+                  result: poll.results != null && i < poll.results!.length ? poll.results![i] : null,
+                  onTap: open && !busy ? () => onVote(i) : null,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Choice extends StatelessWidget {
+  const _Choice({super.key, required this.label, required this.chosen, required this.result, required this.onTap});
+
+  final String label;
+  final bool chosen;
+  final PollResult? result;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final r = result;
+    return Semantics(
+      button: onTap != null,
+      selected: chosen,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(Kx.s8),
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 48),
+          padding: const EdgeInsets.symmetric(horizontal: Kx.s12, vertical: Kx.s8),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(Kx.s8), border: Border.all(color: chosen ? c.primary : c.outlineVariant, width: chosen ? 2 : 1)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Icon(chosen ? Icons.radio_button_checked : Icons.radio_button_unchecked, size: 20, color: chosen ? c.primary : c.onSurfaceVariant),
+                const SizedBox(width: Kx.s8),
+                Expanded(child: Text(label, style: context.text.bodyMedium)),
+                if (r != null) Text(context.l10n.pollVotes(r.votes, r.pct), style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant)),
+              ]),
+              if (r != null) ...[
+                const SizedBox(height: Kx.s4),
+                ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: r.pct / 100, minHeight: 6, backgroundColor: c.surfaceContainerHighest)),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

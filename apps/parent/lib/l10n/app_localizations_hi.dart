@@ -3814,4 +3814,111 @@ class AppLocalizationsHi extends AppLocalizations {
   String busFeeNext(Object date) {
     return 'अगली देय तिथि $date';
   }
+
+  @override
+  String get inboxEmergency => 'आपातकाल';
+
+  @override
+  String get pollPrompt => 'एक उत्तर चुनें';
+
+  @override
+  String get pollChange =>
+      'उत्तर देने के लिए धन्यवाद। मतदान खुला रहने तक आप उत्तर बदल सकते हैं।';
+
+  @override
+  String get pollClosed => 'यह मतदान बंद हो गया है';
+
+  @override
+  String pollVotes(int votes, int pct) {
+    return '$votes ($pct%)';
+  }
+
+  @override
+  String get prefTitle => 'संस्थान से संदेश';
+
+  @override
+  String get prefLinkHelp => 'एसएमएस, व्हाट्सऐप, ईमेल और फ़ोन सूचनाएँ चुनें';
+
+  @override
+  String get prefIntro =>
+      'चुनें कि संस्थान ऐप के बाहर आपसे कैसे संपर्क करे। आप इसे कभी भी बदल सकते हैं।';
+
+  @override
+  String get prefSms => 'एसएमएस';
+
+  @override
+  String get prefWhatsapp => 'व्हाट्सऐप';
+
+  @override
+  String get prefEmail => 'ईमेल';
+
+  @override
+  String get prefPush => 'फ़ोन सूचनाएँ';
+
+  @override
+  String get prefSmsHelp => 'शुल्क अनुस्मारक, अनुपस्थिति और सूचनाएँ संदेश से';
+
+  @override
+  String get prefWhatsappHelp =>
+      'संस्थान के सत्यापित खाते से व्हाट्सऐप पर सूचनाएँ';
+
+  @override
+  String get prefEmailHelp => 'ईमेल से सूचनाएँ और पत्र';
+
+  @override
+  String get prefPushHelp => 'नई सूचनाओं और संदेशों के लिए इस फ़ोन पर सूचना';
+
+  @override
+  String get prefNoAddress => 'संस्थान के पास आपका यह नंबर या पता नहीं है';
+
+  @override
+  String get prefAlwaysOn =>
+      'ऐप में सूचनाएँ और आपात सूचनाएँ हमेशा आप तक पहुँचती हैं।';
+
+  @override
+  String get rsvpAsk => 'क्या आप आएँगे?';
+
+  @override
+  String rsvpAskBy(String date) {
+    return 'क्या आप आएँगे? $date तक जवाब दें';
+  }
+
+  @override
+  String get rsvpGoing => 'आएँगे';
+
+  @override
+  String get rsvpMaybe => 'शायद';
+
+  @override
+  String get rsvpNo => 'नहीं आ पाएँगे';
+
+  @override
+  String rsvpGuests(int count) {
+    return 'साथ में मेहमान: $count';
+  }
+
+  @override
+  String get rsvpFewer => 'एक मेहमान कम';
+
+  @override
+  String get rsvpMore => 'एक मेहमान अधिक';
+
+  @override
+  String get rsvpSaved => 'आपका जवाब सहेजा गया';
+
+  @override
+  String get escalateTitle => 'विभागाध्यक्ष से पूछें';
+
+  @override
+  String get escalateHelp =>
+      'शिक्षक के विभागाध्यक्ष यह बातचीत पढ़कर उत्तर देंगे।';
+
+  @override
+  String get escalateReason => 'आपको विभागाध्यक्ष की ज़रूरत क्यों है?';
+
+  @override
+  String get escalateSend => 'भेजें';
+
+  @override
+  String get escalateDone => 'विभागाध्यक्ष से पूछा गया है';
 }

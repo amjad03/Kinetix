@@ -73,6 +73,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
+  Future<void> _reply(CalendarEvent e, String response, int guests) async {
+    try {
+      await widget.api.rsvp(e.id, response, guests);
+      final r = _range;
+      if (!mounted || r == null) return;
+      setState(() => _range = CalendarRange(from: r.from, to: r.to, today: r.today, events: [for (final x in r.events) x.id == e.id ? x.withReply(response, guests) : x]));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.rsvpSaved)));
+    } on ApiException catch (err) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.errorText(err))));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
@@ -113,7 +125,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       for (final e in list)
                         Padding(
                           padding: const EdgeInsets.only(bottom: Kx.s8),
-                          child: CalendarEntryCard(event: e, today: r.today, highlighted: e.id == widget.highlightId),
+                          child: CalendarEntryCard(event: e, today: r.today, highlighted: e.id == widget.highlightId, onReply: e.rsvp ? (resp, guests) => _reply(e, resp, guests) : null),
                         ),
                     ],
                   ),
@@ -128,11 +140,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
 /// One holiday, exam or event: its kind, title, days and who it is for.
 class CalendarEntryCard extends StatelessWidget {
-  const CalendarEntryCard({super.key, required this.event, required this.today, this.highlighted = false});
+  const CalendarEntryCard({super.key, required this.event, required this.today, this.highlighted = false, this.onReply});
 
   final CalendarEvent event;
   final DateTime today;
   final bool highlighted;
+
+  /// For an event that asks for replies: going, maybe or not_going, with guests.
+  final void Function(String response, int guests)? onReply;
 
   @override
   Widget build(BuildContext context) {
@@ -174,6 +189,32 @@ class CalendarEntryCard extends StatelessWidget {
                       if (when != null) Pill(when, background: c.secondaryContainer, foreground: c.onSecondaryContainer),
                     ],
                   ),
+                  if (event.venue.isNotEmpty) Padding(padding: const EdgeInsets.only(top: Kx.s4), child: Text(event.venue, style: context.text.bodySmall?.copyWith(color: c.onSurfaceVariant))),
+                  if (onReply != null) ...[
+                    const SizedBox(height: Kx.s8),
+                    Text(event.rsvpBy == null ? l.rsvpAsk : l.rsvpAskBy(context.fmt.date(event.rsvpBy!)), style: context.text.bodySmall),
+                    const SizedBox(height: Kx.s4),
+                    SegmentedButton<String>(
+                      key: Key('rsvp-${event.id}'),
+                      emptySelectionAllowed: true,
+                      showSelectedIcon: false,
+                      segments: [
+                        ButtonSegment(value: 'going', label: Text(l.rsvpGoing)),
+                        ButtonSegment(value: 'maybe', label: Text(l.rsvpMaybe)),
+                        ButtonSegment(value: 'not_going', label: Text(l.rsvpNo)),
+                      ],
+                      selected: {?event.myRsvp},
+                      onSelectionChanged: (v) => v.isEmpty ? null : onReply!(v.first, v.first == 'going' ? event.myGuests : 0),
+                    ),
+                    if (event.myRsvp == 'going')
+                      Row(
+                        children: [
+                          Expanded(child: Text(l.rsvpGuests(event.myGuests), key: Key('rsvpGuests-${event.id}'), style: context.text.bodySmall)),
+                          IconButton(tooltip: l.rsvpFewer, onPressed: event.myGuests > 0 ? () => onReply!('going', event.myGuests - 1) : null, icon: const Icon(Icons.remove_circle_outline)),
+                          IconButton(key: Key('rsvpMore-${event.id}'), tooltip: l.rsvpMore, onPressed: event.myGuests < 10 ? () => onReply!('going', event.myGuests + 1) : null, icon: const Icon(Icons.add_circle_outline)),
+                        ],
+                      ),
+                  ],
                 ],
               ),
             ),

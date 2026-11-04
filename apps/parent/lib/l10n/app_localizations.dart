@@ -6309,6 +6309,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next due on {date}'**
   String busFeeNext(Object date);
+
+  /// No description provided for @inboxEmergency.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency'**
+  String get inboxEmergency;
+
+  /// No description provided for @pollPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an answer'**
+  String get pollPrompt;
+
+  /// No description provided for @pollChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for answering. You can change your answer while the poll is open.'**
+  String get pollChange;
+
+  /// No description provided for @pollClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'This poll has closed'**
+  String get pollClosed;
+
+  /// No description provided for @pollVotes.
+  ///
+  /// In en, this message translates to:
+  /// **'{votes} ({pct}%)'**
+  String pollVotes(int votes, int pct);
+
+  /// No description provided for @prefTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages from the school'**
+  String get prefTitle;
+
+  /// No description provided for @prefLinkHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose SMS, WhatsApp, email and phone alerts'**
+  String get prefLinkHelp;
+
+  /// No description provided for @prefIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how the institution may reach you outside the app. You can change this at any time.'**
+  String get prefIntro;
+
+  /// No description provided for @prefSms.
+  ///
+  /// In en, this message translates to:
+  /// **'SMS'**
+  String get prefSms;
+
+  /// No description provided for @prefWhatsapp.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get prefWhatsapp;
+
+  /// No description provided for @prefEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get prefEmail;
+
+  /// No description provided for @prefPush.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone alerts'**
+  String get prefPush;
+
+  /// No description provided for @prefSmsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee reminders, absences and notices by text message'**
+  String get prefSmsHelp;
+
+  /// No description provided for @prefWhatsappHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Notices on WhatsApp from the institution’s verified account'**
+  String get prefWhatsappHelp;
+
+  /// No description provided for @prefEmailHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Notices and letters by email'**
+  String get prefEmailHelp;
+
+  /// No description provided for @prefPushHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts on this phone for new notices and messages'**
+  String get prefPushHelp;
+
+  /// No description provided for @prefNoAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'The institution does not have this number or address for you'**
+  String get prefNoAddress;
+
+  /// No description provided for @prefAlwaysOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Notices in the app and emergency alerts always reach you.'**
+  String get prefAlwaysOn;
+
+  /// No description provided for @rsvpAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Will you come?'**
+  String get rsvpAsk;
+
+  /// No description provided for @rsvpAskBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Will you come? Reply by {date}'**
+  String rsvpAskBy(String date);
+
+  /// No description provided for @rsvpGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Going'**
+  String get rsvpGoing;
+
+  /// No description provided for @rsvpMaybe.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe'**
+  String get rsvpMaybe;
+
+  /// No description provided for @rsvpNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Can’t come'**
+  String get rsvpNo;
+
+  /// No description provided for @rsvpGuests.
+  ///
+  /// In en, this message translates to:
+  /// **'Guests with you: {count}'**
+  String rsvpGuests(int count);
+
+  /// No description provided for @rsvpFewer.
+  ///
+  /// In en, this message translates to:
+  /// **'One guest fewer'**
+  String get rsvpFewer;
+
+  /// No description provided for @rsvpMore.
+  ///
+  /// In en, this message translates to:
+  /// **'One guest more'**
+  String get rsvpMore;
+
+  /// No description provided for @rsvpSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reply is saved'**
+  String get rsvpSaved;
+
+  /// No description provided for @escalateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the head of department'**
+  String get escalateTitle;
+
+  /// No description provided for @escalateHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The head of the teacher’s department will read this conversation and reply.'**
+  String get escalateHelp;
+
+  /// No description provided for @escalateReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Why do you need the head of department?'**
+  String get escalateReason;
+
+  /// No description provided for @escalateSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get escalateSend;
+
+  /// No description provided for @escalateDone.
+  ///
+  /// In en, this message translates to:
+  /// **'The head of department has been asked'**
+  String get escalateDone;
 }
 
 class _AppLocalizationsDelegate

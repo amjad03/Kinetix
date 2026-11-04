@@ -5,6 +5,7 @@ import '../../core/api.dart';
 import '../../core/models.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/common.dart';
+import 'channel_prefs.dart';
 
 /// One student's privacy decisions (`/v1/consents`): loading them and recording changes.
 class ConsentController extends ChangeNotifier {
@@ -282,6 +283,16 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                           onPressed: () => NoticeScreen.open(context, cs.noticeVersion, officer: cs.grievanceOfficer),
                           icon: const Icon(Icons.article_outlined),
                           label: Text(l.readFullNotice),
+                        ),
+                      ),
+                      Card(
+                        child: ListTile(
+                          key: const Key('openChannelPrefs'),
+                          leading: const Icon(Icons.sms_outlined),
+                          title: Text(l.prefTitle),
+                          subtitle: Text(l.prefLinkHelp),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => ChannelPrefsScreen.open(context, controller.api),
                         ),
                       ),
                       const SizedBox(height: Kx.s16),
