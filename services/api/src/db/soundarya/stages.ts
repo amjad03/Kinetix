@@ -43,6 +43,7 @@ import { placementsPass } from './placements-pass.js';
 import { commsPass } from './comms-pass.js';
 import { lmsPass } from './lms-pass.js';
 import { researchPass } from './research-pass.js';
+import { governancePass } from './governance-pass.js';
 
 /** The seed stages in order; each fills one family of modules. */
 export const stages: [string, (c: Ctx) => Promise<void>][] = [
@@ -134,6 +135,7 @@ export const stages: [string, (c: Ctx) => Promise<void>][] = [
   // After the research, pathways (theses, supervisors) and quality stages: identifiers, centres, five years of outputs,
   // funded projects with heads and releases, consultancy, MoUs, ethics, instruments, incentives and Ph.D. progress.
   ['research pass: researcher identifiers, research centres, publications with indexing and citations, IPR, grants with heads, releases and UCs, consultancy, MoUs, seed money, ethics, calls, instruments, events on IPR, incentives, Ph.D. registration, coursework, committees and progress reports', researchPass],
+  ['governance pass: statutory committees with kinds, outside members and norms, meetings with agenda, attendance and signed minutes, action-taken reports, policies with versions and acknowledgements, the RTI register, the compliance calendar, the published disclosure page, e-Samadhan and DPDP answer-by dates', governancePass],
   // Last: version 1 is the live timetable as the earlier stages left it, and the diary follows the held periods.
   ['academics: bell schedule, lab batches and an open elective, allocations, unavailability, timetable versions, the teaching diary', academicsPass],
 ];

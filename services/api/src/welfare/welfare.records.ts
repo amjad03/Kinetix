@@ -102,6 +102,8 @@ export function grievancesEntity(): RecordEntity {
         resolutionHours,
         rating: grievanceTickets.rating,
         appealStatus: grievanceTickets.appealStatus,
+        externalPortal: grievanceTickets.externalPortal,
+        externalRef: grievanceTickets.externalRef,
       },
       joins: (q) => q.innerJoin(raiser, eq(raiser.id, grievanceTickets.raisedBy)).leftJoin(assignee, eq(assignee.id, grievanceTickets.assigneeUserId)),
       search: [grievanceTickets.ticketNo, sql`case when ${grievanceTickets.committee} is null then ${grievanceTickets.subject} else '' end`],
@@ -111,6 +113,7 @@ export function grievancesEntity(): RecordEntity {
         committee: { label: 'Committee', options: COMMITTEES, where: (v) => eq(grievanceTickets.committee, v) },
         overdue: { label: 'Deadline', options: [{ value: 'yes', label: 'Past the deadline' }], where: (v) => (v === 'yes' ? sql`${grievanceTickets.status} in ('open', 'assigned', 'in_progress', 'escalated', 'reopened') and ${grievanceTickets.slaDueAt} < now()` : undefined) },
         appeal: { label: 'Appeal', options: [{ value: 'pending', label: 'Appeal pending' }, { value: 'any', label: 'Appealed' }], where: (v) => (v === 'pending' ? eq(grievanceTickets.appealStatus, 'pending') : v === 'any' ? isNotNull(grievanceTickets.appealStatus) : undefined) },
+        external: { label: 'Outside portal', options: [{ value: 'e_samadhan', label: 'UGC e-Samadhan' }, { value: 'aicte', label: 'AICTE' }, { value: 'cpgrams', label: 'CPGRAMS' }, { value: 'university', label: 'University' }, { value: 'state', label: 'State' }, { value: 'any', label: 'Any portal' }], where: (v) => (v === 'any' ? isNotNull(grievanceTickets.externalPortal) : ['e_samadhan', 'aicte', 'cpgrams', 'university', 'state', 'other'].includes(v) ? eq(grievanceTickets.externalPortal, v) : undefined) },
         year: { label: 'Academic year', where: (v) => (/^\d{4}$/.test(v) ? sql`${grievanceTickets.createdAt} >= ${`${v}-06-01`}::date and ${grievanceTickets.createdAt} < ${`${Number(v) + 1}-06-01`}::date` : undefined) },
       },
       sorts: { raised: grievanceTickets.createdAt, due: grievanceTickets.slaDueAt, ticket: grievanceTickets.ticketNo, resolution: resolutionHours },
@@ -137,6 +140,8 @@ export function grievancesEntity(): RecordEntity {
       { key: 'resolutionHours', header: 'Hours to resolve' },
       { key: 'rating', header: 'Rating' },
       { key: 'appealStatus', header: 'Appeal' },
+      { key: 'externalPortal', header: 'Outside portal' },
+      { key: 'externalRef', header: 'Portal reference' },
     ],
   };
 }

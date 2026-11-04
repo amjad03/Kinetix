@@ -9,7 +9,7 @@ export const WORKSPACE_COOKIE = 'kx_ws';
 
 export const isWorkspace = (v: unknown): v is Workspace => typeof v === 'string' && (WORKSPACES as readonly string[]).includes(v);
 
-const COMMON: Section[] = ['dashboard', 'settings', 'institutionSetup', 'tasks', 'workflows', 'delegations', 'audit'];
+const COMMON: Section[] = ['dashboard', 'settings', 'institutionSetup', 'tasks', 'workflows', 'delegations', 'audit', 'myGovernance'];
 
 /** The sections each console lists (the dashboard, settings and work queues are in all of them). */
 export const WORKSPACE_SECTIONS: Record<Exclude<Workspace, 'all'>, readonly Section[]> = {

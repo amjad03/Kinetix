@@ -207,22 +207,24 @@ describe('governance: users, access, settings and reports', () => {
   });
 
   it('keeps delegated approvals as a list: own and received for staff, all for leaders; overlaps refused; revoke', async () => {
+    // Days counted from the test clock (IST), so the delegation is always still to come whatever day the test runs.
+    const day = (n: number) => new Date(clock.now().getTime() + 5.5 * 3_600_000 + n * 86_400_000).toISOString().slice(0, 10);
     const t2 = await login(t.slug, t.teacher2.email!);
     const meta = (await http().get('/v1/records/delegations/meta').set({ authorization: `Bearer ${t2}` }).expect(200)).body;
     expect(meta).toMatchObject({ key: 'delegations', can: { write: true, create: true } });
-    await http().post('/v1/records/delegations').set(as('teacher')).send({ delegateId: t.teacher.id, scope: 'all', startsOn: '2026-11-01', endsOn: '2026-11-10' }).expect(400); // to yourself
-    await http().post('/v1/records/delegations').set(as('teacher')).send({ delegateId: t.teacher2.id, scope: 'leave', startsOn: '2026-11-10', endsOn: '2026-11-01' }).expect(400);
-    await http().post('/v1/records/delegations').set(as('teacher')).send({ delegateId: t.teacher2.id, scope: 'leave', startsOn: '2026-11-01', endsOn: '2026-11-10', delegatorId: t.principal.id }).expect(403);
-    const d = (await http().post('/v1/records/delegations').set(as('teacher')).send({ delegateId: t.teacher2.id, scope: 'leave', startsOn: '2026-11-01', endsOn: '2026-11-10', reason: 'Conference' }).expect(201)).body;
+    await http().post('/v1/records/delegations').set(as('teacher')).send({ delegateId: t.teacher.id, scope: 'all', startsOn: day(7), endsOn: day(16) }).expect(400); // to yourself
+    await http().post('/v1/records/delegations').set(as('teacher')).send({ delegateId: t.teacher2.id, scope: 'leave', startsOn: day(16), endsOn: day(7) }).expect(400);
+    await http().post('/v1/records/delegations').set(as('teacher')).send({ delegateId: t.teacher2.id, scope: 'leave', startsOn: day(7), endsOn: day(16), delegatorId: t.principal.id }).expect(403);
+    const d = (await http().post('/v1/records/delegations').set(as('teacher')).send({ delegateId: t.teacher2.id, scope: 'leave', startsOn: day(7), endsOn: day(16), reason: 'Conference' }).expect(201)).body;
     expect(d).toMatchObject({ delegatorId: t.teacher.id, delegateName: expect.any(String), state: 'upcoming' });
-    await http().post('/v1/records/delegations').set(as('teacher')).send({ delegateId: t.teacher2.id, scope: 'all', startsOn: '2026-11-05', endsOn: '2026-11-20' }).expect(409);
-    await http().post('/v1/records/delegations').set(as('principal')).send({ delegateId: t.teacher.id, scope: 'workflows', startsOn: '2026-12-01', endsOn: '2026-12-05', delegatorId: t.teacher2.id }).expect(201); // on someone's behalf
+    await http().post('/v1/records/delegations').set(as('teacher')).send({ delegateId: t.teacher2.id, scope: 'all', startsOn: day(11), endsOn: day(26) }).expect(409);
+    await http().post('/v1/records/delegations').set(as('principal')).send({ delegateId: t.teacher.id, scope: 'workflows', startsOn: day(37), endsOn: day(41), delegatorId: t.teacher2.id }).expect(201); // on someone's behalf
 
     expect((await http().get('/v1/records/delegations?f.mine=received').set({ authorization: `Bearer ${t2}` }).expect(200)).body.total).toBe(1);
     expect((await http().get('/v1/records/delegations').set(as('principal')).expect(200)).body.total).toBe(2);
     expect((await http().get('/v1/records/delegations').set(as('outsider')).expect(200)).body.total).toBe(0);
-    await http().patch(`/v1/records/delegations/${d.id}`).set({ authorization: `Bearer ${t2}` }).send({ endsOn: '2026-11-30' }).expect(403); // only the giver
-    await http().patch(`/v1/records/delegations/${d.id}`).set(as('teacher')).send({ endsOn: '2026-11-12' }).expect(200);
+    await http().patch(`/v1/records/delegations/${d.id}`).set({ authorization: `Bearer ${t2}` }).send({ endsOn: day(36) }).expect(403); // only the giver
+    await http().patch(`/v1/records/delegations/${d.id}`).set(as('teacher')).send({ endsOn: day(18) }).expect(200);
     const rev = (await http().post('/v1/records/delegations/bulk').set(as('teacher')).send({ op: 'action', action: 'revoke', target: { ids: [d.id] } }).expect(200)).body;
     expect(rev).toMatchObject({ succeeded: 1 });
     expect((await http().get('/v1/records/delegations?f.state=revoked').set(as('principal')).expect(200)).body.rows.map((r: { id: string }) => r.id)).toEqual([d.id]);

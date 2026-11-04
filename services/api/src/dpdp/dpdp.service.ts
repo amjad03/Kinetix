@@ -3,6 +3,8 @@ import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { audit } from '../common/audit.js';
 import { A4, Pdf } from '../common/pdf-doc.js';
 import { orConflict } from '../common/ops.js';
+import { Clock } from '../common/time.js';
+import { dpdpDueAt } from '../governance/statutory.js';
 import type { Tx } from '../db/db.service.js';
 import { alumniDonations, alumniProfiles, assessments, attendanceRecords, dpdpRequests, feePayments, guardians, leaveRequests, marks, payslips, payrollRuns, students, tenants, userRoles, users } from '../db/schema.js';
 import { ERASED_NAME, correctionProblem, retentionReasons, type CorrectableField, type RetentionFacts } from './dpdp.logic.js';
@@ -27,6 +29,8 @@ export interface DataBundle {
 
 @Injectable()
 export class DpdpService {
+  constructor(private readonly clock: Clock) {}
+
   /** Who to write to with a complaint: the institution's named grievance officer, or the staff member holding that role. */
   async grievanceOfficer(tx: Tx): Promise<{ name: string; email: string | null; phone: string | null } | null> {
     const [t] = await tx.select({ settings: tenants.settings }).from(tenants);
@@ -162,10 +166,10 @@ export class DpdpService {
   }
 
   /** Records a request. A second open request of the same kind is refused. */
-  async open(tx: Tx, tenantId: string, userId: string, kind: DpdpRequest['kind'], details: string, correction?: { field: string; value: string }): Promise<DpdpRequest> {
+  async open(tx: Tx, tenantId: string, userId: string, kind: DpdpRequest['kind'], details: string, correction?: { field: string; value: string }, nominee?: { name: string; relation: string; email?: string; phone?: string }): Promise<DpdpRequest> {
     const [open] = await tx.select({ id: dpdpRequests.id }).from(dpdpRequests).where(and(eq(dpdpRequests.userId, userId), eq(dpdpRequests.kind, kind), eq(dpdpRequests.status, 'pending')));
     if (open) throw new ConflictException('You already have an open request of this kind');
-    const [row] = await tx.insert(dpdpRequests).values({ tenantId, userId, kind, details, correction: correction ?? null }).returning();
+    const [row] = await tx.insert(dpdpRequests).values({ tenantId, userId, kind, details, correction: correction ?? null, nominee: nominee ?? null, dueAt: dpdpDueAt(this.clock.now(), kind) }).returning();
     await audit(tx, { tenantId, actorType: 'user', actorId: userId, action: `dpdp.${kind}_requested`, subjectType: 'dpdp_request', subjectId: row.id });
     return row;
   }
@@ -204,8 +208,13 @@ export class DpdpService {
     await tx.update(alumniProfiles).set({ fullName: ERASED_NAME, email: null, phone: null, employer: null, designation: null, city: null, bio: '', directoryVisible: false, mentorAvailable: false }).where(eq(alumniProfiles.userId, userId));
   }
 
+  /** A grievance is answered, a nomination recorded (or either declined with a reason). */
+  async processSimple(tx: Tx, req: DpdpRequest, approve: boolean, note: string, actorId: string): Promise<DpdpRequest> {
+    return this.close(tx, req, approve ? 'completed' : 'rejected', note, [], actorId);
+  }
+
   private async close(tx: Tx, req: DpdpRequest, status: DpdpRequest['status'], note: string, reasons: string[], actorId: string): Promise<DpdpRequest> {
-    const [row] = await tx.update(dpdpRequests).set({ status, resolutionNote: note || null, retentionReasons: reasons, processedBy: actorId, processedAt: new Date() }).where(eq(dpdpRequests.id, req.id)).returning();
+    const [row] = await tx.update(dpdpRequests).set({ status, resolutionNote: note || null, retentionReasons: reasons, processedBy: actorId, processedAt: this.clock.now() }).where(eq(dpdpRequests.id, req.id)).returning();
     await audit(tx, { tenantId: req.tenantId, actorType: 'user', actorId, action: `dpdp.${req.kind}_${status}`, subjectType: 'dpdp_request', subjectId: req.id, data: { reasons } });
     return row;
   }

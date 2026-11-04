@@ -44,6 +44,7 @@ import '../marks/marks.dart';
 import '../messages/messages_controller.dart';
 import '../messages/messages_screen.dart';
 import '../campus/house_screen.dart';
+import '../privacy/policies_screen.dart';
 import '../privacy/dpdp_screen.dart';
 import '../privacy/privacy.dart';
 
@@ -552,6 +553,14 @@ class ProfileTabState extends State<ProfileTab> {
                   subtitle: Text(l.privacySubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => PrivacyScreen.open(context, widget.study.api, st.id),
+                ),
+                ListTile(
+                  key: const Key('openPolicies'),
+                  leading: const Icon(Icons.policy_outlined),
+                  title: Text(l.govPoliciesTab),
+                  subtitle: Text(l.govBody),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => PoliciesScreen.open(context, widget.study.api),
                 ),
                 ListTile(
                   key: const Key('openDpdp'),

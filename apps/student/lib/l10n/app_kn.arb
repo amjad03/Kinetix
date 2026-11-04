@@ -1823,5 +1823,15 @@
   "lpRevoked": "ಹಿಂಪಡೆಯಲಾಗಿದೆ",
   "lpOpenFailed": "ಲಿಂಕ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ",
   "lpVerify": "ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಪರಿಶೀಲಿಸಿ",
-  "lpCourseProgress": "ನಿಮ್ಮ ಪ್ರಗತಿ"
+  "lpCourseProgress": "ನಿಮ್ಮ ಪ್ರಗತಿ",
+  "govTitle": "ಆಡಳಿತ",
+  "govBody": "ಓದಿ ಒಪ್ಪಬೇಕಾದ ಕಾಲೇಜಿನ ನಿಯಮಗಳು",
+  "govPoliciesTab": "ನೀತಿಗಳು",
+  "govNoPolicies": "ಇನ್ನೂ ನಿಮಗೆ ಯಾವುದೇ ನೀತಿ ಅನ್ವಯಿಸುವುದಿಲ್ಲ.",
+  "govToAcknowledge": "ಆವೃತ್ತಿ {version}: ದಯವಿಟ್ಟು ಓದಿ ಸ್ವೀಕರಿಸಿ",
+  "govAcknowledgedOn": "{date} ರಂದು ಸ್ವೀಕರಿಸಲಾಗಿದೆ",
+  "govForInfo": "ಆವೃತ್ತಿ {version}, ಮಾಹಿತಿಗಾಗಿ",
+  "govPolicyTitle": "ನೀತಿ",
+  "govVersion": "ಆವೃತ್ತಿ {version}",
+  "govAcknowledge": "ನಾನು ಈ ನೀತಿಯನ್ನು ಓದಿದ್ದೇನೆ ಮತ್ತು ಪಾಲಿಸುತ್ತೇನೆ"
 }

@@ -1,11 +1,12 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Res, StreamableFile } from '@nestjs/common';
-import { desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt } from 'drizzle-orm';
 import type { Response } from 'express';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { RoleName, UserPrincipal } from '../auth/principal.js';
 import { auditUser } from '../common/audit.js';
 import { ZodBody } from '../common/zod-body.js';
+import { Clock } from '../common/time.js';
 import { DbService } from '../db/db.service.js';
 import { dpdpRequests, users } from '../db/schema.js';
 import { CORRECTABLE_FIELDS, correctionProblem, retentionReasons } from './dpdp.logic.js';
@@ -14,11 +15,15 @@ import { DpdpService } from './dpdp.service.js';
 const ADMIN: RoleName[] = ['tenant_admin', 'principal'];
 const RequestBody = z
   .object({
-    kind: z.enum(['correction', 'erasure']),
+    kind: z.enum(['correction', 'erasure', 'grievance', 'nomination']),
     details: z.string().trim().max(1000).default(''),
     correction: z.object({ field: z.enum(CORRECTABLE_FIELDS), value: z.string().trim().min(1).max(200) }).optional(),
+    /** Section 14: the person who exercises these rights on death or incapacity. */
+    nominee: z.object({ name: z.string().trim().min(2).max(160), relation: z.string().trim().min(2).max(60), email: z.union([z.literal(''), z.email()]).optional(), phone: z.string().trim().max(20).optional() }).optional(),
   })
-  .refine((b) => b.kind !== 'correction' || b.correction || b.details.length >= 5, { message: 'Say what should be corrected' });
+  .refine((b) => b.kind !== 'correction' || b.correction || b.details.length >= 5, { message: 'Say what should be corrected' })
+  .refine((b) => b.kind !== 'grievance' || b.details.length >= 10, { message: 'Describe the complaint', path: ['details'] })
+  .refine((b) => b.kind !== 'nomination' || !!b.nominee, { message: 'Name the nominee', path: ['nominee'] });
 const ProcessBody = z.object({ decision: z.enum(['approve', 'reject']), note: z.string().trim().max(1000).default('') });
 
 /**
@@ -30,6 +35,7 @@ export class DpdpController {
   constructor(
     private readonly db: DbService,
     private readonly svc: DpdpService,
+    private readonly clock: Clock,
   ) {}
 
   /** The grievance officer to write to about personal data. */
@@ -79,7 +85,7 @@ export class DpdpController {
       if (bad) throw new BadRequestException(bad);
     }
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const row = await this.svc.open(tx, p.tenantId, p.userId, b.kind, b.details, b.correction);
+      const row = await this.svc.open(tx, p.tenantId, p.userId, b.kind, b.details, b.correction, b.nominee);
       const willBlock = b.kind === 'erasure' ? retentionReasons(await this.svc.facts(tx, p.userId)) : [];
       return { ...row, retentionNotice: willBlock };
     });
@@ -89,12 +95,19 @@ export class DpdpController {
 
   @Get('requests')
   @Auth('user', ADMIN)
-  queue(@CurrentPrincipal() p: UserPrincipal, @Query('status') status?: string) {
+  queue(@CurrentPrincipal() p: UserPrincipal, @Query('status') status?: string, @Query('overdue') overdue?: string) {
     const st = z.enum(['pending', 'completed', 'rejected', 'blocked']).optional().parse(status || undefined);
+    const now = this.clock.now();
     return this.db.withTenant(p.tenantId, async (tx) => {
-      const rows = await tx.select().from(dpdpRequests).where(st ? eq(dpdpRequests.status, st) : undefined).orderBy(desc(dpdpRequests.createdAt)).limit(300);
+      const rows = await tx
+        .select()
+        .from(dpdpRequests)
+        .where(and(st ? eq(dpdpRequests.status, st) : undefined, overdue === 'true' ? and(eq(dpdpRequests.status, 'pending'), lt(dpdpRequests.dueAt, now)) : undefined))
+        .orderBy(desc(dpdpRequests.createdAt))
+        .limit(300);
       const people = rows.length ? await tx.select({ id: users.id, fullName: users.fullName, email: users.email }).from(users).where(inArray(users.id, [...new Set(rows.map((r) => r.userId))])) : [];
-      return rows.map((r) => ({ ...r, person: people.find((x) => x.id === r.userId) ?? null }));
+      // The answer-by date: 30 days for a right, 90 for a grievance (DPDP Rules, 2025).
+      return rows.map((r) => ({ ...r, person: people.find((x) => x.id === r.userId) ?? null, overdue: r.status === 'pending' && !!r.dueAt && r.dueAt < now }));
     });
   }
 
@@ -112,12 +125,17 @@ export class DpdpController {
       const approve = b.decision === 'approve';
       if (req.kind === 'correction') return this.svc.processCorrection(tx, req, approve, b.note, p.userId);
       if (req.kind === 'erasure') return this.svc.processErasure(tx, req, approve, b.note, p.userId);
+      if (req.kind === 'grievance' || req.kind === 'nomination') {
+        if (req.kind === 'grievance' && !b.note) throw new BadRequestException('Write the reply to the complaint');
+        return this.svc.processSimple(tx, req, approve, b.note, p.userId);
+      }
       throw new ConflictException('Export requests are completed automatically');
     });
   }
 
   private async logExport(tx: Parameters<Parameters<DbService['withTenant']>[1]>[0], p: UserPrincipal, format: string) {
-    await tx.insert(dpdpRequests).values({ tenantId: p.tenantId, userId: p.userId, kind: 'export', status: 'completed', details: format, processedAt: new Date() });
+    const now = this.clock.now();
+    await tx.insert(dpdpRequests).values({ tenantId: p.tenantId, userId: p.userId, kind: 'export', status: 'completed', details: format, processedAt: now, dueAt: now });
     await auditUser(tx, p, 'dpdp.export_downloaded', 'user', p.userId, { format });
   }
 }

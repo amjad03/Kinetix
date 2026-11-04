@@ -29,6 +29,7 @@ import '../core/models.dart';
 import '../core/outcomes.dart';
 import '../core/pathways.dart';
 import '../core/placement_pass.dart';
+import '../core/policies.dart';
 import '../core/scholarships.dart';
 import '../core/school_life.dart';
 import '../core/self_service.dart';
@@ -1907,6 +1908,21 @@ class FakeStudentApi implements StudentApi {
   final List<Map<String, dynamic>> grievances = [
     {'id': 'g1', 'ticketNo': 'GRV-0001', 'category': 'fees', 'subject': 'Fee receipt is wrong', 'status': 'resolved', 'anonymous': false, 'slaDueAt': '2026-10-25T04:30:00Z', 'resolution': 'Receipt reissued', 'rating': null},
   ];
+
+  List<MyPolicy> policies = [];
+  Map<String, PolicyText> policyTexts = {};
+
+  @override
+  Future<List<MyPolicy>> myPolicies() async => List.of(policies);
+
+  @override
+  Future<PolicyText> policyText(String versionId) async => policyTexts[versionId] ?? (throw StateError('No policy $versionId'));
+
+  @override
+  Future<void> acknowledgePolicy(String versionId) async {
+    calls.add('acknowledgePolicy $versionId');
+    policies = [for (final p in policies) p.versionId == versionId ? MyPolicy(versionId: p.versionId, title: p.title, version: p.version, mustAcknowledge: p.mustAcknowledge, pending: false, acknowledgedAt: DateTime.utc(2026, 10, 5, 5)) : p];
+  }
 
   @override
   Future<List<GrievanceTicket>> myGrievances() async {

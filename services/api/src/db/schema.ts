@@ -4182,6 +4182,9 @@ export const TENANT_TABLES = [
   // Placements depth (migration 0173).
   'placement_company_contacts', 'placement_optins', 'interview_slots', 'placement_trainings', 'placement_training_sessions', 'placement_training_attendance',
   'placement_training_scores', 'student_progressions', 'alumni_job_posts', 'placement_feedback',
+  // Governance pass (migrations 0218-0219, schema-governance-pass.ts).
+  'committee_meeting_attendance', 'committee_agenda_items', 'committee_minute_signoffs', 'governance_policies', 'governance_policy_versions', 'governance_policy_acks',
+  'rti_requests', 'compliance_deadlines', 'disclosure_items', 'disclosure_settings',
   // Placements pass (migrations 0210-0211, schema-placements-pass.ts).
   'placement_interactions', 'placement_documents', 'apprenticeships', 'apprenticeship_stipends', 'placement_referrals',
   // Governance and platform settings (migrations 0178-0179, schema-governance.ts)
@@ -5461,6 +5464,10 @@ export const grievanceTickets = pgTable('grievance_tickets', {
   appealDecision: text('appeal_decision'),
   appealDecidedBy: ref('appeal_decided_by', () => users.id),
   appealDecidedAt: timestamp('appeal_decided_at', { withTimezone: true }),
+  /** The same grievance on an outside portal (migration 0219): UGC e-Samadhan, AICTE, CPGRAMS or the university. */
+  externalPortal: text('external_portal'),
+  externalRef: text('external_ref'),
+  externalRefOn: date('external_ref_on'),
 });
 
 export const grievanceEvents = pgTable('grievance_events', {
@@ -6163,6 +6170,17 @@ export const committees = pgTable(
     description: text('description').notNull().default(''),
     active: boolean('active').notNull().default(true),
     createdAt: createdAt(),
+    /** Governance pass (migration 0218): which statutory body this is (governance/committee-rules.ts), its mandate and norms. */
+    kind: text('kind').notNull().default('other'),
+    mandate: text('mandate').notNull().default(''),
+    meetingsPerYear: smallint('meetings_per_year').notNull().default(0),
+    quorumPct: smallint('quorum_pct').notNull().default(50),
+    constitutedOn: date('constituted_on'),
+    orderRef: text('order_ref').notNull().default(''),
+    /** Shown on the public mandatory disclosure page, with the contact below. */
+    public: boolean('public').notNull().default(false),
+    helpline: text('helpline').notNull().default(''),
+    email: text('email').notNull().default(''),
   },
   (t) => [uniqueIndex('committees_name_uq').on(t.tenantId, t.name)],
 );
@@ -6173,11 +6191,19 @@ export const committeeMembers = pgTable(
     id: id(),
     tenantId: tenantId(),
     committeeId: uuid('committee_id').notNull().references(() => committees.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id').notNull().references(() => users.id),
+    /** Staff and students sign in; an outside member (NGO, lawyer, nominee) has no account, only a name (migration 0218). */
+    userId: uuid('user_id').references(() => users.id),
     role: text('role').notNull().default('member'), // chair | secretary | member | external
     tenureStart: date('tenure_start').notNull(),
     tenureEnd: date('tenure_end'),
     createdAt: createdAt(),
+    name: text('name').notNull().default(''),
+    /** internal | external | student | parent | alumni | ngo | legal | industry | government */
+    category: text('category').notNull().default('internal'),
+    gender: text('gender').notNull().default(''), // female | male | other | ''
+    designation: text('designation').notNull().default(''),
+    contactPublic: boolean('contact_public').notNull().default(false),
+    phone: text('phone').notNull().default(''),
   },
   (t) => [index('committee_members_committee_idx').on(t.committeeId)],
 );
@@ -6195,6 +6221,14 @@ export const committeeMeetings = pgTable(
     status: text('status').notNull().default('scheduled'), // scheduled | held | cancelled
     createdBy: uuid('created_by').notNull().references(() => users.id),
     createdAt: createdAt(),
+    /** Governance pass (migration 0218): notice, quorum and the minutes' approval by the members. */
+    venue: text('venue').notNull().default(''),
+    startsAt: text('starts_at').notNull().default(''), // HH:MM, IST
+    noticeSentAt: timestamp('notice_sent_at', { withTimezone: true }),
+    minutesStatus: text('minutes_status').notNull().default('draft'), // draft | circulated | approved
+    minutesHash: text('minutes_hash'),
+    minutesCirculatedAt: timestamp('minutes_circulated_at', { withTimezone: true }),
+    minutesApprovedAt: timestamp('minutes_approved_at', { withTimezone: true }),
   },
   (t) => [index('committee_meetings_committee_idx').on(t.committeeId)],
 );
@@ -6212,6 +6246,11 @@ export const committeeActionItems = pgTable(
     status: text('status').notNull().default('open'), // open | in_progress | done | dropped
     completedAt: timestamp('completed_at', { withTimezone: true }),
     createdAt: createdAt(),
+    /** The action-taken report (migration 0218): what was done, when it was reported, and the agenda item it came from. */
+    agendaItemId: uuid('agenda_item_id'),
+    actionTaken: text('action_taken').notNull().default(''),
+    reportedOn: date('reported_on'),
+    evidenceUrl: text('evidence_url').notNull().default(''),
   },
   (t) => [index('committee_action_items_meeting_idx').on(t.meetingId), index('committee_action_items_owner_idx').on(t.ownerUserId)],
 );
@@ -7442,7 +7481,7 @@ export const dpdpRequests = pgTable(
     id: id(),
     tenantId: tenantId(),
     userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    kind: text('kind').$type<'export' | 'correction' | 'erasure'>().notNull(),
+    kind: text('kind').$type<'export' | 'correction' | 'erasure' | 'grievance' | 'nomination'>().notNull(),
     status: text('status').$type<'pending' | 'completed' | 'rejected' | 'blocked'>().notNull().default('pending'),
     details: text('details').notNull().default(''),
     correction: jsonb('correction').$type<{ field: string; value: string }>(),
@@ -7452,6 +7491,10 @@ export const dpdpRequests = pgTable(
     processedBy: uuid('processed_by').references(() => users.id, { onDelete: 'set null' }),
     processedAt: timestamp('processed_at', { withTimezone: true }),
     createdAt: createdAt(),
+    /** When the institution must answer (migration 0219): 30 days for a right, 90 for a grievance (DPDP Rules 2025, rule 14). */
+    dueAt: timestamp('due_at', { withTimezone: true }),
+    /** A nomination (section 14): who exercises the person's rights on death or incapacity. */
+    nominee: jsonb('nominee').$type<{ name: string; relation: string; email?: string; phone?: string }>(),
   },
   (t) => [index('dpdp_requests_status_idx').on(t.tenantId, t.status, t.createdAt), index('dpdp_requests_user_idx').on(t.tenantId, t.userId)],
 );

@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// App name (keep in English).
   ///
@@ -9033,194 +9040,189 @@ abstract class AppLocalizations {
   /// **'{score} of {max}'**
   String lmsScore(String score, String max);
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'My research'**
-  String get researchMine;
+  /// **'Governance'**
+  String get govTitle;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Publications ({n} indexed)'**
-  String resPublicationsCount(int n);
+  /// **'Policies to acknowledge, minutes to approve, committee actions'**
+  String get govBody;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Citations'**
-  String get resCitations;
+  /// **'Policies'**
+  String get govPoliciesTab;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'h-index (i10: {n})'**
-  String resHIndex(int n);
+  /// **'No policies apply to you yet.'**
+  String get govNoPolicies;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Patents filed / granted'**
-  String get resIprCount;
+  /// **'Version {version}: please read and acknowledge'**
+  String govToAcknowledge(int version);
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Scholars guided / awarded'**
-  String get resScholarsCount;
+  /// **'Acknowledged on {date}'**
+  String govAcknowledgedOn(String date);
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Researcher identifiers'**
-  String get resIds;
+  /// **'Version {version}, for information'**
+  String govForInfo(int version);
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'No identifiers yet. Add your ORCID iD and the others so the office can import your work.'**
-  String get resIdsNone;
+  /// **'Policy'**
+  String get govPolicyTitle;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Links are fine: the ID is read from them. A change is verified again by the research office.'**
-  String get resIdsBody;
+  /// **'Version {version}'**
+  String govVersion(int version);
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Edit identifiers'**
-  String get resEditIds;
+  /// **'I have read this policy and will follow it'**
+  String get govAcknowledge;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Save'**
-  String get resSaveIds;
+  /// **'Minutes'**
+  String get govMinutesTab;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'ORCID iD'**
-  String get resIdOrcid;
+  /// **'My actions'**
+  String get govActionsTab;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Scopus Author ID'**
-  String get resIdScopus;
+  /// **'No minutes are waiting for your approval.'**
+  String get govNoMinutes;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Web of Science ResearcherID'**
-  String get resIdWos;
+  /// **'Coming meetings'**
+  String get govUpcoming;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Google Scholar'**
-  String get resIdScholar;
+  /// **'My committees'**
+  String get govMyCommittees;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Vidwan ID'**
-  String get resIdVidwan;
+  /// **'Chairperson'**
+  String get govRoleChair;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Verified'**
-  String get resVerified;
+  /// **'Secretary'**
+  String get govRoleSecretary;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Awaiting verification'**
-  String get resNotVerified;
+  /// **'Member'**
+  String get govRoleMember;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Patents and IPR'**
-  String get resIpr;
+  /// **'Minutes'**
+  String get govMinutesTitle;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'No patents or IPR recorded.'**
-  String get resIprEmpty;
+  /// **'Resolved: {text}'**
+  String govResolved(String text);
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Incentive claims'**
-  String get resClaims;
+  /// **'Approve the minutes'**
+  String get govApprove;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'No incentive claims yet.'**
-  String get resClaimsEmpty;
+  /// **'Object'**
+  String get govObject;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Draft'**
-  String get patentDraft;
+  /// **'What is wrong with the minutes'**
+  String get govObjectionLabel;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Filed'**
-  String get patentFiled;
+  /// **'You have signed these minutes, or they are no longer out for approval.'**
+  String get govAlreadySigned;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Published'**
-  String get patentPublished;
+  /// **'No committee actions are open for you.'**
+  String get govNoActions;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Granted'**
-  String get patentGranted;
+  /// **'Report action taken'**
+  String get govReport;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Rejected'**
-  String get patentRejected;
+  /// **'What was done'**
+  String get govActionTakenLabel;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Claimed'**
-  String get claimClaimed;
+  /// **'Report and close'**
+  String get govMarkDone;
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Approved'**
-  String get claimApproved;
+  /// **'due {date}'**
+  String govDue(String date);
 
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
   ///
   /// In en, this message translates to:
-  /// **'Paid'**
-  String get claimPaid;
-
-  /// Teacher App research: my profile, identifiers, IPR and incentives.
-  ///
-  /// In en, this message translates to:
-  /// **'Rejected'**
-  String get claimRejected;
+  /// **'Overdue'**
+  String get govOverdue;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -9229,7 +9231,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;

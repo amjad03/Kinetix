@@ -34,6 +34,7 @@ import '../work/project_screens.dart';
 import '../work/requests_screen.dart';
 import '../work/research_screens.dart';
 import '../work/roster_surveys_clubs.dart';
+import '../work/governance_screen.dart';
 import '../work/tasks_screen.dart';
 import 'device_trust_tile.dart';
 import '../hr/tax_claims_screen.dart';
@@ -320,6 +321,7 @@ class ProfileTab extends StatelessWidget {
               ('openInterviews', Icons.person_search_outlined, l.ivTitle, l.ivBody, () => InterviewsScreen(api: state.api, userId: me.id)),
               ('openLms', Icons.school_outlined, l.lmsTitle, l.lmsBody, () => LmsCoursesScreen(api: state.api)),
               ('openTasks', Icons.task_alt_outlined, l.tasksTitle, l.tasksBody, () => TasksScreen(api: state.api)),
+              ('openGovernance', Icons.gavel_outlined, l.govTitle, l.govBody, () => GovernanceScreen(api: state.api)),
               ('openRequests', Icons.approval_outlined, l.requestsTitle, l.requestsBody, () => RequestsScreen(api: state.api)),
               ('openSubstitutions', Icons.swap_horiz, l.subsTitle, l.subsBody, () => SubstitutionsScreen(api: state.api)),
               ('openDuties', Icons.fact_check_outlined, l.dutiesTitle, l.dutiesBody, () => DutiesScreen(api: state.api)),

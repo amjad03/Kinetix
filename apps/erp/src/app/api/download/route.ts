@@ -40,6 +40,8 @@ const TARGETS: Record<string, (id: string) => string> = {
   'qb-sealed': (id) => `/v1/question-bank/releases/${id}/paper.pdf`,
   'evidence-file': (id) => `/v1/quality/evidence/${id}/file`,
   'committee-evidence': (id) => `/v1/campus-life/evidence/${id}/download`,
+  'committee-minutes': (id) => `/v1/governance/committees/meetings/${id}/minutes.pdf`,
+  'committee-atr': (id) => `/v1/governance/committees/atr/report.xlsx?committeeId=${id}`,
   'event-media': (id) => `/v1/campus-life/media/${id}/file`,
   'grievance-evidence': (id) => `/v1/grievances/evidence/${id}/download`,
   'leave-doc': (id) => `/v1/attendance-desk/leaves/${id}/document`,
@@ -71,7 +73,7 @@ export async function GET(req: NextRequest) {
   const kind = req.nextUrl.searchParams.get('kind') ?? '';
   const id = req.nextUrl.searchParams.get('id') ?? '';
   // The staff and own-card PDFs need no id.
-  const FIXED: Record<string, string> = { 'library-labels': '/v1/library/books/labels.pdf', 'asset-tags-all': '/v1/assets/tags.pdf', 'id-staff': '/v1/documents/id-cards/staff.pdf', 'id-me': '/v1/documents/id-cards/me.pdf', 'tally-file': '/v1/tally/export.xml' };
+  const FIXED: Record<string, string> = { 'library-labels': '/v1/library/books/labels.pdf', 'asset-tags-all': '/v1/assets/tags.pdf', 'id-staff': '/v1/documents/id-cards/staff.pdf', 'id-me': '/v1/documents/id-cards/me.pdf', 'tally-file': '/v1/tally/export.xml', 'governance-atr': '/v1/governance/committees/atr/report.xlsx' };
   // GL journals for a date range: gl-csv / gl-tally with ?from=&to=
   const range = ['from', 'to'].map((k) => req.nextUrl.searchParams.get(k) ?? '');
   const GL: Record<string, string> = { 'gl-csv': 'csv', 'gl-tally': 'xml' };

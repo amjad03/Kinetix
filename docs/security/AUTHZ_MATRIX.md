@@ -5,9 +5,9 @@ Regenerate: `cd services/api && UPDATE_AUTHZ=1 ./node_modules/.bin/vitest run te
 
 ## Summary
 
-- Routes: 2997
-- Public (no @Auth, no guard): 112 (all on the allow list below unless flagged)
-- Any signed-in user (no role list): 331; open to students and families, so each must scope to the caller
+- Routes: 3030
+- Public (no @Auth, no guard): 114 (all on the allow list below unless flagged)
+- Any signed-in user (no role list): 338; open to students and families, so each must scope to the caller
 - Flagged for review: 40
 
 Flags: `PUBLIC?` no @Auth and not on the public allow list; `BROAD` a write on a staff-sounding path open to students, families or any user; `OWNERSHIP?` an id in the path, open to non-staff, and no sign that the handler or its service reads the caller (each was reviewed: see *Reviewed* below and docs/security/SECURITY_AUDIT.md).
@@ -1529,6 +1529,36 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/finance/scholarships/:id/cancel` | guardian, student |  |
 | POST | `/v1/finance/scholarships/:id/decide` | accountant, principal, tenant_admin |  |
 | POST | `/v1/finance/scholarships/apply` | guardian, student |  |
+| GET | `/v1/governance/committees/:id` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
+| POST | `/v1/governance/committees/:id/meetings` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
+| POST | `/v1/governance/committees/:id/members` | hod, principal, quality_officer, tenant_admin |  |
+| PATCH | `/v1/governance/committees/:id/members/:memberId` | hod, principal, quality_officer, tenant_admin |  |
+| PUT | `/v1/governance/committees/:id/profile` | hod, principal, quality_officer, tenant_admin |  |
+| PUT | `/v1/governance/committees/action-items/:actionId/report` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
+| GET | `/v1/governance/committees/atr/report` | hod, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/governance/committees/atr/report.xlsx` | hod, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/governance/committees/catalogue` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
+| GET | `/v1/governance/committees/compliance` | hod, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/governance/committees/me/summary` | any signed-in user |  |
+| GET | `/v1/governance/committees/meetings/:meetingId` | any signed-in user |  |
+| PUT | `/v1/governance/committees/meetings/:meetingId` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
+| POST | `/v1/governance/committees/meetings/:meetingId/actions` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
+| PUT | `/v1/governance/committees/meetings/:meetingId/agenda` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
+| PUT | `/v1/governance/committees/meetings/:meetingId/attendance` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
+| POST | `/v1/governance/committees/meetings/:meetingId/circulate` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
+| GET | `/v1/governance/committees/meetings/:meetingId/minutes.pdf` | any signed-in user |  |
+| POST | `/v1/governance/committees/meetings/:meetingId/notice` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
+| POST | `/v1/governance/committees/meetings/:meetingId/revise` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
+| POST | `/v1/governance/committees/meetings/:meetingId/sign` | any signed-in user |  |
+| GET | `/v1/governance/committees/people` | hod, principal, quality_officer, tenant_admin |  |
+| POST | `/v1/governance/committees/setup` | hod, principal, quality_officer, tenant_admin |  |
+| POST | `/v1/governance/compliance/:id/done` | principal, quality_officer, tenant_admin |  |
+| GET | `/v1/governance/compliance/calendar` | principal, quality_officer, tenant_admin |  |
+| POST | `/v1/governance/compliance/remind` | principal, quality_officer, tenant_admin |  |
+| POST | `/v1/governance/compliance/standard` | principal, quality_officer, tenant_admin |  |
+| GET | `/v1/governance/dashboard` | hod, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/governance/disclosure` | principal, quality_officer, tenant_admin |  |
+| PUT | `/v1/governance/disclosure/settings` | principal, quality_officer, tenant_admin |  |
 | POST | `/v1/governance/documents/:id/hold` | principal, quality_officer, tenant_admin |  |
 | GET | `/v1/governance/documents/:id/versions` | principal, quality_officer, tenant_admin |  |
 | GET | `/v1/governance/incidents` | principal, quality_officer, tenant_admin |  |
@@ -1536,11 +1566,26 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/governance/incidents/:id` | principal, quality_officer, tenant_admin |  |
 | PUT | `/v1/governance/incidents/:id` | principal, quality_officer, tenant_admin |  |
 | POST | `/v1/governance/incidents/:id/updates` | principal, quality_officer, tenant_admin |  |
+| GET | `/v1/governance/policies` | principal, quality_officer, tenant_admin |  |
+| POST | `/v1/governance/policies` | principal, quality_officer, tenant_admin |  |
+| GET | `/v1/governance/policies/:id` | principal, quality_officer, tenant_admin |  |
+| PUT | `/v1/governance/policies/:id` | principal, quality_officer, tenant_admin |  |
+| POST | `/v1/governance/policies/:id/versions` | principal, quality_officer, tenant_admin |  |
+| GET | `/v1/governance/policies/me/list` | any signed-in user |  |
+| PUT | `/v1/governance/policies/versions/:vid` | principal, quality_officer, tenant_admin |  |
+| POST | `/v1/governance/policies/versions/:vid/acknowledge` | any signed-in user |  |
+| GET | `/v1/governance/policies/versions/:vid/acks` | principal, quality_officer, tenant_admin |  |
+| POST | `/v1/governance/policies/versions/:vid/approve` | principal, quality_officer, tenant_admin |  |
+| POST | `/v1/governance/policies/versions/:vid/move` | principal, quality_officer, tenant_admin |  |
+| POST | `/v1/governance/policies/versions/:vid/publish` | principal, quality_officer, tenant_admin |  |
+| POST | `/v1/governance/policies/versions/:vid/remind` | principal, quality_officer, tenant_admin |  |
+| GET | `/v1/governance/policies/versions/:vid/text` | any signed-in user |  |
 | GET | `/v1/governance/retention` | principal, quality_officer, tenant_admin |  |
 | DELETE | `/v1/governance/retention/:category` | principal, quality_officer, tenant_admin |  |
 | PUT | `/v1/governance/retention/:category` | principal, quality_officer, tenant_admin |  |
 | GET | `/v1/governance/retention/due` | principal, quality_officer, tenant_admin |  |
 | POST | `/v1/governance/retention/run` | principal, quality_officer, tenant_admin |  |
+| GET | `/v1/governance/rti/register` | principal, quality_officer, tenant_admin |  |
 | GET | `/v1/governance/rules` | principal, quality_officer, tenant_admin |  |
 | POST | `/v1/governance/rules` | principal, quality_officer, tenant_admin |  |
 | PUT | `/v1/governance/rules/:id` | principal, quality_officer, tenant_admin |  |
@@ -1566,6 +1611,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/grievances/:id/committee-stage` | icc_member, principal |  |
 | GET | `/v1/grievances/:id/evidence` | any signed-in user |  |
 | POST | `/v1/grievances/:id/evidence` | any signed-in user |  |
+| POST | `/v1/grievances/:id/external-ref` | grievance_officer, icc_member, principal, principal, tenant_admin |  |
 | POST | `/v1/grievances/:id/rating` | any signed-in user |  |
 | POST | `/v1/grievances/:id/reopen` | any signed-in user |  |
 | POST | `/v1/grievances/:id/resolve` | grievance_officer, icc_member, principal, principal, tenant_admin |  |
@@ -2489,6 +2535,8 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/public/careers/:slug/openings/:id` | PUBLIC |  |
 | POST | `/v1/public/careers/:slug/openings/:id/apply` | PUBLIC |  |
 | GET | `/v1/public/checkout/:slug/:paymentId` | PUBLIC |  |
+| GET | `/v1/public/disclosure/:slug` | PUBLIC |  |
+| GET | `/v1/public/disclosure/:slug/policies/:versionId` | PUBLIC |  |
 | GET | `/v1/public/events/:slug` | PUBLIC |  |
 | GET | `/v1/public/events/:slug/:id` | PUBLIC |  |
 | GET | `/v1/public/examiner-invite/:slug/:token` | PUBLIC |  |
@@ -2629,18 +2677,12 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/research/grants/:id` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/grants/:id/close` | principal, research_coordinator, tenant_admin |  |
 | POST | `/v1/research/grants/:id/expenses` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| GET | `/v1/research/grants/:id/statement` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| GET | `/v1/research/grants/:id/statement.xlsx` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| POST | `/v1/research/incentives/claims` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | GET | `/v1/research/kpis` | hod, principal, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/me` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/milestones/:id/complete` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | GET | `/v1/research/office/summary` | hod, principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/patents` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/patents` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/patents/:id/status` | principal, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/profiles/me` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| PUT | `/v1/research/profiles/me` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | GET | `/v1/research/projects` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/projects` | principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/projects/:id` | hod, principal, research_coordinator, teacher, tenant_admin |  |
@@ -2656,21 +2698,14 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | POST | `/v1/research/proposals/:id/withdraw` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | GET | `/v1/research/publications` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/publications` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| POST | `/v1/research/publications/check-duplicate` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| GET | `/v1/research/publications/doi-lookup` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/publications/import-doi` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/publications/import-orcid` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| POST | `/v1/research/publications/refresh-pending` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| GET | `/v1/research/reports/aishe` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/faculty` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/faculty-profile` | hod, principal, quality_officer, research_coordinator, teacher, tenant_admin |  |
-| GET | `/v1/research/reports/faculty-profile.xlsx` | hod, principal, quality_officer, research_coordinator, teacher, tenant_admin |  |
-| GET | `/v1/research/reports/naac-c3` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/nba` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/nba-aishe.xlsx` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/nirf-params` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/nirf-rp` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
-| GET | `/v1/research/reports/nirf-rp.xlsx` | hod, principal, quality_officer, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/faculty` | hod, principal, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/faculty-profile` | hod, principal, research_coordinator, teacher, tenant_admin |  |
+| GET | `/v1/research/reports/faculty-profile.xlsx` | hod, principal, research_coordinator, teacher, tenant_admin |  |
+| GET | `/v1/research/reports/naac-c3` | hod, principal, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/nirf-rp` | hod, principal, research_coordinator, tenant_admin |  |
+| GET | `/v1/research/reports/nirf-rp.xlsx` | hod, principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/scholars` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/scholars` | principal, research_coordinator, tenant_admin |  |
 | POST | `/v1/research/scholars/:id/allocate` | principal, research_coordinator, tenant_admin |  |
@@ -2683,9 +2718,7 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/research/theses/:id` | hod, principal, research_coordinator, student, teacher, tenant_admin | OWNERSHIP? reviewed |
 | PUT | `/v1/research/theses/:id` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | PUT | `/v1/research/theses/:id/examiners` | principal, research_coordinator, tenant_admin |  |
-| POST | `/v1/research/theses/:id/shodhganga` | principal, research_coordinator, tenant_admin |  |
 | POST | `/v1/research/theses/:id/similarity` | hod, principal, research_coordinator, teacher, tenant_admin |  |
-| POST | `/v1/research/theses/:id/similarity/external` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/theses/:id/stage` | hod, principal, research_coordinator, teacher, tenant_admin |  |
 | POST | `/v1/research/theses/:id/vivas` | principal, research_coordinator, tenant_admin |  |
 | GET | `/v1/research/theses/mine` | student |  |
