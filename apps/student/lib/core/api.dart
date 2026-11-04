@@ -27,6 +27,7 @@ import 'models.dart';
 import 'outcomes.dart';
 import 'pathways.dart';
 import 'placement_pass.dart';
+import 'policies.dart';
 import 'scholarships.dart';
 import 'school_life.dart';
 import 'self_service.dart';
@@ -255,6 +256,11 @@ abstract class StudentApi implements AnnouncementSource, ChannelPrefSource {
 
   /// Asks an alumnus for a referral at a company (`POST /v1/placements/referrals`).
   Future<void> requestReferral({required String alumniId, required String company, String role = '', required String message});
+
+  /// Policies that apply to me or are public, their text, and my acknowledgement (`/v1/governance/policies`).
+  Future<List<MyPolicy>> myPolicies();
+  Future<PolicyText> policyText(String versionId);
+  Future<void> acknowledgePolicy(String versionId);
 
   /// Grievances this person raised, newest first (`GET /v1/grievances/mine`).
   Future<List<GrievanceTicket>> myGrievances();
@@ -1046,6 +1052,17 @@ class HttpStudentApi implements StudentApi {
   Future<List<GrievanceTicket>> myGrievances() async => [
     for (final t in await _send('GET', '/v1/grievances/mine') as List) GrievanceTicket.fromJson((t as Map).cast<String, dynamic>()),
   ];
+
+  @override
+  Future<List<MyPolicy>> myPolicies() async => [
+    for (final p in await _send('GET', '/v1/governance/policies/me/list') as List) MyPolicy.fromJson((p as Map).cast<String, dynamic>()),
+  ];
+
+  @override
+  Future<PolicyText> policyText(String versionId) async => PolicyText.fromJson((await _send('GET', '/v1/governance/policies/versions/$versionId/text') as Map).cast<String, dynamic>());
+
+  @override
+  Future<void> acknowledgePolicy(String versionId) async => _send('POST', '/v1/governance/policies/versions/$versionId/acknowledge');
 
   @override
   Future<GrievanceTicket> raiseGrievance({required String category, required String subject, required String description, bool anonymous = false, String? studentId}) async =>

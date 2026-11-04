@@ -13,6 +13,7 @@ import 'desk_models.dart';
 import 'evidence_models.dart';
 import 'exam_work_models.dart';
 import 'academics_models.dart';
+import 'governance_models.dart';
 import 'growth_models.dart';
 import 'hr_models.dart';
 import 'insights_models.dart';
@@ -160,6 +161,15 @@ abstract class TeacherApi implements AnnouncementSource {
 
   /// Moves a task along (POST /v1/tasks/:id/status); [version] guards against a stale screen.
   Future<void> setTaskStatus(String id, TaskStatus status, {int? version});
+
+  /// Governance: policies that apply to me, their text and my acknowledgement; my committees, minutes to sign and actions.
+  Future<List<MyPolicy>> myPolicies();
+  Future<PolicyText> policyText(String versionId);
+  Future<void> acknowledgePolicy(String versionId);
+  Future<MyGovernance> myGovernance();
+  Future<MeetingMinutes> meetingMinutes(String meetingId);
+  Future<void> signMinutes(String meetingId, {required bool approve, String comment = ''});
+  Future<void> reportCommitteeAction(String actionId, String actionTaken, {bool done = true});
 
   /// Workflow: the routes I can start, requests waiting for me, my own requests and one request with its timeline.
   Future<List<WorkflowDefinition>> workflowDefinitions();
@@ -854,6 +864,29 @@ class HttpTeacherApi implements TeacherApi {
   @override
   Future<void> setTaskStatus(String id, TaskStatus status, {int? version}) async =>
       _send('POST', '/v1/tasks/$id/status', body: {'status': taskStatusCode(status), 'expectedVersion': ?version});
+
+  @override
+  Future<List<MyPolicy>> myPolicies() async => _rows(await _send('GET', '/v1/governance/policies/me/list'), MyPolicy.fromJson);
+
+  @override
+  Future<PolicyText> policyText(String versionId) async => PolicyText.fromJson(await _send('GET', '/v1/governance/policies/versions/$versionId/text') as Map<String, dynamic>);
+
+  @override
+  Future<void> acknowledgePolicy(String versionId) async => _send('POST', '/v1/governance/policies/versions/$versionId/acknowledge');
+
+  @override
+  Future<MyGovernance> myGovernance() async => MyGovernance.fromJson(await _send('GET', '/v1/governance/committees/me/summary') as Map<String, dynamic>);
+
+  @override
+  Future<MeetingMinutes> meetingMinutes(String meetingId) async => MeetingMinutes.fromJson(await _send('GET', '/v1/governance/committees/meetings/$meetingId') as Map<String, dynamic>);
+
+  @override
+  Future<void> signMinutes(String meetingId, {required bool approve, String comment = ''}) async =>
+      _send('POST', '/v1/governance/committees/meetings/$meetingId/sign', body: {'decision': approve ? 'approve' : 'object', 'comment': comment});
+
+  @override
+  Future<void> reportCommitteeAction(String actionId, String actionTaken, {bool done = true}) async =>
+      _send('PUT', '/v1/governance/committees/action-items/$actionId/report', body: {'actionTaken': actionTaken, 'status': done ? 'done' : 'in_progress'});
 
   @override
   Future<List<WorkflowDefinition>> workflowDefinitions() async => _rows(await _send('GET', '/v1/workflows/definitions'), WorkflowDefinition.fromJson);

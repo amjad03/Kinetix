@@ -16,6 +16,7 @@ import '../core/exam_work_models.dart';
 import '../core/course_file_models.dart';
 import '../core/desk_models.dart';
 import '../core/evidence_models.dart';
+import '../core/governance_models.dart';
 import '../core/growth_models.dart';
 import '../core/hr_models.dart';
 import '../core/insights_models.dart';
@@ -1207,6 +1208,46 @@ class FakeTeacherApi implements TeacherApi {
 
   List<TaskInfo> taskList = [];
   List<TaskInfo> assignedTaskList = [];
+
+  // --- Governance ------------------------------------------------------------------------------
+
+  List<MyPolicy> policies = [];
+  Map<String, PolicyText> policyTexts = {};
+  MyGovernance governance = const MyGovernance();
+  Map<String, MeetingMinutes> minutes = {};
+
+  @override
+  Future<List<MyPolicy>> myPolicies() async => List.of(policies);
+
+  @override
+  Future<PolicyText> policyText(String versionId) async => policyTexts[versionId] ?? (throw StateError('No policy $versionId'));
+
+  @override
+  Future<void> acknowledgePolicy(String versionId) async {
+    calls.add('acknowledgePolicy $versionId');
+    policies = [
+      for (final p in policies)
+        p.versionId == versionId ? MyPolicy(versionId: p.versionId, code: p.code, title: p.title, version: p.version, mustAcknowledge: p.mustAcknowledge, pending: false, effectiveFrom: p.effectiveFrom, acknowledgedAt: DateTime.utc(2026, 10, 5, 5)) : p,
+    ];
+  }
+
+  @override
+  Future<MyGovernance> myGovernance() async => governance;
+
+  @override
+  Future<MeetingMinutes> meetingMinutes(String meetingId) async => minutes[meetingId] ?? (throw StateError('No meeting $meetingId'));
+
+  @override
+  Future<void> signMinutes(String meetingId, {required bool approve, String comment = ''}) async {
+    calls.add('signMinutes $meetingId ${approve ? 'approve' : 'object'}${comment.isEmpty ? '' : ' $comment'}');
+    governance = MyGovernance(committees: governance.committees, toSign: [for (final m in governance.toSign) if (m.meetingId != meetingId) m], actions: governance.actions, upcoming: governance.upcoming);
+  }
+
+  @override
+  Future<void> reportCommitteeAction(String actionId, String actionTaken, {bool done = true}) async {
+    calls.add('reportCommitteeAction $actionId ${done ? 'done' : 'in_progress'} $actionTaken');
+    governance = MyGovernance(committees: governance.committees, toSign: governance.toSign, actions: [for (final a in governance.actions) if (a.id != actionId || !done) a], upcoming: governance.upcoming);
+  }
 
   @override
   Future<List<TaskInfo>> myTasks({bool all = false}) async => List.of(taskList);

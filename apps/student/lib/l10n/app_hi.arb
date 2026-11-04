@@ -1823,5 +1823,15 @@
   "lpRevoked": "रद्द",
   "lpOpenFailed": "लिंक नहीं खुल सका",
   "lpVerify": "ऑनलाइन जाँचें",
-  "lpCourseProgress": "आपकी प्रगति"
+  "lpCourseProgress": "आपकी प्रगति",
+  "govTitle": "शासन",
+  "govBody": "पढ़ने और स्वीकार करने हेतु महाविद्यालय के नियम",
+  "govPoliciesTab": "नीतियाँ",
+  "govNoPolicies": "अभी आप पर कोई नीति लागू नहीं।",
+  "govToAcknowledge": "संस्करण {version}: कृपया पढ़कर स्वीकृति दें",
+  "govAcknowledgedOn": "{date} को स्वीकृत",
+  "govForInfo": "संस्करण {version}, जानकारी हेतु",
+  "govPolicyTitle": "नीति",
+  "govVersion": "संस्करण {version}",
+  "govAcknowledge": "मैंने यह नीति पढ़ ली है और इसका पालन करूँगा"
 }

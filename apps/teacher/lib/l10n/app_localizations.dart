@@ -63,7 +63,8 @@ import 'app_localizations_kn.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,7 +72,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -83,15 +85,20 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en'), Locale('hi'), Locale('kn')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('hi'),
+    Locale('kn'),
+  ];
 
   /// App name (keep in English).
   ///
@@ -9032,9 +9039,190 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{score} of {max}'**
   String lmsScore(String score, String max);
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Governance'**
+  String get govTitle;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Policies to acknowledge, minutes to approve, committee actions'**
+  String get govBody;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Policies'**
+  String get govPoliciesTab;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'No policies apply to you yet.'**
+  String get govNoPolicies;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}: please read and acknowledge'**
+  String govToAcknowledge(int version);
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledged on {date}'**
+  String govAcknowledgedOn(String date);
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}, for information'**
+  String govForInfo(int version);
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Policy'**
+  String get govPolicyTitle;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String govVersion(int version);
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read this policy and will follow it'**
+  String get govAcknowledge;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get govMinutesTab;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'My actions'**
+  String get govActionsTab;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'No minutes are waiting for your approval.'**
+  String get govNoMinutes;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming meetings'**
+  String get govUpcoming;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'My committees'**
+  String get govMyCommittees;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Chairperson'**
+  String get govRoleChair;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Secretary'**
+  String get govRoleSecretary;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get govRoleMember;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get govMinutesTitle;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved: {text}'**
+  String govResolved(String text);
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve the minutes'**
+  String get govApprove;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Object'**
+  String get govObject;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'What is wrong with the minutes'**
+  String get govObjectionLabel;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'You have signed these minutes, or they are no longer out for approval.'**
+  String get govAlreadySigned;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'No committee actions are open for you.'**
+  String get govNoActions;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Report action taken'**
+  String get govReport;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'What was done'**
+  String get govActionTakenLabel;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Report and close'**
+  String get govMarkDone;
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'due {date}'**
+  String govDue(String date);
+
+  /// Governance: policies to acknowledge, committee minutes to approve and committee actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get govOverdue;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -9043,7 +9231,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'hi', 'kn'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'hi', 'kn'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
