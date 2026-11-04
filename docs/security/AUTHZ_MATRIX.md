@@ -5,9 +5,9 @@ Regenerate: `cd services/api && UPDATE_AUTHZ=1 ./node_modules/.bin/vitest run te
 
 ## Summary
 
-- Routes: 2947
-- Public (no @Auth, no guard): 103 (all on the allow list below unless flagged)
-- Any signed-in user (no role list): 324; open to students and families, so each must scope to the caller
+- Routes: 2997
+- Public (no @Auth, no guard): 112 (all on the allow list below unless flagged)
+- Any signed-in user (no role list): 331; open to students and families, so each must scope to the caller
 - Flagged for review: 40
 
 Flags: `PUBLIC?` no @Auth and not on the public allow list; `BROAD` a write on a staff-sounding path open to students, families or any user; `OWNERSHIP?` an id in the path, open to non-staff, and no sign that the handler or its service reads the caller (each was reviewed: see *Reviewed* below and docs/security/SECURITY_AUDIT.md).
@@ -32,6 +32,7 @@ Flags: `PUBLIC?` no @Auth and not on the public allow list; `BROAD` a write on a
 - `^\/v1\/lti\/`: LTI 1.3 launches: OIDC state, nonce and platform JWKS signature
 - `^\/v1\/odata`: OData feed for Power BI: scoped kxo. API token (hashed, revocable)
 - `^\/v1\/scorm\/`: SCORM player: signed, expiring launch token
+- `^\/v1\/xapi\/`: cmi5 xAPI for a sandboxed unit: one-use signed fetch link, then a signed credential for one learner and package (Basic auth)
 - `^\/v1\/fees\/gateway-return\/(:provider|cashfree)\/:tenantSlug$`: hosted-checkout browser return: the post is signature-checked like the webhook, Cashfree is re-queried with the account keys
 - `^\/v1\/transport\/gps\/:tenantSlug$`: GPS tracker webhook: per-institution shared secret
 
@@ -1587,6 +1588,8 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/homework/:id/peer-review/mine` | student |  |
 | GET | `/v1/homework/:id/peer-review/received` | student |  |
 | POST | `/v1/homework/:id/push-marks` | any signed-in user |  |
+| GET | `/v1/homework/:id/rubric` | any signed-in user |  |
+| PUT | `/v1/homework/:id/rubric-marks` | any signed-in user |  |
 | GET | `/v1/homework/:id/settings` | any signed-in user |  |
 | PUT | `/v1/homework/:id/settings` | any signed-in user | BROAD reviewed |
 | GET | `/v1/homework/:id/submissions` | any signed-in user |  |
@@ -1992,29 +1995,63 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | PATCH | `/v1/lms/courses/:id` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/lms/courses/:id/analytics` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/courses/:id/announcements` | hod, principal, teacher, tenant_admin |  |
+| GET | `/v1/lms/courses/:id/at-risk` | hod, principal, teacher, tenant_admin |  |
 | PUT | `/v1/lms/courses/:id/categories` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/lms/courses/:id/certificate/claim` | student |  |
+| GET | `/v1/lms/courses/:id/certificates` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/lms/courses/:id/certificates` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/courses/:id/clone` | hod, principal, teacher, tenant_admin |  |
+| PATCH | `/v1/lms/courses/:id/completion` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/lms/courses/:id/forum` | any signed-in user |  |
 | POST | `/v1/lms/courses/:id/forum` | any signed-in user |  |
+| GET | `/v1/lms/courses/:id/forum/queue` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/lms/courses/:id/gradebook` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/lms/courses/:id/gradebook.csv` | hod, principal, teacher, tenant_admin |  |
+| GET | `/v1/lms/courses/:id/live` | any signed-in user |  |
+| POST | `/v1/lms/courses/:id/live` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/courses/:id/modules` | hod, principal, teacher, tenant_admin |  |
+| PUT | `/v1/lms/courses/:id/order` | hod, principal, teacher, tenant_admin |  |
 | PUT | `/v1/lms/courses/:id/overrides` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/lms/forum/:threadId` | any signed-in user |  |
 | POST | `/v1/lms/forum/:threadId/moderate` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/forum/:threadId/posts` | any signed-in user |  |
+| POST | `/v1/lms/forum/:threadId/report` | hod, principal, student, teacher, tenant_admin |  |
+| POST | `/v1/lms/forum/moderation` | hod, principal, teacher, tenant_admin |  |
+| PATCH | `/v1/lms/forum/posts/:postId` | any signed-in user |  |
 | POST | `/v1/lms/forum/posts/:postId/hide` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/lms/forum/posts/:postId/withdraw` | any signed-in user |  |
 | DELETE | `/v1/lms/items/:id` | hod, principal, teacher, tenant_admin |  |
+| PATCH | `/v1/lms/items/:id` | hod, principal, teacher, tenant_admin |  |
 | PATCH | `/v1/lms/items/:id/access` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/items/:id/assign-slow-learners` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/items/:id/progress` | student |  |
+| PATCH | `/v1/lms/live/:id` | hod, principal, teacher, tenant_admin |  |
+| GET | `/v1/lms/live/:id/attendance` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/lms/live/:id/attendance` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/lms/live/:id/join` | student |  |
+| GET | `/v1/lms/lms-certificates/:id/pdf` | any signed-in user |  |
+| POST | `/v1/lms/lms-certificates/:id/revoke` | hod, principal, tenant_admin |  |
 | DELETE | `/v1/lms/modules/:id` | hod, principal, teacher, tenant_admin |  |
+| PATCH | `/v1/lms/modules/:id` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/modules/:id/items` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/lms/my` | guardian, student |  |
 | GET | `/v1/lms/my-calendar` | guardian, student |  |
+| GET | `/v1/lms/my-live` | guardian, student |  |
 | GET | `/v1/lms/my-quizzes` | student |  |
+| GET | `/v1/lms/my/certificates` | guardian, student |  |
+| GET | `/v1/lms/my/offline` | guardian, student |  |
+| GET | `/v1/lms/my/paths` | guardian, student |  |
+| POST | `/v1/lms/my/progress/sync` | student |  |
+| GET | `/v1/lms/overview` | hod, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/lms/paths` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/lms/paths` | hod, principal, tenant_admin |  |
+| PATCH | `/v1/lms/paths/:id` | hod, principal, tenant_admin |  |
+| POST | `/v1/lms/paths/:id/claim` | student |  |
 | PUT | `/v1/lms/quiz-attempts/:attemptId/answers` | student | OWNERSHIP? reviewed |
+| GET | `/v1/lms/quiz-attempts/:attemptId/events` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/lms/quiz-attempts/:attemptId/events` | student |  |
 | PUT | `/v1/lms/quiz-attempts/:attemptId/mark` | hod, principal, teacher, tenant_admin |  |
+| GET | `/v1/lms/quiz-attempts/:attemptId/review` | student |  |
 | POST | `/v1/lms/quiz-attempts/:attemptId/submit` | student |  |
 | DELETE | `/v1/lms/quiz-questions/:questionId` | hod, principal, teacher, tenant_admin |  |
 | GET | `/v1/lms/quizzes` | hod, principal, teacher, tenant_admin |  |
@@ -2025,11 +2062,16 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/lms/quizzes/:id/attempts` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/quizzes/:id/close` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/quizzes/:id/publish` | hod, principal, teacher, tenant_admin |  |
+| POST | `/v1/lms/quizzes/:id/push-marks` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/quizzes/:id/questions` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/quizzes/:id/questions/from-bank` | hod, principal, teacher, tenant_admin |  |
 | POST | `/v1/lms/quizzes/:id/start` | student |  |
 | GET | `/v1/lms/reports/assignments` | hod, principal, teacher, tenant_admin |  |
+| GET | `/v1/lms/reports/evidence` | hod, principal, quality_officer, tenant_admin |  |
+| GET | `/v1/lms/settings` | hod, principal, teacher, tenant_admin |  |
+| PUT | `/v1/lms/settings` | principal, tenant_admin |  |
 | GET | `/v1/lms/students/:studentId/recommendations` | any signed-in user |  |
+| GET | `/v1/lms/students/:studentId/summary` | any signed-in user |  |
 | GET | `/v1/lti/jwks/:tenantId` | PUBLIC |  |
 | GET | `/v1/lti/platform/:tenantId/auth` | PUBLIC |  |
 | POST | `/v1/lti/platform/:tenantId/auth` | PUBLIC |  |
@@ -3019,6 +3061,15 @@ Flagged routes read by hand, and what protects them. IDOR is also exercised on 4
 | GET | `/v1/workflows/requests/inbox` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
 | GET | `/v1/workflows/requests/mine` | accountant, admissions_officer, canteen_manager, counsellor, driver, exam_controller, examiner, grievance_officer, hod, hostel_warden, hr_manager, icc_member, librarian, placement_officer, principal, quality_officer, research_coordinator, store_keeper, teacher, tenant_admin, transport_manager |  |
 | POST | `/v1/workflows/sla/run` | principal, tenant_admin |  |
+| DELETE | `/v1/xapi/activities/state` | PUBLIC |  |
+| GET | `/v1/xapi/activities/state` | PUBLIC |  |
+| POST | `/v1/xapi/activities/state` | PUBLIC |  |
+| PUT | `/v1/xapi/activities/state` | PUBLIC |  |
+| GET | `/v1/xapi/agents/profile` | PUBLIC |  |
+| POST | `/v1/xapi/fetch/:token` | PUBLIC |  |
+| GET | `/v1/xapi/statements` | PUBLIC |  |
+| POST | `/v1/xapi/statements` | PUBLIC |  |
+| PUT | `/v1/xapi/statements` | PUBLIC |  |
 | GET | `/v1/year-plans` | any signed-in user |  |
 | PUT | `/v1/year-plans/:id/items` | any signed-in user |  |
 | POST | `/v1/year-plans/generate` | any signed-in user |  |
