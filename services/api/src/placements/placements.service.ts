@@ -241,6 +241,12 @@ export class PlacementsService {
     return eligible.length;
   }
 
+  /** The resume a registration keeps: the student's verified one first, else the latest not rejected; null when none. */
+  async resumeOnFile(tx: Tx, studentId: string): Promise<string | null> {
+    const [r] = await tx.select({ id: placementDocuments.id }).from(placementDocuments).where(and(eq(placementDocuments.studentId, studentId), eq(placementDocuments.kind, 'resume'), sql`${placementDocuments.status} <> 'rejected'`)).orderBy(sql`(${placementDocuments.status} = 'verified') desc`, sql`${placementDocuments.createdAt} desc`).limit(1);
+    return r?.id ?? null;
+  }
+
   /** A placement notice to given logins (an alumnus, a recruiter's contact with a login). */
   async notifyLogins(tx: Tx, userIds: string[], title: string, body: string, key: string, data: Record<string, string> = {}) {
     await this.notifications.notifyUsers(tx, userIds, { kind: 'placement', text: { title, body }, data, dedupeKey: key });

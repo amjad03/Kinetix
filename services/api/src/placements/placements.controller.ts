@@ -1,7 +1,6 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { qualitySettings } from '../quality-hub/settings.catalogue.js';
-import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm';
-import { placementDocuments } from '../db/schema-placements-pass.js';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { Auth, CurrentPrincipal } from '../auth/auth.decorators.js';
 import type { UserPrincipal } from '../auth/principal.js';
@@ -342,8 +341,7 @@ export class PlacementsController {
       if (why.includes('debarred')) throw new ConflictException({ statusCode: 409, error: 'Conflict', code: 'DEBARRED', message: 'You are debarred from placement drives for now; ask the placement cell', reasons: why });
       if (why.length) throw new ConflictException({ statusCode: 409, error: 'Conflict', code: 'NOT_OPTED_IN', message: 'Opt in to placements first', reasons: why });
       // The registration keeps the resume the student has on file now (verified first, else the latest not rejected).
-      const [resume] = await tx.select({ id: placementDocuments.id }).from(placementDocuments).where(and(eq(placementDocuments.studentId, studentId), eq(placementDocuments.kind, 'resume'), ne(placementDocuments.status, 'rejected'))).orderBy(sql`(${placementDocuments.status} = 'verified') desc`, desc(placementDocuments.createdAt)).limit(1);
-      const values = { cgpaAt: a.cgpa ?? 0, backlogsAt: a.backlogs, status: 'registered', createdAt: this.svc.now(), resumeDocumentId: resume?.id ?? null };
+      const values = { cgpaAt: a.cgpa ?? 0, backlogsAt: a.backlogs, status: 'registered', createdAt: this.svc.now(), resumeDocumentId: await this.svc.resumeOnFile(tx, studentId) };
       const [row] = existing
         ? await tx.update(driveRegistrations).set(values).where(eq(driveRegistrations.id, existing.id)).returning()
         : await tx.insert(driveRegistrations).values({ tenantId: p.tenantId, driveId, studentId, ...values }).returning();

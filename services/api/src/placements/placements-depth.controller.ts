@@ -258,7 +258,7 @@ export class PlacementsDepthController {
       if (!e.eligible || more.length) throw new ConflictException({ statusCode: 409, error: 'Conflict', code: 'NOT_ELIGIBLE', message: 'The student does not meet this drive’s criteria today', reasons: [...e.reasons, ...more] });
       const [existing] = await tx.select().from(driveRegistrations).where(and(eq(driveRegistrations.driveId, id), eq(driveRegistrations.studentId, b.studentId))).for('update');
       if (existing && existing.status !== 'withdrawn') throw new ConflictException('The student is already registered');
-      const values = { cgpaAt: a.cgpa ?? 0, backlogsAt: a.backlogs, status: 'registered', createdAt: this.svc.now() };
+      const values = { cgpaAt: a.cgpa ?? 0, backlogsAt: a.backlogs, status: 'registered', createdAt: this.svc.now(), resumeDocumentId: await this.svc.resumeOnFile(tx, b.studentId) };
       const [row] = existing ? await tx.update(driveRegistrations).set(values).where(eq(driveRegistrations.id, existing.id)).returning() : await tx.insert(driveRegistrations).values({ tenantId: p.tenantId, driveId: id, studentId: b.studentId, ...values }).returning();
       await auditUser(tx, p, 'placement.registered_by_office', 'drive', id, { studentId: b.studentId, reason: b.reason, cgpa: a.cgpa, backlogs: a.backlogs });
       await this.svc.notifyStudent(tx, b.studentId, drive.title, 'The placement cell registered you for this drive', `reg:${row.id}`);
