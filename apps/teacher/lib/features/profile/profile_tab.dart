@@ -314,7 +314,7 @@ class ProfileTab extends StatelessWidget {
             KxSectionHeader(l.workToolsSection),
             for (final (key, icon, title, body, open) in <(String, IconData, String, String, Widget Function())>[
               ('openAttendanceDesk', Icons.fact_check_outlined, l.deskTitle, l.deskBody, () => AttendanceDeskScreen(api: state.api)),
-              ('openIndents', Icons.add_shopping_cart, l.indentsTitle, l.indentsBody, () => IndentsScreen(api: state.api)),
+              ('openIndents', Icons.add_shopping_cart, l.indentsTitle, l.indentsBody, () => IndentsScreen(api: state.api, userId: me.id)),
               ('openBookings', Icons.meeting_room_outlined, l.bookingsTitle, l.bookingsBody, () => RoomBookingsScreen(api: state.api)),
               ('openInterviews', Icons.person_search_outlined, l.ivTitle, l.ivBody, () => InterviewsScreen(api: state.api, userId: me.id)),
               ('openTasks', Icons.task_alt_outlined, l.tasksTitle, l.tasksBody, () => TasksScreen(api: state.api)),

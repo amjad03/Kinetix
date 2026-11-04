@@ -38,9 +38,12 @@ String _rupees(int paise) {
 
 /// The teacher's indents and where each stands (head of department, then principal), and raising one.
 class IndentsScreen extends StatefulWidget {
-  const IndentsScreen({super.key, required this.api});
+  const IndentsScreen({super.key, required this.api, this.userId});
 
   final TeacherApi api;
+
+  /// The signed-in teacher: a head of department decides the department's indents that wait for them, never their own.
+  final String? userId;
 
   @override
   State<IndentsScreen> createState() => _IndentsScreenState();
@@ -55,6 +58,35 @@ class _IndentsScreenState extends State<IndentsScreen> {
     'ordered' => l.indentOrdered,
     _ => i.step == 'hod' ? l.indentWithHod : l.indentWithPrincipal,
   };
+
+  /// Approves (on to the principal) or rejects with a reason, then reloads the list.
+  Future<void> _decide(BuildContext context, Indent i, bool approve, Future<void> Function() reload) async {
+    final l = context.l10n;
+    String? note;
+    if (!approve) {
+      final c = TextEditingController();
+      note = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l.indentRejectTitle(i.number)),
+          content: TextField(key: const Key('indentRejectReason'), controller: c, autofocus: true, maxLines: 3, decoration: InputDecoration(labelText: l.indentRejectReason)),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
+            FilledButton(key: const Key('indentRejectGo'), onPressed: () => Navigator.pop(ctx, c.text.trim()), child: Text(l.indentReject)),
+          ],
+        ),
+      );
+      if (note == null || note.isEmpty) return;
+    }
+    try {
+      await widget.api.decideIndent(i.id, approve: approve, note: note);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(approve ? l.indentForwarded : l.indentRejectedDone)));
+      await reload();
+    } on ApiException catch (e) {
+      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.errorText(e))));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +137,14 @@ class _IndentsScreenState extends State<IndentsScreen> {
                       if (i.neededBy != null) Text(l.indentNeededBy(f.shortDay(i.neededBy!)), style: context.text.bodySmall),
                       if (i.estimatedPaise > 0) Text(l.indentEstimate(_rupees(i.estimatedPaise)), style: context.text.bodySmall),
                       if ((i.decisionNote ?? '').isNotEmpty) Text(i.decisionNote!, style: context.text.bodySmall?.copyWith(color: context.colors.onSurfaceVariant)),
+                      if (i.waitsForHeadOf(widget.userId)) ...[
+                        if (i.requester != null) Text(l.indentRaisedBy(i.requester!), style: context.text.bodySmall),
+                        const SizedBox(height: Kx.s8),
+                        Wrap(spacing: Kx.s8, children: [
+                          FilledButton(key: Key('indentApprove-${i.id}'), onPressed: () => _decide(context, i, true, reload), child: Text(l.indentApprove)),
+                          OutlinedButton(key: Key('indentReject-${i.id}'), onPressed: () => _decide(context, i, false, reload), child: Text(l.indentReject)),
+                        ]),
+                      ],
                     ],
                   ),
                 ),

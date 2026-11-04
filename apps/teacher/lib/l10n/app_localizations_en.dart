@@ -4649,4 +4649,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libCancelled => 'Reservation cancelled';
+
+  @override
+  String get indentApprove => 'Approve';
+
+  @override
+  String get indentReject => 'Reject';
+
+  @override
+  String get indentRejectReason => 'Why it is rejected';
+
+  @override
+  String get indentForwarded => 'Approved; it goes on to the principal';
+
+  @override
+  String get indentRejectedDone => 'Indent rejected';
+
+  @override
+  String indentRaisedBy(String name) {
+    return 'Raised by $name';
+  }
+
+  @override
+  String indentRejectTitle(String number) {
+    return 'Reject $number';
+  }
 }

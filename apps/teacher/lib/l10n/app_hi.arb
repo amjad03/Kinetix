@@ -1902,5 +1902,12 @@
   "libReady": "डेस्क पर आपकी प्रतीक्षा में",
   "libWaiting": "प्रति के लिए कतार में",
   "libCancel": "रद्द करें",
-  "libCancelled": "आरक्षण रद्द"
+  "libCancelled": "आरक्षण रद्द",
+  "indentApprove": "स्वीकृत करें",
+  "indentReject": "अस्वीकार करें",
+  "indentRejectReason": "अस्वीकार करने का कारण",
+  "indentForwarded": "स्वीकृत; अब प्राचार्य के पास",
+  "indentRejectedDone": "मांग-पत्र अस्वीकृत",
+  "indentRaisedBy": "{name} द्वारा भेजा गया",
+  "indentRejectTitle": "{number} अस्वीकार करें"
 }

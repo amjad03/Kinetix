@@ -496,6 +496,10 @@ abstract class TeacherApi implements AnnouncementSource {
   /// Raises an indent; the head of department, then the principal, approve it (`POST /v1/inventory/requisitions`).
   Future<void> raiseIndent({required String reason, String? neededBy, required List<({String itemId, int qty, int? estUnitPaise})> lines});
 
+  /// The head of department approves an indent of the department (it goes on to the principal) or rejects it with a
+  /// reason (`POST /v1/inventory/requisitions/:id/decision`).
+  Future<void> decideIndent(String id, {required bool approve, String? note});
+
   // ── Rooms and halls ─────────────────────────────────────────────────────────────────────────
 
   /// Rooms and halls that can be booked (`GET /v1/facilities/rooms`).
@@ -1617,6 +1621,10 @@ class HttpTeacherApi implements TeacherApi {
       'lines': [for (final l in lines) {'itemId': l.itemId, 'qty': l.qty, 'estUnitPaise': ?l.estUnitPaise}],
     },
   );
+
+  @override
+  Future<void> decideIndent(String id, {required bool approve, String? note}) =>
+      _send('POST', '/v1/inventory/requisitions/$id/decision', body: {'approve': approve, if (note != null && note.trim().isNotEmpty) 'note': note.trim()});
 
   // ── Rooms and halls ─────────────────────────────────────────────────────────────────────────
 

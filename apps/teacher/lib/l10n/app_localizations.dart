@@ -8444,6 +8444,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reservation cancelled'**
   String get libCancelled;
+
+  /// Indents: the head of department decides (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get indentApprove;
+
+  /// Indents: the head of department decides (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get indentReject;
+
+  /// Indents: the head of department decides (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Why it is rejected'**
+  String get indentRejectReason;
+
+  /// Indents: the head of department decides (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Approved; it goes on to the principal'**
+  String get indentForwarded;
+
+  /// Indents: the head of department decides (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Indent rejected'**
+  String get indentRejectedDone;
+
+  /// Indents: the head of department decides (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Raised by {name}'**
+  String indentRaisedBy(String name);
+
+  /// Indents: the head of department decides (Profile → Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Reject {number}'**
+  String indentRejectTitle(String number);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -1902,5 +1902,12 @@
   "libReady": "ಡೆಸ್ಕ್‌ನಲ್ಲಿ ನಿಮಗಾಗಿ ಕಾಯುತ್ತಿದೆ",
   "libWaiting": "ಪ್ರತಿಗಾಗಿ ಸರದಿಯಲ್ಲಿ",
   "libCancel": "ರದ್ದುಮಾಡಿ",
-  "libCancelled": "ಕಾಯ್ದಿರಿಸುವಿಕೆ ರದ್ದಾಗಿದೆ"
+  "libCancelled": "ಕಾಯ್ದಿರಿಸುವಿಕೆ ರದ್ದಾಗಿದೆ",
+  "indentApprove": "ಅನುಮೋದಿಸಿ",
+  "indentReject": "ತಿರಸ್ಕರಿಸಿ",
+  "indentRejectReason": "ತಿರಸ್ಕರಿಸುವ ಕಾರಣ",
+  "indentForwarded": "ಅನುಮೋದಿಸಲಾಗಿದೆ; ಈಗ ಪ್ರಾಂಶುಪಾಲರ ಬಳಿ",
+  "indentRejectedDone": "ಬೇಡಿಕೆ ಪತ್ರ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ",
+  "indentRaisedBy": "{name} ಸಲ್ಲಿಸಿದ್ದು",
+  "indentRejectTitle": "{number} ತಿರಸ್ಕರಿಸಿ"
 }

@@ -4655,4 +4655,29 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get libCancelled => 'ಕಾಯ್ದಿರಿಸುವಿಕೆ ರದ್ದಾಗಿದೆ';
+
+  @override
+  String get indentApprove => 'ಅನುಮೋದಿಸಿ';
+
+  @override
+  String get indentReject => 'ತಿರಸ್ಕರಿಸಿ';
+
+  @override
+  String get indentRejectReason => 'ತಿರಸ್ಕರಿಸುವ ಕಾರಣ';
+
+  @override
+  String get indentForwarded => 'ಅನುಮೋದಿಸಲಾಗಿದೆ; ಈಗ ಪ್ರಾಂಶುಪಾಲರ ಬಳಿ';
+
+  @override
+  String get indentRejectedDone => 'ಬೇಡಿಕೆ ಪತ್ರ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ';
+
+  @override
+  String indentRaisedBy(String name) {
+    return '$name ಸಲ್ಲಿಸಿದ್ದು';
+  }
+
+  @override
+  String indentRejectTitle(String number) {
+    return '$number ತಿರಸ್ಕರಿಸಿ';
+  }
 }

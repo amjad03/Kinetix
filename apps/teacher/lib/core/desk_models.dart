@@ -304,7 +304,7 @@ class IndentLine {
 
 /// An indent (requisition) and where it stands in the approval chain.
 class Indent {
-  const Indent({required this.id, required this.number, required this.status, required this.lines, this.reason = '', this.step, this.decisionNote, this.neededBy, this.createdAt, this.estimatedPaise = 0, this.department});
+  const Indent({required this.id, required this.number, required this.status, required this.lines, this.reason = '', this.step, this.decisionNote, this.neededBy, this.createdAt, this.estimatedPaise = 0, this.department, this.requestedBy, this.requester});
 
   factory Indent.fromJson(Map<String, dynamic> j) => Indent(
     id: _s(j['id']),
@@ -317,6 +317,8 @@ class Indent {
     createdAt: _time(j['createdAt']),
     estimatedPaise: _int(j['estimatedPaise']),
     department: j['department'] as String?,
+    requestedBy: j['requestedBy'] as String?,
+    requester: j['requester'] as String?,
     lines: [for (final l in _maps(j['lines'])) IndentLine.fromJson(l)],
   );
 
@@ -335,6 +337,13 @@ class Indent {
   final int estimatedPaise;
   final String? department;
   final List<IndentLine> lines;
+
+  /// Who raised it (a head of department also sees the department's indents).
+  final String? requestedBy;
+  final String? requester;
+
+  /// Waiting for the head of department, and raised by someone else: the head decides it here.
+  bool waitsForHeadOf(String? me) => status == 'submitted' && step == 'hod' && me != null && requestedBy != null && requestedBy != me;
 }
 
 // ── Rooms and bookings ──────────────────────────────────────────────────────────────────────────

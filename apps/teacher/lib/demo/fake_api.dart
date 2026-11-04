@@ -2262,6 +2262,16 @@ class FakeTeacherApi implements TeacherApi {
   }
 
   @override
+  Future<void> decideIndent(String id, {required bool approve, String? note}) async {
+    calls.add('decideIndent $id ${approve ? 'approve' : 'reject'}${note != null ? ' $note' : ''}');
+    if (indentError != null) throw indentError!;
+    indentRows = [
+      for (final r in indentRows)
+        r['id'] == id ? {...r, 'status': approve ? 'submitted' : 'rejected', 'step': approve ? 'principal' : null, 'decisionNote': note} : r,
+    ];
+  }
+
+  @override
   Future<void> raiseIndent({required String reason, String? neededBy, required List<({String itemId, int qty, int? estUnitPaise})> lines}) async {
     calls.add('raiseIndent $reason ${neededBy ?? '-'} ${[for (final l in lines) '${l.itemId}x${l.qty}'].join(',')}');
     if (indentError != null) throw indentError!;

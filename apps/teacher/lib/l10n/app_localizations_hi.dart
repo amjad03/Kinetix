@@ -4644,4 +4644,29 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get libCancelled => 'आरक्षण रद्द';
+
+  @override
+  String get indentApprove => 'स्वीकृत करें';
+
+  @override
+  String get indentReject => 'अस्वीकार करें';
+
+  @override
+  String get indentRejectReason => 'अस्वीकार करने का कारण';
+
+  @override
+  String get indentForwarded => 'स्वीकृत; अब प्राचार्य के पास';
+
+  @override
+  String get indentRejectedDone => 'मांग-पत्र अस्वीकृत';
+
+  @override
+  String indentRaisedBy(String name) {
+    return '$name द्वारा भेजा गया';
+  }
+
+  @override
+  String indentRejectTitle(String number) {
+    return '$number अस्वीकार करें';
+  }
 }
