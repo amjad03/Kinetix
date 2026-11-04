@@ -235,7 +235,7 @@ function releasesEntity() {
 }
 
 function schemesEntity() {
-  const RATES = z.record(z.enum(['scopus_q1', 'scopus_q2', 'scopus_q3', 'scopus_q4', 'wos', 'scopus', 'ugc_care', 'book', 'book_chapter', 'conference', 'published', 'granted']), z.number().int().min(0).max(100_000_000));
+  const RATES = z.partialRecord(z.enum(['scopus_q1', 'scopus_q2', 'scopus_q3', 'scopus_q4', 'wos', 'scopus', 'ugc_care', 'book', 'book_chapter', 'conference', 'published', 'granted']), z.number().int().min(0).max(100_000_000));
   return kitEntity({
     key: 'research-incentive-schemes',
     module: MODULE,
@@ -275,7 +275,7 @@ function schemesEntity() {
         apply: async (ctx, id, params) => {
           const { rates } = parseParams(z.object({ rates: z.string().trim().min(3).max(1000) }), params);
           const parsed: Record<string, number> = {};
-          for (const part of rates.split(/[,;\n]/).map((x) => x.trim()).filter(Boolean)) {
+          for (const part of rates.split(/[;\n]|,(?=\s*[a-z])/i).map((x) => x.trim()).filter(Boolean)) {
             const m = /^([a-z0-9_]+)\s*[=:]\s*([\d,]+(\.\d{1,2})?)$/i.exec(part);
             if (!m) throw new ConflictException(`Write each rate as name=amount (${part})`);
             parsed[m[1].toLowerCase()] = Math.round(Number(m[2].replace(/,/g, '')) * 100);
@@ -340,7 +340,7 @@ function claimsEntity(clock: Clock, notifications: NotificationsService) {
     actions: {
       approve: { label: 'Approve', apply: decide('approved') },
       reject: { label: 'Reject', tone: 'danger', inputs: [{ key: 'note', label: 'Why', type: 'textarea', required: true }], params: z.object({ note: z.string() }), apply: decide('rejected') },
-      pay: { label: 'Mark paid', inputs: [{ key: 'paymentRef', label: 'Payment reference', type: 'text', required: true }], params: z.object({ paymentRef: z.string() }), apply: decide('paid') },
+      pay: { label: 'Mark paid', inputs: [{ key: 'paymentRef', label: 'Payment reference', type: 'text', required: true }], params: z.object({ paymentRef: z.string(), paidOn: z.string().optional() }), apply: decide('paid') },
     },
   });
 }
@@ -399,7 +399,7 @@ function progressEntity(notifications: NotificationsService) {
       return null;
     },
     actions: {
-      accept: { label: 'Accept', inputs: [{ key: 'rating', label: 'Rating: satisfactory, needs_improvement or unsatisfactory', type: 'text', required: true }, { key: 'remarks', label: 'Remarks', type: 'textarea' }], params: z.object({ rating: z.string() }), apply: review('accepted') },
+      accept: { label: 'Accept', inputs: [{ key: 'rating', label: 'Rating: satisfactory, needs_improvement or unsatisfactory', type: 'text', required: true }, { key: 'remarks', label: 'Remarks', type: 'textarea' }], params: z.object({ rating: z.string(), remarks: z.string().optional() }), apply: review('accepted') },
       return: { label: 'Return for corrections', tone: 'danger', inputs: [{ key: 'remarks', label: 'What to correct', type: 'textarea', required: true }], params: z.object({ remarks: z.string() }), apply: review('returned') },
     },
   });

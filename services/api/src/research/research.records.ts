@@ -104,7 +104,6 @@ function publicationsEntity() {
     search: [publications.title, publications.venue, publications.doi, sql`${publications.authors}::text`],
     filters: {
       year: { label: 'Year', where: (v) => (/^\d{4}$/.test(v) ? eq(publications.year, Number(v)) : undefined) },
-      indexed: { label: 'Indexed in', options: INDEXES, where: (v) => (['scopus', 'wos', 'ugc_care', 'pubmed', 'other'].includes(v) ? sql`${v} = any(${publications.indexedIn})` : undefined) },
     },
     defaultSort: { id: 'year', dir: 'desc' },
     scope: mine(authorOf),
