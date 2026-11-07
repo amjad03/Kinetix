@@ -56,6 +56,19 @@ val lanHttp = ((findProperty("kinetix.lanHttp") as String?) ?: System.getenv("KI
 // device; turn it on with -Pkinetix.minify=true (keep rules in proguard-rules.pro).
 val minifyRelease = (findProperty("kinetix.minify") as String?)?.toBoolean() ?: false
 
+// Zynetix Board — Classroom edition (apps/board/lib/classroom_edition/README.md): the same app
+// built with --dart-define=KINETIX_EDITION=classroom (or -Pkinetix.edition=classroom /
+// KINETIX_EDITION=classroom) gets its own application id and name, so it installs next to the
+// KINETIX Board. Flutter hands its --dart-define values to Gradle base64-encoded in "dart-defines".
+val dartDefines: Map<String, String> = ((findProperty("dart-defines") as String?) ?: "")
+    .split(",")
+    .filter { it.isNotBlank() }
+    .mapNotNull { runCatching { String(Base64.getDecoder().decode(it)) }.getOrNull() }
+    .mapNotNull { d -> d.indexOf('=').takeIf { it > 0 }?.let { d.substring(0, it) to d.substring(it + 1) } }
+    .toMap()
+val edition = (findProperty("kinetix.edition") as String?) ?: System.getenv("KINETIX_EDITION") ?: dartDefines["KINETIX_EDITION"] ?: "board"
+val classroomEdition = edition == "classroom"
+
 android {
     namespace = "app.kinetix.board"
     compileSdk = flutter.compileSdkVersion
@@ -68,12 +81,13 @@ android {
 
     defaultConfig {
         // Permanent once published (docs/operations/mobile-release.md).
-        applicationId = "in.kinetix.board"
+        applicationId = if (classroomEdition) "in.zynetix.classroom" else "in.kinetix.board"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         // From `version: x.y.z+build` in pubspec.yaml. With --split-per-abi Flutter adds 1000 * ABI.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["appLabel"] = if (classroomEdition) "Zynetix Classroom" else "KINETIX Board"
         manifestPlaceholders["networkSecurityConfig"] = if (lanHttp) "@xml/network_security_config_lan" else "@xml/network_security_config"
     }
 
