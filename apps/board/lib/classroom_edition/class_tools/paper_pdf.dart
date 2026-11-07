@@ -133,7 +133,7 @@ List<pw.Widget> _header(Paper p) => [
 
 pw.Widget _item(Paper p, PaperItem i) {
   final n = _numberOf(p, i);
-  final showMarks = p.sections.any((s) => s.items.any((x) => x.marks != i.marks)) || i.marks != 1;
+  final showMarks = i.kind != ItemKind.mcq || i.marks != 1;
   return pw.Padding(
     padding: const pw.EdgeInsets.only(top: 5),
     child: pw.Row(
@@ -156,7 +156,7 @@ pw.Widget _item(Paper p, PaperItem i) {
                   children: [
                     for (final (k, o) in i.options.indexed)
                       pw.SizedBox(
-                        width: i.options.every((o) => o.length < 34) ? 225 : 460,
+                        width: i.options.every((o) => o.length < 34) ? 212 : 440,
                         child: pw.Text('(${String.fromCharCode(97 + k)}) $o', style: const pw.TextStyle(fontSize: 10)),
                       ),
                   ],
