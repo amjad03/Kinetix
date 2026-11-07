@@ -1,0 +1,693 @@
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+
+import '../core/strings.dart';
+import '../core/theme.dart';
+import '../engine/expr.dart';
+import '../engine/model.dart';
+import 'math_text.dart';
+import 'scene/controls.dart';
+import 'scene/play_model.dart';
+import 'scene/scene_painter.dart';
+import 'scene/strings.dart';
+import 'whiteboard_view.dart' show chalkboardColor, inkColor, niceStep, paintAxes, paintFunction, tickLabel;
+
+export 'scene/play_model.dart' show SliderSpec;
+
+const _series = ['yellow', 'blue', 'red', 'green', 'orange', 'white'];
+
+/// A data-driven interactive (schema `interactive`): a chart or an animated scene drawn with
+/// CustomPainter, huge sliders, toggles, choices and buttons the monitor can use, draggable
+/// points, model time (play, pause, speed, step, reset, scrubber), live read-outs, and the
+/// caption and "Try this" beside it. Time runs only while playing and while the block is on
+/// screen (the ticker is muted with its route), at most one 0.1 s jump per frame.
+class InteractiveView extends StatefulWidget {
+  const InteractiveView({super.key, required this.block, required this.lang, this.showTime = true, this.speaker});
+  final Block block;
+  final Lang lang;
+
+  /// A character's line, along the bottom of the stage.
+  final Widget? speaker;
+
+  /// Show the time bar (a challenge hides it until it is over, so the class reasons first).
+  final bool showTime;
+  @override
+  State<InteractiveView> createState() => InteractiveViewState();
+}
+
+class InteractiveViewState extends State<InteractiveView> with SingleTickerProviderStateMixin {
+  Map<String, dynamic> get raw => widget.block.raw;
+  String get kind => raw['kind'] as String? ?? 'readouts';
+  late final PlayModel model = PlayModel(raw);
+
+  /// The running model: controls, time, state, vars. Listeners repaint.
+  late final PlayRuntime rt = PlayRuntime(model);
+  late final List<SceneShape> shapes = compileShapes(raw['shapes'], model.names);
+  late final Ticker _ticker = createTicker(_onTick);
+  Duration _last = Duration.zero;
+  HandleSpec? _drag;
+  bool _tryOpen = false;
+
+  /// Try this folds when it shares a landscape rail with controls and readouts.
+  bool _tryFolds(BuildContext context, bool hasControls) => !context.portrait && hasControls && ((raw['readouts'] as List?)?.isNotEmpty ?? false);
+
+  List<SliderSpec> get sliders => model.sliders;
+
+  /// Every control's value by name (sliders, toggles, choices, counters, handle coordinates).
+  Map<String, double> get values => rt.controls;
+
+  /// The names expressions may use: controls, t, state and vars.
+  List<String> get names => model.names;
+
+  @override
+  void initState() {
+    super.initState();
+    rt.addListener(_syncTicker);
+    _syncTicker();
+  }
+
+  @override
+  void dispose() {
+    rt.removeListener(_syncTicker);
+    _ticker.dispose();
+    rt.dispose();
+    super.dispose();
+  }
+
+  void _syncTicker() {
+    if (rt.playing && !_ticker.isActive) {
+      _last = Duration.zero;
+      _ticker.start();
+    } else if (!rt.playing && _ticker.isActive) {
+      _ticker.stop();
+    }
+  }
+
+  void _onTick(Duration elapsed) {
+    final dt = (elapsed - _last).inMicroseconds / 1e6;
+    _last = elapsed;
+    rt.tick(dt);
+  }
+
+  void setValue(String name, double v) => rt.setControl(name, v);
+
+  /// Starts the model again from the beginning and plays it (a challenge's lock-in).
+  void replay() {
+    rt.reset();
+    rt.play();
+  }
+
+  final _compiled = <String, Expr?>{};
+  Expr? _expr(String src) => _compiled.putIfAbsent(src, () => tryCompileExpr(src, ['x', ...names]));
+
+  /// A number, or an expression over the controls and vars (often just a slider's name).
+  double resolve(Object? v) {
+    if (v is num) return v.toDouble();
+    if (v is String) return _expr(v)?.call(rt.env) ?? double.nan;
+    return double.nan;
+  }
+
+  List<double>? _range(String k) {
+    final v = raw[k];
+    return v is List && v.length == 2 ? [(v[0] as num).toDouble(), (v[1] as num).toDouble()] : null;
+  }
+
+  List<double>? _fnY;
+
+  /// The y range of a function plot: the block's, widened (once, at the starting control values,
+  /// so the axes do not jump while a slider moves) when the curves at the start leave it, or
+  /// fitted to them when the block gives none. Curves that blow up (tan, 1/x) do not count.
+  List<double> functionY(List<double> xr) => _fnY ??= () {
+    final given = _range('y');
+    final ys = <double>[];
+    final env = Map.of(rt.env);
+    for (final f in (raw['fns'] as List?) ?? const []) {
+      if (f is! Map) continue;
+      final e = _expr(f['fn'] as String? ?? '');
+      if (e == null) continue;
+      for (var i = 0; i <= 120; i++) {
+        final y = e(env..['x'] = xr[0] + (xr[1] - xr[0]) * i / 120);
+        if (y.isFinite) ys.add(y);
+      }
+    }
+    if (ys.length < 10) return given ?? const [-10.0, 10.0];
+    ys.sort();
+    // The 2nd–98th percentile: an asymptote's spike does not set the scale.
+    var lo = ys[(ys.length * 0.02).floor()], hi = ys[((ys.length - 1) * 0.98).ceil()];
+    if (given != null) {
+      final span = given[1] - given[0];
+      final out = lo < given[0] - span * 0.02 || hi > given[1] + span * 0.02;
+      if (!out) return given;
+      lo = math.min(lo, given[0]);
+      hi = math.max(hi, given[1]);
+    }
+    if (hi - lo < 1e-9) {
+      lo -= 1;
+      hi += 1;
+    }
+    final pad = (hi - lo) * 0.08, step = niceStep(hi - lo + 2 * pad);
+    return [((lo - pad) / step).floorToDouble() * step, ((hi + pad) / step).ceilToDouble() * step];
+  }();
+
+  /// Read-outs: the block's, or sin/cos/tan for a unit circle that has none.
+  List<({String label, String value, String? unit})> readouts() {
+    final l = widget.lang;
+    final out = <({String label, String value, String? unit})>[];
+    final list = (raw['readouts'] as List?) ?? const [];
+    for (final r in list) {
+      if (r is! Map) continue;
+      final v = _expr(r['expr'] as String? ?? '')?.call(rt.env) ?? double.nan;
+      final digits = (r['digits'] as int?) ?? 2;
+      final unit = r['unit'] as String?;
+      out.add((label: L10n.of(r['label']).t(l), value: v.isFinite ? v.toStringAsFixed(digits) : '—', unit: v.isFinite ? unit : null));
+    }
+    if (out.isEmpty && kind == 'unit_circle') {
+      final th = _theta * math.pi / 180;
+      String f(double v) => v.abs() > 1e6 || !v.isFinite ? '∞' : v.toStringAsFixed(3);
+      out.addAll([(label: 'sin θ', value: f(math.sin(th)), unit: null), (label: 'cos θ', value: f(math.cos(th)), unit: null), (label: 'tan θ', value: f(math.tan(th)), unit: null)]);
+    }
+    return out;
+  }
+
+  double get _theta => values['theta'] ?? (sliders.isEmpty ? 30 : values[sliders.first.name]!);
+
+  SceneFrame _frame(Size size) {
+    final v = (raw['view'] as Map?) ?? const {};
+    return SceneFrame(size, model.view, axes: v['axes'] == true, equal: v['equal'] == true);
+  }
+
+  Widget _scene() => LayoutBuilder(
+    builder: (context, box) {
+      final size = box.biggest;
+      return GestureDetector(
+        key: const ValueKey('sceneCanvas'),
+        onPanStart: (d) {
+          final f = _frame(size);
+          HandleSpec? best;
+          var bestD = 80.0;
+          for (final h in model.handles) {
+            final p = f.toScreen(values[h.xName] ?? h.x, values[h.yName] ?? h.y);
+            final dd = (p - d.localPosition).distance;
+            if (dd < bestD) {
+              bestD = dd;
+              best = h;
+            }
+          }
+          setState(() => _drag = best);
+        },
+        onPanUpdate: (d) {
+          final h = _drag;
+          if (h == null) return;
+          final (wx, wy) = _frame(size).toWorld(d.localPosition);
+          rt.dragHandle(h, wx, wy);
+        },
+        onPanEnd: (_) => setState(() => _drag = null),
+        child: CustomPaint(
+          key: const ValueKey('interactiveChart'),
+          painter: ScenePainter(runtime: rt, shapes: shapes, lang: widget.lang, selectedHandle: _drag?.name),
+          child: const SizedBox.expand(),
+        ),
+      );
+    },
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final l = widget.lang;
+    final narrow = context.narrow;
+    final chart = kind == 'readouts'
+        ? ListenableBuilder(
+            listenable: rt,
+            builder: (context, _) => Center(
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 32,
+                  runSpacing: 32,
+                  alignment: WrapAlignment.center,
+                  children: [for (final (i, r) in readouts().indexed) _StageReadout(key: ValueKey('readout-$i'), label: r.label, value: r.value, unit: r.unit)],
+                ),
+              ),
+            ),
+          )
+        : kind == 'scene'
+        ? _scene()
+        : CustomPaint(key: const ValueKey('interactiveChart'), painter: _ChartPainter(this), child: const SizedBox.expand());
+    final showTime = model.hasTime && widget.showTime;
+    // The model's buttons (Launch…) sit in the transport, or in the Controls panel when there is
+    // no transport or no room for them in it.
+    final buttonsInTransport = showTime && !narrow && model.buttons.length == 1;
+    final hasControls = sliders.isNotEmpty || model.toggles.isNotEmpty || model.choices.isNotEmpty || (model.buttons.isNotEmpty && !buttonsInTransport);
+    final controls = ListenableBuilder(
+      listenable: rt,
+      builder: (context, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final (i, s) in sliders.indexed) ...[if (i > 0) SizedBox(height: narrow ? 24 : 40), _RailSlider(spec: s, value: values[s.name] ?? s.value, lang: l, onChanged: (v) => setValue(s.name, v))],
+          if (sliders.isNotEmpty && (model.choices.isNotEmpty || model.toggles.isNotEmpty || (model.buttons.isNotEmpty && !buttonsInTransport))) SizedBox(height: narrow ? 24 : 40),
+          ExtraControls(rt: rt, lang: l, buttons: !buttonsInTransport),
+        ],
+      ),
+    );
+    final caption = widget.block.f('caption').t(l);
+    final hint = model.handles.isNotEmpty ? st('dragPoint', l) : null;
+    return StageLayout(
+      stage: ZStage(
+        title: widget.block.title?.t(l),
+        hint: hint,
+        padding: EdgeInsets.fromLTRB(narrow ? 12 : 24, narrow ? 8 : 16, narrow ? 12 : 24, narrow ? 8 : 16),
+        transport: showTime || (model.buttons.isNotEmpty && showTime)
+            ? ListenableBuilder(
+                listenable: rt,
+                builder: (context, _) => TimeBar(rt: rt, lang: l, buttons: buttonsInTransport),
+              )
+            : widget.speaker,
+        child: chart,
+      ),
+      rail: [
+        if (!context.portrait) ...[
+          if (hasControls) RailPanel(title: tr('controls', l), gap: narrow ? 24 : 40, children: [controls]),
+        ],
+        RailPanel(
+          title: kind == 'readouts' ? tr('about', l) : tr('readouts', l),
+          children: [
+            if (kind != 'readouts')
+              ListenableBuilder(
+                listenable: rt,
+                builder: (context, _) {
+                  final reads = readouts();
+                  if (reads.isEmpty) return const SizedBox.shrink();
+                  return ZTileGrid(
+                    columns: reads.length == 1 ? 1 : 2,
+                    children: [for (final (i, r) in reads.indexed) ZReadout(key: ValueKey('readout-$i'), label: r.label, value: r.value, unit: r.unit)],
+                  );
+                },
+              ),
+            if (caption.isNotEmpty) MathText(caption, style: zText(narrow ? 28 : 33, FontWeight.w400).copyWith(color: Z.ink2, height: 1.5)),
+          ],
+        ),
+        if (context.portrait && hasControls) RailPanel(title: tr('controls', l), gap: 24, children: [controls]),
+        if (widget.block.list('tryThis').isNotEmpty)
+          RailPanel(
+            title: tr('tryThis', l),
+            gap: 20,
+            // Beside a stage with controls and readouts the rail is full: Try this folds to its
+            // heading (tap to open), so no panel ends cut off at the bottom of the screen.
+            trailing: _tryFolds(context, hasControls)
+                ? IconButton(
+                    key: const ValueKey('tryThisToggle'),
+                    tooltip: tr('tryThis', l),
+                    icon: Icon(_tryOpen ? Icons.expand_less : Icons.expand_more, size: 44, color: Z.muted),
+                    onPressed: () => setState(() => _tryOpen = !_tryOpen),
+                  )
+                : null,
+            children: !_tryFolds(context, hasControls) || _tryOpen ? [
+              for (final p in widget.block.list('tryThis'))
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(padding: EdgeInsets.only(top: 4), child: Icon(Icons.touch_app_outlined, size: 36, color: Z.primary)),
+                    const SizedBox(width: 16),
+                    Expanded(child: MathText(p.t(l), style: zText(narrow ? 28 : 33, FontWeight.w400).copyWith(color: Z.ink2, height: 1.45))),
+                  ],
+                ),
+            ] : const [],
+          ),
+      ],
+    );
+  }
+}
+
+/// A big readout on the stage (an interactive that is only read-outs).
+class _StageReadout extends StatelessWidget {
+  const _StageReadout({super.key, required this.label, required this.value, this.unit});
+  final String label, value;
+  final String? unit;
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+    decoration: BoxDecoration(color: Z.transport, borderRadius: BorderRadius.circular(Z.panelRadius)),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label, textAlign: TextAlign.center, style: zText(30, FontWeight.w400).copyWith(color: Z.onStage2)),
+        const SizedBox(height: 8),
+        // A long value shrinks to fit the stage (a phone) rather than running off it.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(value, style: zText(64, FontWeight.w600).copyWith(color: Z.stageAccent)),
+              if (unit != null) Text(' $unit', style: zText(32, FontWeight.w500).copyWith(color: Z.onStage2)),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// A control slider in the rail: its name and value with the unit, a round-thumb track, and the
+/// scale under it.
+class _RailSlider extends StatelessWidget {
+  const _RailSlider({required this.spec, required this.value, required this.lang, required this.onChanged});
+  final SliderSpec spec;
+  final double value;
+  final Lang lang;
+  final ValueChanged<double> onChanged;
+
+  static String _fmt(double v, int decimals) => v.toStringAsFixed(decimals);
+
+  @override
+  Widget build(BuildContext context) {
+    final divisions = ((spec.max - spec.min) / spec.step).round();
+    final decimals = spec.step >= 1 ? 0 : (math.log(1 / spec.step) / math.ln10).ceil().clamp(1, 4);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(flex: 3, child: MathText(spec.label.t(lang), style: zText(33, FontWeight.w500).copyWith(color: Z.ink))),
+            const SizedBox(width: 16),
+            // The value and a long unit (mol L⁻¹ s⁻¹) shrink together rather than overflow, and
+            // sit at the right end of the row.
+            Expanded(
+              flex: 2,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(_fmt(value, decimals), style: zText(36, FontWeight.w600).copyWith(color: Z.ink)),
+                    if (spec.unit != null) Text(' ${spec.unit}', style: zText(28, FontWeight.w500).copyWith(color: Z.muted)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(
+          height: 72,
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(overlayShape: const RoundSliderOverlayShape(overlayRadius: 36), padding: const EdgeInsets.symmetric(horizontal: 24)),
+            child: Slider(
+              key: ValueKey('slider-${spec.name}'),
+              min: spec.min,
+              max: spec.max,
+              divisions: divisions > 0 && divisions <= 2000 ? divisions : null,
+              value: value.clamp(spec.min, spec.max),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+        // The scale: marks at round numbers (5, 10, 15… not 10, 28, 45), each under its place on
+        // the track, plus the ends when they are not round.
+        LayoutBuilder(
+          builder: (context, box) {
+            final span = spec.max - spec.min;
+            var step = niceStep(span, 4);
+            if (step < spec.step) step = spec.step;
+            final marks = <double>[];
+            for (var v = (spec.min / step).ceil() * step; v <= spec.max + step * 1e-6; v += step) {
+              marks.add(double.parse(v.toStringAsFixed(6)));
+            }
+            if (marks.length < 2) marks..clear()..addAll([spec.min, spec.max]);
+            const inset = 24.0;
+            final w = box.maxWidth.isFinite ? box.maxWidth : 400.0;
+            final style = zText(28, FontWeight.w400).copyWith(color: Z.faint);
+            return SizedBox(
+              height: 40,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  for (final v in marks)
+                    Builder(builder: (context) {
+                      final label = tickLabel(v);
+                      final tp = TextPainter(text: TextSpan(text: label, style: style), textDirection: TextDirection.ltr)..layout();
+                      final x = inset + (w - 2 * inset) * (span == 0 ? 0 : (v - spec.min) / span);
+                      final left = (x - tp.width / 2).clamp(0.0, (w - tp.width).clamp(0.0, double.infinity));
+                      return Positioned(left: left, top: 0, child: Text(label, style: style));
+                    }),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _ChartPainter extends CustomPainter {
+  _ChartPainter(this.s) : super(repaint: s.rt);
+  final InteractiveViewState s;
+  Map<String, double> get snapshot => s.rt.env;
+
+  Map<String, dynamic> get raw => s.raw;
+  /// Stage text, in canvas units: never under 32 (the back bench must read it).
+  static const font = 34.0;
+  static const minText = 32.0;
+
+  Paint _stroke(Color c, [double w = 6]) => Paint()
+    ..color = c
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = w
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round;
+
+  void _text(Canvas canvas, String t, Offset at, {double size = font, Color color = Colors.white, Alignment align = Alignment.center, FontWeight weight = FontWeight.w600}) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: t,
+        style: zText(math.max(size, minText), weight).copyWith(color: color),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, at - Offset(tp.width * (align.x + 1) / 2, tp.height * (align.y + 1) / 2));
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final box = Offset.zero & size;
+    switch (s.kind) {
+      case 'function_plot':
+        _functions(canvas, box);
+      case 'vectors':
+        _vectors(canvas, box);
+      case 'bar_chart':
+        _bars(canvas, box);
+      case 'pie_chart':
+        _pie(canvas, box);
+      case 'unit_circle':
+        _unitCircle(canvas, box);
+      case 'number_line':
+        _numberLine(canvas, box);
+    }
+  }
+
+  /// Axis names; their tick numbers are drawn at 0.8 of this, the 32-unit minimum.
+  static const axisFont = 40.0;
+
+  Rect _plotBox(Rect box) => Rect.fromLTRB(box.left + 120, box.top + 48, box.right - 36, box.bottom - 84);
+
+  void _functions(Canvas canvas, Rect box) {
+    final xr = s._range('x') ?? [-10, 10], yr = s.functionY(xr);
+    final pb = _plotBox(box);
+    paintAxes(canvas, pb, xr, yr, Colors.white70, strokeWidth: 3, font: axisFont, xLabel: raw['xLabel'] as String? ?? 'x', yLabel: raw['yLabel'] as String? ?? 'y', grid: true);
+    final fns = (raw['fns'] as List?) ?? const [];
+    var legendY = pb.top + 10;
+    for (final (i, f) in fns.indexed) {
+      if (f is! Map) continue;
+      final e = s._expr(f['fn'] as String? ?? '');
+      final color = inkColor(f['color'] ?? _series[i % _series.length]);
+      if (e != null) {
+        final vars = Map.of(snapshot);
+        paintFunction(canvas, pb, xr, yr, (x) => e(vars..['x'] = x), _stroke(color));
+      }
+      final label = f['label'] as String? ?? 'y = ${f['fn']}';
+      canvas.drawLine(Offset(pb.right - 340, legendY + 18), Offset(pb.right - 290, legendY + 18), _stroke(color));
+      _text(canvas, label, Offset(pb.right - 280, legendY + 18), color: color, align: Alignment.centerLeft);
+      legendY += 50;
+    }
+    // Targets: a flag on its pole at each mark (a challenge's landing point, for example).
+    for (final m in (raw['marks'] as List?) ?? const []) {
+      if (m is! Map || m['x'] is! num) continue;
+      final mx = (m['x'] as num).toDouble(), my = (m['y'] as num?)?.toDouble() ?? 0;
+      final p = Offset(pb.left + (mx - xr[0]) / (xr[1] - xr[0]) * pb.width, pb.bottom - (my - yr[0]) / (yr[1] - yr[0]) * pb.height);
+      if (!pb.inflate(1).contains(p)) continue;
+      final pole = Paint()
+        ..color = Colors.white
+        ..strokeWidth = 4;
+      canvas.drawLine(p, p - const Offset(0, 70), pole);
+      canvas.drawPath(Path()..moveTo(p.dx, p.dy - 70)..lineTo(p.dx + 44, p.dy - 56)..lineTo(p.dx, p.dy - 42)..close(), Paint()..color = const Color(0xFFFF5252));
+      canvas.drawCircle(p, 7, Paint()..color = const Color(0xFFFF5252));
+      final label = m['label'] as String?;
+      if (label != null) _text(canvas, label, p - const Offset(-52, 62), color: Colors.white, align: Alignment.centerLeft);
+    }
+  }
+
+  void _vectors(Canvas canvas, Rect box) {
+    final vs = [
+      for (final v in (raw['vectors'] as List?) ?? const [])
+        if (v is List && v.length == 2) Offset(s.resolve(v[0]), s.resolve(v[1])),
+    ].where((o) => o.dx.isFinite && o.dy.isFinite).toList();
+    final r = vs.fold(Offset.zero, (a, b) => a + b);
+    final reach =
+        [
+          for (final v in [...vs, r]) math.max(v.dx.abs(), v.dy.abs()),
+        ].fold(1.0, math.max) *
+        1.2;
+    final xr = s._range('x') ?? [-reach, reach], yr = s._range('y') ?? [-reach, reach];
+    // Equal scale on both axes, so angles look right.
+    final pb0 = _plotBox(box);
+    final k = math.min(pb0.width / (xr[1] - xr[0]), pb0.height / (yr[1] - yr[0]));
+    final pb = Rect.fromCenter(center: pb0.center, width: k * (xr[1] - xr[0]), height: k * (yr[1] - yr[0]));
+    paintAxes(canvas, pb, xr, yr, Colors.white60, strokeWidth: 3, font: axisFont, xLabel: raw['xLabel'] as String? ?? 'x', yLabel: raw['yLabel'] as String? ?? 'y', grid: true);
+    Offset map(Offset v) => Offset(pb.left + (v.dx - xr[0]) * k, pb.bottom - (v.dy - yr[0]) * k);
+    final o = map(Offset.zero);
+    if (vs.length == 2) {
+      // The parallelogram that makes the resultant.
+      final dash = _stroke(Colors.white38, 3);
+      canvas.drawLine(map(vs[0]), map(r), dash);
+      canvas.drawLine(map(vs[1]), map(r), dash);
+    }
+    void arrow(Offset v, Color c, String label, double w) {
+      final a = o, b = map(v);
+      if ((b - a).distance < 2) return;
+      final p = _stroke(c, w);
+      canvas.drawLine(a, b, p);
+      final dir = (b - a) / (b - a).distance, n = Offset(-dir.dy, dir.dx);
+      canvas.drawPath(Path()..addPolygon([b, b - dir * 26 + n * 14, b - dir * 26 - n * 14], true), Paint()..color = c);
+      _text(canvas, '$label (${tickLabel(_round(v.dx))}, ${tickLabel(_round(v.dy))})', b + dir * 18 + n * 26, color: c, align: Alignment.center);
+    }
+
+    for (final (i, v) in vs.indexed) {
+      arrow(v, inkColor(_series[(i + 1) % _series.length]), String.fromCharCode(65 + i), 6);
+    }
+    if (vs.length > 1) arrow(r, inkColor('yellow'), 'R', 9);
+  }
+
+  static double _round(double v) => (v * 100).roundToDouble() / 100;
+
+  List<(String, double)> get _data => [for (final e in ((raw['data'] as Map?) ?? const {}).entries) (e.key.toString(), s.resolve(e.value))];
+
+  void _bars(Canvas canvas, Rect box) {
+    final data = _data;
+    if (data.isEmpty) return;
+    final top = data.map((e) => e.$2.isFinite ? e.$2 : 0).fold(0.0, math.max);
+    // The block's range, unless a bar would be cut off at the top.
+    final given = s._range('y');
+    final yr = given != null && top <= given[1] ? given : [given?[0] ?? 0.0, top <= 0 ? 1.0 : top * 1.15];
+    final pb = _plotBox(box);
+    // Categories along x: no numeric ticks or vertical grid under the bars.
+    paintAxes(canvas, pb, [0, 1], yr, Colors.white70, strokeWidth: 3, font: axisFont, yLabel: raw['yLabel'] as String?, grid: true, xTicks: false);
+    final slot = pb.width / data.length;
+    for (final (i, (label, v)) in data.indexed) {
+      final val = v.isFinite ? v.clamp(yr[0], yr[1]) : 0.0;
+      final h = (val - yr[0]) / (yr[1] - yr[0]) * pb.height;
+      final r = Rect.fromLTWH(pb.left + slot * i + slot * 0.18, pb.bottom - h, slot * 0.64, h);
+      final c = inkColor(_series[i % _series.length]);
+      canvas.drawRRect(RRect.fromRectAndCorners(r, topLeft: const Radius.circular(10), topRight: const Radius.circular(10)), Paint()..color = c.withValues(alpha: 0.85));
+      _text(canvas, v.isFinite ? tickLabel(_round(v)) : '—', Offset(r.center.dx, r.top - 30), size: 40, color: c, weight: FontWeight.w800);
+      _text(canvas, label, Offset(r.center.dx, pb.bottom + 34), size: 36);
+    }
+  }
+
+  void _pie(Canvas canvas, Rect box) {
+    final data = [
+      for (final d in _data)
+        if (d.$2.isFinite && d.$2 > 0) d,
+    ];
+    final total = data.fold(0.0, (a, d) => a + d.$2);
+    if (total <= 0) return;
+    final radius = math.min(box.height / 2 - 20, box.width * 0.3);
+    final c = Offset(box.left + radius + 40, box.center.dy);
+    var start = -math.pi / 2;
+    for (final (i, (label, v)) in data.indexed) {
+      final sweep = v / total * 2 * math.pi;
+      final col = inkColor(_series[i % _series.length]);
+      canvas.drawArc(Rect.fromCircle(center: c, radius: radius), start, sweep, true, Paint()..color = col.withValues(alpha: 0.9));
+      canvas.drawArc(Rect.fromCircle(center: c, radius: radius), start, sweep, true, _stroke(chalkboardColor, 4));
+      final mid = start + sweep / 2;
+      if (sweep > 0.25) _text(canvas, '${(v / total * 100).toStringAsFixed(0)}%', c + Offset(math.cos(mid), math.sin(mid)) * radius * 0.62, size: 32, color: Colors.black87, weight: FontWeight.w800);
+      // Legend.
+      final ly = box.top + 44 + i * 60.0;
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(c.dx + radius + 60, ly - 16, 32, 32), const Radius.circular(6)), Paint()..color = col);
+      _text(canvas, '$label: ${tickLabel(_round(v))}', Offset(c.dx + radius + 108, ly), size: 30, align: Alignment.centerLeft);
+      start += sweep;
+    }
+  }
+
+  void _unitCircle(Canvas canvas, Rect box) {
+    final th = s._theta * math.pi / 180;
+    final r = math.min(box.height, box.width) / 2 - 60;
+    final c = box.center;
+    final axis = _stroke(Colors.white54, 3);
+    canvas.drawLine(Offset(c.dx - r - 40, c.dy), Offset(c.dx + r + 40, c.dy), axis);
+    canvas.drawLine(Offset(c.dx, c.dy - r - 40), Offset(c.dx, c.dy + r + 40), axis);
+    canvas.drawCircle(c, r, _stroke(Colors.white70, 4));
+    for (final (t, s) in [(r, '1'), (-r, '−1')]) {
+      _text(canvas, s, Offset(c.dx + t, c.dy + 30), size: minText, color: Colors.white70);
+    }
+    final p = c + Offset(math.cos(th), -math.sin(th)) * r;
+    // tan: the tangent at (1, 0) up to where the radius line meets it.
+    final tanV = math.tan(th);
+    if (math.cos(th).abs() > 0.05 && tanV.abs() < 4) {
+      final tp = Offset(c.dx + r, c.dy - tanV * r);
+      canvas.drawLine(Offset(c.dx + r, c.dy), tp, _stroke(inkColor('orange'), 6));
+      canvas.drawLine(c, tp, _stroke(inkColor('orange').withValues(alpha: 0.4), 3));
+      _text(canvas, 'tan θ', tp + const Offset(56, 0), color: inkColor('orange'));
+    }
+    canvas.drawLine(c, p, _stroke(Colors.white, 5));
+    canvas.drawLine(Offset(p.dx, c.dy), p, _stroke(inkColor('red'), 7)); // sin
+    canvas.drawLine(c, Offset(p.dx, c.dy), _stroke(inkColor('blue'), 7)); // cos
+    canvas.drawArc(Rect.fromCircle(center: c, radius: 56), 0, -th, false, _stroke(Z.accent, 4));
+    _text(canvas, 'θ = ${tickLabel(_round(s._theta))}°', c + Offset(math.cos(-th / 2), math.sin(-th / 2)) * 100, color: Z.accent, size: minText);
+    canvas.drawCircle(p, 14, Paint()..color = Z.accent);
+    _text(canvas, 'sin θ', Offset(p.dx + (math.cos(th) >= 0 ? 52 : -52), (p.dy + c.dy) / 2), color: inkColor('red'));
+    _text(canvas, 'cos θ', Offset((p.dx + c.dx) / 2, c.dy + (math.sin(th) >= 0 ? 28 : -28)), color: inkColor('blue'));
+    _text(canvas, 'P(cos θ, sin θ)', p + Offset(math.cos(th) >= 0 ? 24 : -24, math.sin(th) >= 0 ? -30 : 30), align: math.cos(th) >= 0 ? Alignment.centerLeft : Alignment.centerRight);
+  }
+
+  void _numberLine(Canvas canvas, Rect box) {
+    final pts = [for (final p in (raw['points'] as List?) ?? const []) (p is String ? p : null, s.resolve(p))];
+    final finite = [
+      for (final p in pts)
+        if (p.$2.isFinite) p.$2,
+    ];
+    final lo = finite.isEmpty ? -5.0 : finite.reduce(math.min), hi = finite.isEmpty ? 5.0 : finite.reduce(math.max);
+    final xr = s._range('x') ?? [(lo - 1).floorToDouble(), (hi + 1).ceilToDouble()];
+    final y = box.center.dy, left = box.left + 40, right = box.right - 40;
+    double map(double x) => left + (x - xr[0]) / (xr[1] - xr[0]) * (right - left);
+    final line = _stroke(Colors.white, 4);
+    canvas.drawLine(Offset(left - 20, y), Offset(right + 20, y), line);
+    for (final (a, d) in [(left - 20, 1.0), (right + 20, -1.0)]) {
+      canvas.drawLine(Offset(a, y), Offset(a + 22 * d, y - 14), line);
+      canvas.drawLine(Offset(a, y), Offset(a + 22 * d, y + 14), line);
+    }
+    final step = niceStep(xr[1] - xr[0], 12);
+    for (var x = (xr[0] / step).ceil() * step; x <= xr[1] + 1e-9; x += step) {
+      canvas.drawLine(Offset(map(x), y - 14), Offset(map(x), y + 14), line);
+      _text(canvas, tickLabel(_round(x)), Offset(map(x), y + 44), size: minText, color: Colors.white70);
+    }
+    if (raw['xLabel'] is String) _text(canvas, raw['xLabel'] as String, Offset(right, y + 84), align: Alignment.centerRight);
+    for (final (i, (name, v)) in pts.indexed) {
+      if (!v.isFinite) continue;
+      final c = inkColor(_series[i % _series.length]);
+      final at = Offset(map(v.clamp(xr[0], xr[1])), y);
+      canvas.drawCircle(at, 16, Paint()..color = c);
+      final up = i.isEven ? -1 : 1;
+      _text(canvas, name == null ? tickLabel(_round(v)) : '$name = ${tickLabel(_round(v))}', at + Offset(0, up * (up < 0 ? 52.0 : 92.0)), color: c, size: 30, weight: FontWeight.w800);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ChartPainter old) => true;
+}

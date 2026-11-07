@@ -32,3 +32,7 @@ tools/phet/.cache/
 
 # bundled sims ship their own build/ folders
 !apps/board/assets/simhub/**/build/
+
+# Classroom edition: Zynetix School lesson parts, written at build time (never committed).
+apps/board/assets/private/lessons/*
+!apps/board/assets/private/lessons/README.txt

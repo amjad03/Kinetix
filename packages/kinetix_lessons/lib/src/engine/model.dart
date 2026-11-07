@@ -1,0 +1,416 @@
+// Dart mirror of packages/lesson-schema (the source of truth). Packs are validated when they are
+// built, so the board reads them leniently: a missing optional field never stops a lesson.
+
+/// Board language: English or Kannada. Text falls back to English.
+enum Lang { en, kn }
+
+class L10n {
+  const L10n(this.en, [this.kn]);
+  final String en;
+  final String? kn;
+
+  static L10n of(Object? v) => v is Map ? L10n(v['en'] as String? ?? '', v['kn'] as String?) : const L10n('');
+  static L10n? maybe(Object? v) => v is Map ? of(v) : null;
+  static List<L10n> list(Object? v) => [for (final e in (v as List?) ?? const []) of(e)];
+
+  String t(Lang lang) => glyphSafe(lang == Lang.kn && (kn?.isNotEmpty ?? false) ? kn! : en);
+}
+
+/// Text the board's fonts can draw. A combining double overline (U+033F, as in X̿, the mean of
+/// sample means) has no glyph in Inter or Noto Sans Kannada and showed as a box: it becomes two
+/// stacked combining macrons (U+0304), which Inter places one above the other (its mkmk feature).
+String glyphSafe(String s) => s.contains('\u033F') ? s.replaceAll('\u033F', '\u0304\u0304') : s;
+
+enum BlockType {
+  intro('intro'),
+  concept('concept'),
+  model3d('3d_model'),
+  simulation('simulation'),
+  virtualLab('virtual_lab'),
+  example('example'),
+  classQuiz('class_quiz'),
+  pyq('pyq'),
+  trick('trick'),
+  recap('recap'),
+  whiteboard('whiteboard'),
+  interactive('interactive'),
+
+  /// A playable problem on a slider playfield: hit a target, earn stars (lib/blocks/challenge_view.dart).
+  challenge('challenge'),
+
+  /// A touch activity: sort, order, match, label, hotspot or fill (lib/blocks/activity/).
+  activity('activity'),
+
+  /// A concept told four ways: misconception, watch steps, try it, story, "it's like" (lib/blocks/explainer_view.dart).
+  explainer('explainer'),
+
+  /// A concept video from the owner's channel: streamed when online, "Needs internet" offline (lib/blocks/concept_video_view.dart).
+  conceptVideo('concept_video');
+
+  const BlockType(this.wire);
+  final String wire;
+  static BlockType? parse(String s) => values.where((t) => t.wire == s).firstOrNull;
+}
+
+enum QuizMode { monitor, rollCall, team }
+
+QuizMode _mode(Object? v) => switch (v) {
+  'roll_call' => QuizMode.rollCall,
+  'team' => QuizMode.team,
+  _ => QuizMode.monitor,
+};
+
+/// One lesson block. Common fields are typed; type-specific fields are read through getters.
+class Block {
+  Block(this.type, this.raw);
+  final BlockType type;
+  final Map<String, dynamic> raw;
+
+  String get id => raw['id'] as String;
+  L10n? get title => L10n.maybe(raw['title']);
+  L10n? get narration => L10n.maybe(raw['narration']);
+  int? get seconds => raw['seconds'] as int?;
+  bool get optional => raw['optional'] == true;
+
+  /// Curricula this block is for (null = all).
+  List<String>? get boards => (raw['boards'] as List?)?.cast<String>();
+  bool forBoard(String board) => boards == null || boards!.contains(board);
+
+  L10n f(String key) => L10n.of(raw[key]);
+  L10n? maybe(String key) => L10n.maybe(raw[key]);
+  List<L10n> list(String key) => L10n.list(raw[key]);
+  String? s(String key) => raw[key] as String?;
+  List<String> ids(String key) => [for (final e in (raw[key] as List?) ?? const []) e as String];
+  QuizMode get quizMode => _mode(raw['mode']);
+  int get secondsPerQuestion => raw['secondsPerQuestion'] as int? ?? 45;
+
+  /// The block's style (`pause`, `solve`, `rule`, `trap`, `recall`…), null for the plain one.
+  String? get style => raw['style'] as String?;
+
+  /// A character's line on this block (speech bubble with avatar).
+  Speaker? get speaker => Speaker.maybe(raw['speaker']);
+
+  /// Cards of an intro or concept.
+  List<LessonCard> get cards => [
+    for (final c in (raw['cards'] as List?) ?? const [])
+      if (c is Map) LessonCard.fromJson(c.cast<String, dynamic>()),
+  ];
+
+  /// One idea at a time: cards, points or steps appear one per Next (see [revealSteps]).
+  bool get reveal => raw['reveal'] == true;
+
+  /// How many steps Next walks through on this block before it moves on (1: shown whole).
+  /// Step 1 is what shows on arrival.
+  int revealSteps(InstalledPack? pack) {
+    switch (type) {
+      case BlockType.classQuiz when style == 'pause':
+        return 2 * ids('questionIds').length; // each question, then its answer
+      case BlockType.pyq when style == 'solve':
+        final q = pack?.questions[ids('questionIds').firstOrNull];
+        return 1 + (q?.solution.isNotEmpty == true ? q!.solution.length : 1);
+      default:
+        if (!reveal) return 1;
+    }
+    final n = switch (type) {
+      BlockType.intro => cards.length,
+      BlockType.concept => (raw['hero'] is Map ? 1 : 0) + cards.length + list('points').length,
+      BlockType.example => list('steps').length + 2, // the problem, each step, the answer
+      BlockType.recap => list('points').length + (raw['next'] is Map ? 1 : 0),
+      BlockType.explainer => (raw['watch'] as List?)?.length ?? 0, // the watch steps, one per Next
+      _ => 1,
+    };
+    return n < 1 ? 1 : n;
+  }
+
+  /// Whiteboard steps, in order.
+  List<BoardStep> get boardSteps => [
+    for (final s in (raw['steps'] as List?) ?? const [])
+      if (s is Map) BoardStep.fromJson(s.cast<String, dynamic>()),
+  ];
+
+  /// Blocks the board does not know (from a newer schema) are skipped, never fatal.
+  static Block? fromJson(Map<String, dynamic> j) {
+    final t = BlockType.parse(j['type'] as String? ?? '');
+    return t == null ? null : Block(t, j);
+  }
+}
+
+/// The lesson characters.
+enum Character { aarav, diya }
+
+/// A character's line: a speech bubble with their avatar.
+class Speaker {
+  const Speaker(this.who, this.say);
+  final Character who;
+  final L10n say;
+  static Speaker? maybe(Object? v) {
+    if (v is! Map) return null;
+    final who = Character.values.where((c) => c.name == v['who']).firstOrNull;
+    return who == null ? null : Speaker(who, L10n.of(v['say']));
+  }
+}
+
+/// A card of an intro or concept: one idea in a line or two, an optional big value and unit.
+class LessonCard {
+  const LessonCard({required this.title, this.text, this.value, this.unit, this.icon, this.tone});
+  final L10n title;
+  final L10n? text;
+  final String? value, unit, icon;
+
+  /// yes / no (a sort), or null.
+  final String? tone;
+  factory LessonCard.fromJson(Map<String, dynamic> j) => LessonCard(
+    title: L10n.of(j['title']),
+    text: L10n.maybe(j['text']),
+    value: j['value'] as String?,
+    unit: j['unit'] as String?,
+    icon: j['icon'] as String?,
+    tone: j['tone'] as String?,
+  );
+}
+
+/// One whiteboard step: what is drawn (on a 100 × 60 grid), and the line read while it appears.
+class BoardStep {
+  BoardStep({this.say, required this.draw, this.clear = false});
+  final L10n? say;
+
+  /// Draw items as in the schema (`kind` text, math, line, arrow, rect, circle, path, axes, plot).
+  final List<Map<String, dynamic>> draw;
+
+  /// Wipe the board before this step.
+  final bool clear;
+
+  factory BoardStep.fromJson(Map<String, dynamic> j) => BoardStep(
+    say: L10n.maybe(j['say']),
+    draw: [
+      for (final d in (j['draw'] as List?) ?? const [])
+        if (d is Map) d.cast<String, dynamic>(),
+    ],
+    clear: j['clear'] == true,
+  );
+}
+
+class Lesson {
+  Lesson({required this.id, required this.chapterId, required this.topicId, required this.title, required this.minutes, required this.blocks});
+  final String id, chapterId, topicId;
+  final L10n title;
+  final int minutes;
+  final List<Block> blocks;
+
+  factory Lesson.fromJson(Map<String, dynamic> j) => Lesson(
+    id: j['id'] as String,
+    chapterId: j['chapterId'] as String,
+    topicId: j['topicId'] as String,
+    title: L10n.of(j['title']),
+    minutes: j['minutes'] as int? ?? 40,
+    blocks: [for (final b in j['blocks'] as List) ?Block.fromJson(b as Map<String, dynamic>)],
+  );
+}
+
+class Question {
+  Question({
+    required this.id,
+    this.chapterId,
+    required this.topicId,
+    required this.stem,
+    required this.options,
+    required this.answer,
+    this.answers,
+    this.numericAnswer,
+    this.tolerance,
+    this.explanation,
+    required this.exams,
+    required this.difficulty,
+    this.pyqExam,
+    this.pyqYear,
+    this.pyqVerified = false,
+    this.format = 'mcq',
+    this.passage,
+    this.solution = const [],
+  });
+  final String id;
+  final String? chapterId;
+  final String? topicId;
+  final L10n stem;
+  final List<L10n> options;
+  final int answer;
+
+  /// multi_correct: every correct option (the set the class must pick exactly).
+  final List<int>? answers;
+
+  /// numeric: the value, accepted within ± [tolerance] (0 when absent).
+  final double? numericAnswer;
+  final double? tolerance;
+  final L10n? explanation;
+  final List<String> exams;
+  final String difficulty;
+  final String? pyqExam;
+  final int? pyqYear;
+  final bool pyqVerified;
+
+  /// mcq, assertion_reason, case_based, multi_correct, numeric or either_or (two options).
+  final String format;
+
+  /// Worked solution steps (exam-pattern reveal).
+  final List<L10n> solution;
+  bool get isMulti => format == 'multi_correct';
+  bool get isNumeric => format == 'numeric';
+
+  /// The correct options of a multi_correct question (just [answer] for the others).
+  Set<int> get correctSet => {...?answers, if (answers == null) answer};
+
+  /// The case a case_based question is about.
+  final L10n? passage;
+
+  factory Question.fromJson(Map<String, dynamic> j) {
+    final p = j['pyq'] as Map<String, dynamic>?;
+    return Question(
+      id: j['id'] as String,
+      chapterId: j['chapterId'] as String?,
+      topicId: j['topicId'] as String?,
+      stem: L10n.of(j['stem']),
+      options: L10n.list(j['options']),
+      answer: j['answer'] as int? ?? 0,
+      answers: (j['answers'] as List?)?.cast<int>(),
+      numericAnswer: (j['numericAnswer'] as num?)?.toDouble(),
+      tolerance: (j['tolerance'] as num?)?.toDouble(),
+      explanation: L10n.maybe(j['explanation']),
+      exams: [for (final e in (j['exams'] as List?) ?? const []) e as String],
+      difficulty: j['difficulty'] as String? ?? 'medium',
+      pyqExam: p?['exam'] as String?,
+      pyqYear: p?['year'] as int?,
+      pyqVerified: p?['verified'] == true,
+      format: j['format'] as String? ?? 'mcq',
+      passage: L10n.maybe(j['passage']),
+      solution: L10n.list(j['solution']),
+    );
+  }
+}
+
+class Topic {
+  Topic(this.id, this.title, this.ncert, [this.boards]);
+  final String id;
+  final L10n title;
+  final String? ncert;
+
+  /// Curricula that teach this topic; the chapter's when null.
+  final List<String>? boards;
+}
+
+/// The curricula the board knows. An unknown or missing board falls back to Karnataka PU.
+const boardIds = ['kar_pu', 'cbse', 'isc'];
+String normalizeBoard(String? b) {
+  final v = b?.trim().toLowerCase();
+  return boardIds.contains(v) ? v! : 'kar_pu';
+}
+
+class Chapter {
+  Chapter({required this.id, required this.subject, required this.year, required this.number, required this.title, required this.topics, this.boards = const ['kar_pu', 'cbse']});
+  final String id, subject, year;
+  final List<String> boards;
+
+  bool forBoard(String board) => boards.contains(board);
+  List<Topic> topicsFor(String board) => [
+    for (final t in topics)
+      if ((t.boards ?? boards).contains(board)) t,
+  ];
+  final int number;
+  final L10n title;
+  final List<Topic> topics;
+
+  factory Chapter.fromJson(Map<String, dynamic> j) => Chapter(
+    id: j['id'] as String,
+    subject: j['subject'] as String,
+    year: j['year'] as String,
+    number: j['number'] as int,
+    title: L10n.of(j['title']),
+    topics: [for (final t in (j['topics'] as List?) ?? const []) Topic(t['id'] as String, L10n.of(t['title']), t['ncert'] as String?, (t['boards'] as List?)?.cast<String>())],
+    boards: [for (final b in (j['boards'] as List?) ?? const ['kar_pu', 'cbse']) (b as String).toLowerCase()],
+  );
+}
+
+/// One formula of a chapter's formula sheet (formulas.json in a pack): a name, display LaTeX, a note.
+class SheetFormula {
+  const SheetFormula({required this.id, required this.name, required this.tex, this.note, this.topicId});
+  final String id, tex;
+  final L10n name;
+  final L10n? note;
+  final String? topicId;
+  factory SheetFormula.fromJson(Map<String, dynamic> j) => SheetFormula(
+    id: j['id'] as String? ?? '',
+    name: L10n.of(j['name']),
+    tex: j['tex'] as String? ?? '',
+    note: L10n.maybe(j['note']),
+    topicId: j['topicId'] as String?,
+  );
+
+  /// The formulas of a `formulas.json` ({chapterId, formulas: […]}); empty when absent or unreadable.
+  static List<SheetFormula> sheet(Object? j) => [
+    if (j is Map)
+      for (final f in (j['formulas'] as List?) ?? const [])
+        if (f is Map && (f['tex'] as String?)?.trim().isNotEmpty == true) SheetFormula.fromJson(f.cast<String, dynamic>()),
+  ];
+}
+
+/// A video on the owner's channel: YouTube or Google Drive, never downloaded (streamed online).
+class VideoRef {
+  const VideoRef({required this.provider, required this.id, required this.title, this.seconds, this.chapters = const []});
+  final String provider, id;
+  final L10n title;
+  final int? seconds;
+
+  /// Markers inside the video: (seconds from the start, label).
+  final List<(int, L10n)> chapters;
+
+  static VideoRef? maybe(Object? v) {
+    if (v is! Map || v['id'] is! String || !RegExp(r'^[A-Za-z0-9_-]{6,64}$').hasMatch(v['id'] as String)) return null;
+    final provider = v['provider'] == 'drive' ? 'drive' : 'youtube';
+    return VideoRef(
+      provider: provider,
+      id: v['id'] as String,
+      title: L10n.of(v['title']),
+      seconds: (v['seconds'] as num?)?.toInt(),
+      chapters: [
+        for (final c in (v['chapters'] as List?) ?? const [])
+          if (c is Map) ((c['at'] as num?)?.toInt() ?? 0, L10n.of(c['label'])),
+      ],
+    );
+  }
+
+  /// The embedded player's address (YouTube without cookies; Drive's preview player).
+  Uri embedUrl({int start = 0}) => provider == 'drive'
+      ? Uri.parse('https://drive.google.com/file/d/$id/preview')
+      : Uri.parse('https://www.youtube-nocookie.com/embed/$id?rel=0&modestbranding=1&playsinline=1${start > 0 ? '&start=$start' : ''}');
+}
+
+/// An installed pack: one chapter, its lessons and questions, and where its media lives.
+class InstalledPack {
+  InstalledPack({required this.id, required this.version, required this.chapter, required this.lessons, required this.questions, required this.mediaDir, this.formulas = const []});
+  final String id, version;
+  final Chapter chapter;
+  final Map<String, Lesson> lessons; // by topicId
+  final Map<String, Question> questions;
+  final String mediaDir;
+
+  /// The chapter's formula sheet (formulas.json), empty when the pack has none.
+  final List<SheetFormula> formulas;
+
+  List<Question> questionsFor(Iterable<String> ids) => [for (final i in ids) ?questions[i]];
+  List<Question> topicQuestions(String topicId) => [
+    for (final q in questions.values)
+      if (q.topicId == topicId) q,
+  ];
+
+  /// The lesson as taught on a board following [board]: blocks for other curricula removed.
+  Lesson lessonFor(Lesson l, String board) => Lesson(
+    id: l.id,
+    chapterId: l.chapterId,
+    topicId: l.topicId,
+    title: l.title,
+    minutes: l.minutes,
+    blocks: [
+      for (final b in l.blocks)
+        if (b.forBoard(board)) b,
+    ],
+  );
+}

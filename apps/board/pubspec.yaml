@@ -51,6 +51,9 @@ dependencies:
     path: ../../packages/kinetix_ink
   kinetix_labs:
     path: ../../packages/kinetix_labs
+  # Classroom edition's Lessons: the Zynetix lesson blocks (lib/classroom_edition/lessons).
+  kinetix_lessons:
+    path: ../../packages/kinetix_lessons
   kinetix_math:
     path: ../../packages/kinetix_math
   kinetix_ui:
@@ -88,6 +91,10 @@ flutter:
   # The picture library (lib/features/insert/picture_library.dart): openly licensed diagrams,
   # maps and photos; credits in assets/library/catalog.json and CREDITS.txt.
   assets:
+    # Classroom edition: the PUC lessons (packages/kinetix_lessons/tool/bundle_puc.py), and the
+    # build-time-only School parts (gitignored; empty but for a README when not built).
+    - assets/lessons/puc/
+    - assets/private/lessons/
     - assets/library/
     - assets/library/thumbs/
     # PhET sims (lib/features/phet): the catalogue and small thumbnails; the sims themselves
