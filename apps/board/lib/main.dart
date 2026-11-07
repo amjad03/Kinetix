@@ -8,6 +8,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'classroom_edition/edition.dart';
+import 'classroom_edition/lessons/lessons_panel.dart' show installLessonHooks;
 import 'classroom_edition/start/classroom_start.dart';
 import 'classroom_edition/ui/phone_fit.dart';
 import 'core/api_client.dart';
@@ -43,6 +44,8 @@ void main() {
   if (!checkServerConfig()) return;
   // The picture library's credits on the licence page.
   registerPictureLibraryLicence();
+  // Classroom edition: the start screen's "Next lesson" line from the bundled lessons.
+  if (Edition.classroom) installLessonHooks();
   final board = Demo.enabled ? demoBoard(DemoBoardServer()) : (BoardController()..start());
   // 3D models download from this board's own server, the institution's or the KINETIX API first.
   unawaited(ModelServer.attach(board));
