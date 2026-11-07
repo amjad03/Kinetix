@@ -16,7 +16,10 @@ void main() {
   setUpAll(loadBoardFonts);
   tearDown(() => Edition.classroom = Edition.built == 'classroom');
 
-  ClassroomStore fresh() => ClassroomStore(store: DeviceStore(secrets: MemorySecretStore()), now: () => ceMonday);
+  ClassroomStore fresh() => ClassroomStore(
+    store: DeviceStore(secrets: MemorySecretStore()),
+    now: () => ceMonday,
+  );
 
   test('teachers, classes, periods and the PIN are saved and come back', () async {
     SharedPreferences.setMockInitialValues({});

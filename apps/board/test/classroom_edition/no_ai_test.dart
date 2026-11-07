@@ -13,14 +13,26 @@ import 'ce_support.dart';
 final _ai = RegExp(r'\bAI\b|KINETIX AI|Read with AI|AI pen|Text AI|Shape AI|Tidy shapes|Read the board|Solve|Live captions|Voice commands|Suggested next', caseSensitive: false);
 
 /// Keys of AI controls.
-const _aiKeys = ['panel-ai', 'tool-ai-pen', 'panel-tab-ai', 'sel-ai', 'sel-solve', 'sel-convert', 'pen-mode-textAi', 'pen-mode-shapeAi', 'snap-shapes', 'kit-ai-home', 'dictionary-ai', 'app-homework', 'app-class-prep', 'app-tests'];
+const _aiKeys = [
+  'panel-ai',
+  'tool-ai-pen',
+  'panel-tab-ai',
+  'sel-ai',
+  'sel-solve',
+  'sel-convert',
+  'pen-mode-textAi',
+  'pen-mode-shapeAi',
+  'snap-shapes',
+  'kit-ai-home',
+  'dictionary-ai',
+  'app-homework',
+  'app-class-prep',
+  'app-tests',
+];
 
 /// Every text on screen now.
 List<String> _texts() => [
-  for (final e in find.byType(Text).evaluate()) ...[
-    ?(e.widget as Text).data,
-    if ((e.widget as Text).textSpan case final s?) s.toPlainText(),
-  ],
+  for (final e in find.byType(Text).evaluate()) ...[?(e.widget as Text).data, if ((e.widget as Text).textSpan case final s?) s.toPlainText()],
   for (final e in find.byType(RichText).evaluate()) (e.widget as RichText).text.toPlainText(),
   for (final e in find.byType(Tooltip).evaluate()) ?(e.widget as Tooltip).message,
 ];

@@ -35,10 +35,19 @@ void main() {
     });
 
     test('the panel tabs and toolbars follow the edition', () {
-      expect([for (final t in PanelTab.values) if (t.shown) t], isNot(contains(PanelTab.lessons)));
-      expect([for (final t in PanelTab.values) if (t.shown) t], contains(PanelTab.ai));
+      expect([
+        for (final t in PanelTab.values)
+          if (t.shown) t,
+      ], isNot(contains(PanelTab.lessons)));
+      expect([
+        for (final t in PanelTab.values)
+          if (t.shown) t,
+      ], contains(PanelTab.ai));
       Edition.classroom = true;
-      final tabs = [for (final t in PanelTab.values) if (t.shown) t];
+      final tabs = [
+        for (final t in PanelTab.values)
+          if (t.shown) t,
+      ];
       expect(tabs.take(2), [PanelTab.lessons, PanelTab.classTools]);
       expect(tabs, isNot(contains(PanelTab.ai)));
       // Every other tab stays.
@@ -103,7 +112,10 @@ void main() {
       await tester.runAsync(() => host.putImage(png, width: 600, title: 'Two charges'));
       await tester.runAsync(
         () => host.putWidget(
-          const ColoredBox(color: Color(0xFFFFF4CC), child: Center(child: Text('F = k q₁q₂ / r²'))),
+          const ColoredBox(
+            color: Color(0xFFFFF4CC),
+            child: Center(child: Text('F = k q₁q₂ / r²')),
+          ),
           size: const Size(400, 120),
           pixelRatio: 1,
         ),

@@ -1,0 +1,533 @@
+import 'package:flutter/material.dart';
+
+import '../ui/ce_style.dart';
+import 'bank.dart';
+import 'class_logic.dart';
+import 'tool_ui.dart';
+
+/// Class quiz with no phones: the question goes on the board, the class answers aloud or on
+/// paper, and the teacher taps roll numbers right or wrong (absent ones are skipped). Each
+/// question's marks are kept by roll number for the mastery map. [topicKeys] ("chapterId|t3")
+/// starts a revision quiz on those topics.
+class ClassQuizView extends StatefulWidget {
+  const ClassQuizView({super.key, required this.env, this.topicKeys = const []});
+
+  final ToolEnv env;
+  final List<String> topicKeys;
+
+  @override
+  State<ClassQuizView> createState() => _ClassQuizViewState();
+}
+
+class _ClassQuizViewState extends State<ClassQuizView> {
+  ToolEnv get env => widget.env;
+  late String? chapterId = widget.topicKeys.isNotEmpty ? widget.topicKeys.first.split('|').first : env.startChapter?.id;
+  late Set<String> topics = {
+    for (final k in widget.topicKeys)
+      if (k.startsWith('$chapterId|')) k.split('|').last,
+  };
+  int count = 5;
+  List<BankQuestion> questions = const [];
+  int index = 0;
+  late QuizMarks marks;
+  final results = <(BankQuestion, int right, int wrong, int notMarked)>[];
+  bool finished = false;
+  bool onBoard = true;
+
+  BankChapter? get chapter => env.bank.chapter(chapterId);
+  BankQuestion get q => questions[index];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.topicKeys.isNotEmpty) WidgetsBinding.instance.addPostFrameCallback((_) => mounted ? _start() : null);
+  }
+
+  void _start() {
+    final c = chapter;
+    if (c == null) return;
+    final recent = {for (final r in env.records.records.quizzes.reversed.take(60)) r.questionId};
+    setState(() {
+      questions = pickQuizQuestions(c, topics: topics, count: count, seed: env.now().millisecondsSinceEpoch, recent: recent);
+      index = 0;
+      results.clear();
+      finished = false;
+      _fresh();
+    });
+    _putQuestion();
+  }
+
+  void _fresh() => marks = QuizMarks(rolls: env.rolls, absent: env.absent);
+
+  /// The question (and options) on a fresh page of the board.
+  void _putQuestion() {
+    if (!onBoard || questions.isEmpty) return;
+    final host = env.host;
+    if (host.wb.elements.isNotEmpty) host.newPage();
+    host.putElements(
+      boardLines(
+        [(wrapText('Q${index + 1}. ${q.stem}', 32), 52, true), ('', 12, false), for (final (i, o) in q.options.indexed) (wrapText('${String.fromCharCode(65 + i)}   $o', 38), 44, false)],
+        env.ink,
+        gap: 18,
+      ),
+      at: const Offset(96, 220),
+    );
+  }
+
+  Future<void> _save() async {
+    final rec = marks.record(at: env.now(), q: q, topicTitle: chapter?.topicTitle(q.topic) ?? '');
+    results.add((q, marks.right.length, marks.wrong.length, marks.notMarked));
+    if (rec != null) await env.records.addQuiz(rec);
+  }
+
+  Future<void> _next() async {
+    await _save();
+    if (!mounted) return;
+    if (index == questions.length - 1) {
+      setState(() => finished = true);
+      return;
+    }
+    setState(() {
+      index++;
+      _fresh();
+    });
+    _putQuestion();
+  }
+
+  Future<void> _showResult() async {
+    final right = marks.right, wrong = marks.wrong;
+    await env.host.putWidget(
+      _ResultCard(question: q, number: index + 1, right: right.length, wrong: wrong.length, notMarked: marks.notMarked, revisit: wrong),
+      size: const Size(960, 560),
+      context: context,
+      at: const Offset(980, 260),
+    );
+    env.host.showMessage('Result on the board');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (env.bank.chapters.isEmpty || env.bank.chapters.every((c) => c.questions.isEmpty)) {
+      return Column(
+        children: [
+          ToolHeader(title: 'Class quiz', onBack: env.back),
+          Expanded(child: noBank(env)),
+        ],
+      );
+    }
+    if (questions.isEmpty) return _setup();
+    if (finished) return _summary();
+    return _asking();
+  }
+
+  Widget _setup() {
+    final c = chapter;
+    return ListView(
+      key: const Key('ce-quiz-setup'),
+      padding: EdgeInsets.zero,
+      children: [
+        ToolHeader(
+          title: 'Class quiz',
+          onBack: env.back,
+          pill: toolPill('No phones needed', icon: Icons.phonelink_erase_outlined, bg: CeC.mint),
+        ),
+        const SizedBox(height: 8),
+        Text('The question goes on the board. The class answers aloud or on paper; you tap roll numbers right or wrong.', style: ceText(17, height: 1.4)),
+        const SizedBox(height: 22),
+        Text(
+          'Chapter',
+          style: ceText(17, w: FontWeight.w600, c: CeC.navy),
+        ),
+        const SizedBox(height: 10),
+        ChapterPicker(
+          bank: env.bank,
+          selected: [?chapterId],
+          only: (c) => c.questions.isNotEmpty,
+          onChanged: (s) => setState(() {
+            chapterId = s.first;
+            topics = {};
+          }),
+        ),
+        if (c != null && c.topics.length > 1) ...[
+          const SizedBox(height: 22),
+          Text(
+            'Topics',
+            style: ceText(17, w: FontWeight.w600, c: CeC.navy),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              choiceChip('All topics', on: topics.isEmpty, offIcon: null, onTap: () => setState(() => topics = {})),
+              for (final (id, title) in c.topics)
+                if (c.questions.any((q) => q.topic == id))
+                  choiceChip(title, on: topics.contains(id), offIcon: null, key: Key('ce-quiz-topic-$id'), onTap: () => setState(() => topics.contains(id) ? topics.remove(id) : topics.add(id))),
+            ],
+          ),
+        ],
+        const SizedBox(height: 22),
+        Row(
+          children: [
+            Text(
+              'Questions',
+              style: ceText(17, w: FontWeight.w600, c: CeC.navy),
+            ),
+            const SizedBox(width: 16),
+            for (final n in const [3, 5, 10]) ...[choiceChip('$n', on: count == n, offIcon: null, tick: false, onTap: () => setState(() => count = n)), const SizedBox(width: 8)],
+          ],
+        ),
+        const SizedBox(height: 14),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          value: onBoard,
+          onChanged: (v) => setState(() => onBoard = v),
+          title: Text(
+            'Put each question on a new board page',
+            style: ceText(17, w: FontWeight.w600, c: CeC.navy),
+          ),
+          subtitle: Text('The answer stays on this panel, for you.', style: ceText(14.5)),
+        ),
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            toolButton('Start the quiz', icon: Icons.play_arrow_rounded, filled: true, onPressed: c == null ? null : _start, key: const Key('ce-quiz-start')),
+            const SizedBox(width: 16),
+            Flexible(child: Text('${bankLine(env.bank)} · ${c?.questions.length ?? 0} questions in this chapter', style: ceText(15))),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _asking() => LayoutBuilder(
+    builder: (context, box) {
+      final cols = env.rolls.length > 48 ? 10 : 8;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ToolHeader(
+            title: 'Class quiz',
+            onBack: env.back,
+            pill: toolPill('Question ${index + 1} of ${questions.length}', key: const Key('ce-quiz-progress')),
+            trailing: [toolPill('No phones needed', icon: Icons.phonelink_erase_outlined, bg: CeC.mint)],
+          ),
+          const SizedBox(height: 14),
+          _questionCard(),
+          const SizedBox(height: 18),
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: 'Tap a roll number  ',
+                  style: ceText(17, w: FontWeight.w700, c: CeC.navy),
+                ),
+                TextSpan(text: 'once for right, twice for wrong${env.absent.isEmpty ? '' : ' · absent ones are greyed out'}', style: ceText(16)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(child: _grid(cols)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _stat('${marks.right.length}', 'right', CeC.mint, CeC.green, const Key('ce-quiz-right'))),
+              const SizedBox(width: 12),
+              Expanded(child: _stat('${marks.wrong.length}', 'wrong', CeC.pink, const Color(0xFFBE185D), const Key('ce-quiz-wrong'))),
+              const SizedBox(width: 12),
+              Expanded(child: _stat('${marks.notMarked}', 'not marked', Colors.white, CeC.navy, const Key('ce-quiz-unmarked'))),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            runSpacing: 10,
+            children: [
+              Wrap(
+                spacing: 12,
+                runSpacing: 10,
+                children: [
+                  toolButton('Mark all right', onPressed: () => setState(marks.markRestRight), key: const Key('ce-quiz-all-right')),
+                  toolButton(index == questions.length - 1 ? 'Finish' : 'Next question', onPressed: _next, key: const Key('ce-quiz-next')),
+                ],
+              ),
+              toolButton('Show result on board', icon: Icons.bar_chart_rounded, filled: true, onPressed: _showResult, key: const Key('ce-quiz-result')),
+            ],
+          ),
+        ],
+      );
+    },
+  );
+
+  Widget _questionCard() => Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(color: CeC.lavender, borderRadius: BorderRadius.circular(24)),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          q.stem,
+          key: const Key('ce-quiz-stem'),
+          maxLines: 5,
+          overflow: TextOverflow.ellipsis,
+          style: ceText(21, c: CeC.navy, height: 1.3),
+        ),
+        const SizedBox(height: 14),
+        LayoutBuilder(
+          builder: (context, box) {
+            final w = (box.maxWidth - 12) / 2;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 10,
+              children: [
+                for (final (i, o) in q.options.indexed)
+                  Container(
+                    width: q.options.every((o) => o.length < 60) ? w : box.maxWidth,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: i == q.answer ? CeC.mint : Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: i == q.answer ? CeC.green : Colors.white, width: 2),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          String.fromCharCode(65 + i),
+                          style: ceText(17, w: FontWeight.w700, c: CeC.navy),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Text(
+                            o,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: ceText(17, c: CeC.navy),
+                          ),
+                        ),
+                        if (i == q.answer) const Icon(Icons.check_circle, color: CeC.green, size: 26),
+                      ],
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    ),
+  );
+
+  Widget _grid(int cols) => LayoutBuilder(
+    builder: (context, box) {
+      const gap = 10.0;
+      final rows = (env.rolls.length / cols).ceil();
+      final w = (box.maxWidth - gap * (cols - 1)) / cols;
+      final fitH = rows == 0 ? w : (box.maxHeight - gap * (rows - 1)) / rows;
+      final h = fitH.clamp(56.0, w);
+      return SingleChildScrollView(
+        child: Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [for (final r in env.rolls) SizedBox(width: w, height: h, child: _cell(r))],
+        ),
+      );
+    },
+  );
+
+  Widget _cell(int r) {
+    final absent = marks.isAbsent(r);
+    final m = marks.of(r);
+    final (bg, border, icon, fg) = switch (m) {
+      _ when absent => (const Color(0xFFEFF2F6), const Color(0xFFE2E8F0), null, const Color(0xFF94A3B8)),
+      Mark.right => (CeC.mint, const Color(0xFF86C9A2), Icons.check, CeC.green),
+      Mark.wrong => (CeC.pink, const Color(0xFFF2A7C3), Icons.close, const Color(0xFFBE185D)),
+      Mark.none => (Colors.white, CeC.line, null, CeC.navy),
+    };
+    return Material(
+      color: bg,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: border, width: 1.5),
+      ),
+      child: InkWell(
+        key: Key('ce-roll-$r'),
+        borderRadius: BorderRadius.circular(14),
+        onTap: absent ? null : () => setState(() => marks.tap(r)),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(rollLabel(r), style: ceHeading(26, c: absent ? fg : CeC.navy)),
+              if (icon != null) ...[const SizedBox(width: 6), Icon(icon, size: 20, color: fg)],
+              if (absent) ...[
+                const SizedBox(width: 6),
+                Text(
+                  'AB',
+                  style: ceText(12, w: FontWeight.w700, c: fg),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _stat(String n, String label, Color bg, Color fg, Key key) => Container(
+    key: key,
+    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+    decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(16)),
+    child: Row(
+      children: [
+        Text(n, style: ceHeading(30, c: fg)),
+        const SizedBox(width: 10),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: ceText(17, w: FontWeight.w600, c: CeC.navy),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _summary() {
+    final c = chapter;
+    return ListView(
+      key: const Key('ce-quiz-summary'),
+      padding: EdgeInsets.zero,
+      children: [
+        ToolHeader(
+          title: 'Class quiz',
+          onBack: env.back,
+          pill: toolPill('Done', icon: Icons.check, bg: CeC.mint),
+        ),
+        const SizedBox(height: 8),
+        Text('${c?.title ?? ''} · saved by roll number for the mastery map', style: ceText(17)),
+        const SizedBox(height: 18),
+        for (final (i, (q, right, wrong, _)) in results.indexed)
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(16),
+            decoration: ceCard(shadow: false),
+            child: Row(
+              children: [
+                SizedBox(width: 44, child: Text('Q${i + 1}', style: ceHeading(20))),
+                Expanded(
+                  child: Text(
+                    q.stem,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: ceText(16, c: CeC.body),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                SizedBox(
+                  width: 180,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(99),
+                    child: LinearProgressIndicator(value: right + wrong == 0 ? 0 : right / (right + wrong), minHeight: 12, backgroundColor: CeC.pink, color: const Color(0xFF6CC08F)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 92,
+                  child: Text(
+                    right + wrong == 0 ? 'not marked' : '$right of ${right + wrong}',
+                    textAlign: TextAlign.right,
+                    style: ceText(15, w: FontWeight.w600, c: CeC.navy),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            toolButton(
+              'Open the mastery map',
+              icon: Icons.grid_view_rounded,
+              filled: true,
+              onPressed: () => env.open('mastery', arg: chapterId),
+              key: const Key('ce-quiz-mastery'),
+            ),
+            toolButton('Another quiz', icon: Icons.refresh, onPressed: () => setState(() => questions = const [])),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// The result put on the board: right, wrong and not marked, the answer, and who to revisit.
+class _ResultCard extends StatelessWidget {
+  const _ResultCard({required this.question, required this.number, required this.right, required this.wrong, required this.notMarked, required this.revisit});
+
+  final BankQuestion question;
+  final int number, right, wrong, notMarked;
+  final List<int> revisit;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = right + wrong + notMarked;
+    Widget bar(int n, Color c, String label) => Row(
+      children: [
+        SizedBox(
+          width: 150,
+          child: Text(
+            label,
+            style: ceText(26, w: FontWeight.w600, c: CeC.navy),
+          ),
+        ),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, box) => Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                width: total == 0 ? 0 : box.maxWidth * n / total,
+                height: 40,
+                decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 70,
+          child: Text('$n', textAlign: TextAlign.right, style: ceHeading(34)),
+        ),
+      ],
+    );
+    return Container(
+      padding: const EdgeInsets.all(36),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: CeC.line, width: 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Q$number result', style: ceHeading(40)),
+          const SizedBox(height: 24),
+          bar(right, const Color(0xFF6CC08F), 'Right'),
+          const SizedBox(height: 14),
+          bar(wrong, const Color(0xFFF2A7C3), 'Wrong'),
+          const SizedBox(height: 14),
+          bar(notMarked, CeC.line, 'Not marked'),
+          const SizedBox(height: 26),
+          Text(
+            'Answer: ${question.answerText}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: ceText(28, w: FontWeight.w600, c: CeC.green),
+          ),
+          const Spacer(),
+          if (revisit.isNotEmpty) Text('Let’s go over it again together.', style: ceText(24, c: CeC.muted)),
+        ],
+      ),
+    );
+  }
+}

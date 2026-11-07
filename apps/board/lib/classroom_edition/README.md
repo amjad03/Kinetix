@@ -54,7 +54,7 @@ Lessons). Optional hooks in `classroom_hooks.dart`:
 ### Class tools — `class_tools/class_tools_hub.dart`
 
 ```dart
-class ClassToolsHub extends StatelessWidget {
+class ClassToolsHub extends StatefulWidget {
   const ClassToolsHub({super.key, required this.host, this.initialTool});
   final ClassroomHost host;
   final String? initialTool; // 'quiz', 'mock', 'drill', 'teams', 'plan', 'mastery', 'worksheets', 'picker', 'timer'
@@ -66,6 +66,44 @@ Widget classToolTile(ClassTool t, {double width, double height, VoidCallback? on
 The board shows it for `PanelKind.classTools` (the panel's **Class tools** tab). The toolbar's
 Class tools button opens Classroom Apps with the `classTools` tiles on top; tapping one opens
 the hub with `initialTool` set to its id (the hub is rebuilt with a new key each time).
+
+## Class tools (phase 2b)
+
+All offline, no AI, and by roll number only. `class_tools/`:
+
+| Tool | File | What it does |
+| --- | --- | --- |
+| Class quiz | `quiz_view.dart` | Chapter and topics, 3/5/10 questions; each question goes on a new board page; tap a roll number once for right, twice for wrong (absent ones greyed out and skipped); Mark all right; Show result on board; marks saved per question |
+| Mock test | `mock_view.dart` | PUC board pattern (chapter test 25, unit test 35, annual 70, multiple choice) or an entrance pattern from the bank; parts editable; paper preview with Roll No.; Print *n* copies (set A/B for neighbouring benches), Export PDF, answer key on its own page; marks entered per roll number |
+| Formula drill | `drill_teams_plan.dart` | One formula at a time, hidden until shown (typeset TeX); Put on board as an equation |
+| Teams | `drill_teams_plan.dart` | Present roll numbers by benches or mixed into 2–6 teams (Karnataka's rivers); points; scoreboard on the board |
+| Class plan | `drill_teams_plan.dart` | The subject's chapters spread to the exam date with revision weeks; on track or behind; this week's chapter |
+| Mastery map | `mastery_view.dart` | Topics × roll numbers from class quizzes and mock tests; class score; Revisit / Strongest / Small group cards; Print; Make a revision quiz |
+| Worksheets | `worksheets_view.dart` | From the bank: chapter, topics, how many MCQs, short answers and problems; Print / Export PDF with key; Put on board |
+| Pick a roll no., Timer | `drill_teams_plan.dart` | Fair random pick of present roll numbers; big countdown |
+
+Logic without widgets (tested): `class_logic.dart` (quiz marks, mastery, teams, plan),
+`paper.dart` (patterns and paper generation, set B shuffling), `paper_pdf.dart` (PDFs with the
+board's Inter font; `ClassToolsOut.print` / `.share` use `printing`). Records:
+`class_records.dart` keeps `ClassRecords` per class in the board's settings
+(`setting.classTools.<classId>`): quiz marks, mock tests and marks, teams, plans.
+
+### The question bank (private, built at build time)
+
+The question, formula and mock-pattern bank comes from the owner's private Zynetix School
+content and is **never committed**. Before building the app:
+
+```sh
+python3 apps/board/tool/build_class_bank.py <zynetix-smart-classroom>/content/packs
+# reads puc1-*/puc2-* packs (+ ../syllabus and the board's patterns.json when present) and
+# writes apps/board/assets/private/class_tools/{index.json,puc<y>-<subject>.json.gz}
+```
+
+That folder is gitignored (only its `README.txt` is committed) and listed in `pubspec.yaml`, so
+the bank is bundled when present. `bank.dart` (`ClassBank.load`) reads the class's year and
+subject from it; without it the tools use the Lessons' bundled quick checks
+(`assets/lessons/…`, `assets/private/lessons/…`), else show an empty state (Teams, Pick a roll
+no., Timer still work). Tests use small invented fixtures, never the bank.
 
 ### The board and the roster — `classroom_hooks.dart`
 
@@ -152,4 +190,7 @@ screenshots when `LESSONS_SHOTS=<dir>` is set.
 `test/classroom_edition/`: the edition switch and Android ids, no AI in any main menu (and the
 same walk finding KINETIX AI on the KINETIX Board), the start flow, roster persistence and
 Settings, phone scaling with ink under the finger, and Put on board. `ce_shots_test.dart` writes
-screenshots when `CE_SHOTS=<dir>` is set.
+screenshots when `CE_SHOTS=<dir>` is set. `class_tools_test.dart`: quiz marking and persistence,
+mastery, mock tests and their PDF, teams, plan, worksheets, and the board without the bank;
+`ce_tools_shots_test.dart` writes the Class tools' screenshots (`tools-*.png`) from the real bank
+when it is built.
