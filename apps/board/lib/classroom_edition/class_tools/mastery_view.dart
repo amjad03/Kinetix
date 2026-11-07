@@ -184,12 +184,21 @@ class _MasteryViewState extends State<MasteryView> {
                     ),
                   ),
                   for (final r in m.rolls)
+                    // Narrow cells: the label is centred on its column and may spill over its
+                    // neighbours (only every fifth one shows), never wrapped digit by digit.
                     SizedBox(
                       width: cell,
-                      child: Text(
-                        cell < 22 && r % 5 != 0 && r != 1 ? '' : rollLabel(r),
-                        textAlign: TextAlign.center,
-                        style: ceText(cell < 30 ? 11 : 13.5, c: CeC.navy),
+                      height: 20,
+                      child: OverflowBox(
+                        minWidth: 0,
+                        maxWidth: cell < 48 ? 48 : cell,
+                        child: Text(
+                          cell < 22 && r % 5 != 0 && r != 1 ? '' : rollLabel(r),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: ceText(cell < 30 ? 11 : 13.5, c: CeC.navy),
+                        ),
                       ),
                     ),
                   SizedBox(

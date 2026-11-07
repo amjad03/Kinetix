@@ -165,13 +165,42 @@ class BankChapter {
     );
   }
 
-  /// A chapter from a Lessons file (`{chapter, lessons, questions}`, the pack shape): its
-  /// quick-check questions only (multiple choice).
-  static BankChapter fromLessonFile(Map<String, dynamic> j) {
+  /// The question formats the Class tools can ask: one right option among two or more.
+  static const lessonFormats = {null, 'mcq', 'assertion_reason', 'case_based'};
+
+  /// A chapter from a bundled Lessons file (`assets/lessons/puc/<chapterId>.json.gz`:
+  /// `{chapter, lessons, questions}`, built by `bundle_puc.py`): its single-answer
+  /// multiple-choice questions, plus the [overlay]'s (`assets/private/lessons/<chapterId>.json.gz`,
+  /// `{lessons, questions, formulas}`; the School's imported questions) when the build has it.
+  static BankChapter fromLessonFile(Map<String, dynamic> j, {Map<String, dynamic>? overlay}) {
     final ch = (j['chapter'] as Map?)?.cast<String, dynamic>() ?? const {};
     final id = '${ch['id'] ?? ''}';
     String en(Object? v) => v is Map ? '${v['en'] ?? ''}' : (v is String ? v : '');
     String tp(Object? v) => '${v ?? ''}'.split('.').last;
+    final seen = <String>{};
+    final questions = <BankQuestion>[];
+    for (final q in [...(j['questions'] as List?) ?? const [], ...(overlay?['questions'] as List?) ?? const []]) {
+      if (q is! Map || !lessonFormats.contains(q['format'])) continue;
+      final options = [for (final o in (q['options'] as List?) ?? const []) en(o).trim()];
+      final answer = q['answer'];
+      if (options.length < 2 || options.any((o) => o.isEmpty) || answer is! int || answer < 0 || answer >= options.length) continue;
+      final passage = en(q['passage']).trim();
+      final stem = en(q['stem']).trim();
+      if (stem.isEmpty || !seen.add('${q['id']}')) continue;
+      questions.add(
+        BankQuestion(
+          id: '${q['id']}',
+          chapterId: id,
+          topic: tp(q['topicId']),
+          stem: passage.isEmpty ? stem : '$passage\n\n$stem',
+          options: options,
+          answer: answer,
+          explanation: en(q['explanation']),
+          difficulty: const {'easy': 1, 'medium': 2, 'hard': 3}[q['difficulty']] ?? 2,
+          puc: ((q['exams'] as List?) ?? const []).contains('PUC'),
+        ),
+      );
+    }
     return BankChapter(
       id: id,
       number: (ch['number'] as num?)?.toInt() ?? 0,
@@ -180,21 +209,7 @@ class BankChapter {
         for (final t in (ch['topics'] as List?) ?? const [])
           if (t is Map) (tp(t['id']), en(t['title'])),
       ],
-      questions: [
-        for (final q in (j['questions'] as List?) ?? const [])
-          if (q is Map && (q['format'] == null || q['format'] == 'mcq') && ((q['options'] as List?)?.length ?? 0) >= 2 && q['answer'] is int)
-            BankQuestion(
-              id: '${q['id']}',
-              chapterId: id,
-              topic: tp(q['topicId']),
-              stem: en(q['stem']),
-              options: [for (final o in q['options'] as List) en(o)],
-              answer: q['answer'] as int,
-              explanation: en(q['explanation']),
-              difficulty: const {'easy': 1, 'medium': 2, 'hard': 3}[q['difficulty']] ?? 2,
-              puc: ((q['exams'] as List?) ?? const []).contains('PUC'),
-            ),
-      ],
+      questions: questions,
     );
   }
 }
@@ -261,6 +276,9 @@ class SubjectBank {
 abstract final class ClassBank {
   static const dir = 'assets/private/class_tools';
 
+  /// The Lessons' chapters and their School overlays (lib/classroom_edition/lessons).
+  static const lessonsDir = 'assets/lessons', lessonsPrivateDir = 'assets/private/lessons';
+
   /// Lists the bundle's assets (tests replace it).
   static Future<List<String>> Function(AssetBundle bundle) listAssets = (bundle) async => (await AssetManifest.loadFromAssetBundle(bundle)).listAssets();
 
@@ -319,18 +337,28 @@ abstract final class ClassBank {
       // No private bank on this board: fall through to the Lessons.
     }
     try {
+      // The Lessons' chapter files (assets/lessons/puc/puc2-physics-01-….json.gz); the private
+      // folder holds only overlays of the same name, merged into their chapter.
       final prefix = 'puc$year-${subject.replaceAll('_', '-')}-';
       final files = (await listAssets(bundle)).where((a) {
         final name = a.split('/').last;
-        return (a.contains('assets/lessons/') || a.contains('assets/private/lessons/')) && name.startsWith(prefix) && (name.endsWith('.json') || name.endsWith('.json.gz'));
+        return a.startsWith('$lessonsDir/') && name.startsWith(prefix) && (name.endsWith('.json') || name.endsWith('.json.gz'));
       }).toList()..sort();
       final byId = <String, BankChapter>{};
       for (final f in files) {
         try {
-          final data = await bundle.load(f);
-          final json = jsonDecode(_text(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes)));
+          final json = await _json(bundle, f);
           if (json is! Map || json['chapter'] is! Map) continue;
-          final c = BankChapter.fromLessonFile(json.cast<String, dynamic>());
+          final ch = (json['chapter'] as Map).cast<String, dynamic>();
+          if (ch['year'] != null && ch['year'] != 'puc$year') continue;
+          Map<String, dynamic>? overlay;
+          try {
+            final o = await _json(bundle, '$lessonsPrivateDir/${ch['id']}.json.gz');
+            if (o is Map) overlay = o.cast<String, dynamic>();
+          } catch (_) {
+            // No School parts for this chapter in this build.
+          }
+          final c = BankChapter.fromLessonFile(json.cast<String, dynamic>(), overlay: overlay);
           if (c.questions.isEmpty) continue;
           final had = byId[c.id];
           byId[c.id] = had == null || had.questions.length < c.questions.length ? c : had;
@@ -342,6 +370,11 @@ abstract final class ClassBank {
       }
     } catch (_) {}
     return SubjectBank(year: year, subject: subject, source: BankSource.none);
+  }
+
+  static Future<Object?> _json(AssetBundle bundle, String key) async {
+    final data = await bundle.load(key);
+    return jsonDecode(_text(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes)));
   }
 
   static String _text(Uint8List bytes) => utf8.decode(bytes.length > 2 && bytes[0] == 0x1f && bytes[1] == 0x8b ? gzip.decode(bytes) : bytes);

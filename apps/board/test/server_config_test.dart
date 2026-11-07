@@ -16,7 +16,7 @@ void main() {
 
     test('release builds without the define fail instead of using localhost', () {
       expect(
-        () => resolveServerUrl(defined: '', debug: false),
+        () => resolveServerUrl(defined: '', debug: false, classroom: false),
         throwsA(isA<ServerConfigError>().having((e) => e.message, 'message', contains('KINETIX_API_URL'))),
       );
     });
@@ -25,6 +25,12 @@ void main() {
       expect(resolveServerUrl(defined: '', debug: false, demo: true), demoServerUrl);
       expect(resolveServerUrl(defined: 'https://api.example.in', debug: false, demo: true), demoServerUrl);
       expect(() => resolveServerUrl(defined: '', debug: false, demo: false), throwsA(isA<ServerConfigError>()));
+    });
+
+    test('Classroom edition releases (offline) need no server address; the define still wins', () {
+      expect(resolveServerUrl(defined: '', debug: false, classroom: true), '');
+      expect(resolveServerUrl(defined: 'https://api.example.in/', debug: false, classroom: true), 'https://api.example.in');
+      expect(() => resolveServerUrl(defined: 'ftp://x', debug: false, classroom: true), throwsA(isA<ServerConfigError>()));
     });
 
     test('rejects values that are not http(s) URLs', () {

@@ -159,13 +159,13 @@ class _MockTestViewState extends State<MockTestView> {
       const SizedBox(height: 10),
       ChapterPicker(bank: env.bank, selected: chapters, multi: true, onChanged: (s) => setState(() => chapters = s)),
       const SizedBox(height: 18),
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            for (final x in patterns) ...[choiceChip(x.name, on: x.id == pattern.id, offIcon: null, tick: false, key: Key('ce-pattern-${x.id}'), onTap: () => _pick(x)), const SizedBox(width: 8)],
-          ],
-        ),
+      // Every pattern in view (the entrance ones were cut off at the panel's edge in a row).
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final x in patterns) choiceChip(x.name, on: x.id == pattern.id, offIcon: null, tick: false, key: Key('ce-pattern-${x.id}'), onTap: () => _pick(x)),
+        ],
       ),
       const SizedBox(height: 14),
       Container(

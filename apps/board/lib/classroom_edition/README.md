@@ -11,6 +11,20 @@ flutter build apk --dart-define=KINETIX_EDITION=classroom      # Android: in.zyn
 flutter run --dart-define=KINETIX_EDITION=classroom
 ```
 
+A release APK (signed with the Zynetix release key through the `KINETIX_ANDROID_*` variables,
+docs/operations/mobile-release.md; build the private assets first, below):
+
+```sh
+python3 packages/kinetix_lessons/tool/bundle_puc.py <zynetix-smart-classroom>/content apps/board/assets/lessons/puc --include-school
+python3 apps/board/tool/build_class_bank.py <zynetix-smart-classroom>/content/packs
+flutter build apk --release --split-per-abi --target-platform android-arm64,android-arm --dart-define=KINETIX_EDITION=classroom
+```
+
+The edition has its own version, `classroomVersion` in `android/app/build.gradle.kts`
+(1.0.0+1; bump the build for every release, or pass `-Pkinetix.classroomVersion=…`). It needs no
+`KINETIX_API_URL`: without it a release starts offline and "Pair with Teacher App" asks for the
+server address (`resolveServerUrl` in `core/server_config.dart`).
+
 `android/app/build.gradle.kts` reads `KINETIX_EDITION` from Flutter's dart-defines (or
 `-Pkinetix.edition=classroom`, or the `KINETIX_EDITION` environment variable) and gives the app
 its own application id and label, so it installs next to the KINETIX Board. Without the define
@@ -101,8 +115,10 @@ python3 apps/board/tool/build_class_bank.py <zynetix-smart-classroom>/content/pa
 
 That folder is gitignored (only its `README.txt` is committed) and listed in `pubspec.yaml`, so
 the bank is bundled when present. `bank.dart` (`ClassBank.load`) reads the class's year and
-subject from it; without it the tools use the Lessons' bundled quick checks
-(`assets/lessons/…`, `assets/private/lessons/…`), else show an empty state (Teams, Pick a roll
+subject from it; without it the tools use the Lessons' bundled questions (each chapter's
+`assets/lessons/puc/<chapterId>.json.gz`, plus the School overlay's questions from
+`assets/private/lessons/<chapterId>.json.gz` when built; single-answer MCQs, assertion–reason
+and case-based), else show an empty state (Teams, Pick a roll
 no., Timer still work). Tests use small invented fixtures, never the bank.
 
 ### The board and the roster — `classroom_hooks.dart`
@@ -190,7 +206,11 @@ screenshots when `LESSONS_SHOTS=<dir>` is set.
 `test/classroom_edition/`: the edition switch and Android ids, no AI in any main menu (and the
 same walk finding KINETIX AI on the KINETIX Board), the start flow, roster persistence and
 Settings, phone scaling with ink under the finger, and Put on board. `ce_shots_test.dart` writes
-screenshots when `CE_SHOTS=<dir>` is set. `class_tools_test.dart`: quiz marking and persistence,
+screenshots when `CE_SHOTS=<dir>` is set. `release_flow_test.dart` walks the whole edition (start,
+Who's teaching, Simple board, Lessons, Put on board, Class tools, quiz, mastery map, mock test,
+all tools) at 1920 × 1080 and on a phone (844 × 390) on the real lessons and bank, writing
+screenshots when `RELEASE_SHOTS=<dir>` is set; a few are in `apps/board/screenshots/classroom-edition/`
+(never more than one bank question in a picture). `class_tools_test.dart`: quiz marking and persistence,
 mastery, mock tests and their PDF, teams, plan, worksheets, and the board without the bank;
 `ce_tools_shots_test.dart` writes the Class tools' screenshots (`tools-*.png`) from the real bank
 when it is built.

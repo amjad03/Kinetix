@@ -68,6 +68,9 @@ val dartDefines: Map<String, String> = ((findProperty("dart-defines") as String?
     .toMap()
 val edition = (findProperty("kinetix.edition") as String?) ?: System.getenv("KINETIX_EDITION") ?: dartDefines["KINETIX_EDITION"] ?: "board"
 val classroomEdition = edition == "classroom"
+// The Classroom edition's own version (x.y.z+build, like pubspec.yaml's; bump the build for every
+// release), apart from the KINETIX Board's `version:`. -Pkinetix.classroomVersion=1.0.1+2 overrides it.
+val classroomVersion = ((findProperty("kinetix.classroomVersion") as String?) ?: "1.0.0+1").split("+")
 
 android {
     namespace = "app.kinetix.board"
@@ -85,8 +88,9 @@ android {
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         // From `version: x.y.z+build` in pubspec.yaml. With --split-per-abi Flutter adds 1000 * ABI.
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        // The Classroom edition: classroomVersion above.
+        versionCode = if (classroomEdition) classroomVersion.getOrNull(1)?.toInt() ?: 1 else flutter.versionCode
+        versionName = if (classroomEdition) classroomVersion[0] else flutter.versionName
         manifestPlaceholders["appLabel"] = if (classroomEdition) "Zynetix Classroom" else "KINETIX Board"
         manifestPlaceholders["networkSecurityConfig"] = if (lanHttp) "@xml/network_security_config_lan" else "@xml/network_security_config"
     }

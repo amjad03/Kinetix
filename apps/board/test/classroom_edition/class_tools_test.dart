@@ -391,6 +391,70 @@ void main() {
       expect(ClassBank.slug('Mathematics'), 'maths');
     });
 
+    test('the lessons\' real chapter files: School overlay questions merged, single-answer formats only', () async {
+      List<int> gz(Object j) => gzip.encode(utf8.encode(jsonEncode(j)));
+      Map<String, Object?> q(String id, {String? format, int answer = 0, int options = 2, String? passage}) => {
+        'id': id,
+        'topicId': '$_ch.t1',
+        'stem': {'en': '$id?'},
+        'options': [
+          for (var i = 0; i < options; i++) {'en': 'o$i'},
+        ],
+        'answer': answer,
+        'format': ?format,
+        if (passage != null) 'passage': {'en': passage},
+        'exams': ['PUC'],
+        'difficulty': 'hard',
+      };
+      final bundle = _Bundle({
+        'assets/lessons/puc/$_ch.json.gz': gz({
+          'chapter': {
+            'id': _ch,
+            'year': 'puc2',
+            'number': 1,
+            'title': {'en': 'Light and Shadows'},
+            'topics': [
+              {
+                'id': '$_ch.t1',
+                'title': {'en': 'Shadows'},
+              },
+            ],
+          },
+          'lessons': [],
+          'questions': [
+            q('a'),
+            q('b', format: 'assertion_reason', options: 4, answer: 2),
+            q('c', format: 'case_based', passage: 'A torch and a ball.'),
+            q('d', format: 'numeric', options: 0),
+            q('e', format: 'multi_correct', options: 4),
+            q('f', answer: 5),
+          ],
+        }),
+        // The School overlay has no `chapter`: its questions join the chapter's.
+        'assets/private/lessons/$_ch.json.gz': gz({
+          'lessons': {},
+          'questions': [q('zs-1'), q('a')],
+          'formulas': [],
+        }),
+        // A 1st PUC chapter misnamed for 2nd PUC is not taken.
+        'assets/lessons/puc/puc2-physics-02-odd.json.gz': gz({
+          'chapter': {'id': 'puc1-physics-02-odd', 'year': 'puc1', 'number': 2, 'title': 'Odd'},
+          'lessons': [],
+          'questions': [q('x')],
+        }),
+      });
+      ClassBank.listAssets = (b) async => (b as _Bundle).files.keys.toList();
+      final bank = await ClassBank.load(year: 2, subject: 'physics', bundle: bundle);
+      expect(bank.source, BankSource.lessons);
+      final c = bank.chapters.single;
+      expect(c.questions.map((q) => q.id), ['a', 'b', 'c', 'zs-1']);
+      expect(c.questions[1].answer, 2);
+      expect(c.questions[2].stem, 'A torch and a ball.\n\nc?');
+      expect(c.questions.first.difficulty, 3);
+      expect(c.questions.first.puc, isTrue);
+      expect(c.questions.first.topic, 't1');
+    });
+
     testWidgets('the class tools open with no bank: quiz shows an empty state, teams still work', (tester) async {
       ClassBank.testBundle = _Bundle({});
       ClassBank.listAssets = (b) async => const [];

@@ -360,8 +360,11 @@ class ChromeTile extends StatelessWidget {
 
 /// Shows a short message above the bottom toolbar. A snackbar in the default position would
 /// cover the toolbar and swallow the teacher's next tap. [action] adds a button (Undo).
-void showBoardMessage(BuildContext context, String text, {(String, VoidCallback)? action}) {
-  final width = MediaQuery.sizeOf(context).width;
+///
+/// [bottom] lifts it higher (over a toolbar that floats higher, like the Simple board's), and
+/// [right] keeps it off a panel open beside the board (centred over the board instead).
+void showBoardMessage(BuildContext context, String text, {(String, VoidCallback)? action, double bottom = 112, double right = 0}) {
+  final width = MediaQuery.sizeOf(context).width - right;
   final side = ((width - 560) / 2).clamp(16.0, double.infinity);
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
@@ -369,7 +372,7 @@ void showBoardMessage(BuildContext context, String text, {(String, VoidCallback)
       SnackBar(
         content: Text(text),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.fromLTRB(side, 0, side, 112),
+        margin: EdgeInsets.fromLTRB(side, 0, side + right, bottom),
         duration: Duration(seconds: action == null ? 3 : 6),
         action: action == null ? null : SnackBarAction(key: const Key('message-action'), label: action.$1, onPressed: action.$2),
       ),

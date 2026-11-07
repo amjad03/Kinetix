@@ -567,8 +567,14 @@ class _BoardScreenState extends State<BoardScreen> {
     closePanel: _closePanel,
     openLessons: () => _show(PanelKind.lessons),
     openClassTools: () => _openClassTools(),
+    // On the Simple board the message goes above its big toolbar and "What do I do now?" card,
+    // and over the board, not across the Lessons or Class tools panel beside it.
     showMessage: (m) {
-      if (mounted) showBoardMessage(context, m);
+      if (!mounted) return;
+      final size = MediaQuery.sizeOf(context);
+      final beside = _panel != null && !_panelFull && !(context.isPhone && size.height >= size.width);
+      final right = beside ? size.width * (_panelFraction ?? (context.isPhone ? 0.5 : panelDefault)) : 0.0;
+      showBoardMessage(context, m, bottom: _ceSimple ? 280 : 112, right: right);
     },
   );
 

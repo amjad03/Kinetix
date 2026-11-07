@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../classroom_edition/edition.dart';
+
 /// The API address baked in at build time:
 /// `flutter build … --dart-define=KINETIX_API_URL=https://api.example.in`.
 /// The realtime (Socket.IO) connection uses the same address.
@@ -29,13 +31,15 @@ class ServerConfigError extends Error {
 
 /// The server address for this build: [defined] (`KINETIX_API_URL`) without trailing slashes, or
 /// [debugServerUrl] in a debug build, or [demoServerUrl] in a [demo] build (which needs no
-/// server). Throws [ServerConfigError] for a profile/release build without the define, or for a
+/// server), or '' in a Classroom edition build ([classroom]: offline, no server unless a teacher
+/// pairs the board, when they type the address). Throws [ServerConfigError] for a profile/release build without the define, or for a
 /// value that is not an http(s) URL.
-String resolveServerUrl({String defined = kinetixApiUrlDefine, bool debug = kDebugMode, bool demo = kinetixDemoDefine}) {
+String resolveServerUrl({String defined = kinetixApiUrlDefine, bool debug = kDebugMode, bool demo = kinetixDemoDefine, bool classroom = Edition.built == 'classroom'}) {
   if (demo) return demoServerUrl;
   final url = defined.trim().replaceAll(RegExp(r'/+$'), '');
   if (url.isEmpty) {
     if (debug) return debugServerUrl;
+    if (classroom) return '';
     throw ServerConfigError(
       'This build has no server address. Build it with '
       '--dart-define=KINETIX_API_URL=https://<api domain> (see docs/operations/mobile-release.md).',
