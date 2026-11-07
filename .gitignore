@@ -32,3 +32,8 @@ tools/phet/.cache/
 
 # bundled sims ship their own build/ folders
 !apps/board/assets/simhub/**/build/
+
+# Classroom edition Class tools: the question bank from Zynetix School, written at build time by
+# apps/board/tool/build_class_bank.py (never committed).
+apps/board/assets/private/class_tools/*
+!apps/board/assets/private/class_tools/README.txt

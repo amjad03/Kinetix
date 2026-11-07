@@ -56,6 +56,9 @@ dependencies:
   kinetix_ui:
     path: ../../packages/kinetix_ui
   path_provider: ^2.1.6
+  # Class tools (Classroom edition): mock tests and worksheets as PDF, printed or shared.
+  pdf: ^3.11.3
+  printing: ^5.14.2
   # PDF pages drawn on the board itself (PDFium), for PDF import.
   pdfrx: ^2.6.5
   qr_flutter: ^4.1.0
@@ -213,6 +216,9 @@ flutter:
     - assets/sounds/
     - assets/dictionary/
     - assets/history/
+    # Class tools' bank (Classroom edition): built by tool/build_class_bank.py from private
+    # content, gitignored; only README.txt is committed (lib/classroom_edition/README.md).
+    - assets/private/class_tools/
 
 # MSIX installer for Windows panels / OPS PCs. Version comes from `version:` above.
 # `publisher` must equal the Subject of the code-signing certificate (placeholder until we buy
