@@ -13,6 +13,13 @@ import 'package:kinetix_labs/kinetix_labs.dart' show LabReport, LabSpeech;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../cast/cast_panel.dart';
+import '../../classroom_edition/board/ce_board.dart';
+import '../../classroom_edition/class_tools/class_tools_hub.dart';
+import '../../classroom_edition/classroom_hooks.dart';
+import '../../classroom_edition/edition.dart';
+import '../../classroom_edition/lessons/lessons_panel.dart';
+import '../../classroom_edition/local/local_class.dart';
+import '../../classroom_edition/settings/classroom_settings.dart';
 import '../../core/board_controller.dart';
 import '../../core/models.dart';
 import '../../core/recording/lesson_capture.dart';
@@ -243,6 +250,7 @@ class _BoardScreenState extends State<BoardScreen> {
   void initState() {
     super.initState();
     board.addListener(_onBoardChanged);
+    board.classroom.addListener(_onClassroomChanged);
     _ctxPick.addListener(_onContextPicked);
     unawaited(loadCustomBoardFont(board));
     presentationHost = _showPresentation;
@@ -401,7 +409,7 @@ class _BoardScreenState extends State<BoardScreen> {
     openWeb: () => _show(PanelKind.web),
     askClass: _classCheck.start,
     zones: _zones,
-    voiceCommand: _runVoiceCommand,
+    voiceCommand: Edition.ai ? _runVoiceCommand : null,
   );
 
   /// Multi-user zones (lib/features/classroom_plus/zones.dart).
@@ -480,6 +488,7 @@ class _BoardScreenState extends State<BoardScreen> {
     _ppt?.dispose();
     DemoClassSwitcher.detach(board);
     _wb.removeListener(_onWbChanged);
+    board.classroom.removeListener(_onClassroomChanged);
     if (PanelHost.active == _pushInPanel) PanelHost.active = null;
     board.removeListener(_onBoardChanged);
     _phet
@@ -548,6 +557,40 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// Touch lock (Tools): the board takes no touches until the lock is held.
   bool _touchLocked = false;
+
+  // --- Classroom edition (lib/classroom_edition) --------------------------------------------
+
+  /// What the Lessons and Class tools panels use on the board (roster, Put on board).
+  late final ClassroomHost _ceHost = ClassroomHost(
+    board: board,
+    wb: _wb,
+    closePanel: _closePanel,
+    openLessons: () => _show(PanelKind.lessons),
+    openClassTools: () => _openClassTools(),
+    showMessage: (m) {
+      if (mounted) showBoardMessage(context, m);
+    },
+  );
+
+  /// The Class tool to open in the Class tools panel (a tile tapped in Classroom Apps).
+  String? _ceTool;
+
+  /// The Simple board (big Pen, Colours, Eraser, Undo, Lessons, Class tools) until the teacher
+  /// shows all tools; remembered on the board.
+  bool get _ceSimple => Edition.classroom && !board.classroom.showAllTools;
+
+  /// The guided tour or "Show me" over the board, while it shows.
+  List<CeStep>? _ceCoach;
+  bool _ceCoachPractice = false;
+
+  /// The practice board (from the start screen's Practice board, or the first-use tour) and
+  /// the board as it was before it.
+  bool _cePractice = false;
+  SavedBoard? _ceBefore;
+
+  /// The practice board stays after the tour (the start screen's Practice board) rather than
+  /// giving the class's board back.
+  bool _ceStayInPractice = false;
 
   /// Hide (spec §10): every tool hidden, the canvas and a restore button left.
   bool _uiHidden = false;
@@ -648,7 +691,7 @@ class _BoardScreenState extends State<BoardScreen> {
       ..language = board.textAiLanguage
       ..domain = inkDomainOf(_ctx.subject)
       ..textFont = board.textAiFont
-      ..snapShapes = board.snapShapes
+      ..snapShapes = Edition.ai && board.snapShapes
       ..convertShapes = board.aiPenConvert.contains('shapes')
       ..convertMaths = board.aiPenConvert.contains('maths')
       ..convertText = board.aiPenConvert.contains('text');
@@ -1174,6 +1217,7 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   Future<void> _endClass() async {
+    if (board.localClass) return _ceEndClass();
     final hasInk = !_wb.isBlank;
     var notes = '';
     var publish = board.session?.sectionName != null;
@@ -1317,11 +1361,139 @@ class _BoardScreenState extends State<BoardScreen> {
 
   PracticeTracker? _practice;
 
+  // --- Classroom edition: Simple board, tour, practice, "What do I do now?" ------------------
+
+  void _onClassroomChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// Simple board or every tool (remembered on the board).
+  void _ceSetSimple(bool simple) {
+    setState(() => _popover = null);
+    unawaited(board.classroom.setShowAllTools(!simple));
+  }
+
+  /// The start screen's Practice board, or the first class on this board: the guided tour on
+  /// the practice board.
+  Future<void> _ceFirstRun() async {
+    if (!mounted) return;
+    if (ceOpenPractice) {
+      ceOpenPractice = false;
+      _ceTour(practice: true, stay: true);
+    } else if (BoardTour.autoStart && !board.classroom.tourSeen) {
+      _ceTour(practice: true, stay: false);
+    }
+  }
+
+  /// The guided tour (screen 11), on the practice board when [practice]. With [stay] the
+  /// practice board stays after it (until "End practice"), else the class's board comes back.
+  void _ceTour({required bool practice, required bool stay}) {
+    unawaited(board.classroom.markTourSeen());
+    // The whole board for the tour: the panel and any dialog in it close.
+    if (_panel != null) _closePanel();
+    if (board.toolbarCollapsed) board.setToolbarCollapsed(false);
+    if (practice && !_cePractice) {
+      _ceBefore = _wb.toSaved(_canvasSize);
+      _wb.load(SavedBoard(background: _background, canvas: _canvasSize, pages: [cePracticePage()]));
+      _wb.tool = BoardTool.pen;
+      _cePractice = true;
+    }
+    setState(() {
+      _popover = null;
+      _ceStayInPractice = _ceStayInPractice || stay;
+      _ceCoachPractice = practice;
+      // The tour points at the Simple board's tools.
+      if (_ceCoach == null && !_ceSimple) unawaited(board.classroom.setShowAllTools(false));
+      _ceCoach = ceTourSteps;
+    });
+  }
+
+  void _ceCoachDone() {
+    final wasTour = _ceCoach != null && _ceCoach!.length > 1;
+    setState(() => _ceCoach = null);
+    if (wasTour && _cePractice && !_ceStayInPractice) _ceEndPractice(toStart: false);
+  }
+
+  /// Ends the practice board: back to the start screen (a practice opened from there), or the
+  /// class's board as it was.
+  void _ceEndPractice({bool toStart = true}) {
+    final before = _ceBefore;
+    final stay = _ceStayInPractice;
+    setState(() {
+      _cePractice = false;
+      _ceStayInPractice = false;
+      _ceBefore = null;
+    });
+    if (before != null) _wb.load(before);
+    if (toStart && stay && board.localClass) board.showClassroomStart();
+  }
+
+  /// "Show me" (the pill, Help): points at one control.
+  void _ceShowMe(CeStep step) => setState(() {
+    _popover = null;
+    _ceCoachPractice = false;
+    _ceCoach = [step];
+  });
+
+  /// The next-step tip for the board as it is now.
+  ({String tip, CeStep step}) get _ceNext => ceNextStep(
+    tool: _wb.tool,
+    blank: _wb.isBlank,
+    elements: _wb.elements.length,
+    panelLessons: _panel == PanelKind.lessons,
+    panelClassTools: _panel == PanelKind.classTools,
+    canAddPage: _wb.canAddPage,
+    panelTip: _panel == PanelKind.lessons || _panel == PanelKind.classTools ? ClassroomHooks.panelTip?.call() : null,
+  );
+
+  Widget _ceWhatNow() => ListenableBuilder(
+    listenable: _wb,
+    builder: (context, _) {
+      final next = _ceNext;
+      return BoardChromeTheme(child: CeWhatNow(tip: next.tip, onUndo: _wb.canUndo ? _wb.undo : null, onShowMe: () => _ceShowMe(next.step)));
+    },
+  );
+
+  /// Opens the Class tools in the panel, at [tool] when given (a tile in Classroom Apps).
+  void _openClassTools([String? tool]) {
+    _ceTool = tool;
+    _show(PanelKind.classTools);
+  }
+
+  /// College settings (teachers, classes, timetable, PIN) from the board's menu.
+  Future<void> _ceCollegeSettings() async {
+    setState(() => _popover = null);
+    if (await askSchoolPin(context, board.classroom) && mounted) await openClassroomSettings(context, board.classroom);
+  }
+
+  /// End class for a local class: back to the start screen; the board's writing stays saved on
+  /// this board (autosave) for next time.
+  Future<void> _ceEndClass() async {
+    setState(() => _popover = null);
+    final ok = await showPanelDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const Key('ce-end-class'),
+        title: Text(context.l10n.endClassTitle),
+        content: const Text('The board goes back to the start screen for the next class.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel)),
+          FilledButton(key: const Key('confirm-end'), onPressed: () => Navigator.pop(ctx, true), child: Text(context.l10n.endClass)),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    if (_capture != null) await _stopRecording();
+    await _autosave.flush();
+    await board.endClass();
+  }
+
   /// The board as it was before practice, put back when practice ends.
   SavedBoard? _beforePractice;
 
   /// The first time this board opens, the tour starts by itself.
   Future<void> _firstRunTour() async {
+    if (Edition.classroom) return _ceFirstRun();
     if (!BoardTour.autoStart || await BoardTour.seen() || !mounted) return;
     await BoardTour.markSeen();
     if (mounted) await _startTour();
@@ -1347,6 +1519,19 @@ class _BoardScreenState extends State<BoardScreen> {
 
   void _openHelp() {
     final phone = context.isPhone;
+    if (Edition.classroom) {
+      setState(() => _popover = null);
+      unawaited(
+        HelpSheet.show(
+          context,
+          canShow: (k) => false,
+          onShowMe: (_) {},
+          onTour: () => _ceTour(practice: true, stay: false),
+          onPractice: _cePractice ? null : () => _ceTour(practice: true, stay: true),
+        ),
+      );
+      return;
+    }
     // The controls on screen now (the profile button is under the menu that opened help).
     final onScreen = {
       const Key('profile-button'),
@@ -1504,7 +1689,7 @@ class _BoardScreenState extends State<BoardScreen> {
       // Class
       for (final t in ToolkitItem.values) DrawerTool('toolkit-${t.name}', toolkitIcon(t), toolkitName(l, t), [ToolGroup.classroom], toolkitColor(t), () => _showKit(t)),
       DrawerTool('badges', Icons.emoji_events_outlined, s.badges, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.badges))),
-      DrawerTool('quick-quiz', Icons.quiz_outlined, s.quickQuiz, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.quiz))),
+      if (Edition.ai) DrawerTool('quick-quiz', Icons.quiz_outlined, s.quickQuiz, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.quiz))),
       DrawerTool('ask-class', Icons.how_to_vote_outlined, l.toolAskClass, [ToolGroup.classroom], cls, _run(() => unawaited(_classCheck.ask(context)))),
       DrawerTool('attendance', Icons.how_to_reg_outlined, l.toolAttendance, [ToolGroup.classroom], cls, _run(_attendance)),
       DrawerTool('todays-plan', Icons.event_note_outlined, l.toolTodaysPlan, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.plan))),
@@ -1636,7 +1821,7 @@ class _BoardScreenState extends State<BoardScreen> {
         LogicalKeyboardKey.keyH when !_primary => done(() => _wb.tool = BoardTool.hand),
         LogicalKeyboardKey.keyP => done(() => _wb.tool = BoardTool.pen),
         LogicalKeyboardKey.keyI => done(() => _wb.tool = BoardTool.highlighter),
-        LogicalKeyboardKey.keyW when !_primary => done(() => _wb.tool = BoardTool.aiPen),
+        LogicalKeyboardKey.keyW when !_primary && Edition.ai => done(() => _wb.tool = BoardTool.aiPen),
         LogicalKeyboardKey.keyE => done(() => _wb.tool = BoardTool.eraser),
         LogicalKeyboardKey.keyT => done(() => _wb.tool = BoardTool.text),
         LogicalKeyboardKey.keyS => done(() => _wb.tool = BoardTool.shape),
@@ -1645,7 +1830,7 @@ class _BoardScreenState extends State<BoardScreen> {
         LogicalKeyboardKey.keyL when !_primary => done(() => _wb.tool = BoardTool.laser),
         LogicalKeyboardKey.keyC => done(() => _wb.tool = BoardTool.compass),
         LogicalKeyboardKey.keyR => done(_wb.toggleRuler),
-        LogicalKeyboardKey.keyA when !_primary => done(() => _openPanel(PanelKind.ai)),
+        LogicalKeyboardKey.keyA when !_primary && Edition.ai => done(() => _openPanel(PanelKind.ai)),
         _ => false,
       },
       _ => false,
@@ -1714,6 +1899,8 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   PanelTab? get _panelTab => switch (_panel) {
+    PanelKind.lessons => PanelTab.lessons,
+    PanelKind.classTools => PanelTab.classTools,
     PanelKind.ai || PanelKind.quiz || PanelKind.homework => PanelTab.ai,
     PanelKind.split => switch (_splitContent) {
       SplitContent.model3d => PanelTab.model3d,
@@ -1735,6 +1922,11 @@ class _BoardScreenState extends State<BoardScreen> {
   void _openTab(PanelTab t) {
     _popHosted();
     switch (t) {
+      case PanelTab.lessons:
+        _show(PanelKind.lessons);
+      case PanelTab.classTools:
+        _ceTool = null;
+        _show(PanelKind.classTools);
       case PanelTab.ai:
         _openAi(AiView.home);
       case PanelTab.model3d:
@@ -1787,6 +1979,8 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   Widget _panelContent() => switch (_panel!) {
+    PanelKind.lessons => LessonsPanel(host: _ceHost),
+    PanelKind.classTools => ClassToolsHub(key: ValueKey('class-tools-$_ceTool'), host: _ceHost, initialTool: _ceTool),
     PanelKind.ai => AiPanel(ai: _ai),
     PanelKind.books => BooksPanel(
       key: ValueKey(_booksTopic),
@@ -1882,7 +2076,8 @@ class _BoardScreenState extends State<BoardScreen> {
           labels: _canvasLabels(context.l10n),
         ),
       ),
-      Positioned.fill(
+      if (Edition.ai)
+        Positioned.fill(
         child: BoardChromeTheme(
           child: AiPenOverlay(wb: _secondWb, pen: _secondPen, onSolve: _solveMath, onMessage: (m) => showBoardMessage(context, m)),
         ),
@@ -1960,6 +2155,19 @@ class _BoardScreenState extends State<BoardScreen> {
                       ),
                     ),
                   if (_touchLocked) Positioned.fill(child: BoardChromeTheme(child: TouchLockOverlay(onUnlock: () => setState(() => _touchLocked = false)))),
+                  // Classroom edition: the practice board's banner, and the tour or "Show me".
+                  if (_cePractice && _ceCoach == null) Positioned(top: 96, left: 0, right: 0, child: Center(child: CePracticeBanner(onEnd: _ceEndPractice))),
+                  if (_ceCoach case final steps?)
+                    Positioned.fill(
+                      child: CeCoach(
+                        key: ValueKey(steps),
+                        steps: steps,
+                        boardContext: context,
+                        practice: _ceCoachPractice,
+                        finishLabel: steps.length > 1 ? 'Start teaching' : 'Got it',
+                        onDone: (_) => _ceCoachDone(),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -1988,7 +2196,8 @@ class _BoardScreenState extends State<BoardScreen> {
           left: 0,
           top: 0,
           bottom: 0,
-          width: w,
+          // The Classroom edition keeps the whole board in view beside the panel.
+          width: Edition.classroom && open && !sheet && !full ? math.max(0.0, w * (1 - fraction) - panelDividerWidth) : w,
           child: LayoutBuilder(
             builder: (context, area) {
               _canvasSize = area.biggest;
@@ -2068,17 +2277,19 @@ class _BoardScreenState extends State<BoardScreen> {
               box: box,
               onOpenLink: _openLink,
               onEdit: _editElement,
-              onAskAi: _readSelectionWithAi,
-              onSolve: _solveMath,
-              onConvertInk: primary ? null : () => unawaited(_convertSelection()),
-              onReadings: (e) => _pen.conversions.containsKey(e.id) ? () => _pen.inspecting.value = e.id : null,
+              // No AI in the Classroom edition: no "Read with AI", solver, conversion or readings.
+              onAskAi: Edition.ai ? _readSelectionWithAi : null,
+              onSolve: Edition.ai ? _solveMath : null,
+              onConvertInk: primary || !Edition.ai ? null : () => unawaited(_convertSelection()),
+              onReadings: (e) => Edition.ai && _pen.conversions.containsKey(e.id) ? () => _pen.inspecting.value = e.id : null,
               onReadAloud: readableElements(_wb.selectedElements).isEmpty ? null : _readPage,
               onMeasureUnit: board.setMeasureUnit,
             ),
           ),
         ),
         // The AI pen's Convert button and its readings of what it converted.
-        Positioned.fill(
+        if (Edition.ai)
+          Positioned.fill(
           child: BoardChromeTheme(
             child: AiPenOverlay(wb: _wb, pen: _pen, onSolve: _solveMath, onMessage: (m) => showBoardMessage(context, m)),
           ),
@@ -2154,8 +2365,9 @@ class _BoardScreenState extends State<BoardScreen> {
     dock: dock,
     collapsed: collapsed,
     items: () => _layoutItems(phone: false),
-    onMore: () => _openMore(const [], phone: false),
-    onEdit: () => unawaited(_editToolbar()),
+    onMore: _ceSimple ? null : () => _openMore(const [], phone: false),
+    onEdit: _ceSimple ? null : () => unawaited(_editToolbar()),
+    canCollapse: !_ceSimple,
     onCollapse: (v) {
       setState(() => _popover = null);
       board.setToolbarCollapsed(v);
@@ -2203,7 +2415,7 @@ class _BoardScreenState extends State<BoardScreen> {
         selected: tool == BoardTool.pen || tool == BoardTool.laser || (_popover == BoardPopover.pen && tool != BoardTool.aiPen),
         color: tool == BoardTool.pen ? inkColorFor(_wb.penColor.withValues(alpha: 1), chromePaper) : null,
       ),
-      if (!_primary)
+      if (!_primary && Edition.ai)
         'ai-pen': BarItem(
           const Key('tool-ai-pen'),
           aiPenIcon,
@@ -2253,7 +2465,8 @@ class _BoardScreenState extends State<BoardScreen> {
       'labs': BarItem(const Key('tbar-labs'), Icons.biotech_outlined, s.tabLabs, _run(() => _openSplit(SplitContent.lab)), color: ToolPalette.science),
       'sims': BarItem(const Key('tbar-sims'), Icons.science, l.simTitle, _run(() => unawaited(_openSim())), color: ToolPalette.science),
       'animations': BarItem(const Key('tbar-animations'), Icons.animation, s.tabAnimations, _run(() => _show(PanelKind.animations)), color: ToolPalette.science),
-      'ai': BarItem(
+      if (Edition.ai)
+        'ai': BarItem(
         const Key('panel-ai'),
         Icons.auto_awesome,
         s.kinetixAi,
@@ -2262,6 +2475,12 @@ class _BoardScreenState extends State<BoardScreen> {
         color: const Color(0xFF835400),
         accent: const Color(0xFF835400),
       ),
+      if (Edition.classroom) ...{
+        'colours': BarItem(const Key('ce-colours'), Icons.palette_outlined, 'Colours', () => _toggle(BoardPopover.pen), selected: _popover == BoardPopover.pen, color: const Color(0xFFBE185D)),
+        'lessons': BarItem(const Key('ce-lessons'), Icons.auto_stories_outlined, 'Lessons', () => _panel == PanelKind.lessons ? _closePanel() : _show(PanelKind.lessons), selected: _panel == PanelKind.lessons, color: const Color(0xFF13165A)),
+        'class-tools': BarItem(const Key('ce-class-tools'), Icons.school_outlined, 'Class tools', _run(_openClassroomApps), selected: _panel == PanelKind.classTools, color: const Color(0xFF7C3AED)),
+        if (_ceSimple) 'show-all': BarItem(const Key('ce-show-all'), Icons.apps_rounded, 'Show all tools', () => _ceSetSimple(false)) else 'simple': BarItem(const Key('ce-simple'), Icons.crop_square_rounded, 'Simple board', () => _ceSetSimple(true)),
+      },
       'search': BarItem(const Key('tbar-search'), Icons.search, ts.search, _run(_openSearch)),
       'record': BarItem(const Key('tbar-record'), _capture == null ? Icons.fiber_manual_record_outlined : Icons.stop_circle_outlined, ts.record, _run(() => unawaited(_toggleRecording())), selected: _capture != null),
       'eye-comfort': BarItem(const Key('tbar-eye-comfort'), Icons.visibility_outlined, l.toolEyeComfort, () => setState(() => _popover = BoardPopover.eyeComfort), color: ToolPalette.classroom),
@@ -2278,12 +2497,16 @@ class _BoardScreenState extends State<BoardScreen> {
   static const _drawerOnCatalog = {'calibrate', 'ruler', 'protractor', 'calculator', 'sims', 'labs', 'models3d', 'laser', 'move', 'eye-comfort', 'screenshot', 'toolkit-timer', 'toolkit-stopwatch', 'toolkit-picker', 'toolkit-spotlight'};
 
   /// The ids on the bar for a phone or a panel: the teacher's own, or the default.
-  List<String> _layoutIds({required bool phone, Map<String, BarItem>? catalog}) => ToolbarLayouts.clean(
-    phone ? board.toolbarPhone : board.toolbarPanel,
-    (catalog ?? _catalog()).keys,
-    max: ToolbarLayouts.maxFor(phone: phone),
-    fallback: ToolbarLayouts.defaults(phone: phone, primary: _primary),
-  );
+  List<String> _layoutIds({required bool phone, Map<String, BarItem>? catalog}) {
+    // The Classroom edition's Simple board always shows its seven big tools.
+    if (_ceSimple) return ToolbarLayouts.classroomDefaults(simple: true);
+    return ToolbarLayouts.clean(
+      phone ? board.toolbarPhone : board.toolbarPanel,
+      (catalog ?? _catalog()).keys,
+      max: ToolbarLayouts.maxFor(phone: phone),
+      fallback: Edition.classroom ? ToolbarLayouts.classroomDefaults(simple: false).take(ToolbarLayouts.maxFor(phone: phone)).toList() : ToolbarLayouts.defaults(phone: phone, primary: _primary),
+    );
+  }
 
   /// The tools on the bar, in order.
   List<(String, BarItem)> _layoutItems({required bool phone}) {
@@ -2322,7 +2545,8 @@ class _BoardScreenState extends State<BoardScreen> {
     // The board's own width: narrower beside the split panel.
     final width = _canvasSize.width;
     final recording = _recordingIndicator();
-    Widget themed(Widget child) => BoardChromeTheme(child: ToolbarDensity(compact: compact && !_primary, big: _primary, child: child));
+    final simple = _ceSimple;
+    Widget themed(Widget child) => BoardChromeTheme(child: ToolbarDensity(compact: compact && !_primary && !simple, big: _primary || simple, child: child));
     final drag = _toolbarDrag ?? Offset.zero;
     final toolbar = Transform.translate(offset: drag, child: themed(_toolbar(dock, collapsed)));
     // The corners' room at the bottom: the toolbar sits between them when it fits, else above.
@@ -2338,7 +2562,7 @@ class _BoardScreenState extends State<BoardScreen> {
       onWhatsApp: () => unawaited(_shareWhiteboard()),
       onEndClass: () => unawaited(_endClass()),
     );
-    final toolbarW = collapsed ? 240.0 : (_primary ? 1040.0 : (compact ? 840.0 : 1040.0));
+    final toolbarW = collapsed ? 240.0 : (simple ? 720.0 : (_primary ? 1040.0 : (compact ? 840.0 : 1040.0)));
     // Too wide for the room between the corners (a tablet, a laptop, a board beside the panel):
     // up one row, between the quick group and Hide/Switch that sit over the corners, when it
     // fits there at three quarters of its size or more; else above them too.
@@ -2378,7 +2602,7 @@ class _BoardScreenState extends State<BoardScreen> {
           left: swapped ? null : Kx.s12,
           right: swapped ? Kx.s12 : null,
           bottom: Kx.s12,
-          child: themed(MenuRecordBar(onMenu: () => _toggle(BoardPopover.menu), menuOpen: _popover == BoardPopover.menu, onRecord: _toggleRecording, recording: recording, quick: quick)),
+          child: themed(MenuRecordBar(onMenu: () => _toggle(BoardPopover.menu), menuOpen: _popover == BoardPopover.menu, onRecord: _toggleRecording, recording: recording, quick: simple ? null : quick)),
         ),
         Positioned(
           right: swapped ? null : Kx.s12,
@@ -2389,14 +2613,24 @@ class _BoardScreenState extends State<BoardScreen> {
               wb: _wb,
               onOverview: () => _toggle(BoardPopover.pages),
               overviewOpen: _popover == BoardPopover.pages,
-              onHide: () => setState(() {
-                _popover = null;
-                _uiHidden = true;
-              }),
-              onSwitch: _switchSides,
+              onHide: simple
+                  ? null
+                  : () => setState(() {
+                      _popover = null;
+                      _uiHidden = true;
+                    }),
+              onSwitch: simple ? null : _switchSides,
             ),
           ),
         ),
+        // "What do I do now?" above the Simple board's toolbar.
+        if (simple && _ceCoach == null && _popover == null && dock == ToolbarDock.bottom)
+          Positioned(
+            left: Kx.s12,
+            right: Kx.s12,
+            bottom: Kx.s12 + _toolbarLift + 112,
+            child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: _ceWhatNow())),
+          ),
         if (dock == ToolbarDock.bottom)
           Positioned(left: barLeft, right: barRight, bottom: Kx.s12 + _toolbarLift, child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: toolbar)))
         else
@@ -2512,6 +2746,11 @@ class _BoardScreenState extends State<BoardScreen> {
       (const Key('tool-theme'), Icons.texture, s.background, () => setState(() => _popover = BoardPopover.background), true),
       (const Key('menu-eye-comfort'), Icons.visibility_outlined, l.toolEyeComfort, () => setState(() => _popover = BoardPopover.eyeComfort), true),
       (const Key('menu-settings'), Icons.settings_outlined, l.boardSettings, _openSettings, true),
+      if (Edition.classroom) ...[
+        (const Key('menu-college-settings'), Icons.admin_panel_settings_outlined, 'College settings', () => unawaited(_ceCollegeSettings()), true),
+        (const Key('menu-simple-board'), _ceSimple ? Icons.apps_rounded : Icons.crop_square_rounded, _ceSimple ? 'Show all tools' : 'Simple board', () => _ceSetSimple(!_ceSimple), true),
+        (const Key('menu-tour'), Icons.tour_outlined, 'Guided tour', () => _ceTour(practice: true, stay: false), true),
+      ],
       (
         const Key('menu-preview'),
         board.panelPreview ? Icons.close_fullscreen : Icons.aspect_ratio,
@@ -2584,17 +2823,36 @@ class _BoardScreenState extends State<BoardScreen> {
   /// Classroom Apps (spec §33), each opening the board's own feature.
   void _openClassroomApps() {
     final s = SbStrings.of(context);
+    if (Edition.classroom) {
+      unawaited(
+        showClassroomApps(
+          context,
+          header: (ctx) => classToolsHeader(ctx, onTool: _openClassTools),
+          appsTitle: 'Classroom',
+          apps: [
+            ('lessons', Icons.auto_stories_outlined, 'Lessons', () => _show(PanelKind.lessons)),
+            ('study-material', Icons.library_books_outlined, s('appStudyMaterial'), _openSearch),
+            if (!board.localClass && board.isSignedIn) ('live-class', Icons.sensors, s('appLiveClass'), () => unawaited(toggleClassLive(context, board))),
+            ('attendance', Icons.how_to_reg_outlined, s('appAttendance'), _attendance),
+            ('recordings', Icons.video_library_outlined, s('appRecordings'), _openRecordings),
+            ('books', Icons.menu_book_outlined, s('appBooks'), () => _openPanel(PanelKind.books)),
+          ],
+          others: const [],
+        ),
+      );
+      return;
+    }
     unawaited(showClassroomApps(
       context,
       apps: [
         ('study-material', Icons.library_books_outlined, s('appStudyMaterial'), _openSearch),
         ('live-class', Icons.sensors, s('appLiveClass'), () => unawaited(toggleClassLive(context, board))),
-        ('homework', Icons.assignment_outlined, s('appHomework'), () => _openAi(AiView.homework)),
+        if (Edition.ai) ('homework', Icons.assignment_outlined, s('appHomework'), () => _openAi(AiView.homework)),
         ('lessons', Icons.event_note_outlined, s('appLessons'), () => _runDrawerTool('todays-plan')),
         ('attendance', Icons.how_to_reg_outlined, s('appAttendance'), _attendance),
-        ('class-prep', Icons.co_present_outlined, s('appClassPrep'), () => _openAi(AiView.lessonPlan)),
+        if (Edition.ai) ('class-prep', Icons.co_present_outlined, s('appClassPrep'), () => _openAi(AiView.lessonPlan)),
         ('students', Icons.groups_outlined, s('appStudents'), () => _runDrawerTool('ask-class')),
-        ('tests', Icons.quiz_outlined, s('appTests'), () => _openAi(AiView.quiz)),
+        if (Edition.ai) ('tests', Icons.quiz_outlined, s('appTests'), () => _openAi(AiView.quiz)),
         ('recordings', Icons.video_library_outlined, s('appRecordings'), _openRecordings),
         ('books', Icons.menu_book_outlined, s('appBooks'), () => _openPanel(PanelKind.books)),
       ],

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import '../../../classroom_edition/edition.dart';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -56,6 +57,7 @@ class MainToolbar extends StatelessWidget {
     required this.onCollapse,
     this.onMore,
     this.onEdit,
+    this.canCollapse = true,
     this.onDragStart,
     this.onDragUpdate,
     this.onDragEnd,
@@ -72,6 +74,9 @@ class MainToolbar extends StatelessWidget {
 
   /// ⋯: the tools not on the bar (null when every tool is on it).
   final VoidCallback? onMore;
+
+  /// Whether the bar offers to fold away (not on the Classroom edition's Simple board).
+  final bool canCollapse;
 
   /// Edit toolbar (a long press on the grip or the bar).
   final VoidCallback? onEdit;
@@ -164,7 +169,7 @@ class MainToolbar extends StatelessWidget {
           }
         }
         if (onMore != null) children.add(ToolButton(key: const Key('toolbar-more'), icon: Icons.more_horiz, label: s.more, onTap: onMore));
-        children.add(ToolButton(key: const Key('toolbar-collapse'), icon: vertical ? Icons.unfold_less : Icons.expand_more, label: s.collapse, onTap: () => onCollapse(true)));
+        if (canCollapse) children.add(ToolButton(key: const Key('toolbar-collapse'), icon: vertical ? Icons.unfold_less : Icons.expand_more, label: s.collapse, onTap: () => onCollapse(true)));
         return surface(children);
       },
     );
@@ -349,8 +354,8 @@ class _ClassBarState extends State<ClassBar> {
                       child: Chip(key: const Key('being-viewed'), avatar: const Icon(Icons.visibility_outlined, size: 18), label: Text(l.beingViewed(board.liveLeaders))),
                     ),
                   ],
-                  gap,
-                  GoLiveChip(board: board),
+                  // A local class (Classroom edition) has no server for phones to watch it on.
+                  if (!board.localClass) ...[gap, GoLiveChip(board: board)],
                   gap,
                   ActionChip(
                     key: const Key('attendance-chip'),
@@ -368,12 +373,11 @@ class _ClassBarState extends State<ClassBar> {
                     gap,
                     Chip(key: const Key('period-left'), avatar: const Icon(Icons.hourglass_bottom, size: 18), label: Text(ls.minutesLeft(left))),
                   ],
-                  gap,
-                  ClassAudioButton(board: board),
+                  if (!board.localClass) ...[gap, ClassAudioButton(board: board)],
                 ],
               ],
               if (s == null && widget.contextChip != null) ...[gap, widget.contextChip!],
-              if (Demo.enabled) ...[gap, const DemoChip()],
+              if (Demo.enabled && !Edition.classroom) ...[gap, const DemoChip()],
               // Privacy: whenever the microphone is going out to the class, the teacher sees it.
               if (board.classAudio.sending) ...[
                 gap,
@@ -692,7 +696,7 @@ class PageBar extends StatelessWidget {
                 ),
               ),
               button(const Key('next-page'), Icons.chevron_right, l.toolNext, wb.hasNext ? wb.next : null),
-              button(const Key('add-page'), Icons.add, wb.canAddPage ? s.addPage : SbStrings.of(context)('addPageBlank'), wb.canAddPage ? wb.addPage : null),
+              button(const Key('add-page'), Icons.add, wb.canAddPage || Edition.classroom ? s.addPage : SbStrings.of(context)('addPageBlank'), wb.canAddPage ? wb.addPage : null),
               button(const Key('page-overview'), Icons.grid_view, s.pageOverview, onOverview, selected: overviewOpen),
             ],
           ),

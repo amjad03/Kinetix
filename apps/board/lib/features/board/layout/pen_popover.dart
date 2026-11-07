@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../../../classroom_edition/edition.dart';
 import '../pen_config/pen_config_screen.dart';
 import '../pen_config/pen_config_strings.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
@@ -149,7 +150,7 @@ class _PenPopoverState extends State<PenPopover> {
       builder: (context, _) {
         final types = [
           for (final t in PenType.values)
-            if (!widget.primary || (t != PenType.aiPen && t != PenType.laser)) t,
+            if ((!widget.primary || (t != PenType.aiPen && t != PenType.laser)) && (t != PenType.aiPen || Edition.ai)) t,
         ];
         final palette = _hl ? highlighterPalette : inkPalette;
         final opaque = _colour.withValues(alpha: 1);
@@ -338,7 +339,7 @@ class _PenPopoverState extends State<PenPopover> {
                   ),
                 ),
               ],
-              if (wb.tool == BoardTool.pen) SnapShapesSwitch(board: board),
+              if (wb.tool == BoardTool.pen && Edition.ai) SnapShapesSwitch(board: board),
             ],
           ),
         );

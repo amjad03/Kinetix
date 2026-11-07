@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../../classroom_edition/edition.dart';
 import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -291,8 +292,10 @@ List<CoachStep> boardTourSteps(AppLocalizations l) => [
   CoachStep(target: const Key('tool-erase'), icon: Icons.auto_fix_normal, title: l.tourEraseTitle, body: l.tourEraseBody),
   CoachStep(target: const Key('tool-insert'), icon: Icons.add, title: l.tourInsertTitle, body: l.tourInsertBody),
   CoachStep(target: const Key('tool-tools'), icon: Icons.work_outline, title: l.tourToolsTitle, body: l.tourToolsBody),
-  CoachStep(target: const Key('panel-ai'), icon: Icons.auto_awesome, title: l.tourAiTitle, body: l.tourAiBody),
-  CoachStep(target: const Key('panel-ai'), icon: Icons.menu_book, title: l.tourBooksTitle, body: l.tourBooksBody),
+  if (Edition.ai) ...[
+    CoachStep(target: const Key('panel-ai'), icon: Icons.auto_awesome, title: l.tourAiTitle, body: l.tourAiBody),
+    CoachStep(target: const Key('panel-ai'), icon: Icons.menu_book, title: l.tourBooksTitle, body: l.tourBooksBody),
+  ],
   CoachStep(target: const Key('next-page'), icon: Icons.auto_stories_outlined, title: l.tourPagesTitle, body: l.tourPagesBody),
   CoachStep(target: const Key('record'), icon: Icons.fiber_manual_record, title: l.tourRecordTitle, body: l.tourRecordBody),
   CoachStep(target: const Key('profile-button'), icon: Icons.help_outline, title: l.tourHelpTitle, body: l.tourHelpBody),

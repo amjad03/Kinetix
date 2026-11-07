@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../classroom_edition/edition.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 import '../../core/board_controller.dart';
@@ -201,7 +202,7 @@ List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required
     // Classroom
     DrawerTool('doc-camera', Icons.document_scanner_outlined, s['docCamera'], const [ToolGroup.classroom, ToolGroup.science], media, () => run(h.openCamera)),
     DrawerTool('safe-web', Icons.travel_explore, s['safeWeb'], const [ToolGroup.classroom], media, () => run(h.openWeb)),
-    DrawerTool('live-captions', Icons.closed_caption_outlined, s['captions'], const [ToolGroup.classroom, ToolGroup.language], media, () => run(() => unawaited(LiveCaptions.toggle(context)))),
+    if (Edition.ai) DrawerTool('live-captions', Icons.closed_caption_outlined, s['captions'], const [ToolGroup.classroom, ToolGroup.language], media, () => run(() => unawaited(LiveCaptions.toggle(context)))),
     DrawerTool('magnifier', Icons.zoom_in, s['magnifier'], const [ToolGroup.classroom], cls, () => run(() => BoardMagnifier.toggle(context))),
     DrawerTool('seating-chart', Icons.event_seat_outlined, s['seating'], const [ToolGroup.classroom], cls, page('seating', Icons.event_seat_outlined, (_) => SeatingChartPanel(board: h.board, wb: h.wb))),
     DrawerTool('group-maker', Icons.diversity_3_outlined, s['groups'], const [ToolGroup.classroom], cls, page('groups', Icons.diversity_3_outlined, (_) => GroupMakerPanel(board: h.board, wb: h.wb))),
@@ -224,7 +225,8 @@ List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required
     // Assessment
     DrawerTool('exam-room', Icons.meeting_room_outlined, examRoomStrings(context)['title'], const [ToolGroup.classroom], assess, () => run(() => h.openPage(examRoomStrings(context)['title'], Icons.meeting_room_outlined, (_) => ExamRoomPanel(board: h.board)))),
     DrawerTool('exit-ticket', Icons.logout, s['exitTicket'], const [ToolGroup.classroom], assess, page('exitTicket', Icons.logout, (_) => ExitTicketPanel(board: h.board, wb: h.wb))),
-    DrawerTool(
+    if (Edition.ai)
+      DrawerTool(
       'worksheet',
       Icons.assignment_outlined,
       s['worksheet'],

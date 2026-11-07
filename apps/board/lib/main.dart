@@ -3,9 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:kinetix_3d/kinetix_3d.dart' show RemoteModels;
+import 'package:kinetix_ink/kinetix_ink.dart' show flowSuggestionsEnabled;
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'classroom_edition/edition.dart';
+import 'classroom_edition/start/classroom_start.dart';
+import 'classroom_edition/ui/phone_fit.dart';
 import 'core/api_client.dart';
 import 'core/board_controller.dart';
 import 'core/outbox_store.dart';
@@ -82,11 +86,13 @@ class KinetixBoardApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // No AI in the Classroom edition, flowchart suggestions included (classroom_edition/).
+    flowSuggestionsEnabled = Edition.ai;
     // The board's language: its own setting, or the signed-in teacher's while they teach.
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) => MaterialApp(
-        title: 'KINETIX Board',
+        title: Edition.appName,
         debugShowCheckedModeBanner: false,
         theme: KinetixTheme.light(),
         locale: controller.language.locale,
@@ -98,7 +104,10 @@ class KinetixBoardApp extends StatelessWidget {
             // The teacher's App theme, whatever the device or the layout.
             final look = controller.theme.resolve(MediaQuery.platformBrightnessOf(context));
             // Preview as interactive panel: the whole app as a 1920 × 1080 panel shows it.
-            return PanelPreview(
+            // Classroom edition on a phone: the board's 1920 × 1080 layout, scaled to fit.
+            return CePhoneFit(
+              enabled: Edition.classroom && !controller.panelPreview,
+              child: PanelPreview(
               enabled: controller.panelPreview,
               onExit: () => controller.setPanelPreview(false),
               child: BoardLook(
@@ -115,6 +124,7 @@ class KinetixBoardApp extends StatelessWidget {
                   ),
                 ),
               ),
+              ),
             );
           },
         ),
@@ -122,7 +132,9 @@ class KinetixBoardApp extends StatelessWidget {
           listenable: controller,
           builder: (context, _) => switch (controller.stage) {
             BoardStage.loading => const Scaffold(body: Center(child: CircularProgressIndicator())),
-            BoardStage.needsEnrollment => EnrollScreen(controller: controller),
+            // The Classroom edition starts offline, from the board's own timetable; pairing
+            // with the ERP (the enrolment screen) is a link on its start screen.
+            BoardStage.needsEnrollment => Edition.classroom ? ClassroomStart(board: controller) : EnrollScreen(controller: controller),
             // Concept videos are suggested over the board when a period starts.
             // The lock screen and PIN offer of shared-board profiles go over it (features/profiles).
             BoardStage.board => ConceptVideoSuggestions(

@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show SystemNavigator;
 import 'package:intl/intl.dart';
 
+import '../classroom_edition/edition.dart';
+import '../classroom_edition/local/classroom_store.dart';
 import '../features/board/kit/subjects.dart';
 import '../features/comfort/eye_comfort.dart';
 import '../features/profiles/profiles_controller.dart';
@@ -91,6 +93,7 @@ class BoardController extends ChangeNotifier {
       _realtimeFactory = realtimeFactory ?? Realtime.new,
       recordings = recordings ?? Recordings() {
     this.kiosk = kiosk ?? KioskController(store: _store);
+    classroom = ClassroomStore(store: _store);
     profiles = ProfilesController(board: this, store: _store, secrets: profileSecrets);
     this.projector = projector ?? ProjectorController(store: _store);
     this.recordings.attach(api: () => api, session: () => session);
@@ -133,6 +136,14 @@ class BoardController extends ChangeNotifier {
   /// Projector mode: the board on a second screen for the class (features/projector).
   late final ProjectorController projector;
 
+  /// The Classroom edition's teachers, classes and timetable kept on this board
+  /// (classroom_edition/local). Loaded on [start] in that edition.
+  late final ClassroomStore classroom;
+
+  /// A class opened from the board's own timetable (Classroom edition, no server): the session
+  /// is local, the roster is roll numbers and nothing goes to a server.
+  bool localClass = false;
+
   /// A demo build (no institution: kiosk mode is never forced on).
   bool _demo = false;
 
@@ -148,6 +159,9 @@ class BoardController extends ChangeNotifier {
   final Recordings recordings;
 
   BoardStage stage = BoardStage.loading;
+
+  /// The board's settings store (the Classroom edition keeps its college data in it too).
+  DeviceStore get deviceStore => _store;
   ApiClient? api;
   Realtime? _realtime;
   String? deviceName;
@@ -406,6 +420,7 @@ class BoardController extends ChangeNotifier {
       debugPrint('Device store unreadable: $e');
     }
     await _loadSettings();
+    if (Edition.classroom) await classroom.load();
     deviceLocked = (await _store.setting(_lockedKey).catchError((Object _) => null)) == 'true';
     // The policy this board last had from its institution, until it hears a newer one.
     unawaited(kiosk.start());
@@ -594,6 +609,27 @@ class BoardController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Classroom edition: opens a class from the board's own timetable without any server — the
+  /// teacher, class and subject in [ctx] and the class's roll numbers as its roster. Ending the
+  /// class ([endClass]) goes back to the start screen.
+  void startLocalClass(SessionContext ctx, List<Student> roster) {
+    localClass = true;
+    stage = BoardStage.board;
+    onPaired('', ctx);
+    this.roster = roster;
+    notifyListeners();
+  }
+
+  /// Classroom edition: back to the start screen without a class (the practice board ends,
+  /// a teacher picks another class).
+  void showClassroomStart() {
+    if (session != null) _signOut();
+    localClass = false;
+    classroom.endClass();
+    stage = BoardStage.needsEnrollment;
+    notifyListeners();
+  }
+
   /// Use the board without registering it (practice, demos). Sign-in is unavailable.
   void skipEnrollment() {
     stage = BoardStage.board;
@@ -619,6 +655,8 @@ class BoardController extends ChangeNotifier {
     }
     buzzerState.value = null;
     _signOut();
+    // A local class (Classroom edition) ends back on the start screen.
+    if (localClass) showClassroomStart();
     return result;
   }
 
@@ -799,6 +837,7 @@ class BoardController extends ChangeNotifier {
 
   void _enqueue(String type, Map<String, dynamic> payload) {
     if (session == null) return; // guest boards do not record anything
+    if (localClass) return; // a local class has no server to send it to
     _outbox.add({
       'opId': _uuidV4(),
       'type': type,
@@ -1031,6 +1070,7 @@ class BoardController extends ChangeNotifier {
   }
 
   Future<void> _loadRoster() async {
+    if (localClass) return; // roll numbers from the board's own classes
     try {
       roster = await api!.roster();
       notifyListeners();

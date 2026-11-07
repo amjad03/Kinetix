@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
+import '../../classroom_edition/edition.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/board_controller.dart';
@@ -25,6 +26,9 @@ const boardReleaseNotes = <(String, List<String>)>[
     ],
   ),
 ];
+
+/// A release note about an AI feature (left out of the Classroom edition's What's New).
+bool isAiNote(String n) => RegExp(r'\bAI\b|Smart Tools').hasMatch(n);
 
 /// Schedule a Training: the institution's training link as a QR (scan with a phone), its
 /// contact, and the board's own guided tour and practice board.
@@ -110,7 +114,8 @@ Future<void> showWhatsNewDialog(BuildContext context, BoardController board) {
             ],
             for (final (version, notes) in boardReleaseNotes) ...[
               Text('${s('inThisVersion')} $version', style: ctx.text.titleSmall),
-              for (final n in notes) ListTile(dense: true, leading: const Icon(Icons.auto_awesome, size: 20), title: Text(n)),
+              for (final n in notes)
+                if (Edition.ai || !isAiNote(n)) ListTile(dense: true, leading: const Icon(Icons.new_releases_outlined, size: 20), title: Text(n)),
             ],
           ],
         ),

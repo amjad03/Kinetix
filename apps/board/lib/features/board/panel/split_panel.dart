@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
+import '../../../classroom_edition/edition.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
@@ -10,10 +11,20 @@ import '../../phet/phet_strings.dart';
 import '../layout/layout_strings.dart';
 
 /// The split panel's tabs (docs/design/board-wireframes.html, screen 3).
-enum PanelTab { ai, model3d, labs, videos, books, kit, animations, sims, camera, web, cast }
+enum PanelTab { lessons, classTools, ai, model3d, labs, videos, books, kit, animations, sims, camera, web, cast }
 
 extension PanelTabInfo on PanelTab {
+  /// Whether this edition shows the tab: Lessons and Class tools only in the Classroom
+  /// edition, KINETIX AI only outside it.
+  bool get shown => switch (this) {
+    PanelTab.lessons || PanelTab.classTools => Edition.classroom,
+    PanelTab.ai => Edition.ai,
+    _ => true,
+  };
+
   String label(LayoutStrings s) => switch (this) {
+    PanelTab.lessons => 'Lessons',
+    PanelTab.classTools => 'Class tools',
     PanelTab.ai => s.tabAi,
     PanelTab.model3d => s.tab3d,
     PanelTab.labs => s.tabLabs,
@@ -28,6 +39,8 @@ extension PanelTabInfo on PanelTab {
   };
 
   IconData get icon => switch (this) {
+    PanelTab.lessons => Icons.auto_stories_outlined,
+    PanelTab.classTools => Icons.school_outlined,
     PanelTab.ai => Icons.auto_awesome,
     PanelTab.model3d => Icons.view_in_ar_outlined,
     PanelTab.labs => Icons.science_outlined,
@@ -106,6 +119,7 @@ class SplitPanelFrame extends StatelessWidget {
                 child: Row(
                   children: [
                     for (final t in PanelTab.values)
+                      if (t.shown)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 2),
                         child: ChoiceChip(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../classroom_edition/edition.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/api_client.dart';
@@ -415,7 +416,7 @@ class _BooksPanelState extends State<BooksPanel> {
               spacing: Kx.s8,
               runSpacing: Kx.s8,
               children: [
-                FilledButton.tonalIcon(
+                if (Edition.ai) FilledButton.tonalIcon(
                   key: const Key('topic-explain'),
                   onPressed: widget.ai.canUseAi
                       ? () {
@@ -427,7 +428,7 @@ class _BooksPanelState extends State<BooksPanel> {
                   icon: const Icon(Icons.auto_awesome),
                   label: Text(l.booksExplain),
                 ),
-                OutlinedButton.icon(
+                if (Edition.ai) OutlinedButton.icon(
                   key: const Key('topic-quiz'),
                   onPressed: widget.ai.canUseAi
                       ? () {

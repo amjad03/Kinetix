@@ -112,7 +112,7 @@ class FlowPalette extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (from != FlowBlock.topic) ...[
+              if (from != FlowBlock.topic && flowSuggestionsEnabled) ...[
                 Text(s.t('suggestedNext'), style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 10),
                 Wrap(

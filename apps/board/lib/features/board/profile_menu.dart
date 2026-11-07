@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import '../../classroom_edition/edition.dart';
 
 import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart' show InputMode;
@@ -371,7 +372,7 @@ class _BoardSettingsDialogState extends State<BoardSettingsDialog> {
               ),
             ],
           ),
-          ([l.aiPen], [AiPenSettingsSection(board: board)]),
+          if (Edition.ai) ([l.aiPen], [AiPenSettingsSection(board: board)]),
           ([l.projectorTitle], [ProjectorSettingsSection(projector: board.projector)]),
           ([l.profilesTitle, l.switchTeacher], [ProfileSettingsSection(board: board)]),
           ([l.kioskTitle], [KioskSettingsSection(kiosk: board.kiosk)]),

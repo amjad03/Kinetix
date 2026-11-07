@@ -37,6 +37,12 @@ abstract final class ToolbarLayouts {
           'ai',
         ];
 
+  /// The Classroom edition's toolbar: the Simple board (big Pen, Colours, Eraser, Undo,
+  /// Lessons, Class tools and Show all tools), or every tool without AI.
+  static List<String> classroomDefaults({required bool simple}) => simple
+      ? const ['pen', 'colours', 'eraser', 'undo', 'lessons', 'class-tools', 'show-all']
+      : const ['pen', 'laser', 'highlighter', 'eraser', 'select', 'shapes', 'undo', 'redo', 'tools', 'insert', 'lessons', 'class-tools'];
+
   /// [ids] as a layout: tools this board has, each once, at most [max]; the defaults when
   /// nothing is left.
   static List<String> clean(List<String>? ids, Iterable<String> available, {required int max, required List<String> fallback}) {
@@ -54,7 +60,8 @@ abstract final class ToolbarLayouts {
   static int group(String id) => switch (id) {
     'pen' || 'ai-pen' || 'laser' || 'highlighter' || 'eraser' || 'select' || 'shapes' || 'text' || 'move' => 0,
     'undo' || 'redo' || 'clear' || 'add-page' => 1,
-    'ai' => 3,
+    'ai' || 'lessons' || 'class-tools' => 3,
+    'show-all' => 4,
     _ => 2,
   };
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../classroom_edition/edition.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
@@ -384,7 +385,8 @@ class _DictionaryState extends State<_Dictionary> {
           onChanged: _search,
         ),
         const SizedBox(height: Kx.s8),
-        Align(
+        if (Edition.ai)
+          Align(
           alignment: Alignment.centerLeft,
           child: OutlinedButton.icon(key: const Key('dictionary-ai'), onPressed: _busy ? null : () => _askAi(s), icon: const Icon(Icons.auto_awesome), label: Text(s['askAi'])),
         ),

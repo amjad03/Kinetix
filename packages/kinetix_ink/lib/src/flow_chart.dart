@@ -181,6 +181,10 @@ List<BoardElement> absorbTextIntoFlow(List<BoardElement> before, List<BoardEleme
   ];
 }
 
+/// Whether the flowchart offers [suggestedNextFlow] when a block is added (the board's
+/// Classroom edition, which has no AI features, turns it off).
+bool flowSuggestionsEnabled = true;
+
 /// Flowchart AI's next-step suggestions (spec §32): what usually follows [from] in a classroom
 /// flowchart, most likely first. Offered, never forced: the full palette stays below.
 List<FlowBlock> suggestedNextFlow(FlowBlock from) => switch (from) {

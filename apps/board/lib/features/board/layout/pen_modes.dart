@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import '../../../classroom_edition/edition.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -105,6 +106,7 @@ class PenModeBar extends StatelessWidget {
       runSpacing: 6,
       children: [
         for (final m in PenMode.values)
+          if (Edition.ai || (m != PenMode.textAi && m != PenMode.shapeAi))
           ChoiceChip(
             key: Key('pen-mode-${m.name}'),
             avatar: Icon(penModeIcon(m), size: 18),

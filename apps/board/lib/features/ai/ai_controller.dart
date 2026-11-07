@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import '../../classroom_edition/edition.dart';
 
 import '../../core/api_client.dart';
 import '../../core/board_controller.dart';
@@ -197,7 +198,7 @@ class AiController extends ChangeNotifier {
   String? _sessionId;
 
   /// AI needs a signed-in teacher: the request is billed to the institution and grounded in the class.
-  bool get canUseAi => board.isSignedIn && board.api != null;
+  bool get canUseAi => Edition.ai && board.isSignedIn && board.api != null;
 
   /// The class subject, for prefilling topics.
   String get defaultTopic => board.session?.subjectName ?? '';

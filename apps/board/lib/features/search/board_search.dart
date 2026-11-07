@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../classroom_edition/edition.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
 import '../../core/board_controller.dart';
@@ -37,7 +38,7 @@ List<SearchItem> settingsSearchItems() => [
     ('input', Icons.draw_outlined, (l) => l.inputTitle),
     ('fingerTaps', Icons.touch_app_outlined, (l) => l.fingerTapsTitle),
     ('touch', Icons.touch_app_outlined, (l) => l.touchScreen),
-    ('aiPen', Icons.draw_outlined, (l) => l.aiPen),
+    if (Edition.ai) ('aiPen', Icons.draw_outlined, (l) => l.aiPen),
     ('projector', Icons.cast, (l) => l.projectorTitle),
     ('profiles', Icons.switch_account_outlined, (l) => l.profilesTitle),
     ('kiosk', Icons.lock_outline, (l) => l.kioskTitle),

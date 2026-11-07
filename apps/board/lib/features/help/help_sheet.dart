@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
+import '../../classroom_edition/edition.dart';
 
 import '../../l10n/l10n.dart';
 import '../board/panel/panel_host.dart';
@@ -45,7 +46,7 @@ List<(String, List<HelpTopic>)> helpTopics(AppLocalizations l) => [
       HelpTopic('record', Icons.fiber_manual_record, l.helpRecordTitle, [l.helpRecord1, l.helpRecord2], target: const Key('record')),
     ],
   ),
-  (
+  if (Edition.ai) (
     l.helpGroupAi,
     [
       HelpTopic('ai', Icons.auto_awesome, l.helpAiTitle, [l.helpAi1, l.helpAi2], target: const Key('panel-ai')),

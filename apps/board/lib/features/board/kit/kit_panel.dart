@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../../../classroom_edition/edition.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -197,18 +198,20 @@ class _SubjectKitPanelState extends State<SubjectKitPanel> {
       children: [
         Text(s?.classLabel ?? l.noClassTimetabled, style: context.text.titleLarge),
         if (s?.periodLabel != null) Text(s!.periodLabel!, style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant)),
-        _section(l.kitAiForLesson),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            quick(AiView.home, Icons.auto_awesome, l.aiAsk),
-            quick(AiView.quiz, Icons.quiz_outlined, l.toolQuiz),
-            if (!widget.primary) quick(AiView.homework, Icons.assignment_outlined, l.toolHomework),
-            if (!widget.primary) quick(AiView.lessonPlan, Icons.event_note_outlined, l.aiLessonPlan),
-            quick(AiView.readBoard, Icons.document_scanner_outlined, l.aiReadBoard),
-          ],
-        ),
+        if (Edition.ai) ...[
+          _section(l.kitAiForLesson),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              quick(AiView.home, Icons.auto_awesome, l.aiAsk),
+              quick(AiView.quiz, Icons.quiz_outlined, l.toolQuiz),
+              if (!widget.primary) quick(AiView.homework, Icons.assignment_outlined, l.toolHomework),
+              if (!widget.primary) quick(AiView.lessonPlan, Icons.event_note_outlined, l.aiLessonPlan),
+              quick(AiView.readBoard, Icons.document_scanner_outlined, l.aiReadBoard),
+            ],
+          ),
+        ],
         _section(l.kitSeeAndDo),
         Wrap(
           spacing: 8,

@@ -10,7 +10,10 @@ typedef ClassroomApp = (String id, IconData icon, String label, VoidCallback onT
 /// Classroom Apps (spec §33): Study Material, Live Class, Homework, Lessons, Attendance,
 /// Class Prep, Students, Tests, Recordings and Books, then Other Tools (Calculator, Spotlight).
 /// Big, readable tiles; each opens the board's own feature.
-Future<void> showClassroomApps(BuildContext context, {required List<ClassroomApp> apps, required List<ClassroomApp> others}) {
+///
+/// [header] goes above the apps (the Classroom edition's Class tools, with [appsTitle] over
+/// the apps then).
+Future<void> showClassroomApps(BuildContext context, {required List<ClassroomApp> apps, required List<ClassroomApp> others, Widget Function(BuildContext ctx)? header, String? appsTitle}) {
   final s = SbStrings.of(context);
   Widget grid(BuildContext ctx, List<ClassroomApp> items) => Wrap(
     spacing: Kx.s12,
@@ -18,7 +21,8 @@ Future<void> showClassroomApps(BuildContext context, {required List<ClassroomApp
     children: [
       for (final (id, icon, label, onTap) in items)
         SizedBox(
-          width: 132,
+          // Narrower under the Class tools, so the Classroom edition's five apps sit in a row.
+          width: header == null ? 132 : 124,
           height: 116,
           child: Material(
             color: ctx.colors.surfaceContainerHigh,
@@ -55,11 +59,15 @@ Future<void> showClassroomApps(BuildContext context, {required List<ClassroomApp
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (header != null) ...[header(ctx), const SizedBox(height: Kx.s20)],
+              if (appsTitle != null) ...[Text(appsTitle, style: ctx.text.titleMedium), const SizedBox(height: Kx.s12)],
               grid(ctx, apps),
-              const SizedBox(height: Kx.s20),
-              Text(s('otherTools'), style: ctx.text.titleMedium),
-              const SizedBox(height: Kx.s12),
-              grid(ctx, others),
+              if (others.isNotEmpty) ...[
+                const SizedBox(height: Kx.s20),
+                Text(s('otherTools'), style: ctx.text.titleMedium),
+                const SizedBox(height: Kx.s12),
+                grid(ctx, others),
+              ],
             ],
           ),
         ),
