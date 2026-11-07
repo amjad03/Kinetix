@@ -307,7 +307,7 @@ class CePracticeBanner extends StatelessWidget {
 
 /// The practice page: a box to write a name in.
 List<BoardElement> cePracticePage() => [
-  NoteElement(id: newElementId(), rect: const Rect.fromLTWH(660, 300, 600, 140), text: 'Write your name here', color: const Color(0xFFE1EDFB), fontSize: 34),
+  NoteElement(id: newElementId(), rect: const Rect.fromLTWH(660, 456, 600, 140), text: 'Write your name here', color: const Color(0xFFE1EDFB), fontSize: 34),
 ];
 
 /// "What do I do now?" (screen 03): a next-step tip above the toolbar, Undo, and "Show me".

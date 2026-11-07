@@ -18,7 +18,7 @@ const _aiKeys = ['panel-ai', 'tool-ai-pen', 'panel-tab-ai', 'sel-ai', 'sel-solve
 /// Every text on screen now.
 List<String> _texts() => [
   for (final e in find.byType(Text).evaluate()) ...[
-    if ((e.widget as Text).data case final d?) d,
+    ?(e.widget as Text).data,
     if ((e.widget as Text).textSpan case final s?) s.toPlainText(),
   ],
   for (final e in find.byType(RichText).evaluate()) (e.widget as RichText).text.toPlainText(),
