@@ -686,7 +686,8 @@ class LessonsPanelState extends State<LessonsPanel> {
                       ),
                     ),
                   ),
-                  Positioned(top: 8, left: 8, child: cePill(blockLabel(b, l), icon: stepIcon(b), bg: Colors.white)),
+                  // The other blocks carry their own tag or stage title.
+                  if (b.type == BlockType.whiteboard) Positioned(top: 8, left: 8, child: cePill(blockLabel(b, l), icon: stepIcon(b), bg: Colors.white)),
                 ],
               ),
             ),

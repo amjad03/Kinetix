@@ -104,6 +104,49 @@ gives N back), so attendance, the name picker and groups show roll numbers.
 
 Styles for the edition's surfaces (navy, pastels, pills, big buttons): `ui/ce_style.dart`.
 
+## Lessons (phase 2a) — `lessons/`
+
+The PUC lessons from the Zynetix chapter packs, bundled offline: 337 chapters (1st and 2nd PUC,
+every subject), 1,518 lessons, about 18,300 steps. The panel (`lessons_panel.dart`) has level
+and subject chips, pastel chapter cards ("x of n taught"), the chapter's lessons, and the lesson
+step by step: the step's picture, sim or lab, its line (Read aloud with the board's own voice),
+Back / Next, English / ಕನ್ನಡ where the lesson has Kannada, and **Put on board** (the title, the
+picture — a whiteboard scene as editable lines, shapes, text and equations, anything else as a
+picture — the key formula as an equation and the key point as a note, one group on the page).
+
+| Piece | Where |
+| --- | --- |
+| The Zynetix lesson blocks (ported from the Zynetix board: whiteboard scenes, interactives, activities, challenges, worked examples, cards, quick checks; labs, 3D, animations and CS players from the Kinetix packages) | `packages/kinetix_lessons` |
+| Catalogue and chapters (`assets/lessons/puc/catalogue.json`, `<chapterId>.json.gz`) | `lessons/lesson_library.dart` |
+| Progress per class (step reached, taught, last lesson; shared preferences `ce.lessons.<classId>`) | `lessons/lesson_progress.dart` |
+| Put on board | `lessons/lesson_board.dart` |
+| PhET sims (the Simulations hub's offline copies), concept-video card (opens only online; "Needs internet" offline) | `lessons/lesson_embeds.dart` |
+| `ClassroomHooks.nextLessonLine` and `panelTip` | `installLessonHooks()` (called from `main.dart`), `LessonsPanelState._tip` |
+
+### Building the lesson assets
+
+```sh
+# Our own lesson blocks only; these are committed (about 7.4 MB gzipped).
+python3 packages/kinetix_lessons/tool/bundle_puc.py <zynetix-smart-classroom>/content apps/board/assets/lessons/puc
+```
+
+The parts imported from the Zynetix School site (explainer and concept-video blocks, formula
+sheets, mock-test patterns and the imported exam questions) are **never committed** to this
+repository. A build that should carry them runs, before `flutter build`:
+
+```sh
+python3 packages/kinetix_lessons/tool/bundle_puc.py <zynetix-smart-classroom>/content apps/board/assets/lessons/puc --include-school
+```
+
+which also writes one overlay per chapter (and `patterns.json`) to the gitignored
+`apps/board/assets/private/lessons/` (about 0.5 MB). The board merges an overlay into its chapter
+when it is there and works without it (`LessonLibrary(school: false)` ignores it).
+
+`test/classroom_edition/lessons_test.dart` covers the catalogue, the overlay merge, progress,
+the start-screen line, steps and Put on board; `lessons_sweep_test.dart` draws every step of
+every bundled lesson (`LESSONS_SWEEP=physics` narrows it); `lessons_shots_test.dart` writes
+screenshots when `LESSONS_SHOTS=<dir>` is set.
+
 ## Tests
 
 `test/classroom_edition/`: the edition switch and Android ids, no AI in any main menu (and the

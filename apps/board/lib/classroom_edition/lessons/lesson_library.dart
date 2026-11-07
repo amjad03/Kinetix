@@ -14,7 +14,10 @@ import 'package:kinetix_lessons/kinetix_lessons.dart';
 /// videos, formula sheets, imported exam questions; never committed), each chapter's overlay is
 /// merged in; without it the lessons are our own blocks only.
 class LessonLibrary {
-  LessonLibrary({AssetBundle? bundle}) : bundle = bundle ?? rootBundle;
+  LessonLibrary({AssetBundle? bundle, this.school = true}) : bundle = bundle ?? rootBundle;
+
+  /// Merges the School parts when the build has them.
+  final bool school;
 
   /// The board's library (the panel and the start screen's "Next lesson" line share it).
   static LessonLibrary instance = LessonLibrary();
@@ -42,11 +45,13 @@ class LessonLibrary {
     final data = await bundle.load('$root/$chapterId.json.gz');
     final j = jsonDecode(utf8.decode(gzip.decode(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes)))) as Map<String, dynamic>;
     Map<String, dynamic>? overlay;
-    try {
-      final o = await bundle.load('$privateRoot/$chapterId.json.gz');
-      overlay = jsonDecode(utf8.decode(gzip.decode(o.buffer.asUint8List(o.offsetInBytes, o.lengthInBytes)))) as Map<String, dynamic>;
-    } catch (_) {
-      // No School parts in this build (or none for this chapter).
+    if (school) {
+      try {
+        final o = await bundle.load('$privateRoot/$chapterId.json.gz');
+        overlay = jsonDecode(utf8.decode(gzip.decode(o.buffer.asUint8List(o.offsetInBytes, o.lengthInBytes)))) as Map<String, dynamic>;
+      } catch (_) {
+        // No School parts in this build (or none for this chapter).
+      }
     }
     final pack = packFromJson(j, overlay: overlay);
     _chapters[chapterId] = pack;
@@ -73,15 +78,7 @@ class LessonLibrary {
       final lesson = Lesson.fromJson(lj);
       lessons[lesson.topicId] = lesson;
     }
-    return InstalledPack(
-      id: chapter.id,
-      version: '${j['version'] ?? 1}',
-      chapter: chapter,
-      lessons: lessons,
-      questions: questions,
-      mediaDir: '',
-      formulas: SheetFormula.sheet(overlay?['formulas']),
-    );
+    return InstalledPack(id: chapter.id, version: '${j['version'] ?? 1}', chapter: chapter, lessons: lessons, questions: questions, mediaDir: '', formulas: SheetFormula.sheet(overlay?['formulas']));
   }
 
   /// Our blocks with a School overlay: its blocks put back in their places ([order]) and the
@@ -110,10 +107,8 @@ class LessonCatalogue {
   final List<String> subjects;
   final List<CatChapter> chapters;
 
-  factory LessonCatalogue.fromJson(Map<String, dynamic> j) => LessonCatalogue(
-    subjects: [for (final s in j['subjects'] as List) s as String],
-    chapters: [for (final c in j['chapters'] as List) CatChapter.fromJson(c as Map<String, dynamic>)],
-  );
+  factory LessonCatalogue.fromJson(Map<String, dynamic> j) =>
+      LessonCatalogue(subjects: [for (final s in j['subjects'] as List) s as String], chapters: [for (final c in j['chapters'] as List) CatChapter.fromJson(c as Map<String, dynamic>)]);
 
   /// The chapters of 1st PUC ([year] 1) or 2nd PUC (2) in [subject], in order.
   List<CatChapter> chaptersOf(int year, String subject) => [
