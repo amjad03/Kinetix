@@ -75,7 +75,12 @@ void main() {
     await closeBoard(tester, board);
 
     Edition.classroom = false;
-    await tester.pumpWidget(const MediaQuery(data: MediaQueryData(size: Size(844, 390)), child: CePhoneFit(enabled: false, child: SizedBox(key: Key('inside')))));
+    await tester.pumpWidget(
+      const MediaQuery(
+        data: MediaQueryData(size: Size(844, 390)),
+        child: CePhoneFit(enabled: false, child: SizedBox(key: Key('inside'))),
+      ),
+    );
     expect(find.byKey(const Key('ce-phone-fit')), findsNothing);
     expect(find.byKey(const Key('inside')), findsOneWidget);
   });

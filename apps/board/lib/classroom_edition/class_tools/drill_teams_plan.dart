@@ -128,33 +128,45 @@ class _FormulaDrillViewState extends State<FormulaDrillView> {
                     ),
                   ],
                   const Spacer(),
-                  Row(
-                    children: [
-                      toolButton('Previous', icon: Icons.chevron_left, onPressed: index > 0 ? () => _go(index - 1) : null),
-                      const SizedBox(width: 12),
-                      toolButton(
-                        'Shuffle',
-                        icon: Icons.shuffle,
-                        onPressed: () => setState(() {
-                          order = [...env.bank.chapter(chapterId)?.formulas ?? const <BankFormula>[]]..shuffle(Random(env.now().millisecond));
-                          index = 0;
-                          shown = false;
-                        }),
-                      ),
-                      const Spacer(),
-                      toolButton('Put on board', icon: Icons.co_present_outlined, onPressed: () => _put(f), key: const Key('ce-drill-board')),
-                      const SizedBox(width: 12),
-                      toolButton(
-                        shown ? 'Next formula' : 'Show',
-                        icon: shown ? Icons.chevron_right : Icons.visibility_outlined,
-                        filled: true,
-                        key: const Key('ce-drill-next'),
-                        onPressed: () {
-                          if (!shown) return setState(() => shown = true);
-                          if (index < list.length - 1) _go(index + 1);
-                        },
-                      ),
-                    ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      runSpacing: 10,
+                      children: [
+                        Wrap(
+                          spacing: 12,
+                          children: [
+                            toolButton('Previous', icon: Icons.chevron_left, onPressed: index > 0 ? () => _go(index - 1) : null),
+                            toolButton(
+                              'Shuffle',
+                              icon: Icons.shuffle,
+                              onPressed: () => setState(() {
+                                order = [...env.bank.chapter(chapterId)?.formulas ?? const <BankFormula>[]]..shuffle(Random(env.now().millisecond));
+                                index = 0;
+                                shown = false;
+                              }),
+                            ),
+                          ],
+                        ),
+                        Wrap(
+                          spacing: 12,
+                          children: [
+                            toolButton('Put on board', icon: Icons.co_present_outlined, onPressed: () => _put(f), key: const Key('ce-drill-board')),
+                            toolButton(
+                              shown ? 'Next formula' : 'Show',
+                              icon: shown ? Icons.chevron_right : Icons.visibility_outlined,
+                              filled: true,
+                              key: const Key('ce-drill-next'),
+                              onPressed: () {
+                                if (!shown) return setState(() => shown = true);
+                                if (index < list.length - 1) _go(index + 1);
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -260,10 +272,12 @@ class _TeamsViewState extends State<TeamsView> {
                           ),
                           Text('Roll ${rollsLabel(t.rolls)} · ${t.rolls.length}', maxLines: 2, overflow: TextOverflow.ellipsis, style: ceText(15)),
                           const SizedBox(height: 12),
-                          Row(
+                          Wrap(
+                            spacing: 0,
+                            runSpacing: 8,
                             children: [
                               for (final d in const [1, 5]) ...[
-                                OutlinedButton(key: Key('ce-team-\$i-plus\$d'), style: ceSoftButton(), onPressed: () => _add(i, d), child: Text('+$d')),
+                                OutlinedButton(key: Key('ce-team-$i-plus$d'), style: ceSoftButton(), onPressed: () => _add(i, d), child: Text('+$d')),
                                 const SizedBox(width: 8),
                               ],
                               TextButton(
@@ -283,10 +297,11 @@ class _TeamsViewState extends State<TeamsView> {
             },
           ),
           const SizedBox(height: 20),
-          Row(
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
             children: [
               toolButton('Put scoreboard on board', icon: Icons.co_present_outlined, filled: true, onPressed: _board, key: const Key('ce-teams-board')),
-              const SizedBox(width: 12),
               toolButton('Points to zero', icon: Icons.restart_alt, onPressed: () => env.records.setTeams([for (final t in teams) t.withPoints(0)])),
             ],
           ),
@@ -418,7 +433,7 @@ class ClassPlanView extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 18),
-            infoCard(icon: v.behind > 0 ? Icons.trending_down_rounded : Icons.check_circle_outline, title: status.$1, line: status.$2, colour: status.$3, key: const Key('ce-plan-status')),
+            infoCard(icon: v.done == 0 && v.left > 0 ? Icons.checklist_rounded : v.behind > 0 ? Icons.trending_down_rounded : Icons.check_circle_outline, title: status.$1, line: status.$2, colour: status.$3, key: const Key('ce-plan-status')),
             if (v.thisWeek.isNotEmpty) ...[
               const SizedBox(height: 14),
               infoCard(

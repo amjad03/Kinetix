@@ -189,9 +189,7 @@ Widget classToolTile(ClassTool t, {double width = 240, double height = 128, Void
             const Spacer(),
             Text(t.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: ceHeading(18)),
             const SizedBox(height: 2),
-            Flexible(
-              child: Text(t.line, maxLines: 2, overflow: TextOverflow.ellipsis, style: ceText(13.5, height: 1.25)),
-            ),
+            Text(t.line, maxLines: 2, overflow: TextOverflow.ellipsis, style: ceText(13.5, height: 1.25)),
           ],
         ),
       ),

@@ -239,12 +239,18 @@ class _ClassQuizViewState extends State<ClassQuizView> {
             ],
           ),
           const SizedBox(height: 14),
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            runSpacing: 10,
             children: [
-              toolButton('Mark all right', onPressed: () => setState(marks.markRestRight), key: const Key('ce-quiz-all-right')),
-              const SizedBox(width: 12),
-              toolButton(index == questions.length - 1 ? 'Finish' : 'Next question', onPressed: _next, key: const Key('ce-quiz-next')),
-              const Spacer(),
+              Wrap(
+                spacing: 12,
+                runSpacing: 10,
+                children: [
+                  toolButton('Mark all right', onPressed: () => setState(marks.markRestRight), key: const Key('ce-quiz-all-right')),
+                  toolButton(index == questions.length - 1 ? 'Finish' : 'Next question', onPressed: _next, key: const Key('ce-quiz-next')),
+                ],
+              ),
               toolButton('Show result on board', icon: Icons.bar_chart_rounded, filled: true, onPressed: _showResult, key: const Key('ce-quiz-result')),
             ],
           ),
@@ -374,9 +380,13 @@ class _ClassQuizViewState extends State<ClassQuizView> {
       children: [
         Text(n, style: ceHeading(30, c: fg)),
         const SizedBox(width: 10),
-        Text(
-          label,
-          style: ceText(17, w: FontWeight.w600, c: CeC.navy),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: ceText(17, w: FontWeight.w600, c: CeC.navy),
+          ),
         ),
       ],
     ),

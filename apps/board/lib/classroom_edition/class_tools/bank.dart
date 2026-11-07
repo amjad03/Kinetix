@@ -266,6 +266,10 @@ abstract final class ClassBank {
 
   static final _cache = <String, Future<SubjectBank>>{};
 
+  /// The bundle the board reads the bank from in tests (null: the app's own).
+  @visibleForTesting
+  static AssetBundle? testBundle;
+
   /// Forgets loaded subjects (tests).
   static void clearCache() => _cache.clear();
 
@@ -288,7 +292,7 @@ abstract final class ClassBank {
 
   /// The subject [subject] of 1st or 2nd PUC ([year] 1 or 2).
   static Future<SubjectBank> load({required int year, required String? subject, AssetBundle? bundle}) {
-    final b = bundle ?? rootBundle;
+    final b = bundle ?? testBundle ?? rootBundle;
     final s = slug(subject);
     return _cache.putIfAbsent('$year/$s/${identityHashCode(b)}', () => _load(year, s, b));
   }

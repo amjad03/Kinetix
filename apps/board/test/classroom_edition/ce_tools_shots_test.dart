@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_board/classroom_edition/class_tools/bank.dart';
 import 'package:kinetix_board/classroom_edition/class_tools/class_records.dart';
@@ -65,8 +66,28 @@ Map<String, Object> _history() {
   };
 }
 
+/// KaTeX's fonts (flutter_math_fork) so formulas typeset in the screenshots.
+Future<void> _katex() async {
+  for (final (family, files) in const [
+    ('KaTeX_Main', ['Regular', 'Bold', 'Italic']),
+    ('KaTeX_Math', ['Italic']),
+    ('KaTeX_Size1', ['Regular']),
+    ('KaTeX_Size2', ['Regular']),
+    ('KaTeX_AMS', ['Regular']),
+  ]) {
+    final loader = FontLoader('packages/flutter_math_fork/$family');
+    for (final f in files) {
+      loader.addFont(rootBundle.load('packages/flutter_math_fork/lib/katex_fonts/fonts/$family-$f.ttf'));
+    }
+    await loader.load();
+  }
+}
+
 void main() {
-  setUpAll(loadScreenFonts);
+  setUpAll(() async {
+    await loadScreenFonts();
+    await _katex();
+  });
   setUp(ClassBank.clearCache);
   tearDown(() => Edition.classroom = Edition.built == 'classroom');
 
