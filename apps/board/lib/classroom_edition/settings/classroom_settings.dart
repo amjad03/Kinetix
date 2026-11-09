@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../local/classroom_store.dart';
+import '../past_papers/papers_settings.dart';
 import '../start/classroom_start.dart' show editTeacher;
 import '../ui/ce_style.dart';
 
@@ -406,6 +407,8 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
         alignment: Alignment.centerLeft,
         child: OutlinedButton.icon(key: const Key('ce-change-pin'), style: ceSoftButton(), onPressed: () => unawaited(_changePin()), icon: const Icon(Icons.pin_outlined), label: const Text('Change PIN')),
       ),
+      const SizedBox(height: Kx.s32),
+      const PastPapersSettingsEntry(),
     ],
   );
 

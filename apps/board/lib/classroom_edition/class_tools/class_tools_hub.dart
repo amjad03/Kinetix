@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/device_store.dart';
 import '../classroom_hooks.dart';
+import '../past_papers/past_papers_view.dart';
 import '../ui/ce_style.dart';
 import 'bank.dart';
 import 'class_records.dart';
@@ -18,7 +19,7 @@ typedef ClassTool = ({String id, IconData icon, String title, String line, Color
 
 /// The Class tools (Classroom edition): tools that work without phones or the internet, by roll
 /// number — class quiz, mock test, formula drill, teams, class plan, mastery map, worksheets,
-/// pick a roll number, timer. Records are kept per class, by roll number only
+/// pick a roll number, timer, past papers. Records are kept per class, by roll number only
 /// ([ClassToolsStore]); questions come from the Zynetix School bank when it is bundled
 /// ([ClassBank], README.md).
 class ClassToolsHub extends StatefulWidget {
@@ -72,6 +73,7 @@ class _ClassToolsHubState extends State<ClassToolsHub> {
     'worksheets': 'Pick the chapter and how many questions, then Print.',
     'picker': 'Tap Pick. Nobody is picked twice until everyone has had a turn.',
     'timer': 'Pick the minutes and tap Start.',
+    'papers': 'Tap a paper to show it on the board. Add papers from a USB stick with the school PIN.',
   };
 
   void _open(String? id, {Object? arg}) => setState(() {
@@ -112,7 +114,8 @@ class _ClassToolsHubState extends State<ClassToolsHub> {
   );
 
   Widget _view(ToolEnv env) => switch (tool) {
-    'quiz' => ClassQuizView(env: env, topicKeys: arg is List<String> ? arg as List<String> : const []),
+    'quiz' => ClassQuizView(env: env, topicKeys: arg is List<String> ? arg as List<String> : const [], preset: arg is PresetQuiz ? arg as PresetQuiz : null),
+    'papers' => PastPapersView(env: env, paperId: arg is String ? arg as String : null),
     'mock' => MockTestView(env: env),
     'drill' => FormulaDrillView(env: env),
     'teams' => TeamsView(env: env),
@@ -167,6 +170,7 @@ const classTools = <ClassTool>[
   (id: 'worksheets', icon: Icons.description_outlined, title: 'Worksheets', line: 'Print, or put on the board', colour: CeC.peach),
   (id: 'picker', icon: Icons.casino_outlined, title: 'Pick a roll no.', line: 'Fair turns, nobody left out', colour: CeC.butter),
   (id: 'timer', icon: Icons.timer_outlined, title: 'Timer', line: 'Big countdown the class can see', colour: CeC.mint),
+  (id: 'papers', icon: Icons.history_edu_outlined, title: 'Past papers', line: 'KCET, NEET, JEE, PUC papers on the board', colour: CeC.blue),
 ];
 
 /// One Class tools tile.

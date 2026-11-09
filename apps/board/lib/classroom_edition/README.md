@@ -71,7 +71,7 @@ Lessons). Optional hooks in `classroom_hooks.dart`:
 class ClassToolsHub extends StatefulWidget {
   const ClassToolsHub({super.key, required this.host, this.initialTool});
   final ClassroomHost host;
-  final String? initialTool; // 'quiz', 'mock', 'drill', 'teams', 'plan', 'mastery', 'worksheets', 'picker', 'timer'
+  final String? initialTool; // 'quiz', 'mock', 'drill', 'teams', 'plan', 'mastery', 'worksheets', 'picker', 'timer', 'papers'
 }
 const classTools = <ClassTool>[...]; // ({String id, IconData icon, String title, String line, Color colour})
 Widget classToolTile(ClassTool t, {double width, double height, VoidCallback? onTap});
@@ -95,6 +95,7 @@ All offline, no AI, and by roll number only. `class_tools/`:
 | Mastery map | `mastery_view.dart` | Topics × roll numbers from class quizzes and mock tests; class score; Revisit / Strongest / Small group cards; Print; Make a revision quiz |
 | Worksheets | `worksheets_view.dart` | From the bank: chapter, topics, how many MCQs, short answers and problems; Print / Export PDF with key; Put on board |
 | Pick a roll no., Timer | `drill_teams_plan.dart` | Fair random pick of present roll numbers; big countdown |
+| Past papers | `../past_papers/` | KCET, NEET, JEE, COMEDK, PUC and CBSE papers from a USB stick (PIN) or a paper pack; filters, full-screen viewer, answer key, exam timer, Put page on board, practice and a class quiz with the exam's marking ([README](past_papers/README.md)) |
 
 How a mock paper is made (`paper.dart`, `buildPaper`): Part A takes multiple-choice questions;
 Parts B, C and D take only written questions the bank sized for 2, 3 and 5 marks
