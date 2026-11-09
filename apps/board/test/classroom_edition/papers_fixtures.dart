@@ -93,7 +93,7 @@ Map<String, dynamic> neetQuestions() => {
       'chapter': 'Motion',
       'crop': {
         'page': 1,
-        'rect': [0.05, 0.12, 0.9, 0.2],
+        'rect': [0.05, 0.13, 0.9, 0.16],
       },
       'options': ['2 m', '4 m', '6 m', '8 m'],
       'answer': 'B',

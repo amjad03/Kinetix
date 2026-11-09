@@ -404,7 +404,7 @@ class _AddPapersPageState extends State<AddPapersPage> {
                         ? 'Already on this board (${i.duplicateOf!.longTitle}). It will be skipped.'
                         : i.isPack
                         ? 'A paper pack: its papers, answer keys and questions come in as they are.'
-                        : '${(i.file.bytes.length / 1048576).toStringAsFixed(1)} MB PDF'),
+                        : '${_size(i.file.bytes.length)} PDF'),
                 style: ceText(15, c: i.problem != null ? CeC.red : CeC.muted),
               ),
             ],
@@ -480,7 +480,7 @@ class _AddPapersPageState extends State<AddPapersPage> {
           Row(
             children: [
               label('Year'),
-              stepper(i.year, min: 1990, max: DateTime.now().year + 1, key: Key('ce-papers-year-$n'), onChanged: (v) => setState(() => i.year = v)),
+              _yearStepper(i.year, key: Key('ce-papers-year-$n'), onChanged: (v) => setState(() => i.year = v)),
               const SizedBox(width: 32),
               Text('Shift or session', style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
               const SizedBox(width: 12),
@@ -544,4 +544,30 @@ class _AddPapersPageState extends State<AddPapersPage> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
     );
   }
+}
+
+/// "2.4 MB", "180 KB".
+String _size(int bytes) => bytes >= 1048576 ? '${(bytes / 1048576).toStringAsFixed(1)} MB' : '${(bytes / 1024).ceil()} KB';
+
+/// − 2023 + with big round buttons.
+Widget _yearStepper(int year, {required ValueChanged<int> onChanged, Key? key}) {
+  final last = DateTime.now().year + 1;
+  Widget b(IconData icon, VoidCallback? onTap) => Material(
+    color: Colors.white,
+    shape: const CircleBorder(side: BorderSide(color: CeC.line)),
+    child: InkWell(
+      customBorder: const CircleBorder(),
+      onTap: onTap,
+      child: Padding(padding: const EdgeInsets.all(10), child: Icon(icon, size: 22, color: onTap == null ? CeC.line : CeC.navy)),
+    ),
+  );
+  return Row(
+    key: key,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      b(Icons.remove, year > 1990 ? () => onChanged(year - 1) : null),
+      SizedBox(width: 84, child: Text('$year', textAlign: TextAlign.center, style: ceHeading(24))),
+      b(Icons.add, year < last ? () => onChanged(year + 1) : null),
+    ],
+  );
 }

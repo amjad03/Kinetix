@@ -263,7 +263,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
                 : Container(
                     padding: const EdgeInsets.all(10),
                     decoration: ceCard(shadow: false),
-                    child: Image.memory(snap.data!, fit: BoxFit.contain, filterQuality: FilterQuality.medium),
+                    child: Image.memory(snap.data!, fit: BoxFit.contain, alignment: Alignment.topCenter, filterQuality: FilterQuality.medium),
                   ),
           )
         : null;
