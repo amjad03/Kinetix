@@ -176,7 +176,8 @@ List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required
   final p = plusStrings(context);
   VoidCallback plusPage(String key, IconData icon, WidgetBuilder b) => () => run(() => h.openPage(p[key], icon, b));
   return [
-    if (Demo.enabled) ...[
+    // The ERP demo's classes (named students): not in the Classroom edition's demo.
+    if (Demo.enabled && !Edition.classroom) ...[
       DrawerTool('demo-classes', Icons.swap_horiz, s['demoClasses'], const [ToolGroup.classroom], cls, () => run(() => unawaited(DemoClassSwitcher.open(context, h.board)))),
       DrawerTool('this-class', Icons.school_outlined, s['thisClass'], const [ToolGroup.classroom], cls, () => run(() => openDemoClassPanel(context, h))),
     ],

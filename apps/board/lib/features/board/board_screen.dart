@@ -210,7 +210,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   /// The class toolkit: timer, stopwatch, name picker, dice, spinner, noise meter, shade and
   /// spotlight (lib/features/toolkit).
-  late final ToolkitController _kit = ToolkitController(roster: () => board.pickable, demo: Demo.enabled)
+  late final ToolkitController _kit = ToolkitController(roster: () => board.pickable, demo: Demo.enabled && !Edition.classroom)
     ..onTimeUp = () => mounted ? showBoardMessage(context, context.l10n.timesUp) : null;
   bool _signInOpen = false;
   Size _canvasSize = const Size(1920, 1080);

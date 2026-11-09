@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'classroom_edition/edition.dart';
 import 'classroom_edition/lessons/lessons_panel.dart' show installLessonHooks;
+import 'classroom_edition/local/sample_college.dart';
 import 'classroom_edition/start/classroom_start.dart';
 import 'classroom_edition/ui/phone_fit.dart';
 import 'core/api_client.dart';
@@ -58,7 +59,10 @@ void _main() {
   registerPictureLibraryLicence();
   // Classroom edition: the start screen's "Next lesson" line from the bundled lessons.
   if (Edition.classroom) installLessonHooks();
-  final board = Demo.enabled ? demoBoard(DemoBoardServer()) : (BoardController()..start());
+  final board = !Demo.enabled
+      ? (BoardController()..start())
+      // The Classroom edition's demo has no ERP demo server: a sample PU college on the board itself.
+      : (Edition.classroom ? classroomDemoBoard() : demoBoard(DemoBoardServer()));
   // "Back to start" after a crash: the Classroom edition's start screen.
   CrashGuard.backToStart = () {
     if (Edition.classroom) board.showClassroomStart();
@@ -88,6 +92,17 @@ void installCrashGuard({bool releaseErrorWidget = kReleaseMode}) {
 void projectorMain() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProjectorApp());
+}
+
+/// The Classroom edition's demo build (KINETIX_DEMO=true): no demo server and no ERP class (with
+/// its named students), but the board as a college would have it: [sampleCollege] in the
+/// board's own store the first time (teachers, classes of roll numbers, a timetable), then
+/// whatever the demo user changed.
+BoardController classroomDemoBoard({BoardController? board}) {
+  final b = board ?? BoardController();
+  b.classroom.seed = sampleCollege();
+  unawaited(b.start());
+  return b;
 }
 
 /// A board on the in-memory demo server, open in its class (docs/product/demo-builds.md).

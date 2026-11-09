@@ -262,10 +262,17 @@ class ClassroomStore extends ChangeNotifier {
   /// Set when the saved set-up could not be read at [load]: the start screen asks what to do.
   SetupProblem? problem;
 
+  /// The set-up a board with none saved starts with instead of the starter classes (the
+  /// Classroom edition's demo build: [sampleCollege], kept on the board like any other).
+  CeSetup? seed;
+
   Future<void> load() async {
     try {
       final raw = await _store.setting(setupKey);
-      if (raw != null) {
+      if (raw == null && seed != null) {
+        setup = seed!;
+        await _save();
+      } else if (raw != null) {
         final parsed = parseSetup(raw);
         if (parsed != null) {
           setup = parsed;
