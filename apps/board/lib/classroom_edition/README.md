@@ -41,10 +41,37 @@ What the Classroom APK leaves out (the KINETIX Board keeps all of it; `android/a
 * R8 stays off (`-Pkinetix.minify=true` turns it on, keep rules in `android/app/proguard-rules.pro`):
   it builds and saves about 7 MB more, but it has not been run on a panel yet.
 
-The edition has its own version, `classroomVersion` in `android/app/build.gradle.kts`
-(1.0.0+1; bump the build for every release, or pass `-Pkinetix.classroomVersion=…`). It needs no
+The edition has its own version, `classroom_version:` in `apps/board/pubspec.yaml` (x.y.z+build;
+bump the build for every release; `--dart-define=KINETIX_CLASSROOM_VERSION=…` or
+`-Pkinetix.classroomVersion=…` override it). With `--split-per-abi` Flutter adds 1000 × the ABI
+to the build: armeabi-v7a 1xxx, arm64-v8a 2xxx (1.0.0 was 1001 / 2001). It needs no
 `KINETIX_API_URL`: without it a release starts offline and "Pair with Teacher App" asks for the
 server address (`resolveServerUrl` in `core/server_config.dart`).
+
+### Updates without the Play Store
+
+Settings → This board → App updates (`update/`): **Check for update** reads
+`https://raw.githubusercontent.com/amjad03/zynetix-smart-classroom/apk-builds/classroom-update.json`,
+shows the version and its notes (English / Kannada), downloads the APK for the board's ABI with
+progress, checks its size and SHA-256 (a damaged file is deleted), and opens Android's installer
+(`android/…/Updater.kt`: ACTION_VIEW on a FileProvider URI, `REQUEST_INSTALL_PACKAGES`, the
+teacher's "Install unknown apps" switch). **Install from USB…** picks an APK, checks that it is
+`in.zynetix.classroom`, newer than the board's and signed with the same certificate, then
+installs it. Android itself refuses a different signature or an older version. The start
+screen's Settings button shows a small dot while a newer version waits: checked at most once a
+day, only when the board is online; nothing is ever installed without the teacher.
+
+With every release, publish the manifest beside the APKs:
+
+```sh
+python3 apps/board/tool/classroom_update_manifest.py --version 1.1.0+2 --notes-en "…" --notes-kn "…" \
+  --base-url https://media.githubusercontent.com/media/amjad03/zynetix-smart-classroom/apk-builds \
+  --out classroom-update.json zynetix-classroom-1.1.0-arm64-v8a.apk zynetix-classroom-1.1.0-armeabi-v7a.apk
+```
+
+(`media.githubusercontent.com` serves the Git LFS file itself; `raw.githubusercontent.com` would
+give its pointer.) `test/classroom_edition/app_update_test.dart` covers the manifest, the daily
+check, the SHA-256 check, USB APKs and the screens.
 
 `android/app/build.gradle.kts` reads `KINETIX_EDITION` from Flutter's dart-defines (or
 `-Pkinetix.edition=classroom`, or the `KINETIX_EDITION` environment variable) and gives the app

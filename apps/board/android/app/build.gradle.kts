@@ -68,9 +68,18 @@ val dartDefines: Map<String, String> = ((findProperty("dart-defines") as String?
     .toMap()
 val edition = (findProperty("kinetix.edition") as String?) ?: System.getenv("KINETIX_EDITION") ?: dartDefines["KINETIX_EDITION"] ?: "board"
 val classroomEdition = edition == "classroom"
-// The Classroom edition's own version (x.y.z+build, like pubspec.yaml's; bump the build for every
-// release), apart from the KINETIX Board's `version:`. -Pkinetix.classroomVersion=1.0.1+2 overrides it.
-val classroomVersion = ((findProperty("kinetix.classroomVersion") as String?) ?: "1.0.0+1").split("+")
+// The Classroom edition's own version (x.y.z+build; bump the build for every release), apart from
+// the KINETIX Board's `version:`: pubspec.yaml's `classroom_version:`, overridden by
+// --dart-define=KINETIX_CLASSROOM_VERSION=1.0.1+2 or -Pkinetix.classroomVersion=1.0.1+2.
+val classroomVersionText: String = if (!classroomEdition) "0.0.0+1" else (findProperty("kinetix.classroomVersion") as String?)
+    ?: dartDefines["KINETIX_CLASSROOM_VERSION"]
+    ?: Regex("(?m)^classroom_version:\\s*([0-9][^\\s#]*)").find(file("../../pubspec.yaml").readText())?.groupValues?.get(1)
+    ?: throw GradleException("pubspec.yaml has no classroom_version: x.y.z+build")
+val classroomVersion = classroomVersionText.split("+").also {
+    if (it.size != 2 || it[1].toIntOrNull() == null || it[1].toInt() !in 1..999) {
+        throw GradleException("classroom_version must be x.y.z+build with a build of 1 to 999 (split APKs add 1000 x the ABI): $classroomVersionText")
+    }
+}
 
 android {
     namespace = "app.kinetix.board"
@@ -89,7 +98,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         // From `version: x.y.z+build` in pubspec.yaml. With --split-per-abi Flutter adds 1000 * ABI.
         // The Classroom edition: classroomVersion above.
-        versionCode = if (classroomEdition) classroomVersion.getOrNull(1)?.toInt() ?: 1 else flutter.versionCode
+        versionCode = if (classroomEdition) classroomVersion[1].toInt() else flutter.versionCode
         versionName = if (classroomEdition) classroomVersion[0] else flutter.versionName
         manifestPlaceholders["appLabel"] = if (classroomEdition) "Zynetix Classroom" else "KINETIX Board"
         manifestPlaceholders["networkSecurityConfig"] = if (lanHttp) "@xml/network_security_config_lan" else "@xml/network_security_config"

@@ -5,6 +5,9 @@
      voice commands or live captions), so it asks for none of them. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- Updates without the Play Store (Settings → This board → App updates): hands a checked APK
+         to Android's installer, which asks the teacher. Android refuses one signed by anyone else. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <uses-permission android:name="android.permission.CAMERA" tools:node="remove"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove"/>
     <uses-feature android:name="android.hardware.camera" tools:node="remove"/>

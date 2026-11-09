@@ -57,6 +57,28 @@ class MainActivity : FlutterActivity() {
                 result.error("documents", e.message, null)
             }
         }
+        // Classroom edition: updates without the Play Store (Updater.kt).
+        val updater = Updater(this)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "zynetix/update").setMethodCallHandler { call, result ->
+            try {
+                when (call.method) {
+                    "installed" -> result.success(updater.installed())
+                    "inspect" -> result.success(updater.inspect(call.argument<String>("path")!!))
+                    "canInstall" -> result.success(updater.canInstall())
+                    "openInstallPermission" -> {
+                        updater.openInstallPermission()
+                        result.success(null)
+                    }
+                    "install" -> {
+                        updater.install(call.argument<String>("path")!!)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            } catch (e: Exception) {
+                result.error("update", e.message, null)
+            }
+        }
         // Projector mode: the board on a second display (Projector.kt).
         val presenter = Presenter(this)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kinetix/presenter").setMethodCallHandler { call, result ->

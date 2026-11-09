@@ -14,6 +14,8 @@ import '../settings/classroom_settings.dart';
 import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
 import '../help/ce_help.dart';
+import '../update/app_update.dart' show AppUpdates;
+import '../update/update_settings.dart' show UpdateBadge;
 import 'language_switch.dart';
 import 'setup_problem.dart';
 import 'setup_wizard.dart';
@@ -66,6 +68,8 @@ class _ClassroomStartState extends State<ClassroomStart> {
     super.initState();
     store.addListener(_changed);
     unawaited(ClassroomStart.dailyBackup(store));
+    // The quiet "update available" dot on Settings: at most one check a day, only online.
+    unawaited(AppUpdates.instance.checkDaily().then((_) {}, onError: (Object _) {}));
   }
 
   @override
@@ -250,12 +254,14 @@ class _TopStrip extends StatelessWidget {
           const SizedBox(width: 12),
           Tooltip(
             message: context.ce('College settings'),
-            child: OutlinedButton.icon(
-              key: const Key('ce-settings'),
-              style: ceSoftButton().copyWith(minimumSize: const WidgetStatePropertyAll(Size(64, 64))),
-              onPressed: onSettings,
-              icon: const Icon(Icons.settings_outlined),
-              label: Text(context.ce('Settings')),
+            child: UpdateBadge(
+              child: OutlinedButton.icon(
+                key: const Key('ce-settings'),
+                style: ceSoftButton().copyWith(minimumSize: const WidgetStatePropertyAll(Size(64, 64))),
+                onPressed: onSettings,
+                icon: const Icon(Icons.settings_outlined),
+                label: Text(context.ce('Settings')),
+              ),
             ),
           ),
         ],
