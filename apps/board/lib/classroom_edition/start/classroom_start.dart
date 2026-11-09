@@ -10,6 +10,7 @@ import '../local/classroom_store.dart';
 import '../local/local_class.dart';
 import '../settings/classroom_settings.dart';
 import '../ui/ce_style.dart';
+import 'setup_problem.dart';
 
 enum _Scene { start, who, pair }
 
@@ -21,6 +22,10 @@ class ClassroomStart extends StatefulWidget {
   const ClassroomStart({super.key, required this.board});
 
   final BoardController board;
+
+  /// Restores a backup after the school PIN (Settings → Backup & restore); offered when the
+  /// saved set-up could not be read.
+  static Future<void> Function(BuildContext context, ClassroomStore store)? restoreBackup;
 
   @override
   State<ClassroomStart> createState() => _ClassroomStartState();
@@ -129,7 +134,33 @@ class _ClassroomStartState extends State<ClassroomStart> {
         ],
       ),
     };
-    return Theme(data: ceTheme(context), child: child);
+    final problem = store.problem;
+    return Theme(
+      data: ceTheme(context),
+      // A Scaffold for the start screens' messages (Undo after removing a teacher).
+      child: Scaffold(
+        backgroundColor: CeC.page,
+        body: problem == null || _scene == _Scene.pair
+            ? child
+            : Stack(
+                children: [
+                  Positioned.fill(child: child),
+                  Positioned(
+                    left: 24,
+                    right: 24,
+                    top: 104,
+                    child: Center(
+                      child: CeSetupProblemBanner(
+                        problem: problem,
+                        onKeep: () => unawaited(store.acceptRecovered()),
+                        onRestore: ClassroomStart.restoreBackup == null ? null : () => unawaited(ClassroomStart.restoreBackup!(context, store)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
   }
 }
 

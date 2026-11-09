@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/device_store.dart';
 
@@ -153,6 +154,19 @@ class CeSlot {
   );
 }
 
+/// The saved set-up could not be read when the board started ([ClassroomStore.problem]).
+@immutable
+class SetupProblem {
+  const SetupProblem({required this.badKey, required this.usedPrevious, required this.at});
+
+  /// Where the damaged text is kept (a `classroom.setup.bad-<ms>` setting).
+  final String badKey;
+
+  /// True: the board shows the copy from before the last change; false: the starter classes.
+  final bool usedPrevious;
+  final DateTime at;
+}
+
 /// Everything the Classroom edition keeps about the college on this board.
 @immutable
 class CeSetup {
@@ -232,24 +246,92 @@ class ClassroomStore extends ChangeNotifier {
   List<CeSlot> get slots => setup.slots;
   String get college => setup.college;
 
+  /// The copy of the set-up kept before the last change (a damaged set-up falls back to it).
+  static const prevKey = '$setupKey.prev';
+
+  /// A set-up that could not be read is kept under `classroom.setup.bad-<ms since epoch>`.
+  static const badPrefix = '$setupKey.bad-';
+
+  /// Set when the saved set-up could not be read at [load]: the start screen asks what to do.
+  SetupProblem? problem;
+
   Future<void> load() async {
     try {
       final raw = await _store.setting(setupKey);
-      if (raw != null) setup = CeSetup.fromJson((jsonDecode(raw) as Map).cast<String, dynamic>());
+      if (raw != null) {
+        final parsed = parseSetup(raw);
+        if (parsed != null) {
+          setup = parsed;
+        } else {
+          await _quarantine(raw);
+        }
+      }
       _pinHash = await _store.setting(pinKey);
       showAllTools = await _store.setting(simpleKey) == 'true';
       tourSeen = await _store.setting(tourKey) == 'true';
     } catch (e) {
-      debugPrint('Classroom set-up unreadable, starting fresh: $e');
+      debugPrint('Classroom set-up not loaded: $e');
     }
     loaded = true;
     notifyListeners();
   }
 
+  /// The set-up in [raw], or null when it is not one (damaged, cut short, not JSON).
+  static CeSetup? parseSetup(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return null;
+    try {
+      final j = jsonDecode(raw);
+      if (j is! Map || j['classes'] is! List) return null;
+      return CeSetup.fromJson(j.cast<String, dynamic>());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// The saved set-up is damaged: its text is kept exactly as it was (never overwritten), and
+  /// the board goes on with the copy from before the last change, else the starter classes,
+  /// until the college decides on the start screen (keep this, or restore a backup).
+  Future<void> _quarantine(String raw) async {
+    final key = '$badPrefix${now().millisecondsSinceEpoch}';
+    try {
+      await _store.setSetting(key, raw);
+    } catch (e) {
+      debugPrint('Damaged set-up not kept: $e');
+    }
+    final prev = parseSetup(await _store.setting(prevKey));
+    setup = prev ?? CeSetup.starter;
+    problem = SetupProblem(badKey: key, usedPrevious: prev != null, at: now());
+    debugPrint('Classroom set-up unreadable: kept as $key; ${prev != null ? 'using the copy from before the last change' : 'using the starter classes'}');
+  }
+
+  /// The college keeps the set-up showing now (the recovered copy or the starter classes): it
+  /// is saved and the prompt goes. The damaged text stays under its `bad-` key.
+  Future<void> acceptRecovered() async {
+    problem = null;
+    await _save();
+  }
+
+  /// The damaged set-ups kept on this board (newest first), for a backup or support.
+  Future<List<String>> badCopies() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      return [for (final k in p.getKeys()) if (k.startsWith('setting.$badPrefix')) k.substring('setting.'.length)]..sort((a, b) => b.compareTo(a));
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// Writes the set-up safely: the text is checked by reading it back, the copy before it is
+  /// kept under [prevKey], then it replaces the set-up in one commit, so a failed or cut-short
+  /// write never leaves the board without a readable set-up.
   Future<void> _save() async {
     notifyListeners();
     try {
-      await _store.setSetting(setupKey, jsonEncode(setup.toJson()));
+      final text = jsonEncode(setup.toJson());
+      if (parseSetup(text) == null) throw StateError('the set-up did not read back');
+      final old = await _store.setting(setupKey);
+      if (old != null && old != text && parseSetup(old) != null) await _store.setSetting(prevKey, old);
+      await _store.setSetting(setupKey, text);
     } catch (e) {
       debugPrint('Classroom set-up not saved: $e');
     }
