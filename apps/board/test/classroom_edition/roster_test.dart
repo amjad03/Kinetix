@@ -119,11 +119,19 @@ void main() {
     // The timetable: a period for it.
     await tapKey(tester, 'ce-tab-timetable');
     await tapKey(tester, 'ce-set-add-slot');
-    await tester.enterText(find.byKey(const Key('ce-slot-start')), '16:00');
-    await tester.enterText(find.byKey(const Key('ce-slot-end')), '15:00');
-    await tapKey(tester, 'ce-slot-save');
+    // Times from the touch time picker: no typing.
+    Future<void> time(String button, int h, int m) async {
+      await tapKey(tester, button);
+      await tapKey(tester, 'ce-time-h-$h');
+      await tapKey(tester, 'ce-time-m-$m');
+      await tapKey(tester, 'ce-time-ok');
+    }
+
+    await time('ce-slot-start', 16, 0);
+    await time('ce-slot-end', 15, 0);
     expect(find.textContaining('must end after it starts'), findsOneWidget);
-    await tester.enterText(find.byKey(const Key('ce-slot-end')), '16:45');
+    expect(tester.widget<FilledButton>(find.byKey(const Key('ce-slot-save'))).onPressed, isNull);
+    await time('ce-slot-end', 16, 45);
     await tester.enterText(find.byKey(const Key('ce-slot-subject')), 'Biology');
     await tapKey(tester, 'ce-slot-save');
     expect(board.classroom.slots.last.subject, 'Biology');

@@ -81,7 +81,7 @@ void main() {
   Set<String> placeholders(String s) => {for (final m in RegExp(r'\{(\w+)\}').allMatches(s)) m[1]!};
 
   // Names, codes and symbols that read the same in Kannada.
-  const sameInKannada = {'Zynetix Board', 'Classroom edition', '1st PUC', '2nd PUC', '…', 'AB', 'CSV', 'PDF'};
+  const sameInKannada = {'Zynetix Board', 'Classroom edition', '1st PUC', '2nd PUC', '…', 'AB', 'CSV', 'PDF', '{time} {what} ({why})'};
 
   test('every string the edition uses has Kannada, with the same placeholders', () {
     final used = usedKeys();

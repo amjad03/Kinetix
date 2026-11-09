@@ -11,6 +11,7 @@ import '../start/classroom_start.dart' show editTeacher;
 import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
 import 'pin_pad.dart';
+import 'timetable_editor.dart';
 import '../l10n/ce_strings.dart';
 
 export 'pin_pad.dart' show askSchoolPin, chooseNewPin, CePinPad;
@@ -218,149 +219,309 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
 
   // --- Timetable ----------------------------------------------------------------------------
 
-
+  /// The week, Monday to Saturday (Sunday too when it has periods): each day with its periods,
+  /// Add a period, Copy this day to… and Clear day; the bell times above; clashes marked.
   Widget _timetable() {
     final byDay = <int, List<CeSlot>>{};
     for (final s in store.slots) {
       (byDay[s.weekday] ??= []).add(s);
     }
-    return _list(
-      [
-        for (var d = 1; d <= 7; d++)
-          if (byDay[d] != null) ...[
-            Padding(padding: const EdgeInsets.only(top: Kx.s12, bottom: Kx.s8), child: Text(ceDay(context, d), style: ceHeading(20))),
-            for (final s in byDay[d]!..sort((a, b) => a.startMinute.compareTo(b.startMinute)))
-              _tile(
-                key: Key('ce-set-slot-${s.id}'),
-                leading: Text('${s.start}\n${s.end}', style: ceText(14, w: FontWeight.w600, c: CeC.navy)),
-                title: [store.classById(s.classId)?.name ?? '?', s.subject].where((x) => x.isNotEmpty).join(' · '),
-                subtitle: [store.teacher(s.teacherId)?.name ?? context.ce('No teacher'), s.room, s.topic].where((x) => x.isNotEmpty).join(' · '),
-                onTap: () => unawaited(_editSlot(s)),
-              ),
-          ],
-      ],
-      add: context.ce('Add a period'),
-      addKey: const Key('ce-set-add-slot'),
-      onAdd: () => unawaited(_editSlot(null)),
-      empty: context.ce('No periods yet. Add each period of the week; "Start my class" then opens the period on now.'),
+    Widget dayAction(String key, IconData icon, String label, VoidCallback onTap) => Padding(
+      padding: const EdgeInsets.only(left: Kx.s8),
+      child: OutlinedButton.icon(key: Key(key), style: ceSoftButton(), onPressed: onTap, icon: Icon(icon), label: Text(label)),
     );
-  }
-
-  Future<void> _editSlot(CeSlot? s) async {
-    if (store.classes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.ce('Add a class first.'))));
-      return;
-    }
-    var weekday = s?.weekday ?? store.now().weekday.clamp(1, 6);
-    var classId = s?.classId ?? store.classes.first.id;
-    String? teacherId = s?.teacherId;
-    final start = TextEditingController(text: s?.start ?? '09:00');
-    final end = TextEditingController(text: s?.end ?? '09:55');
-    final subject = TextEditingController(text: s?.subject ?? store.teacher(teacherId)?.subject ?? '');
-    final room = TextEditingController(text: s?.room ?? '');
-    final topic = TextEditingController(text: s?.topic ?? '');
-    final time = RegExp(r'^([01]?\d|2[0-3]):[0-5]\d$');
-    String? error;
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, set) => AlertDialog(
-          key: const Key('ce-slot-dialog'),
-          title: Text(s == null ? context.ce('Add a period') : context.ce('Edit period')),
-          content: SizedBox(
-            width: 560,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+    // A whole week is a few dozen rows: all built at once, so every day is there to scroll to.
+    return SingleChildScrollView(
+      key: const Key('ce-timetable'),
+      padding: const EdgeInsets.all(Kx.s24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: FilledButton.icon(key: const Key('ce-set-add-slot'), style: ceBigButton(), onPressed: () => unawaited(_editSlot(null)), icon: const Icon(Icons.add), label: Text(context.ce('Add a period'))),
+        ),
+        const SizedBox(height: Kx.s16),
+        Container(
+          key: const Key('ce-bells-card'),
+          padding: const EdgeInsets.all(Kx.s16),
+          decoration: ceCard(r: 20, shadow: false),
+          child: Row(
+            children: [
+              ceIconDot(Icons.notifications_active_outlined, bg: CeC.butter, size: 48),
+              const SizedBox(width: Kx.s16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(context.ce('Bell times'), style: ceHeading(20)),
+                    const SizedBox(height: 4),
+                    Text(store.bells.isEmpty ? context.ce('None yet. Set them once and every new period offers them.') : store.bells.map(ceBellLabel).join('   ·   '), style: ceText(15)),
+                  ],
+                ),
+              ),
+              OutlinedButton.icon(key: const Key('ce-bells-edit'), style: ceSoftButton(), onPressed: () => unawaited(_editBells()), icon: const Icon(Icons.edit_calendar_outlined), label: Text(context.ce('Change bell times'))),
+            ],
+          ),
+        ),
+        if (store.hasClashes)
+          Padding(
+            padding: const EdgeInsets.only(top: Kx.s16),
+            child: _clashBox(context.ce('Some periods clash: the same teacher or class twice at the same time. They are marked below.'), key: const Key('ce-timetable-clashes')),
+          ),
+        if (store.classes.isEmpty) Padding(padding: const EdgeInsets.all(Kx.s16), child: Text(context.ce('Add a class first.'), style: ceText(17))),
+        for (var d = 1; d <= 7; d++)
+          if (d <= 6 || byDay[d] != null) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: Kx.s24, bottom: Kx.s8),
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                runSpacing: Kx.s8,
                 children: [
-                  Wrap(
-                    spacing: 6,
-                    children: [
-                      for (var d = 1; d <= 7; d++) ChoiceChip(key: Key('ce-slot-day-$d'), label: Text(ceDay(context, d, short: true)), selected: weekday == d, onSelected: (_) => set(() => weekday = d)),
-                    ],
-                  ),
-                  const SizedBox(height: Kx.s12),
-                  Row(
-                    children: [
-                      Expanded(child: TextField(key: Key('ce-slot-start'), controller: start, decoration: InputDecoration(labelText: context.ce('Starts (HH:MM)')))),
-                      const SizedBox(width: Kx.s12),
-                      Expanded(child: TextField(key: Key('ce-slot-end'), controller: end, decoration: InputDecoration(labelText: context.ce('Ends (HH:MM)')))),
-                    ],
-                  ),
-                  const SizedBox(height: Kx.s12),
-                  DropdownButtonFormField<String>(
-                    key: const Key('ce-slot-class'),
-                    initialValue: classId,
-                    decoration: InputDecoration(labelText: context.ce('Class')),
-                    items: [for (final c in store.classes) DropdownMenuItem(value: c.id, child: Text(c.name))],
-                    onChanged: (v) => set(() => classId = v ?? classId),
-                  ),
-                  const SizedBox(height: Kx.s12),
-                  DropdownButtonFormField<String?>(
-                    key: const Key('ce-slot-teacher'),
-                    initialValue: teacherId,
-                    decoration: InputDecoration(labelText: context.ce('Teacher')),
-                    items: [
-                      DropdownMenuItem<String?>(value: null, child: Text(context.ce('No teacher'))),
-                      for (final t in store.teachers) DropdownMenuItem<String?>(value: t.id, child: Text(t.name)),
-                    ],
-                    onChanged: (v) => set(() {
-                      teacherId = v;
-                      if (subject.text.trim().isEmpty) subject.text = store.teacher(v)?.subject ?? '';
-                    }),
-                  ),
-                  const SizedBox(height: Kx.s12),
-                  TextField(key: Key('ce-slot-subject'), controller: subject, textCapitalization: TextCapitalization.words, decoration: InputDecoration(labelText: context.ce('Subject'))),
-                  const SizedBox(height: Kx.s12),
-                  TextField(key: Key('ce-slot-room'), controller: room, decoration: InputDecoration(labelText: context.ce('Room (optional)'))),
-                  const SizedBox(height: Kx.s12),
-                  TextField(key: Key('ce-slot-topic'), controller: topic, decoration: InputDecoration(labelText: context.ce('Chapter or topic (optional)'))),
-                  if (error != null) Padding(padding: const EdgeInsets.only(top: Kx.s12), child: Text(error!, style: TextStyle(color: Theme.of(ctx).colorScheme.error))),
+                  ConstrainedBox(constraints: const BoxConstraints(minWidth: 180), child: Text(ceDay(context, d), key: Key('ce-day-$d'), style: ceHeading(22))),
+                  dayAction('ce-day-add-$d', Icons.add, context.ce('Add a period'), () => unawaited(_editSlot(null, day: d))),
+                  if (byDay[d] != null) ...[
+                    dayAction('ce-day-copy-$d', Icons.copy_all_outlined, context.ce('Copy this day to…'), () => unawaited(copyDayAsking(context, store, d))),
+                    dayAction('ce-day-clear-$d', Icons.clear_all_rounded, context.ce('Clear day'), () => unawaited(clearDayAsking(context, store, d))),
+                  ],
                 ],
               ),
             ),
-          ),
-          actionsAlignment: MainAxisAlignment.spaceBetween,
+            if (byDay[d] == null) Padding(padding: const EdgeInsets.only(left: Kx.s8, bottom: Kx.s8), child: Text(context.ce('No periods.'), style: ceText(15))),
+            for (final s in (byDay[d] ?? <CeSlot>[])..sort((a, b) => a.startMinute.compareTo(b.startMinute)))
+              _slotTile(s),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _clashBox(String text, {Key? key}) => Container(
+    key: key,
+    padding: const EdgeInsets.all(Kx.s12),
+    decoration: BoxDecoration(color: CeC.butter, borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0xFFB45309), width: 1.5)),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.warning_amber_rounded, color: Color(0xFF92400E)),
+        const SizedBox(width: Kx.s8),
+        Expanded(child: Text(text, style: ceText(16, w: FontWeight.w600, c: const Color(0xFF7C2D12)))),
+      ],
+    ),
+  );
+
+  Widget _slotTile(CeSlot s) {
+    final clash = ceClashLine(store, s);
+    return Card(
+      key: Key('ce-set-slot-${s.id}'),
+      color: Colors.white,
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: Kx.s8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18), side: clash.isEmpty ? BorderSide.none : const BorderSide(color: Color(0xFFB45309), width: 2)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: Kx.s16, vertical: Kx.s4),
+        leading: SizedBox(width: 92, child: Text('${CeSlot.short(s.start)} –\n${CeSlot.short(s.end)}', style: ceText(16, w: FontWeight.w700, c: CeC.navy))),
+        title: Text([store.classById(s.classId)?.name ?? '?', s.subject].where((x) => x.isNotEmpty).join(' · '), style: ceText(18, w: FontWeight.w600, c: CeC.navy)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text([store.teacher(s.teacherId)?.name ?? context.ce('No teacher'), s.room, s.topic].where((x) => x.isNotEmpty).join(' · '), style: ceText(15)),
+            if (clash.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(
+                  key: Key('ce-slot-clash-${s.id}'),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.warning_amber_rounded, size: 20, color: Color(0xFF92400E)),
+                    const SizedBox(width: 6),
+                    Expanded(child: Text('${context.ce('Clashes with')} $clash', style: ceText(15, w: FontWeight.w600, c: const Color(0xFF7C2D12)))),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        trailing: const Icon(Icons.edit_outlined),
+        onTap: () => unawaited(_editSlot(s)),
+      ),
+    );
+  }
+
+  Future<bool> _confirmClash(BuildContext ctx, String clash) async =>
+      await showDialog<bool>(
+        context: ctx,
+        builder: (c) => AlertDialog(
+          key: const Key('ce-clash-confirm'),
+          icon: const Icon(Icons.warning_amber_rounded, size: 40, color: Color(0xFF92400E)),
+          title: Text(ceTr('Save a period that clashes?')),
+          content: SizedBox(width: 560, child: Text('${ceTr('This period clashes with')}\n$clash', style: ceText(17, c: CeC.navy))),
           actions: [
-            if (s != null) ceRemoveAction(key: Key('ce-slot-remove'), label: context.ce('Remove period…'), onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.ce('Cancel'))),
-            const SizedBox(width: Kx.s8),
-            FilledButton(
-              key: const Key('ce-slot-save'),
-              onPressed: () {
-                final a = start.text.trim(), b = end.text.trim();
-                if (!time.hasMatch(a) || !time.hasMatch(b) || CeSlot.minuteOf(b) <= CeSlot.minuteOf(a)) {
-                  set(() => error = context.ce('Times are HH:MM on a 24-hour clock, and the period must end after it starts.'));
-                  return;
-                }
-                Navigator.pop(ctx, 'save');
-              },
-              child: Text(context.ce('Save')),
-            ),
-              ],
-            ),
+            TextButton(key: const Key('ce-clash-back'), onPressed: () => Navigator.pop(c, false), child: Text(ceTr('Go back and change it'))),
+            FilledButton(key: const Key('ce-clash-save'), onPressed: () => Navigator.pop(c, true), child: Text(ceTr('Save anyway'))),
+          ],
+        ),
+      ) ??
+      false;
+
+  Future<void> _editBells() async {
+    var bells = store.bells;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, set) => AlertDialog(
+          key: const Key('ce-bells-dialog'),
+          title: Text(context.ce('Bell times, Monday to Saturday')),
+          content: SizedBox(width: 720, child: SingleChildScrollView(child: CeBellEditor(bells: bells, onChanged: (b) => set(() => bells = b)))),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.ce('Cancel'))),
+            FilledButton(key: const Key('ce-bells-save'), onPressed: () => Navigator.pop(ctx, true), child: Text(context.ce('Save'))),
           ],
         ),
       ),
     );
+    if (ok == true) await store.setBells(bells);
+  }
+
+  /// Add (or edit [s]) a period: the day, its time from the bell times or the touch time picker
+  /// (no typing), class, teacher, subject, room and topic. Clashes are shown as they appear;
+  /// saving one asks first.
+  Future<void> _editSlot(CeSlot? s, {int? day}) async {
+    if (store.classes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.ce('Add a class first.'))));
+      return;
+    }
+    var weekday = s?.weekday ?? day ?? store.now().weekday.clamp(1, 6);
+    var classId = s?.classId ?? store.classes.first.id;
+    String? teacherId = s?.teacherId;
+    // A new period takes the first bell not yet used that day.
+    final usedStarts = {for (final x in store.slots.where((x) => x.weekday == weekday)) x.start};
+    final firstFree = store.bells.where((b) => !usedStarts.contains(b.start)).firstOrNull;
+    var start = s?.start ?? firstFree?.start ?? '09:00';
+    var end = s?.end ?? firstFree?.end ?? '09:55';
+    final subject = TextEditingController(text: s?.subject ?? store.teacher(teacherId)?.subject ?? '');
+    final room = TextEditingController(text: s?.room ?? '');
+    final topic = TextEditingController(text: s?.topic ?? '');
+    CeSlot draft() => CeSlot(id: s?.id ?? '', weekday: weekday, start: start, end: end, classId: classId, subject: subject.text.trim(), teacherId: teacherId, room: room.text.trim(), topic: topic.text.trim());
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, set) {
+          final bad = CeSlot.minuteOf(end) <= CeSlot.minuteOf(start);
+          final clash = bad ? '' : ceClashLine(store, draft());
+          return AlertDialog(
+            key: const Key('ce-slot-dialog'),
+            title: Text(s == null ? context.ce('Add a period') : context.ce('Edit period')),
+            content: SizedBox(
+              width: 640,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (var d = 1; d <= 7; d++) ChoiceChip(key: Key('ce-slot-day-$d'), label: Text(ceDay(context, d, short: true)), selected: weekday == d, onSelected: (_) => set(() => weekday = d)),
+                      ],
+                    ),
+                    if (store.bells.isNotEmpty) ...[
+                      const SizedBox(height: Kx.s16),
+                      Text(context.ce('Bell times'), style: ceText(15, w: FontWeight.w600, c: CeC.navy)),
+                      const SizedBox(height: Kx.s8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final (i, b) in store.bells.indexed)
+                            ChoiceChip(
+                              key: Key('ce-slot-bell-$i'),
+                              label: Text(ceBellLabel(b)),
+                              selected: b.start == start && b.end == end,
+                              onSelected: (_) => set(() {
+                                start = b.start;
+                                end = b.end;
+                              }),
+                            ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: Kx.s16),
+                    Wrap(
+                      spacing: Kx.s12,
+                      runSpacing: Kx.s12,
+                      children: [
+                        CeTimeButton(key: const Key('ce-slot-start'), label: context.ce('Starts'), value: start, onChanged: (v) => set(() => start = v)),
+                        CeTimeButton(key: const Key('ce-slot-end'), label: context.ce('Ends'), value: end, onChanged: (v) => set(() => end = v)),
+                      ],
+                    ),
+                    if (bad) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text(context.ce('The period must end after it starts.'), key: const Key('ce-slot-time-error'), style: ceText(16, w: FontWeight.w600, c: CeC.red))),
+                    const SizedBox(height: Kx.s16),
+                    DropdownButtonFormField<String>(
+                      key: const Key('ce-slot-class'),
+                      initialValue: classId,
+                      decoration: InputDecoration(labelText: context.ce('Class')),
+                      items: [for (final c in store.classes) DropdownMenuItem(value: c.id, child: Text(c.name))],
+                      onChanged: (v) => set(() => classId = v ?? classId),
+                    ),
+                    const SizedBox(height: Kx.s12),
+                    DropdownButtonFormField<String?>(
+                      key: const Key('ce-slot-teacher'),
+                      initialValue: teacherId,
+                      decoration: InputDecoration(labelText: context.ce('Teacher')),
+                      items: [
+                        DropdownMenuItem<String?>(value: null, child: Text(context.ce('No teacher'))),
+                        for (final t in store.teachers) DropdownMenuItem<String?>(value: t.id, child: Text(t.name)),
+                      ],
+                      onChanged: (v) => set(() {
+                        teacherId = v;
+                        if (subject.text.trim().isEmpty) subject.text = store.teacher(v)?.subject ?? '';
+                      }),
+                    ),
+                    const SizedBox(height: Kx.s12),
+                    TextField(key: const Key('ce-slot-subject'), controller: subject, textCapitalization: TextCapitalization.words, decoration: InputDecoration(labelText: context.ce('Subject'))),
+                    const SizedBox(height: Kx.s12),
+                    TextField(key: const Key('ce-slot-room'), controller: room, decoration: InputDecoration(labelText: context.ce('Room (optional)'))),
+                    const SizedBox(height: Kx.s12),
+                    TextField(key: const Key('ce-slot-topic'), controller: topic, decoration: InputDecoration(labelText: context.ce('Chapter or topic (optional)'))),
+                    if (clash.isNotEmpty) ...[
+                      const SizedBox(height: Kx.s12),
+                      _clashBox('${context.ce('This period clashes with')}\n$clash', key: const Key('ce-slot-clash')),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            actionsAlignment: MainAxisAlignment.spaceBetween,
+            actions: [
+              if (s != null) ceRemoveAction(key: const Key('ce-slot-remove'), label: context.ce('Remove period…'), onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.ce('Cancel'))),
+                  const SizedBox(width: Kx.s8),
+                  FilledButton(
+                    key: const Key('ce-slot-save'),
+                    onPressed: bad
+                        ? null
+                        : () async {
+                            // A clash is allowed (a combined class, a lab), but only on purpose.
+                            if (clash.isNotEmpty && !await _confirmClash(ctx, clash)) return;
+                            if (ctx.mounted) Navigator.pop(ctx, 'save');
+                          },
+                    child: Text(context.ce('Save')),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (!mounted) return;
     if (result == 'remove' && s != null) return _removeSlot(s);
     if (result != 'save') return;
-    String pad(String t) => t.trim().padLeft(5, '0');
-    final slot = CeSlot(
-      id: s?.id ?? '',
-      weekday: weekday,
-      start: pad(start.text),
-      end: pad(end.text),
-      classId: classId,
-      subject: subject.text.trim(),
-      teacherId: teacherId,
-      room: room.text.trim(),
-      topic: topic.text.trim(),
-    );
+    final slot = draft();
     if (s == null) {
       await store.addSlot(slot);
     } else {

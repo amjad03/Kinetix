@@ -180,6 +180,36 @@ class CeSlot {
   );
 }
 
+/// One period's bell times ("09:00" to "09:55"), the same Monday to Saturday: the college's
+/// bell template (set-up wizard, Settings → Timetable → Bell times) that the period dialog offers.
+@immutable
+class CeBell {
+  const CeBell(this.start, this.end);
+
+  final String start;
+  final String end;
+
+  int get startMinute => CeSlot.minuteOf(start);
+  int get endMinute => CeSlot.minuteOf(end);
+
+  @override
+  bool operator ==(Object other) => other is CeBell && other.start == start && other.end == end;
+
+  @override
+  int get hashCode => Object.hash(start, end);
+
+  Map<String, dynamic> toJson() => {'start': start, 'end': end};
+
+  static CeBell? fromJson(Map<String, dynamic> j) {
+    final a = '${j['start'] ?? ''}', b = '${j['end'] ?? ''}';
+    final ok = RegExp(r'^\d\d:\d\d$');
+    return ok.hasMatch(a) && ok.hasMatch(b) && CeSlot.minuteOf(b) > CeSlot.minuteOf(a) ? CeBell(a, b) : null;
+  }
+}
+
+/// Another period [slot] overlaps in time on the same day, with the same teacher and/or class.
+typedef CeClash = ({CeSlot slot, bool sameTeacher, bool sameClass});
+
 /// The saved set-up could not be read when the board started ([ClassroomStore.problem]).
 @immutable
 class SetupProblem {
@@ -196,12 +226,15 @@ class SetupProblem {
 /// Everything the Classroom edition keeps about the college on this board.
 @immutable
 class CeSetup {
-  const CeSetup({this.college = '', this.teachers = const [], this.classes = const [], this.slots = const []});
+  const CeSetup({this.college = '', this.teachers = const [], this.classes = const [], this.slots = const [], this.bells = const []});
 
   final String college;
   final List<CeTeacher> teachers;
   final List<CeClass> classes;
   final List<CeSlot> slots;
+
+  /// The bell times, Monday to Saturday (empty: none set).
+  final List<CeBell> bells;
 
   /// The classes a new board starts with: 1st PUC A–C and 2nd PUC A–B, 40 roll numbers each.
   static final starter = CeSetup(
@@ -210,8 +243,8 @@ class CeSetup {
     ],
   );
 
-  CeSetup copyWith({String? college, List<CeTeacher>? teachers, List<CeClass>? classes, List<CeSlot>? slots}) =>
-      CeSetup(college: college ?? this.college, teachers: teachers ?? this.teachers, classes: classes ?? this.classes, slots: slots ?? this.slots);
+  CeSetup copyWith({String? college, List<CeTeacher>? teachers, List<CeClass>? classes, List<CeSlot>? slots, List<CeBell>? bells}) =>
+      CeSetup(college: college ?? this.college, teachers: teachers ?? this.teachers, classes: classes ?? this.classes, slots: slots ?? this.slots, bells: bells ?? this.bells);
 
   Map<String, dynamic> toJson() => {
     'v': 1,
@@ -219,6 +252,7 @@ class CeSetup {
     'teachers': [for (final t in teachers) t.toJson()],
     'classes': [for (final c in classes) c.toJson()],
     'slots': [for (final s in slots) s.toJson()],
+    if (bells.isNotEmpty) 'bells': [for (final b in bells) b.toJson()],
   };
 
   static CeSetup fromJson(Map<String, dynamic> j) {
@@ -226,7 +260,13 @@ class CeSetup {
       for (final e in (j[k] as List?) ?? const [])
         if (e is Map) f(e.cast<String, dynamic>()),
     ];
-    return CeSetup(college: '${j['college'] ?? ''}', teachers: list('teachers', CeTeacher.fromJson), classes: list('classes', CeClass.fromJson), slots: list('slots', CeSlot.fromJson));
+    return CeSetup(
+      college: '${j['college'] ?? ''}',
+      teachers: list('teachers', CeTeacher.fromJson),
+      classes: list('classes', CeClass.fromJson),
+      slots: list('slots', CeSlot.fromJson),
+      bells: list('bells', CeBell.fromJson).whereType<CeBell>().toList(),
+    );
   }
 }
 
@@ -439,6 +479,42 @@ class ClassroomStore extends ChangeNotifier {
   Future<void> updateSlot(CeSlot s) => replace(setup.copyWith(slots: [for (final x in slots) x.id == s.id ? s : x]));
 
   Future<void> removeSlot(String id) => replace(setup.copyWith(slots: slots.where((s) => s.id != id).toList()));
+
+  /// The bell times, Monday to Saturday.
+  List<CeBell> get bells => setup.bells;
+
+  Future<void> setBells(List<CeBell> b) => replace(setup.copyWith(bells: [...b]..sort((x, y) => x.startMinute.compareTo(y.startMinute))));
+
+  /// Replaces the periods of each day in [to] with copies of [from]'s.
+  Future<void> copyDay(int from, Set<int> to) {
+    final source = slots.where((s) => s.weekday == from).toList();
+    var n = 0;
+    return replace(
+      setup.copyWith(
+        slots: [
+          for (final s in slots)
+            if (!to.contains(s.weekday) || s.weekday == from) s,
+          for (final d in to)
+            if (d != from)
+              for (final s in source) CeSlot(id: '${_id('p')}${n++}', weekday: d, start: s.start, end: s.end, classId: s.classId, subject: s.subject, teacherId: s.teacherId, room: s.room, topic: s.topic),
+        ],
+      ),
+    );
+  }
+
+  /// Takes every period off [day].
+  Future<void> clearDay(int day) => replace(setup.copyWith(slots: slots.where((s) => s.weekday != day).toList()));
+
+  /// The periods [s] clashes with: on the same day at an overlapping time, with the same teacher
+  /// or the same class (a teacher cannot be in two rooms, nor a class in two periods).
+  List<CeClash> clashesWith(CeSlot s) => [
+    for (final x in slots)
+      if (x.id != s.id && x.weekday == s.weekday && x.startMinute < s.endMinute && s.startMinute < x.endMinute)
+        if ((s.teacherId != null && x.teacherId == s.teacherId) || x.classId == s.classId) (slot: x, sameTeacher: s.teacherId != null && x.teacherId == s.teacherId, sameClass: x.classId == s.classId),
+  ];
+
+  /// Whether any period on the timetable clashes with another.
+  bool get hasClashes => slots.any((s) => clashesWith(s).isNotEmpty);
 
   /// Today's periods (of [teacherId] when given), in order.
   List<CeSlot> today({String? teacherId, DateTime? at}) {
