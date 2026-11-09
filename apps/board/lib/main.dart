@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:kinetix_3d/kinetix_3d.dart' show RemoteModels;
 import 'package:kinetix_ink/kinetix_ink.dart' show flowSuggestionsEnabled;
@@ -12,12 +13,15 @@ import 'classroom_edition/lessons/lessons_panel.dart' show installLessonHooks;
 import 'classroom_edition/start/classroom_start.dart';
 import 'classroom_edition/ui/phone_fit.dart';
 import 'core/api_client.dart';
+import 'core/app_info.dart';
 import 'core/board_controller.dart';
+import 'core/crash/crash_guard.dart';
 import 'core/outbox_store.dart';
 import 'core/recording/recordings.dart';
 import 'core/server_config.dart';
 import 'demo/demo.dart';
 import 'demo/demo_server.dart';
+import 'features/board/board_autosave.dart';
 import 'features/board/board_screen.dart';
 import 'features/board/chrome.dart';
 import 'features/board/model_server.dart';
@@ -34,9 +38,16 @@ import 'features/room_sync/room_sync_gate.dart';
 import 'l10n/l10n.dart';
 
 void main() {
+  // Everything runs in a zone that catches what nothing else did (core/crash): the board's
+  // autosave is written first, then the error goes into the board's own crash log.
+  runZonedGuarded(_main, (error, stack) => unawaited(CrashGuard.onUncaught(error, stack)));
+}
+
+void _main() {
   // Plugins (saved settings, secure storage, the outbox) can only be used once Flutter's engine
   // binding exists; the controllers below start reading them before runApp.
   WidgetsFlutterBinding.ensureInitialized();
+  installCrashGuard();
   // Downloaded 3D models are kept here so they work offline after the first use.
   unawaited(getApplicationSupportDirectory().then((d) => RemoteModels.cacheDir = Directory('${d.path}/models3d'), onError: (_) {}));
   // A release built without --dart-define=KINETIX_API_URL stops here with a clear message
@@ -47,12 +58,26 @@ void main() {
   // Classroom edition: the start screen's "Next lesson" line from the bundled lessons.
   if (Edition.classroom) installLessonHooks();
   final board = Demo.enabled ? demoBoard(DemoBoardServer()) : (BoardController()..start());
+  // "Back to start" after a crash: the Classroom edition's start screen.
+  CrashGuard.backToStart = () {
+    if (Edition.classroom) board.showClassroomStart();
+  };
   // 3D models download from this board's own server, the institution's or the KINETIX API first.
   unawaited(ModelServer.attach(board));
   // Back in front (from Android settings, or the user unpinned the screen): kiosk mode locks
   // again if it should be on (docs/hardware/kiosk-mode.md).
   AppLifecycleListener(onResume: () => unawaited(board.kiosk.refresh()));
   runApp(KinetixBoardApp(controller: board));
+}
+
+/// Crash handling (core/crash): Flutter's errors, uncaught errors and widgets that cannot build
+/// write the board's autosave first, then the crash log; a release build shows a friendly card
+/// instead of a red screen, and "Something went wrong – Back to start" when errors keep coming.
+void installCrashGuard({bool releaseErrorWidget = kReleaseMode}) {
+  CrashGuard.app = '${Edition.appName} $kBoardVersion';
+  CrashGuard.beforeCrash = BoardAutosave.flushAll;
+  if (Edition.classroom) CrashGuard.helpLine = 'If this keeps happening, College settings → Backup & restore keeps the board’s crash log for whoever looks after it.';
+  CrashGuard.install(releaseErrorWidget: releaseErrorWidget);
 }
 
 /// Projector mode's second screen (features/projector): Android's Presentation and the Windows
@@ -108,7 +133,8 @@ class KinetixBoardApp extends StatelessWidget {
             final look = controller.theme.resolve(MediaQuery.platformBrightnessOf(context));
             // Preview as interactive panel: the whole app as a 1920 × 1080 panel shows it.
             // Classroom edition on a phone: the board's 1920 × 1080 layout, scaled to fit.
-            return CePhoneFit(
+            return CrashOverlay(
+              child: CePhoneFit(
               enabled: Edition.classroom && !controller.panelPreview,
               child: PanelPreview(
               enabled: controller.panelPreview,
@@ -126,6 +152,7 @@ class KinetixBoardApp extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
               ),
               ),
             );
