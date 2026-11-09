@@ -32,6 +32,7 @@ void main() {
     File('lib/features/board/board_screen.dart'),
     File('lib/features/board/layout/board_chrome.dart'),
     File('lib/features/board/context/context_switcher.dart'),
+    File('lib/features/board/panel/split_panel.dart'),
   ];
   // Where the keys are looked up: the code above and the table's own helpers (days, students).
   final keyFiles = [...files, File('lib/classroom_edition/l10n/ce_strings.dart')];

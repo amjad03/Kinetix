@@ -77,6 +77,7 @@ class _CeScrollRowState extends State<CeScrollRow> {
       elevation: 2,
       child: IconButton(
         key: Key(start ? 'ce-scroll-back' : 'ce-scroll-more'),
+        style: const ButtonStyle(side: WidgetStatePropertyAll(BorderSide.none), shape: WidgetStatePropertyAll(CircleBorder())),
         tooltip: start ? context.ce('Scroll back') : context.ce('More'),
         constraints: BoxConstraints.tightFor(width: widget.arrowSize, height: widget.arrowSize),
         onPressed: () => _by(start ? -1 : 1),

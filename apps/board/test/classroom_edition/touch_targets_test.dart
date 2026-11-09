@@ -70,6 +70,10 @@ void main() {
     await tapKey(tester, 'ce-lessons');
     await settle(tester, 4);
     atLeast64(tester, 'panel-tab-lessons');
+    // Beside the open panel the corners still name their buttons.
+    for (final k in ['board-menu', 'record', 'add-page', 'page-overview']) {
+      expect(find.descendant(of: find.byKey(Key(k)).first, matching: find.byType(Text)), findsOneWidget, reason: '$k keeps its label');
+    }
     expect(find.byKey(const Key('ce-scroll-more')), findsOneWidget);
     atLeast64(tester, 'ce-scroll-more');
     final last = find.byKey(const Key('panel-tab-kit'));

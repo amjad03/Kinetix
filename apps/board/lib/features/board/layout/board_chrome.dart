@@ -650,9 +650,10 @@ class MenuRecordBar extends StatelessWidget {
         if (recording != null) ...[const SizedBox(width: Kx.s8), recording!],
       ],
     );
-    if (quick == null) return corner;
+    // The Classroom edition keeps the names under these icons, even beside an open panel.
+    if (quick == null) return Edition.classroom ? ToolbarDensity(compact: false, child: corner) : corner;
     // The quick group sits just above the corner, so the toolbar keeps its room between the corners.
-    return Column(
+    final group = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -661,6 +662,7 @@ class MenuRecordBar extends StatelessWidget {
         corner,
       ],
     );
+    return Edition.classroom ? ToolbarDensity(compact: false, child: group) : group;
   }
 }
 
@@ -714,7 +716,7 @@ class PageBar extends StatelessWidget {
             ],
           ),
         );
-        if (onHide == null && onSwitch == null) return bar;
+        if (onHide == null && onSwitch == null) return Edition.classroom && !compact ? ToolbarDensity(compact: false, child: bar) : bar;
         // Hide and Switch sit just above the pages, so the toolbar keeps its room between the corners.
         final s2 = SbStrings.of(context);
         return Column(
@@ -735,7 +737,7 @@ class PageBar extends StatelessWidget {
               ),
             ),
             const SizedBox(height: Kx.s8),
-            bar,
+            if (Edition.classroom && !compact) ToolbarDensity(compact: false, child: bar) else bar,
           ],
         );
       },

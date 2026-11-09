@@ -56,6 +56,13 @@ void main() {
       await tester.pumpWidget(RepaintBoundary(key: const Key('ce-shot'), child: appFor(board)));
       await settle(tester);
       await _shot(tester, '$tag-01-start');
+      await _tapIf(tester, 'ce-help');
+      await _tapIf(tester, 'ce-help-topic-quiz');
+      await _shot(tester, '$tag-08-help');
+      if (find.byKey(const Key('ce-help-print')).evaluate().isNotEmpty) {
+        Navigator.of(tester.element(find.byKey(const Key('ce-help-print')))).pop();
+        await settle(tester);
+      }
       await openCeSettings(tester);
       await _shot(tester, '$tag-07-settings-timetable');
       Navigator.of(tester.element(find.byKey(const Key('ce-settings-page')))).pop();
@@ -80,6 +87,25 @@ void main() {
       await _tapIf(tester, 'ce-lessons');
       await settle(tester, 6);
       await _shot(tester, '$tag-06-lessons-panel');
+      await closeBoard(tester, board);
+    });
+
+    testWidgets('set-up wizard: $tag', (tester) async {
+      final board = (await tester.runAsync(() => classroomBoard(setupDone: false)))!;
+      if (kn) board.setBoardLanguage(BoardLanguage.kn);
+      tester.view
+        ..physicalSize = size
+        ..devicePixelRatio = dpr;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(RepaintBoundary(key: const Key('ce-shot'), child: appFor(board)));
+      await settle(tester);
+      await tester.enterText(find.byKey(const Key('ce-wizard-college')), 'Soundarya PU College');
+      await _tapIf(tester, 'ce-wizard-next');
+      await _shot(tester, '$tag-09-wizard-classes');
+      await _tapIf(tester, 'ce-wizard-next');
+      await _tapIf(tester, 'ce-wizard-next');
+      await _tapIf(tester, 'ce-bells-preset-day');
+      await _shot(tester, '$tag-10-wizard-bells');
       await closeBoard(tester, board);
     });
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import '../../../classroom_edition/edition.dart';
+import '../../../classroom_edition/l10n/ce_strings.dart';
 import '../../../classroom_edition/ui/ce_scroll_row.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
@@ -26,8 +27,8 @@ extension PanelTabInfo on PanelTab {
   };
 
   String label(LayoutStrings s) => switch (this) {
-    PanelTab.lessons => 'Lessons',
-    PanelTab.classTools => 'Class tools',
+    PanelTab.lessons => ceTr('Lessons'),
+    PanelTab.classTools => ceTr('Class tools'),
     PanelTab.ai => s.tabAi,
     PanelTab.model3d => s.tab3d,
     PanelTab.labs => s.tabLabs,
