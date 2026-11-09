@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Zynetix Classroom (src/classroom/AndroidManifest.xml): what Android may copy off the board.
+     Nothing goes to a cloud backup: the settings file holds the school PIN's hash (and its
+     recovery code's), which a short PIN cannot protect once it leaves the board. The college's
+     backups are the app's own (Settings → Backup & restore: Documents/Zynetix and a USB drive).
+     A device-to-device transfer (a new board set up from this one, cable or Wi-Fi, in the
+     college) takes everything but the secure storage, whose keys stay in this board's keystore. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="."/>
+        <exclude domain="file" path="."/>
+        <exclude domain="database" path="."/>
+        <exclude domain="sharedpref" path="."/>
+        <exclude domain="external" path="."/>
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="FlutterSecureStorage.xml"/>
+    </device-transfer>
+</data-extraction-rules>

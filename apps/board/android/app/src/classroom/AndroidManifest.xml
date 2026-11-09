@@ -16,6 +16,13 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove"/>
     <uses-feature android:name="android.hardware.camera" tools:node="remove"/>
     <uses-feature android:name="android.hardware.camera.any" tools:node="remove"/>
+    <!-- No Android backup to the cloud (Android 9-11: allowBackup; 12+: the rules): the settings
+         hold the school PIN's hash. The college keeps its own backups (Settings → Backup & restore). -->
+    <application
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/classroom_data_extraction_rules"
+        tools:replace="android:allowBackup,android:fullBackupContent,android:dataExtractionRules"/>
     <queries>
         <!-- Whether the board has a print service (a printer app), to lead with Save when not. -->
         <intent>

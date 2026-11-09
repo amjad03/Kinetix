@@ -94,8 +94,11 @@ android {
     defaultConfig {
         // Permanent once published (docs/operations/mobile-release.md).
         applicationId = if (classroomEdition) "in.zynetix.classroom" else "in.kinetix.board"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        // Zynetix Classroom runs on Android 9-13 panels: Android 9 (API 28) at least, and a target
+        // pinned here rather than following Flutter's default, so a Flutter upgrade cannot change
+        // the app's behaviour on the panels unnoticed. The KINETIX Board follows Flutter.
+        minSdk = if (classroomEdition) 28 else flutter.minSdkVersion
+        targetSdk = if (classroomEdition) 36 else flutter.targetSdkVersion
         // From `version: x.y.z+build` in pubspec.yaml. With --split-per-abi Flutter adds 1000 * ABI.
         // The Classroom edition: classroomVersion above.
         versionCode = if (classroomEdition) classroomVersion[1].toInt() else flutter.versionCode

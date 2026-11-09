@@ -48,6 +48,17 @@ to the build: armeabi-v7a 1xxx, arm64-v8a 2xxx (1.0.0 was 1001 / 2001). It needs
 `KINETIX_API_URL`: without it a release starts offline and "Pair with Teacher App" asks for the
 server address (`resolveServerUrl` in `core/server_config.dart`).
 
+### Android set-up
+
+`minSdk` 28 (Android 9) and `targetSdk` 36, pinned in `build.gradle.kts` for this edition (the
+KINETIX Board follows Flutter's). No Android backup to the cloud (`allowBackup="false"`, and
+`res/xml/classroom_data_extraction_rules.xml` on Android 12+): the settings file holds the school
+PIN's hash; the college's backups are its own (Backup & restore). A device-to-device transfer
+takes everything but the secure storage. The APK asks for INTERNET, RECEIVE_BOOT_COMPLETED,
+WRITE_EXTERNAL_STORAGE (Android 9 only), REQUEST_INSTALL_PACKAGES and SYSTEM_ALERT_WINDOW, and
+none of CAMERA or RECORD_AUDIO (`test/classroom_edition/android_config_test.dart`; check a
+release with `aapt2 dump permissions`).
+
 ### Updates without the Play Store
 
 Settings → This board → App updates (`update/`): **Check for update** reads
