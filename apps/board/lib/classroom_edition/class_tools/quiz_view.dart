@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../ui/ce_style.dart';
@@ -5,15 +7,48 @@ import 'bank.dart';
 import 'class_logic.dart';
 import 'tool_ui.dart';
 
+/// A class quiz with its questions chosen already (a past paper's, `past_papers/`): no setup,
+/// its own title, the paper's pictures on the board and the exam's marking per roll number.
+class PresetQuiz {
+  const PresetQuiz({required this.title, required this.questions, this.line = '', this.topicTitles = const {}, this.picture, this.score, this.scoreLine = '', this.onFinish, this.backTo, this.backArg});
+
+  /// "NEET 2023 · class quiz".
+  final String title;
+  final List<BankQuestion> questions;
+
+  /// Under the summary's title ("NEET 2023 · Electrostatics").
+  final String line;
+
+  /// The record's topic title by question id (its chapter tag).
+  final Map<String, String> topicTitles;
+
+  /// The question's picture, put on the board above its options.
+  final Future<Uint8List?> Function(BankQuestion q)? picture;
+
+  /// Marks for a right ([right] true) or wrong answer under the exam's marking.
+  final double Function(BankQuestion q, bool right)? score;
+
+  /// "NEET marking: +4 right, −1 wrong".
+  final String scoreLine;
+
+  /// Called with each present roll number's total when the quiz ends.
+  final Future<void> Function(Map<int, double> totals)? onFinish;
+
+  /// The tool (and its argument) the back arrow returns to, else the hub.
+  final String? backTo;
+  final Object? backArg;
+}
+
 /// Class quiz with no phones: the question goes on the board, the class answers aloud or on
 /// paper, and the teacher taps roll numbers right or wrong (absent ones are skipped). Each
 /// question's marks are kept by roll number for the mastery map. [topicKeys] ("chapterId|t3")
 /// starts a revision quiz on those topics.
 class ClassQuizView extends StatefulWidget {
-  const ClassQuizView({super.key, required this.env, this.topicKeys = const []});
+  const ClassQuizView({super.key, required this.env, this.topicKeys = const [], this.preset});
 
   final ToolEnv env;
   final List<String> topicKeys;
+  final PresetQuiz? preset;
 
   @override
   State<ClassQuizView> createState() => _ClassQuizViewState();
@@ -36,10 +71,26 @@ class _ClassQuizViewState extends State<ClassQuizView> {
 
   BankChapter? get chapter => env.bank.chapter(chapterId);
   BankQuestion get q => questions[index];
+  PresetQuiz? get preset => widget.preset;
+
+  /// Each present roll number's marks so far under the preset's marking.
+  final totals = <int, double>{};
+
+  void _back() {
+    final p = preset;
+    p?.backTo == null ? env.back() : env.open(p!.backTo!, arg: p.backArg);
+  }
 
   @override
   void initState() {
     super.initState();
+    final p = preset;
+    if (p != null) {
+      questions = p.questions;
+      _fresh();
+      if (questions.isNotEmpty) WidgetsBinding.instance.addPostFrameCallback((_) => mounted ? _putQuestion() : null);
+      return;
+    }
     if (widget.topicKeys.isNotEmpty) WidgetsBinding.instance.addPostFrameCallback((_) => mounted ? _start() : null);
   }
 
@@ -60,13 +111,24 @@ class _ClassQuizViewState extends State<ClassQuizView> {
   void _fresh() => marks = QuizMarks(rolls: env.rolls, absent: env.absent);
 
   /// The question (and options) on a fresh page of the board.
-  void _putQuestion() {
+  Future<void> _putQuestion() async {
     if (!onBoard || questions.isEmpty) return;
     final host = env.host;
+    final question = q;
+    final picture = await preset?.picture?.call(question);
+    if (!mounted || question != q) return;
     if (host.wb.elements.isNotEmpty) host.newPage();
+    if (picture != null) {
+      await host.putImage(picture, width: 1100, title: 'Q${index + 1}.${question.stem.isEmpty ? '' : ' ${question.stem}'}', at: const Offset(96, 120));
+      host.putElements(
+        boardLines([for (final (i, o) in question.options.indexed) (wrapText('${String.fromCharCode(65 + i)}   $o', 24), 40, false)], env.ink, gap: 18),
+        at: const Offset(1260, 220),
+      );
+      return;
+    }
     host.putElements(
       boardLines(
-        [(wrapText('Q${index + 1}. ${q.stem}', 32), 52, true), ('', 12, false), for (final (i, o) in q.options.indexed) (wrapText('${String.fromCharCode(65 + i)}   $o', 38), 44, false)],
+        [(wrapText('Q${index + 1}. ${question.stem}', 32), 52, true), ('', 12, false), for (final (i, o) in question.options.indexed) (wrapText('${String.fromCharCode(65 + i)}   $o', 38), 44, false)],
         env.ink,
         gap: 18,
       ),
@@ -75,8 +137,18 @@ class _ClassQuizViewState extends State<ClassQuizView> {
   }
 
   Future<void> _save() async {
-    final rec = marks.record(at: env.now(), q: q, topicTitle: chapter?.topicTitle(q.topic) ?? '');
+    final rec = marks.record(at: env.now(), q: q, topicTitle: preset?.topicTitles[q.id] ?? chapter?.topicTitle(q.topic) ?? '');
     results.add((q, marks.right.length, marks.wrong.length, marks.notMarked));
+    final score = preset?.score;
+    if (score != null) {
+      for (final r in marks.present) {
+        totals[r] = (totals[r] ?? 0) + switch (marks.of(r)) {
+          Mark.right => score(q, true),
+          Mark.wrong => score(q, false),
+          Mark.none => 0,
+        };
+      }
+    }
     if (rec != null) await env.records.addQuiz(rec);
   }
 
@@ -85,6 +157,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
     if (!mounted) return;
     if (index == questions.length - 1) {
       setState(() => finished = true);
+      await preset?.onFinish?.call(Map.of(totals));
       return;
     }
     setState(() {
@@ -107,6 +180,19 @@ class _ClassQuizViewState extends State<ClassQuizView> {
 
   @override
   Widget build(BuildContext context) {
+    if (preset != null) {
+      if (questions.isEmpty) {
+        return Column(
+          children: [
+            ToolHeader(title: preset!.title, onBack: _back),
+            const Expanded(
+              child: ToolEmpty(icon: Icons.quiz_outlined, title: 'No questions to ask', line: 'This paper has no multiple-choice questions for a class quiz.'),
+            ),
+          ],
+        );
+      }
+      return finished ? _summary() : _asking();
+    }
     if (env.bank.chapters.isEmpty || env.bank.chapters.every((c) => c.questions.isEmpty)) {
       return Column(
         children: [
@@ -207,8 +293,8 @@ class _ClassQuizViewState extends State<ClassQuizView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ToolHeader(
-            title: 'Class quiz',
-            onBack: env.back,
+            title: preset?.title ?? 'Class quiz',
+            onBack: _back,
             pill: toolPill('Question ${index + 1} of ${questions.length}', key: const Key('ce-quiz-progress')),
             trailing: [toolPill('No phones needed', icon: Icons.phonelink_erase_outlined, bg: CeC.mint)],
           ),
@@ -266,7 +352,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          q.stem,
+          q.stem.isEmpty ? 'The question is the picture on the board.' : q.stem,
           key: const Key('ce-quiz-stem'),
           maxLines: 5,
           overflow: TextOverflow.ellipsis,
@@ -372,6 +458,38 @@ class _ClassQuizViewState extends State<ClassQuizView> {
     );
   }
 
+  /// Each present roll number's score under the exam's marking, highest first.
+  Widget _scores() {
+    final rows = totals.entries.toList()..sort((a, b) => b.value != a.value ? b.value.compareTo(a.value) : a.key.compareTo(b.key));
+    String n(double v) => v == v.roundToDouble() ? '${v.toInt()}'.replaceFirst('-', '−') : v.toStringAsFixed(1).replaceFirst('-', '−');
+    return Container(
+      key: const Key('ce-quiz-scores'),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(color: CeC.butter, borderRadius: BorderRadius.circular(22)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Scores by roll number', style: ceHeading(22)),
+          const SizedBox(height: 4),
+          Text(preset!.scoreLine, style: ceText(15)),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final e in rows)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                  child: Text('${rollLabel(e.key)}   ${n(e.value)}', style: ceText(16, w: FontWeight.w600, c: CeC.navy)),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _stat(String n, String label, Color bg, Color fg, Key key) => Container(
     key: key,
     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -399,13 +517,14 @@ class _ClassQuizViewState extends State<ClassQuizView> {
       padding: EdgeInsets.zero,
       children: [
         ToolHeader(
-          title: 'Class quiz',
-          onBack: env.back,
+          title: preset?.title ?? 'Class quiz',
+          onBack: _back,
           pill: toolPill('Done', icon: Icons.check, bg: CeC.mint),
         ),
         const SizedBox(height: 8),
-        Text('${c?.title ?? ''} · saved by roll number for the mastery map', style: ceText(17)),
+        Text('${preset?.line ?? c?.title ?? ''} · saved by roll number for the mastery map', style: ceText(17)),
         const SizedBox(height: 18),
+        if (preset?.score != null && totals.isNotEmpty) ...[_scores(), const SizedBox(height: 18)],
         for (final (i, (q, right, wrong, _)) in results.indexed)
           Container(
             margin: const EdgeInsets.only(bottom: 10),
@@ -416,7 +535,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
                 SizedBox(width: 44, child: Text('Q${i + 1}', style: ceHeading(20))),
                 Expanded(
                   child: Text(
-                    q.stem,
+                    q.stem.isEmpty ? 'The question in the picture' : q.stem,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: ceText(16, c: CeC.body),
@@ -454,7 +573,10 @@ class _ClassQuizViewState extends State<ClassQuizView> {
               onPressed: () => env.open('mastery', arg: chapterId),
               key: const Key('ce-quiz-mastery'),
             ),
-            toolButton('Another quiz', icon: Icons.refresh, onPressed: () => setState(() => questions = const [])),
+            if (preset == null)
+              toolButton('Another quiz', icon: Icons.refresh, onPressed: () => setState(() => questions = const []))
+            else
+              toolButton('Back to the paper', icon: Icons.arrow_back_rounded, onPressed: _back, key: const Key('ce-quiz-back-to-paper')),
           ],
         ),
       ],

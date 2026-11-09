@@ -40,3 +40,5 @@ apps/board/assets/private/lessons/*
 # apps/board/tool/build_class_bank.py (never committed).
 apps/board/assets/private/class_tools/*
 !apps/board/assets/private/class_tools/README.txt
+# Past papers bundled into the Classroom edition (exam papers are never committed).
+apps/board/assets/private/past_papers/
