@@ -60,6 +60,17 @@ Future<void> typePin(WidgetTester tester, String pin) async {
   await settle(tester);
 }
 
+/// Answers the school PIN pad with [pin]; while the PIN is still 1234 the first set-up makes
+/// the college choose [newPin] and shows the recovery code.
+Future<void> enterSchoolPin(WidgetTester tester, {String pin = '1234', String newPin = '2580'}) async {
+  await typePin(tester, pin);
+  if (find.byKey(const Key('ce-new-pin-dialog')).evaluate().isNotEmpty) {
+    await typePin(tester, newPin);
+    await typePin(tester, newPin);
+    await tapKey(tester, 'ce-recovery-done');
+  }
+}
+
 /// Opens College settings from the start screen with [pin]; while the PIN is still 1234 the
 /// first set-up makes the college choose [newPin] and shows the recovery code.
 Future<void> openCeSettings(WidgetTester tester, {String pin = '1234', String newPin = '2580'}) async {

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../class_tools/tool_ui.dart';
 import '../local/classroom_store.dart';
+import '../settings/pin_pad.dart' show askSchoolPin;
 import '../ui/ce_style.dart';
 import 'exam_rules.dart';
 import 'filename_guess.dart';
@@ -24,57 +25,10 @@ Future<List<PickedPaperFile>> _systemPicker() async {
   return [for (final f in files) (name: f.name, bytes: await f.xFile.readAsBytes())];
 }
 
-/// Asks for the school PIN before papers are added or removed. True when it was right.
-Future<bool> askPapersPin(BuildContext context, ClassroomStore store, {String why = 'Adding papers changes the library for everyone who uses this board.'}) async {
-  final pin = TextEditingController();
-  String? error;
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => StatefulBuilder(
-      builder: (ctx, set) {
-        void check() {
-          if (store.checkPin(pin.text)) {
-            Navigator.pop(ctx, true);
-          } else {
-            set(() => error = 'That is not the school PIN.');
-            pin.clear();
-          }
-        }
-
-        return AlertDialog(
-          key: const Key('ce-papers-pin-dialog'),
-          title: const Text('School PIN'),
-          content: SizedBox(
-            width: 380,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(why),
-                const SizedBox(height: 12),
-                TextField(
-                  key: const Key('ce-papers-pin'),
-                  controller: pin,
-                  autofocus: true,
-                  obscureText: true,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
-                  decoration: InputDecoration(labelText: 'PIN', errorText: error),
-                  onSubmitted: (_) => check(),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-            FilledButton(key: const Key('ce-papers-pin-ok'), onPressed: check, child: const Text('Continue')),
-          ],
-        );
-      },
-    ),
-  );
-  return ok == true;
-}
+/// Asks for the school PIN before papers are added or removed (the college's number pad, with
+/// its lockout and the first set-up's change from 1234). True when it was right.
+Future<bool> askPapersPin(BuildContext context, ClassroomStore store, {String why = 'Adding papers changes the library for everyone who uses this board.'}) =>
+    askSchoolPin(context, store, reason: why);
 
 /// The "Add papers" page (after the PIN). [files]: already picked (else it starts by asking).
 Future<ImportReport?> openAddPapers(BuildContext context, PaperLibrary lib, {List<PickedPaperFile>? files}) =>

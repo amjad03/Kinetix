@@ -8,7 +8,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinetix_board/classroom_edition/class_tools/bank.dart';
 import 'package:kinetix_board/classroom_edition/edition.dart';
-import 'package:kinetix_board/classroom_edition/local/classroom_store.dart';
 import 'package:kinetix_board/classroom_edition/past_papers/exam_rules.dart';
 import 'package:kinetix_board/classroom_edition/past_papers/paper_import.dart';
 import 'package:kinetix_board/classroom_edition/past_papers/paper_library.dart';
@@ -76,8 +75,7 @@ void main() {
     pickPaperFiles = () async => [(name: 'KCET_2022_Chemistry.pdf', bytes: kcet), (name: 'kcet 2022 chemistry answer key.pdf', bytes: kcetKey), (name: 'sample-papers.zip', bytes: pack)];
     addTearDown(() => pickPaperFiles = () async => const []);
     await tapKey(tester, 'ce-papers-empty-add');
-    await tester.enterText(find.byKey(const Key('ce-papers-pin')), ClassroomStore.defaultPin);
-    await tapKey(tester, 'ce-papers-pin-ok');
+    await enterSchoolPin(tester);
     await tapKey(tester, 'ce-papers-pick');
     await loaded(tester, 4);
     await tester.enterText(find.byKey(const Key('ce-papers-source-0')), 'Sample (made up for screenshots)');

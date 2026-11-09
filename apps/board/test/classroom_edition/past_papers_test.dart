@@ -12,7 +12,6 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_board/classroom_edition/class_tools/bank.dart';
 import 'package:kinetix_board/classroom_edition/class_tools/class_records.dart';
 import 'package:kinetix_board/classroom_edition/edition.dart';
-import 'package:kinetix_board/classroom_edition/local/classroom_store.dart';
 import 'package:kinetix_board/classroom_edition/past_papers/exam_rules.dart';
 import 'package:kinetix_board/classroom_edition/past_papers/exam_timer.dart';
 import 'package:kinetix_board/classroom_edition/past_papers/filename_guess.dart';
@@ -500,12 +499,11 @@ void main() {
       pickPaperFiles = () async => [(name: 'KCET_2023_Physics.pdf', bytes: pdfA), (name: 'KCET 2023 Physics key.pdf', bytes: keyA), (name: 'sample.zip', bytes: pack)];
       addTearDown(() => pickPaperFiles = () async => const []);
       await tapKey(tester, 'ce-papers-empty-add');
-      expect(find.byKey(const Key('ce-papers-pin-dialog')), findsOneWidget);
-      await tester.enterText(find.byKey(const Key('ce-papers-pin')), '9999');
-      await tapKey(tester, 'ce-papers-pin-ok');
-      expect(find.text('That is not the school PIN.'), findsOneWidget);
-      await tester.enterText(find.byKey(const Key('ce-papers-pin')), ClassroomStore.defaultPin);
-      await tapKey(tester, 'ce-papers-pin-ok');
+      // The school PIN on its number pad (the first time, the college then chooses its own).
+      expect(find.byKey(const Key('ce-pin-pad')), findsOneWidget);
+      await typePin(tester, '9999');
+      expect(find.textContaining('That is not the school PIN.'), findsOneWidget);
+      await enterSchoolPin(tester);
       expect(find.byKey(const Key('ce-papers-add-start')), findsOneWidget);
       await tapKey(tester, 'ce-papers-pick');
       await loaded(tester, 3);
