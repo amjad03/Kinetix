@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../backup/backup_page.dart';
 import '../local/classroom_store.dart';
 import '../start/classroom_start.dart' show editTeacher;
 import '../ui/ce_confirm.dart';
@@ -33,7 +34,7 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   Widget build(BuildContext context) => Theme(
     data: ceTheme(context),
     child: DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         key: const Key('ce-settings-page'),
         backgroundColor: CeC.page,
@@ -47,12 +48,13 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
               Tab(key: Key('ce-tab-teachers'), text: 'Teachers'),
               Tab(key: Key('ce-tab-classes'), text: 'Classes'),
               Tab(key: Key('ce-tab-college'), text: 'College and PIN'),
+              Tab(key: Key('ce-tab-backup'), text: 'Backup & restore'),
             ],
           ),
         ),
         body: ListenableBuilder(
           listenable: store,
-          builder: (context, _) => TabBarView(children: [_timetable(), _teachers(), _classes(), _collegeTab()]),
+          builder: (context, _) => TabBarView(children: [_timetable(), _teachers(), _classes(), _collegeTab(), BackupTab(store: store)]),
         ),
       ),
     ),

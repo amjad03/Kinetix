@@ -42,6 +42,21 @@ class MainActivity : FlutterActivity() {
                 result.error("gallery", e.message, null)
             }
         }
+        // Classroom edition: backups and exports into Documents/Zynetix (DocumentSaver.kt).
+        val documents = DocumentSaver(this)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "zynetix/documents").setMethodCallHandler { call, result ->
+            try {
+                val folder = call.argument<String>("folder") ?: "Zynetix"
+                when (call.method) {
+                    "save" -> result.success(documents.save(folder, call.argument<String>("name")!!, call.argument<ByteArray>("bytes")!!, call.argument<String>("mime") ?: "application/octet-stream"))
+                    "list" -> result.success(documents.list(folder))
+                    "prune" -> result.success(documents.prune(folder, call.argument<String>("prefix") ?: "", call.argument<Int>("keep") ?: 14))
+                    else -> result.notImplemented()
+                }
+            } catch (e: Exception) {
+                result.error("documents", e.message, null)
+            }
+        }
         // Projector mode: the board on a second display (Projector.kt).
         val presenter = Presenter(this)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kinetix/presenter").setMethodCallHandler { call, result ->

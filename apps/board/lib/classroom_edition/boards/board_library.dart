@@ -226,6 +226,9 @@ class LocalBoardLibrary extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The files changed under the library (a backup was restored).
+  void changed() => notifyListeners();
+
   Future<String> _base(LocalBoardEntry e) async => '${(await _folder(e.teacherId, e.classId)).path}${Platform.pathSeparator}${e.id}';
 
   static Future<void> _write(File f, List<int> bytes) async {

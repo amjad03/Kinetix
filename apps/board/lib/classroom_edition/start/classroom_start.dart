@@ -5,6 +5,8 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../features/enrollment/enroll_screen.dart';
+import '../backup/backup.dart';
+import '../backup/backup_page.dart' show restoreBackupFlow;
 import '../classroom_hooks.dart';
 import '../local/classroom_store.dart';
 import '../local/local_class.dart';
@@ -26,7 +28,16 @@ class ClassroomStart extends StatefulWidget {
 
   /// Restores a backup after the school PIN (Settings → Backup & restore); offered when the
   /// saved set-up could not be read.
-  static Future<void> Function(BuildContext context, ClassroomStore store)? restoreBackup;
+  static Future<void> Function(BuildContext context, ClassroomStore store)? restoreBackup = restoreBackupFlow;
+
+  /// Today's daily backup, made when the start screen first shows each day (tests replace it).
+  static Future<void> Function(ClassroomStore store) dailyBackup = (store) async {
+    try {
+      await BackupService(store: store).ensureDaily();
+    } catch (e) {
+      debugPrint('Daily backup not made: $e');
+    }
+  };
 
   @override
   State<ClassroomStart> createState() => _ClassroomStartState();
@@ -47,6 +58,7 @@ class _ClassroomStartState extends State<ClassroomStart> {
   void initState() {
     super.initState();
     store.addListener(_changed);
+    unawaited(ClassroomStart.dailyBackup(store));
   }
 
   @override

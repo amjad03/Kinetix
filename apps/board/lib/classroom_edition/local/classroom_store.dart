@@ -215,6 +215,9 @@ class ClassroomStore extends ChangeNotifier {
 
   final DeviceStore _store;
 
+  /// The board's settings store (the Class tools keep each class's marks in it).
+  DeviceStore get deviceStore => _store;
+
   /// The clock the timetable is read with (tests set it).
   DateTime Function() now;
 
