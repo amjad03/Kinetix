@@ -11,6 +11,9 @@ flutter build apk --dart-define=KINETIX_EDITION=classroom      # Android: in.zyn
 flutter run --dart-define=KINETIX_EDITION=classroom
 ```
 
+Sizes (arm64-v8a / armeabi-v7a): 1.0.0 was 179.4 / 169.5 MB; 1.1.0 is 90.8 / 90.8 MB (with
+Pyodide's core for the code lab, which 1.0.0 lacked).
+
 A release APK (signed with the Zynetix release key through the `KINETIX_ANDROID_*` variables,
 docs/operations/mobile-release.md; build the private assets first, below):
 
@@ -39,7 +42,8 @@ What the Classroom APK leaves out (the KINETIX Board keeps all of it; `android/a
 * Native libraries are stored compressed (`useLegacyPackaging`): a smaller download, unpacked
   by Android at install.
 * R8 stays off (`-Pkinetix.minify=true` turns it on, keep rules in `android/app/proguard-rules.pro`):
-  it builds and saves about 7 MB more, but it has not been run on a panel yet.
+  it builds (keep rules cover the plugins, the WebView bridges and package:jni) and takes the
+  arm64 APK from 90.8 MB to 79.5 MB, but no minified APK has run on a panel yet.
 
 The edition has its own version, `classroom_version:` in `apps/board/pubspec.yaml` (x.y.z+build;
 bump the build for every release; `--dart-define=KINETIX_CLASSROOM_VERSION=…` or
