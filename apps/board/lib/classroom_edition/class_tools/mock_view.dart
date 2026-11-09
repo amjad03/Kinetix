@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../ui/ce_style.dart';
+import '../ui/pdf_out.dart';
 import 'bank.dart';
 import 'class_logic.dart';
 import 'class_records.dart';
@@ -72,7 +73,9 @@ class _MockTestViewState extends State<MockTestView> {
     return m;
   }
 
-  Future<void> _out({required bool print}) async {
+  /// [print]: n copies to the printer; [save]: every set once, to a USB drive or Downloads (to
+  /// print from a computer); else the share sheet.
+  Future<void> _out({required bool print, bool save = false}) async {
     final p = paper;
     if (p.isEmpty) return;
     setState(() => busy = true);
@@ -80,8 +83,15 @@ class _MockTestViewState extends State<MockTestView> {
       await _record(p);
       final sets = shuffle ? [p.copyWith(set: 'A'), shuffledPaper(p, seed: seed + 1)] : [p];
       final copies = print ? env.present.length.clamp(1, 200) : 1;
-      final bytes = await paperPdf(print ? sets : [sets.first], copies: copies);
-      await (print ? ClassToolsOut.print : ClassToolsOut.share)(bytes, p.fileName);
+      final bytes = await paperPdf(print || save ? sets : [sets.first], copies: copies);
+      if (!mounted) return;
+      if (save) {
+        await ceSavePdf(context, bytes, p.fileName);
+      } else if (print) {
+        await cePrintOrSave(context, bytes, p.fileName, ClassToolsOut.print);
+      } else {
+        await ClassToolsOut.share(bytes, p.fileName);
+      }
     } catch (e) {
       env.host.showMessage(ceTr('Could not make the PDF: {error}', {'error': e}));
     } finally {
@@ -249,13 +259,17 @@ class _MockTestViewState extends State<MockTestView> {
       if (!wide) ...[const SizedBox(height: 20), SizedBox(height: 760, child: PaperDesk(paper: p))],
       const SizedBox(height: 20),
     ];
+    final save = toolButton(cePdfSaveLabel(context), icon: Icons.save_alt, filled: CePdfOut.leadWithSave, onPressed: busy || p.isEmpty ? null : () => _out(print: false, save: true), key: const Key('ce-mock-save'));
     final actions = Wrap(
       spacing: 12,
       runSpacing: 12,
       children: [
         toolButton(ceTr('Put on board'), icon: Icons.co_present_outlined, onPressed: p.isEmpty ? null : _putOnBoard, key: const Key('ce-mock-board')),
+        // No print service on this board: Save leads (ui/pdf_out.dart).
+        if (CePdfOut.leadWithSave) save,
         toolButton(ceTr('Export PDF'), icon: Icons.picture_as_pdf_outlined, onPressed: busy || p.isEmpty ? null : () => _out(print: false), key: const Key('ce-mock-pdf')),
-        toolButton(ceTr('Print {n} copies', {'n': env.present.length}), icon: Icons.print_outlined, filled: true, onPressed: busy || p.isEmpty ? null : () => _out(print: true), key: const Key('ce-mock-print')),
+        toolButton(ceTr('Print {n} copies', {'n': env.present.length}), icon: Icons.print_outlined, filled: !CePdfOut.leadWithSave, onPressed: busy || p.isEmpty ? null : () => _out(print: true), key: const Key('ce-mock-print')),
+        if (!CePdfOut.leadWithSave) save,
       ],
     );
     return Column(

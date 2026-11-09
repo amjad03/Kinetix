@@ -17,6 +17,10 @@
     <uses-feature android:name="android.hardware.camera" tools:node="remove"/>
     <uses-feature android:name="android.hardware.camera.any" tools:node="remove"/>
     <queries>
+        <!-- Whether the board has a print service (a printer app), to lead with Save when not. -->
+        <intent>
+            <action android:name="android.printservice.PrintService"/>
+        </intent>
         <!-- Voice questions to KINETIX AI (speech_to_text): not in this edition. -->
         <intent tools:node="remove">
             <action android:name="android.speech.RecognitionService"/>

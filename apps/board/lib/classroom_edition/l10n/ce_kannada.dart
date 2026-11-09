@@ -149,7 +149,6 @@ const ceKannada = <String, String>{
   'Copy the paper PDFs, or a Zynetix paper pack (.zip), onto a USB stick.': 'ಪತ್ರಿಕೆಗಳ PDFಗಳನ್ನು, ಅಥವಾ Zynetix ಪೇಪರ್ ಪ್ಯಾಕ್ (.zip) ಅನ್ನು USB ಸ್ಟಿಕ್‌ಗೆ ಕಾಪಿ ಮಾಡಿ.',
   'Copy this day to…': 'ಈ ದಿನವನ್ನು ಇನ್ನೊಂದು ದಿನಕ್ಕೆ ಕಾಪಿ ಮಾಡಿ…',
   'Copy this day to… fills the other days in one go. A clash is marked in orange.': '‘ಈ ದಿನವನ್ನು ಕಾಪಿ ಮಾಡಿ…’ ಉಳಿದ ದಿನಗಳನ್ನು ಒಮ್ಮೆಗೇ ತುಂಬುತ್ತದೆ. ಡಿಕ್ಕಿಯನ್ನು ಕಿತ್ತಳೆ ಬಣ್ಣದಲ್ಲಿ ಗುರುತಿಸಲಾಗುತ್ತದೆ.',
-  'Copy to USB…': 'USBಗೆ ಕಾಪಿ ಮಾಡಿ…',
   'Copy to a USB drive to keep a copy off the board.': 'ಬೋರ್ಡ್‌ನ ಹೊರಗೂ ಒಂದು ಪ್ರತಿ ಇಡಲು USB ಡ್ರೈವ್‌ಗೆ ಕಾಪಿ ಮಾಡಿ.',
   'Copy to a USB drive…': 'USB ಡ್ರೈವ್‌ಗೆ ಕಾಪಿ ಮಾಡಿ…',
   'Copy {day} to…': '{day} ಅನ್ನು ಕಾಪಿ ಮಾಡಿ…',
@@ -824,4 +823,11 @@ const ceKannada = <String, String>{
   'Make Zynetix the home app': 'Zynetix ಅನ್ನು ಹೋಮ್ ಆ್ಯಪ್ ಮಾಡಿ',
   'Stop offering Zynetix as a home app': 'Zynetix ಅನ್ನು ಹೋಮ್ ಆ್ಯಪ್ ಆಗಿ ನೀಡುವುದನ್ನು ನಿಲ್ಲಿಸಿ',
   'Some panels stop apps from starting by themselves (an “auto-start” or “boot manager” setting): allow Zynetix Classroom there too.': 'ಕೆಲವು ಪ್ಯಾನೆಲ್‌ಗಳು ಆ್ಯಪ್‌ಗಳು ತಾವೇ ಆರಂಭವಾಗುವುದನ್ನು ತಡೆಯುತ್ತವೆ (“ಆಟೋ-ಸ್ಟಾರ್ಟ್” ಅಥವಾ “ಬೂಟ್ ಮ್ಯಾನೇಜರ್” ಸೆಟ್ಟಿಂಗ್): ಅಲ್ಲಿಯೂ Zynetix Classroom ಅನ್ನು ಅನುಮತಿಸಿ.',
+  // Saving PDFs on boards with no print service (ui/pdf_out.dart).
+  'Save PDF to USB / Downloads…': 'PDF ಅನ್ನು USB / ಡೌನ್‌ಲೋಡ್ಸ್‌ಗೆ ಉಳಿಸಿ…',
+  'Saved {name}.': '{name} ಉಳಿಸಲಾಗಿದೆ.',
+  'This board cannot print': 'ಈ ಬೋರ್ಡ್ ಮುದ್ರಿಸಲಾರದು',
+  'There is no print service on this board. Save the PDF to a USB drive or Downloads and print it from a computer.': 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ ಮುದ್ರಣ ಸೇವೆ ಇಲ್ಲ. PDF ಅನ್ನು USB ಡ್ರೈವ್ ಅಥವಾ ಡೌನ್‌ಲೋಡ್ಸ್‌ಗೆ ಉಳಿಸಿ, ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ಮುದ್ರಿಸಿ.',
+  'Saved to {where}. This board cannot print: copy it to a USB drive and print it from a computer.': '{where} ಗೆ ಉಳಿಸಲಾಗಿದೆ. ಈ ಬೋರ್ಡ್ ಮುದ್ರಿಸಲಾರದು: ಅದನ್ನು USB ಡ್ರೈವ್‌ಗೆ ನಕಲಿಸಿ ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ಮುದ್ರಿಸಿ.',
+  'Copy to USB / Downloads…': 'USB / ಡೌನ್‌ಲೋಡ್ಸ್‌ಗೆ ನಕಲಿಸಿ…',
 };

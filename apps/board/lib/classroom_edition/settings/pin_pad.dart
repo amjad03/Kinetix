@@ -10,6 +10,7 @@ import 'package:printing/printing.dart';
 
 import '../local/classroom_store.dart';
 import '../ui/ce_style.dart';
+import '../ui/pdf_out.dart';
 import '../l10n/ce_strings.dart';
 import '../ui/ce_pdf_text.dart';
 
@@ -421,7 +422,10 @@ Future<void> showRecoveryCode(BuildContext context, String code, {String college
             runSpacing: 12,
             alignment: WrapAlignment.center,
             children: [
+              // No print service on this board: the PDF to a USB drive or Downloads comes first.
+              if (CePdfOut.leadWithSave) OutlinedButton.icon(key: Key('ce-recovery-save-pdf'), style: ceSoftButton(), onPressed: () => unawaited(_print(ctx, code, college, save: true)), icon: Icon(Icons.picture_as_pdf_outlined), label: Text(cePdfSaveLabel(context))),
               OutlinedButton.icon(key: Key('ce-recovery-print'), style: ceSoftButton(), onPressed: () => unawaited(_print(ctx, code, college)), icon: Icon(Icons.print_outlined), label: Text(context.ce('Print'))),
+              if (!CePdfOut.leadWithSave) OutlinedButton.icon(key: Key('ce-recovery-save-pdf'), style: ceSoftButton(), onPressed: () => unawaited(_print(ctx, code, college, save: true)), icon: Icon(Icons.picture_as_pdf_outlined), label: Text(cePdfSaveLabel(context))),
               OutlinedButton.icon(key: Key('ce-recovery-save'), style: ceSoftButton(), onPressed: () => unawaited(_saveCode(ctx, code, college)), icon: Icon(Icons.save_alt), label: Text(context.ce('Save as a file'))),
             ],
           ),
@@ -435,10 +439,16 @@ Future<void> showRecoveryCode(BuildContext context, String code, {String college
 String _codeText(String code, String college) =>
     'Zynetix Classroom: school PIN recovery code\n${college.isEmpty ? '' : '$college\n'}\n$code\n\nIf the school PIN is forgotten, tap "Forgot the PIN?" and type this code.\nKeep it locked away, not on the board.\n';
 
-Future<void> _print(BuildContext context, String code, String college) async {
+/// The recovery code's page to the printer, or [save] to a USB drive or Downloads.
+Future<void> _print(BuildContext context, String code, String college, {bool save = false}) async {
   try {
     final doc = await recoveryCodePdf(code, college, lang: context.ceLang);
-    await Printing.layoutPdf(name: ceTr('School PIN recovery code'), onLayout: (_) async => doc);
+    if (!context.mounted) return;
+    if (save) {
+      await ceSavePdf(context, doc, 'zynetix-pin-recovery-code.pdf');
+    } else {
+      await cePrintOrSave(context, doc, 'zynetix-pin-recovery-code.pdf', (b, _) => Printing.layoutPdf(name: ceTr('School PIN recovery code'), onLayout: (_) async => b));
+    }
   } catch (e) {
     if (context.mounted) ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(context.ce('Could not print: {error}', {'error': e}))));
   }

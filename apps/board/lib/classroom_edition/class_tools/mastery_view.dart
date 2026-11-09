@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../ui/ce_style.dart';
+import '../ui/pdf_out.dart';
 import 'class_logic.dart';
 import 'paper_pdf.dart';
 import 'tool_ui.dart';
@@ -49,10 +50,12 @@ class _MasteryViewState extends State<MasteryView> {
 
   MasteryMap get map => buildMastery(records: env.records.records, rolls: env.rolls, chapterId: chapterId, titleOf: (c, t) => env.bank.topicTitle(c, t), now: env.now());
 
-  Future<void> _print(MasteryMap m) async {
+  /// To the printer, or [save] to a USB drive or Downloads.
+  Future<void> _print(MasteryMap m, {bool save = false}) async {
     try {
       final bytes = await masteryPdf(m, title: context.ce('Mastery map'), subtitle: [env.classLine, if (chapterId != null) chapterTitle(chapterId!)].join(' · '));
-      await ClassToolsOut.print(bytes, 'Mastery-map.pdf');
+      if (!mounted) return;
+      await (save ? ceSavePdf(context, bytes, 'Mastery-map.pdf') : cePrintOrSave(context, bytes, 'Mastery-map.pdf', ClassToolsOut.print));
     } catch (e) {
       env.host.showMessage(ceTr('Could not print: {error}', {'error': e}));
     }
@@ -142,7 +145,9 @@ class _MasteryViewState extends State<MasteryView> {
         Row(
           children: [
             Expanded(child: Text(context.ce('Only roll numbers are shown. Updated after every class quiz.'), style: ceText(15))),
+            if (CePdfOut.leadWithSave) ...[toolButton(cePdfSaveLabel(context), icon: Icons.save_alt, onPressed: () => _print(m, save: true), key: const Key('ce-mastery-save')), const SizedBox(width: 12)],
             toolButton(ceTr('Print'), icon: Icons.print_outlined, onPressed: () => _print(m), key: const Key('ce-mastery-print')),
+            if (!CePdfOut.leadWithSave) ...[const SizedBox(width: 12), toolButton(cePdfSaveLabel(context), icon: Icons.save_alt, onPressed: () => _print(m, save: true), key: const Key('ce-mastery-save'))],
             const SizedBox(width: 12),
             toolButton(
               ceTr('Make a revision quiz'),

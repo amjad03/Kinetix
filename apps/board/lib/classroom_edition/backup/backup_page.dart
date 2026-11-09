@@ -15,6 +15,7 @@ import '../ui/ce_style.dart';
 import 'backup.dart';
 import 'marks_export.dart';
 import 'public_documents.dart';
+import '../ui/pdf_out.dart' show CePdfOut;
 import '../l10n/ce_strings.dart';
 
 String _whenIn(BuildContext context, DateTime t) => DateFormat('EEE d MMM yyyy, h:mm a', context.dateLocale).format(t);
@@ -164,11 +165,15 @@ class _BackupTabState extends State<BackupTab> {
       debugPrint('Marks not saved to Documents: $e');
     }
     if (!mounted) return;
-    if (printable) unawaited(CeFiles.print(bytes, name).catchError((Object _) {}));
+    // A board without a print service cannot print: the PDF is saved, with Copy to USB / Downloads.
+    final print = printable && !CePdfOut.leadWithSave;
+    if (print) unawaited(CeFiles.print(bytes, name).catchError((Object _) {}));
     _snack(
       context,
-      where.isEmpty ? ceTr('Choose where to save {name}.', {'name': name}) : ceTr('Saved to {where}.', {'where': where}),
-      action: SnackBarAction(label: context.ce('Copy to USB…'), onPressed: () => unawaited(CeFiles.saveAs(name, bytes, mime))),
+      where.isEmpty
+          ? ceTr('Choose where to save {name}.', {'name': name})
+          : (printable && !print ? ceTr('Saved to {where}. This board cannot print: copy it to a USB drive and print it from a computer.', {'where': where}) : ceTr('Saved to {where}.', {'where': where})),
+      action: SnackBarAction(label: context.ce('Copy to USB / Downloads…'), onPressed: () => unawaited(CeFiles.saveAs(name, bytes, mime))),
     );
     if (where.isEmpty) await CeFiles.saveAs(name, bytes, mime);
   }

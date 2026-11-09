@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../ui/ce_style.dart';
+import '../ui/pdf_out.dart';
 import 'bank.dart';
 import 'paper.dart';
 import 'paper_pdf.dart';
@@ -39,12 +40,20 @@ class _WorksheetsViewState extends State<WorksheetsView> {
     topics: topics,
   );
 
-  Future<void> _out(bool print) async {
+  /// [print]: to the printer; [save]: to a USB drive or Downloads; else the share sheet.
+  Future<void> _out(bool print, {bool save = false}) async {
     final p = sheet;
     setState(() => busy = true);
     try {
       final bytes = await paperPdf([p], withKey: withKey);
-      await (print ? ClassToolsOut.print : ClassToolsOut.share)(bytes, p.fileName);
+      if (!mounted) return;
+      if (save) {
+        await ceSavePdf(context, bytes, p.fileName);
+      } else if (print) {
+        await cePrintOrSave(context, bytes, p.fileName, ClassToolsOut.print);
+      } else {
+        await ClassToolsOut.share(bytes, p.fileName);
+      }
     } catch (e) {
       env.host.showMessage(ceTr('Could not make the PDF: {error}', {'error': e}));
     } finally {
@@ -152,8 +161,11 @@ class _WorksheetsViewState extends State<WorksheetsView> {
                 },
           key: const Key('ce-ws-board'),
         ),
+        // No print service on this board: Save leads (ui/pdf_out.dart).
+        if (CePdfOut.leadWithSave) toolButton(cePdfSaveLabel(context), icon: Icons.save_alt, filled: true, onPressed: busy || p.isEmpty ? null : () => _out(false, save: true), key: const Key('ce-ws-save')),
         toolButton(ceTr('Export PDF'), icon: Icons.picture_as_pdf_outlined, onPressed: busy || p.isEmpty ? null : () => _out(false), key: const Key('ce-ws-pdf')),
-        toolButton(ceTr('Print'), icon: Icons.print_outlined, filled: true, onPressed: busy || p.isEmpty ? null : () => _out(true), key: const Key('ce-ws-print')),
+        toolButton(ceTr('Print'), icon: Icons.print_outlined, filled: !CePdfOut.leadWithSave, onPressed: busy || p.isEmpty ? null : () => _out(true), key: const Key('ce-ws-print')),
+        if (!CePdfOut.leadWithSave) toolButton(cePdfSaveLabel(context), icon: Icons.save_alt, onPressed: busy || p.isEmpty ? null : () => _out(false, save: true), key: const Key('ce-ws-save')),
       ],
     );
     return LayoutBuilder(

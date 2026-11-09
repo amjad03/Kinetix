@@ -15,6 +15,7 @@ import 'classroom_edition/lessons/lessons_panel.dart' show installLessonHooks;
 import 'classroom_edition/l10n/ce_strings.dart';
 import 'classroom_edition/local/sample_college.dart';
 import 'classroom_edition/start/classroom_start.dart';
+import 'classroom_edition/ui/pdf_out.dart' show CePdfOut;
 import 'classroom_edition/ui/phone_fit.dart';
 import 'classroom_edition/ui/ce_style.dart' show cePanelTheme;
 import 'classroom_edition/ui/screen_fit.dart';
@@ -63,7 +64,11 @@ void _main() {
   // The picture library's credits on the licence page.
   registerPictureLibraryLicence();
   // Classroom edition: the start screen's "Next lesson" line from the bundled lessons.
-  if (Edition.classroom) installLessonHooks();
+  if (Edition.classroom) {
+    installLessonHooks();
+    // Panels without a print service: the PDFs' screens lead with Save (ui/pdf_out.dart).
+    unawaited(CePdfOut.refresh());
+  }
   final board = !Demo.enabled
       ? (BoardController()..start())
       // The Classroom edition's demo has no ERP demo server: a sample PU college on the board itself.

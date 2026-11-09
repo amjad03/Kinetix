@@ -6,6 +6,7 @@ import '../backup/backup_page.dart' show CeFiles;
 import '../l10n/ce_strings.dart';
 import '../local/classroom_store.dart';
 import '../ui/ce_style.dart';
+import '../ui/pdf_out.dart';
 import 'quick_start_pdf.dart';
 
 /// What a help step's picture shows: a control drawn from widgets, as it looks on the board.
@@ -106,11 +107,18 @@ class _CeHelpPageState extends State<CeHelpPage> {
   late String _topic = widget.initialTopic ?? 'teach';
   bool _printing = false;
 
-  Future<void> _print() async {
+  /// To the printer, or [save] to a USB drive or Downloads (also what a board without a print
+  /// service offers instead).
+  Future<void> _print({bool save = false}) async {
     setState(() => _printing = true);
     try {
       final pdf = await quickStartPdf(lang: CeLang.code, college: widget.store?.college ?? '');
-      await CeFiles.print(pdf, ceTr('Zynetix Classroom quick start'));
+      if (!mounted) return;
+      if (save) {
+        await ceSavePdf(context, pdf, 'Zynetix-Classroom-quick-start.pdf');
+      } else {
+        await cePrintOrSave(context, pdf, 'Zynetix-Classroom-quick-start.pdf', (b, _) => CeFiles.print(b, ceTr('Zynetix Classroom quick start')));
+      }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.ce('Could not print: {error}', {'error': e}))));
     } finally {
@@ -133,15 +141,24 @@ class _CeHelpPageState extends State<CeHelpPage> {
           toolbarHeight: 84,
           title: Text(context.ce('Help'), style: ceHeading(28)),
           actions: [
+            // No print service on this board: Save leads (ui/pdf_out.dart).
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: CePdfOut.leadWithSave
+                  ? FilledButton.icon(key: const Key('ce-help-save'), style: ceBigButton(), onPressed: _printing ? null : () => unawaited(_print(save: true)), icon: const Icon(Icons.save_alt), label: Text(cePdfSaveLabel(context)))
+                  : OutlinedButton.icon(key: const Key('ce-help-save'), style: ceSoftButton(), onPressed: _printing ? null : () => unawaited(_print(save: true)), icon: const Icon(Icons.save_alt), label: Text(cePdfSaveLabel(context))),
+            ),
             Padding(
               padding: const EdgeInsets.only(right: 24),
-              child: FilledButton.icon(
-                key: const Key('ce-help-print'),
-                style: ceBigButton(),
-                onPressed: _printing ? null : () => unawaited(_print()),
-                icon: const Icon(Icons.print_outlined),
-                label: Text(context.ce('Print the quick-start sheet')),
-              ),
+              child: CePdfOut.leadWithSave
+                  ? OutlinedButton.icon(key: const Key('ce-help-print'), style: ceSoftButton(), onPressed: _printing ? null : () => unawaited(_print()), icon: const Icon(Icons.print_outlined), label: Text(context.ce('Print the quick-start sheet')))
+                  : FilledButton.icon(
+                      key: const Key('ce-help-print'),
+                      style: ceBigButton(),
+                      onPressed: _printing ? null : () => unawaited(_print()),
+                      icon: const Icon(Icons.print_outlined),
+                      label: Text(context.ce('Print the quick-start sheet')),
+                    ),
             ),
           ],
         ),

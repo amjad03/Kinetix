@@ -1,5 +1,7 @@
 package app.kinetix.board
 
+import android.content.Intent
+import android.content.pm.PackageManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -101,6 +103,16 @@ class MainActivity : FlutterActivity() {
                 }
             } catch (e: Exception) {
                 result.error("startup", e.message, null)
+            }
+        }
+        // Classroom edition: whether the board can print at all (many panels have no print service).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "zynetix/print").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "hasPrintService" -> result.success(
+                    packageManager.hasSystemFeature(PackageManager.FEATURE_PRINTING) &&
+                        packageManager.queryIntentServices(Intent("android.printservice.PrintService"), 0).isNotEmpty(),
+                )
+                else -> result.notImplemented()
             }
         }
         // Projector mode: the board on a second display (Projector.kt).
