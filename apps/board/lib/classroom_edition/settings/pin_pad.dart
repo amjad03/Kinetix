@@ -137,6 +137,12 @@ class _CePinPadState extends State<CePinPad> {
       height: 84,
       child: Opacity(
         opacity: left != null ? 0.4 : 1,
+        child: Semantics(
+        container: true,
+        button: true,
+        enabled: left == null && !_busy,
+        label: icon != null ? ceTr('Delete the last digit') : label,
+        excludeSemantics: true,
         child: Material(
         color: primary ? CeC.accent : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22), side: BorderSide(color: primary ? CeC.accent : CeC.line, width: 2)),
@@ -150,6 +156,7 @@ class _CePinPadState extends State<CePinPad> {
                 : Text(label, style: ceHeading(primary ? 24 : 34, w: FontWeight.w600, c: primary ? Colors.white : CeC.navy)),
           ),
         ),
+      ),
       ),
       ),
     );
@@ -167,7 +174,12 @@ class _CePinPadState extends State<CePinPad> {
           Text(widget.title, textAlign: TextAlign.center, style: ceHeading(28)),
           if (widget.subtitle != null) ...[const SizedBox(height: 8), Text(widget.subtitle!, textAlign: TextAlign.center, style: ceText(16))],
           const SizedBox(height: 20),
-          SizedBox(
+          Semantics(
+            container: true,
+            liveRegion: true,
+            label: ceTr('{n} digits typed', {'n': _pin.length}),
+            excludeSemantics: true,
+            child: SizedBox(
             key: const Key('ce-pin-dots'),
             height: 28,
             child: Row(
@@ -182,6 +194,7 @@ class _CePinPadState extends State<CePinPad> {
                   ),
               ],
             ),
+          ),
           ),
           SizedBox(
             height: 52,

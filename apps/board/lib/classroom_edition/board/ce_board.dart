@@ -337,7 +337,7 @@ class CeWhatNow extends StatelessWidget {
           children: [
             Text(context.ce('What do I do now?'), style: ceText(16, w: FontWeight.w700, c: CeC.navy)),
             const SizedBox(height: 2),
-            Text(tip, key: const Key('ce-what-now-tip'), style: ceText(15, c: const Color(0xFF334155))),
+            Text(tip, key: const Key('ce-what-now-tip'), style: ceText(15, c: CeC.tip)),
           ],
         ),
         const SizedBox(width: 18),

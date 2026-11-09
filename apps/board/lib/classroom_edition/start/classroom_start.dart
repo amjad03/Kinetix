@@ -481,7 +481,7 @@ class _LaterCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${CeSlot.short(slot.start)} – ${CeSlot.short(slot.end)}', style: ceText(15, w: FontWeight.w600, c: CeC.navy.withValues(alpha: 0.7))),
+                Text('${CeSlot.short(slot.start)} – ${CeSlot.short(slot.end)}', style: ceText(15, w: FontWeight.w600, c: CeC.navy.withValues(alpha: 0.75))),
                 const SizedBox(height: 4),
                 Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: ceHeading(21)),
                 const SizedBox(height: 2),
@@ -604,7 +604,12 @@ class _TeacherCard extends StatelessWidget {
   final VoidCallback onTap, onEdit;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: selected,
+    label: [teacher.name, teacher.subject, classes].where((x) => x.isNotEmpty).join(', '),
+    hint: context.ce('Hold to change'),
+    child: SizedBox(
     width: width,
     height: 156,
     child: Material(
@@ -647,6 +652,7 @@ class _TeacherCard extends StatelessWidget {
           ),
         ),
       ),
+    ),
     ),
   );
 }

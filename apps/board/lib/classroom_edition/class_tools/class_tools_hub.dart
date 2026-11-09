@@ -175,7 +175,12 @@ List<ClassTool> get classTools => <ClassTool>[
 ];
 
 /// One Class tools tile.
-Widget classToolTile(ClassTool t, {double width = 240, double height = 128, VoidCallback? onTap}) => SizedBox(
+Widget classToolTile(ClassTool t, {double width = 240, double height = 128, VoidCallback? onTap}) => Semantics(
+  container: true,
+  button: true,
+  label: '${t.title}${t.title.endsWith('.') ? '' : '.'} ${t.line}',
+  excludeSemantics: true,
+  child: SizedBox(
   width: width,
   height: height,
   child: Material(
@@ -199,5 +204,6 @@ Widget classToolTile(ClassTool t, {double width = 240, double height = 128, Void
         ),
       ),
     ),
+  ),
   ),
 );

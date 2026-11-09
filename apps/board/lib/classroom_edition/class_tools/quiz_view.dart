@@ -318,9 +318,9 @@ class _ClassQuizViewState extends State<ClassQuizView> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _stat('${marks.right.length}', 'right', CeC.mint, CeC.green, const Key('ce-quiz-right'))),
+              Expanded(child: _stat('${marks.right.length}', ceTr('right'), CeC.mint, CeC.green, const Key('ce-quiz-right'))),
               const SizedBox(width: 12),
-              Expanded(child: _stat('${marks.wrong.length}', 'wrong', CeC.pink, const Color(0xFFBE185D), const Key('ce-quiz-wrong'))),
+              Expanded(child: _stat('${marks.wrong.length}', ceTr('wrong'), CeC.pink, CeC.wrong, const Key('ce-quiz-wrong'))),
               const SizedBox(width: 12),
               Expanded(child: _stat('${marks.notMarked}', ceTr('not marked'), Colors.white, CeC.navy, const Key('ce-quiz-unmarked'))),
             ],
@@ -420,39 +420,72 @@ class _ClassQuizViewState extends State<ClassQuizView> {
     },
   );
 
+  /// A roll number's tile. Right and wrong never rest on colour alone: right has a tick in a
+  /// filled circle and a solid border, wrong a cross in a filled square and a double border,
+  /// absent says AB; each tile tells a screen reader its roll number and mark.
   Widget _cell(int r) {
     final absent = marks.isAbsent(r);
     final m = marks.of(r);
-    final (bg, border, icon, fg) = switch (m) {
-      _ when absent => (const Color(0xFFEFF2F6), const Color(0xFFE2E8F0), null, const Color(0xFF94A3B8)),
-      Mark.right => (CeC.mint, const Color(0xFF86C9A2), Icons.check, CeC.green),
-      Mark.wrong => (CeC.pink, const Color(0xFFF2A7C3), Icons.close, const Color(0xFFBE185D)),
-      Mark.none => (Colors.white, CeC.line, null, CeC.navy),
+    final (bg, border, width) = switch (m) {
+      _ when absent => (CeC.absent, const Color(0xFFCBD5E1), 1.5),
+      Mark.right => (CeC.mint, CeC.green, 3.0),
+      Mark.wrong => (CeC.pink, CeC.wrong, 3.0),
+      Mark.none => (Colors.white, CeC.line, 1.5),
     };
-    return Material(
-      color: bg,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: border, width: 1.5),
+    final state = absent
+        ? ceTr('absent')
+        : switch (m) {
+            Mark.right => ceTr('right'),
+            Mark.wrong => ceTr('wrong'),
+            Mark.none => ceTr('not marked'),
+          };
+    final badge = switch (m) {
+      _ when absent => null,
+      Mark.right => Container(
+        key: Key('ce-roll-$r-right'),
+        width: 30,
+        height: 30,
+        decoration: const BoxDecoration(color: CeC.green, shape: BoxShape.circle),
+        child: const Icon(Icons.check_rounded, size: 22, color: Colors.white),
       ),
-      child: InkWell(
-        key: Key('ce-roll-$r'),
-        borderRadius: BorderRadius.circular(14),
-        onTap: absent ? null : () => setState(() => marks.tap(r)),
-        child: Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(rollLabel(r), style: ceHeading(26, c: absent ? fg : CeC.navy)),
-              if (icon != null) ...[const SizedBox(width: 6), Icon(icon, size: 20, color: fg)],
-              if (absent) ...[
-                const SizedBox(width: 6),
-                Text(
-                  ceTr('AB'),
-                  style: ceText(12, w: FontWeight.w700, c: fg),
-                ),
-              ],
-            ],
+      Mark.wrong => Container(
+        key: Key('ce-roll-$r-wrong'),
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(color: CeC.wrong, borderRadius: BorderRadius.circular(6)),
+        child: const Icon(Icons.close_rounded, size: 22, color: Colors.white),
+      ),
+      Mark.none => null,
+    };
+    return Semantics(
+      key: Key('ce-roll-$r-semantics'),
+      container: true,
+      button: !absent,
+      enabled: !absent,
+      label: ceTr('Roll {n}: {state}', {'n': rollLabel(r), 'state': state}),
+      excludeSemantics: true,
+      child: Material(
+        color: bg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: BorderSide(color: border, width: width)),
+        child: InkWell(
+          key: Key('ce-roll-$r'),
+          borderRadius: BorderRadius.circular(14),
+          onTap: absent ? null : () => setState(() => marks.tap(r)),
+          child: Container(
+            // The wrong mark's second border: a double line, not just another colour.
+            margin: const EdgeInsets.all(3),
+            decoration: m == Mark.wrong && !absent ? BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: CeC.wrong, width: 1.5)) : null,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(rollLabel(r), style: ceHeading(26, c: absent ? CeC.muted : CeC.navy)),
+                  if (badge != null) ...[const SizedBox(width: 8), badge],
+                  if (absent) ...[const SizedBox(width: 6), Text(ceTr('AB'), style: ceText(13, w: FontWeight.w700, c: CeC.muted))],
+                ],
+              ),
+            ),
           ),
         ),
       ),

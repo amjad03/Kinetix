@@ -17,8 +17,23 @@ abstract final class CeC {
   static const muted = Color(0xFF475569);
   static const body = Color(0xFF1E293B);
   static const line = Color(0xFFD5DDE9);
-  static const green = Color(0xFF15803D);
-  static const red = Color(0xFFC2410C);
+  // Status colours, dark enough for WCAG AA text on white and on their pastels
+  // (test/classroom_edition/contrast_aa_test.dart).
+  static const green = Color(0xFF166534);
+  static const red = Color(0xFF9A3412);
+
+  /// A wrong answer (on [pink]).
+  static const wrong = Color(0xFFBE185D);
+
+  /// The "What do I do now?" tip.
+  static const tip = Color(0xFF334155);
+
+  /// Clash warnings: text and icon or border on [butter].
+  static const warningText = Color(0xFF7C2D12);
+  static const warning = Color(0xFF92400E);
+
+  /// An absent roll number's tile.
+  static const absent = Color(0xFFEFF2F6);
 
   static Color pastel(int i) => pastels[i.abs() % pastels.length];
 }

@@ -327,7 +327,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
     final isPick = pick.contains(i), isRight = q.correct.contains(i);
     final (bg, border) = switch ((shown, isRight, isPick)) {
       (true, true, _) => (CeC.mint, CeC.green),
-      (true, false, true) => (CeC.pink, const Color(0xFFBE185D)),
+      (true, false, true) => (CeC.pink, CeC.wrong),
       (false, _, true) => (CeC.lavender, CeC.accent),
       _ => (Colors.white, CeC.line),
     };

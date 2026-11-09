@@ -509,7 +509,7 @@ class LessonsPanelState extends State<LessonsPanel> {
             children: [
               Row(
                 children: [
-                  Text(ceTr('Chapter {n}', {'n': ch.number}), style: ceText(14, w: FontWeight.w600, c: CeC.navy.withValues(alpha: 0.7))),
+                  Text(ceTr('Chapter {n}', {'n': ch.number}), style: ceText(14, w: FontWeight.w600, c: CeC.navy.withValues(alpha: 0.75))),
                   const Spacer(),
                   ceIconDot(chapterIcon(ch), size: 40),
                 ],

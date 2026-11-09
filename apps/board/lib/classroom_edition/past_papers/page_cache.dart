@@ -191,7 +191,7 @@ class _PdfPageImageState extends State<PdfPageImage> {
         child: img == null
             ? Center(
                 child: widget.thumb
-                    ? Text('${widget.page + 1}', style: ceText(16, c: CeC.line))
+                    ? Text('${widget.page + 1}', style: ceText(16, c: CeC.muted))
                     : const SizedBox(width: 48, height: 48, child: CircularProgressIndicator(strokeWidth: 4)),
               )
             : RawImage(image: img, fit: BoxFit.fill, filterQuality: FilterQuality.medium),

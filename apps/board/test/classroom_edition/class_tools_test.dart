@@ -580,6 +580,16 @@ void main() {
     await tapKey(tester, 'ce-roll-2');
     await tapKey(tester, 'ce-roll-2');
     await tapKey(tester, 'ce-roll-3'); // absent: no mark
+    // Right and wrong are a shape and a word too, never colour alone (P1 item 22).
+    expect(find.byKey(const Key('ce-roll-1-right')), findsOneWidget);
+    expect(find.byKey(const Key('ce-roll-2-wrong')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('ce-roll-3')), matching: find.text('AB')), findsOneWidget);
+    final sem = tester.ensureSemantics();
+    expect(find.bySemanticsLabel('Roll 01: right'), findsOneWidget);
+    expect(find.bySemanticsLabel('Roll 02: wrong'), findsOneWidget);
+    expect(find.bySemanticsLabel('Roll 03: absent'), findsOneWidget);
+    expect(find.bySemanticsLabel('Roll 04: not marked'), findsOneWidget);
+    sem.dispose();
     final right = find.descendant(of: find.byKey(const Key('ce-quiz-right')), matching: find.text('1'));
     expect(right, findsOneWidget);
     await tapKey(tester, 'ce-quiz-next');

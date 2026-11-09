@@ -300,13 +300,13 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   Widget _clashBox(String text, {Key? key}) => Container(
     key: key,
     padding: const EdgeInsets.all(Kx.s12),
-    decoration: BoxDecoration(color: CeC.butter, borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0xFFB45309), width: 1.5)),
+    decoration: BoxDecoration(color: CeC.butter, borderRadius: BorderRadius.circular(14), border: Border.all(color: CeC.warning, width: 1.5)),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Icon(Icons.warning_amber_rounded, color: Color(0xFF92400E)),
         const SizedBox(width: Kx.s8),
-        Expanded(child: Text(text, style: ceText(16, w: FontWeight.w600, c: const Color(0xFF7C2D12)))),
+        Expanded(child: Text(text, style: ceText(16, w: FontWeight.w600, c: CeC.warningText))),
       ],
     ),
   );
@@ -336,7 +336,7 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
                   children: [
                     const Icon(Icons.warning_amber_rounded, size: 20, color: Color(0xFF92400E)),
                     const SizedBox(width: 6),
-                    Expanded(child: Text('${context.ce('Clashes with')} $clash', style: ceText(15, w: FontWeight.w600, c: const Color(0xFF7C2D12)))),
+                    Expanded(child: Text('${context.ce('Clashes with')} $clash', style: ceText(15, w: FontWeight.w600, c: CeC.warningText))),
                   ],
                 ),
               ),
