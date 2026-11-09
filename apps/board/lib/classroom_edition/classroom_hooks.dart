@@ -51,6 +51,20 @@ class ClassroomHost {
   CeClass? get currentClass => store.currentClass;
   CeTeacher? get currentTeacher => store.currentTeacher;
 
+  /// 1st or 2nd PUC (1 or 2) of the class being taught: the open class's year, else what the
+  /// ERP session's class says ("II PUC A", grade 12); null when nothing says. Lessons and Class
+  /// tools both open on this year.
+  int? get pucYear {
+    final cls = currentClass;
+    if (cls != null) return cls.year;
+    final s = board.session;
+    return pucYearOfName(s?.sectionName) ?? switch (s?.classTerm) {
+      11 => 1,
+      12 => 2,
+      _ => null,
+    };
+  }
+
   /// The subject of the open class ("Physics"), else the session's.
   String? get subject => store.currentSubject ?? board.session?.subjectName;
 

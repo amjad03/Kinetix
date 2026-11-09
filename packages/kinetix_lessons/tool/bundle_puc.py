@@ -86,6 +86,10 @@ def main():
         if ch is None:
             print('no syllabus chapter for', p, file=sys.stderr)
             continue
+        # The year label ("1st PUC" / "2nd PUC") comes from ch['year']; it must agree with the
+        # chapter id and the pack folder, or a chapter would be filed under the wrong year.
+        if not (ch['year'] == ch['id'][:4] == p[:4]):
+            sys.exit(f"{p}: the syllabus year {ch['year']!r}, chapter id {ch['id']} and pack folder disagree")
         qs, school_qs = {}, {}
         if os.path.exists(os.path.join(d, 'questions.json')):
             for q in json.load(open(os.path.join(d, 'questions.json'))):

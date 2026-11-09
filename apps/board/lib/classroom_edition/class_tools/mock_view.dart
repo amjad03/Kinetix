@@ -40,7 +40,7 @@ class _MockTestViewState extends State<MockTestView> {
   Paper get paper =>
       buildPaper(chapters: [for (final id in chapters) ?env.bank.chapter(id)], pattern: effective, title: title, seed: seed, college: env.college, className: env.className, subject: env.subject);
 
-  List<PaperPattern> get patterns => [...pucPatterns, for (final e in env.bank.patterns) entranceAsPattern(e, env.bank.subject)];
+  List<PaperPattern> get patterns => [...pucPatternsFor(env.bank.subject), for (final e in env.bank.patterns) entranceAsPattern(e, env.bank.subject)];
 
   void _pick(PaperPattern p) => setState(() {
     pattern = p;
@@ -51,7 +51,7 @@ class _MockTestViewState extends State<MockTestView> {
     final p = parts[part];
     final first = p.slots.first;
     parts = [
-      for (final (i, x) in parts.indexed) i == part ? x.withSlots([PaperSlot(first.kind, (first.count + delta).clamp(0, 60), first.marks), ...p.slots.skip(1)]) : x,
+      for (final (i, x) in parts.indexed) i == part ? x.withSlots([first.withCount((first.count + delta).clamp(0, 60)), ...p.slots.skip(1)]) : x,
     ];
   });
 

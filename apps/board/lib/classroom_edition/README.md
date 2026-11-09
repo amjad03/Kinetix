@@ -88,13 +88,26 @@ All offline, no AI, and by roll number only. `class_tools/`:
 | Tool | File | What it does |
 | --- | --- | --- |
 | Class quiz | `quiz_view.dart` | Chapter and topics, 3/5/10 questions; each question goes on a new board page; tap a roll number once for right, twice for wrong (absent ones greyed out and skipped); Mark all right; Show result on board; marks saved per question |
-| Mock test | `mock_view.dart` | PUC board pattern (chapter test 25, unit test 35, annual 70, multiple choice) or an entrance pattern from the bank; parts editable; paper preview with Roll No.; Print *n* copies (set A/B for neighbouring benches), Export PDF, answer key on its own page; marks entered per roll number |
+| Mock test | `mock_view.dart` | PUC board pattern with the board's internal choice (chapter test 25, unit test 35, the subject's annual paper: 70, Mathematics 80, with Part E for Chemistry, Mathematics and Biology; multiple choice) or an entrance pattern from the bank; parts editable; paper preview with Roll No.; Print *n* copies (set A/B for neighbouring benches), Export PDF, answer key on its own page; marks entered per roll number |
 | Formula drill | `drill_teams_plan.dart` | One formula at a time, hidden until shown (typeset TeX); Put on board as an equation |
 | Teams | `drill_teams_plan.dart` | Present roll numbers by benches or mixed into 2–6 teams (Karnataka's rivers); points; scoreboard on the board |
 | Class plan | `drill_teams_plan.dart` | The subject's chapters spread to the exam date with revision weeks; on track or behind; this week's chapter |
 | Mastery map | `mastery_view.dart` | Topics × roll numbers from class quizzes and mock tests; class score; Revisit / Strongest / Small group cards; Print; Make a revision quiz |
 | Worksheets | `worksheets_view.dart` | From the bank: chapter, topics, how many MCQs, short answers and problems; Print / Export PDF with key; Put on board |
 | Pick a roll no., Timer | `drill_teams_plan.dart` | Fair random pick of present roll numbers; big countdown |
+
+How a mock paper is made (`paper.dart`, `buildPaper`): Part A takes multiple-choice questions;
+Parts B, C and D take only written questions the bank sized for 2, 3 and 5 marks
+(`BankChapter.shorts`, `mediums`, `longs`) and problems sized for the part (`BankProblem.size`;
+Mathematics mixes theory and problems in every part, as its papers do; other subjects fall back to
+a problem only when the theory runs out). Every written prompt must pass `examPromptProblem` (no
+flash-card stems like "Flux Φ = ?", no "Explain: …" glue, no multiple-choice stems or option
+letters, no missing figures) and none is asked twice or repeats a Part A stem. Each part prints
+its instruction ("Answer any FIVE of the following questions.") and marks line ("(5 × 2 = 10)");
+when the chapters cannot fill a part it offers fewer questions with the same number spare, and a
+part with none is left out, so the paper is shorter rather than padded. The annual patterns follow
+the shape of the KSEAB model papers (parts, marks per question and choice); compare the question
+counts with the current year's blueprint before relying on them for a board rehearsal.
 
 Logic without widgets (tested): `class_logic.dart` (quiz marks, mastery, teams, plan),
 `paper.dart` (patterns and paper generation, set B shuffling), `paper_pdf.dart` (PDFs with the
@@ -111,6 +124,10 @@ content and is **never committed**. Before building the app:
 python3 apps/board/tool/build_class_bank.py <zynetix-smart-classroom>/content/packs
 # reads puc1-*/puc2-* packs (+ ../syllabus and the board's patterns.json when present) and
 # writes apps/board/assets/private/class_tools/{index.json,puc<y>-<subject>.json.gz}
+# The year of each chapter comes from its id and must agree with the pack folder and the
+# syllabus (the build stops otherwise). Written questions are made conservatively from the
+# lessons: objectives that already read as exam questions (Define, State, Distinguish between,
+# Derive…), the recap's real questions and homework, and worked examples sized 2/3/5 marks.
 ```
 
 That folder is gitignored (only its `README.txt` is committed) and listed in `pubspec.yaml`, so
@@ -212,5 +229,10 @@ all tools) at 1920 × 1080 and on a phone (844 × 390) on the real lessons and b
 screenshots when `RELEASE_SHOTS=<dir>` is set; a few are in `apps/board/screenshots/classroom-edition/`
 (never more than one bank question in a picture). `class_tools_test.dart`: quiz marking and persistence,
 mastery, mock tests and their PDF, teams, plan, worksheets, and the board without the bank;
+`mock_papers_test.dart` makes about 2,000 papers from the real bank (every subject and year,
+every chapter, unit and annual, several seeds) and fails on any awkward prompt, repeated question,
+wrong choice line or marks that do not add up (skipped without the bank); `puc_years_test.dart`
+checks every Physics, Chemistry, Mathematics and Biology chapter against the NCERT Class 11/12
+lists (1st/2nd PUC), the bank's years, how a year is read, and the sample timetable;
 `ce_tools_shots_test.dart` writes the Class tools' screenshots (`tools-*.png`) from the real bank
 when it is built.

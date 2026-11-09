@@ -101,9 +101,8 @@ class LessonsPanelState extends State<LessonsPanel> {
   @override
   void initState() {
     super.initState();
-    final cls = host.currentClass;
     final fresh = _Nav.classKey != classKey;
-    year = (fresh ? null : _Nav.year) ?? cls?.year ?? 1;
+    year = (fresh ? null : _Nav.year) ?? host.pucYear ?? 1;
     subject = (fresh ? null : _Nav.subject) ?? subjectIdFor(host.subject) ?? 'physics';
     _Nav.classKey = classKey;
     ClassroomHooks.panelTip = _tip;

@@ -46,7 +46,7 @@ class _ClassToolsHubState extends State<ClassToolsHub> {
   late String? tool = widget.initialTool;
   Object? arg;
   late final ClassToolsStore records = ClassToolsHub.storeFor(widget.host);
-  late Future<SubjectBank> bank = ClassBank.load(year: widget.host.currentClass?.year ?? 2, subject: widget.host.subject);
+  late Future<SubjectBank> bank = ClassBank.load(year: widget.host.pucYear ?? 2, subject: widget.host.subject);
   String? Function()? _tip;
 
   @override

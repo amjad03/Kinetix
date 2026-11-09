@@ -45,16 +45,23 @@ Map<String, dynamic> _chapterJson() => {
         if (i < 5) 'puc': 1,
       },
   ],
+  // Written questions by marks: 'sh' 2, 'md' 3, 'lg' 5 (as tool/build_class_bank.py writes them).
   'sh': [
     for (var i = 1; i <= 4; i++) {'tp': 't1', 'q': 'Define shadow word $i.', 'a': 'A dark patch, version $i.'},
+    // Never on a paper: a flash card, "Explain:" glue, a question mark with more after it.
+    {'tp': 't1', 'q': 'Shadow length = ?', 'a': 'Long.'},
+    {'tp': 't1', 'q': 'Explain: why is a shadow dark?', 'a': 'No light.'},
+    {'tp': 't1', 'q': 'Why is a shadow dark? Give the reason in words.', 'a': 'No light.'},
+  ],
+  'md': [
+    for (var i = 1; i <= 4; i++) {'tp': 't2', 'q': 'Explain pinhole idea $i.', 'a': 'Light goes straight.'},
   ],
   'lg': [
-    for (var i = 1; i <= 3; i++)
-      {
-        'tp': 't2',
-        'q': 'Explain pinhole idea $i.',
-        'pts': ['Light goes straight.', 'The image is upside down.'],
-      },
+    {
+      'tp': 't2',
+      'q': 'Describe the working of a made-up pinhole camera.',
+      'pts': ['Light goes straight.', 'The image is upside down.'],
+    },
   ],
   'pr': [
     for (var i = 1; i <= 3; i++)
@@ -63,7 +70,15 @@ Map<String, dynamic> _chapterJson() => {
         'q': 'A pinhole box is ${i}0 cm long. Find something.',
         'a': '${i * 2} cm',
         'st': ['Step one.', 'Step two.'],
+        'm': 3,
       },
+    {
+      'tp': 't2',
+      'q': 'A made-up pinhole camera is 20 cm long and a tree 10 m tall stands 50 m away. Find (a) the image height and (b) the magnification.',
+      'a': '(a) 4 cm (b) 0.004',
+      'st': ['Similar triangles.', 'h = 10 × 0.2/50.', 'm = h/H.'],
+      'm': 5,
+    },
   ],
   'f': [
     {'tp': 't2', 'n': 'Magnification', 'tex': 'm = \\frac{v}{u}', 'txt': 'm = v/u', 'note': 'Invented note.'},
@@ -274,28 +289,98 @@ void main() {
   });
 
   group('mock test', () {
-    test('the PUC chapter test: parts A–D, 25 marks, no question twice', () {
+    test('the PUC chapter test: parts A–D, 25 marks with the board\'s choice, no question twice', () {
       final p = buildPaper(chapters: [_chapter()], pattern: pucPatterns.first, title: 'Mock test 1', seed: 1, college: 'Test College', className: '2nd PUC A', subject: 'Physics');
       expect(pucPatterns.first.maxMarks, 25);
       expect(p.maxMarks, 25);
       expect([for (final s in p.sections) s.part.label], ['A', 'B', 'C', 'D']);
-      expect([for (final s in p.sections) s.items.length], [5, 3, 2, 2]);
+      expect([for (final s in p.sections) s.items.length], [5, 4, 4, 2]);
+      expect([for (final s in p.sections) s.groups.single.attempt], [5, 3, 3, 1]);
       expect(p.sections.first.items.every((i) => i.kind == ItemKind.mcq && i.options.length == 4 && i.answer.isNotEmpty), isTrue);
-      expect(p.sections[1].items.every((i) => i.kind == ItemKind.short), isTrue);
-      expect(p.sections.last.items.map((i) => i.marks), [5, 3]);
-      expect(p.sections.last.items.last.kind, ItemKind.problem);
+      expect(p.sections[1].items.every((i) => i.kind == ItemKind.short && i.text.startsWith('Define shadow word')), isTrue);
+      expect(p.sections[2].items.every((i) => i.text.startsWith('Explain pinhole idea')), isTrue);
+      expect(p.sections.last.items.map((i) => i.text), containsAll(['Describe the working of a made-up pinhole camera.', startsWith('A made-up pinhole camera')]));
       expect({for (final i in p.items) i.id}.length, p.items.length);
-      expect(p.sections.first.marksLine, '(1 × 5 = 5)');
-      expect(p.sections.last.marksLine, '(5 + 3 = 8)');
+      expect(p.sections.first.marksLine, '(5 × 1 = 5)');
+      expect(p.sections[1].marksLine, '(3 × 2 = 6)');
+      expect(p.sections.last.marksLine, '(1 × 5 = 5)');
+      expect(p.sections.first.groups.single.instruction, 'Choose the correct answer for each question.');
+      expect(p.sections[1].groups.single.instruction, 'Answer any THREE of the following questions.');
+      expect(p.sections.last.groups.single.instruction, 'Answer any ONE of the following questions.');
       expect(p.topicKeys, containsAll(['$_ch|t1', '$_ch|t2']));
       expect(p.fileName, '2nd-PUC-A-Physics-Mock-test-1.pdf');
     });
 
-    test('a pattern bigger than the chapter makes a shorter paper; written kinds stand in for each other', () {
+    test('flash cards, "Explain:" glue and run-on questions never reach a paper', () {
+      for (var seed = 0; seed < 20; seed++) {
+        final p = buildPaper(chapters: [_chapter()], pattern: pucPatterns[2], title: 'Annual', seed: seed);
+        for (final i in p.items.where((i) => i.kind != ItemKind.mcq)) {
+          expect(examPromptProblem(i.text), isNull, reason: i.text);
+        }
+      }
+      expect(examPromptProblem('Shadow length = ?'), 'flash-card stem');
+      expect(examPromptProblem('Explain: why is a shadow dark?'), 'template glue');
+      expect(examPromptProblem('Why is a shadow dark? Give the reason in words.'), isNull, reason: 'a second sentence after a question is fine');
+      expect(examPromptProblem('Why is a shadow dark? because light stops'), 'question mark inside');
+      expect(examPromptProblem('Which is right? A. one B. two C. three'), isNotNull);
+      expect(examPromptProblem('A 5 A. current flows for 2 s. Find the charge.'), isNull, reason: 'a unit, not an option letter');
+      expect(examPromptProblem('Which of the following is a vector quantity?'), 'multiple-choice stem');
+      expect(examPromptProblem('Find the current in the circuit shown.'), 'refers to a missing figure');
+    });
+
+    test('a pattern bigger than the chapter makes a shorter paper with the same choice; empty parts are left out', () {
       final p = buildPaper(chapters: [_chapter()], pattern: pucPatterns[2], title: 'Annual', seed: 2);
       expect(p.sections.first.items, hasLength(8), reason: 'only 8 MCQs');
       expect(p.maxMarks, lessThan(pucPatterns[2].maxMarks));
-      expect({for (final i in p.items) i.id}.length, p.items.length);
+      expect({for (final i in p.items) normQuestion(i.text)}.length, p.items.length);
+      // Part B asks 7, any 5; the chapter has five fit 2-mark questions, so any 3 of 5 (the same
+      // two spare).
+      final b = p.sections.firstWhere((s) => s.part.label == 'B').groups.single;
+      expect((b.items.length, b.attempt), (5, 3));
+      // A 3-mark part never takes 2-mark questions, nor a 5-mark part 3-mark ones.
+      expect(p.sections.firstWhere((s) => s.part.label == 'C').items.every((i) => i.marks == 3 && !i.text.startsWith('Define')), isTrue);
+      for (final s in p.sections) {
+        expect(s.total, s.groups.fold<num>(0, (a, g) => a + g.attempt * g.marks));
+        for (final g in s.groups) {
+          expect(g.attempt, inInclusiveRange(1, g.items.length));
+        }
+      }
+      expect(p.maxMarks, p.sections.fold<num>(0, (a, s) => a + s.total));
+      // Only multiple choice in the chapter: one part.
+      final mcqOnly = BankChapter.fromJson({..._chapterJson(), 'sh': [], 'md': [], 'lg': [], 'pr': []});
+      final q = buildPaper(chapters: [mcqOnly], pattern: pucPatterns.first, title: 'M');
+      expect([for (final s in q.sections) s.part.label], ['A']);
+    });
+
+    test('each subject\'s annual paper follows the board: 70 marks (Mathematics 80), Part A 20 one-mark', () {
+      for (final (subject, total, parts) in const [
+        ('physics', 70, 'ABCD'),
+        ('chemistry', 70, 'ABCDE'),
+        ('maths', 80, 'ABCDE'),
+        ('biology', 70, 'ABCDE'),
+        ('accountancy', 70, 'ABCD'),
+      ]) {
+        final p = annualPatternFor(subject);
+        expect(p.maxMarks, total, reason: subject);
+        expect(p.parts.map((x) => x.label).join(), parts, reason: subject);
+        expect(p.parts.first.total, 20);
+        expect(p.parts.first.slots.single.marks, 1);
+        for (final (label, marks) in const [('B', 2), ('C', 3), ('D', 5)]) {
+          final part = p.parts.firstWhere((x) => x.label == label);
+          expect(part.slots.every((s) => s.marks == marks && s.answered < s.count), isTrue, reason: '$subject $label: $marks marks with a choice');
+        }
+      }
+      expect(pucPatternsFor('maths').map((p) => p.maxMarks), [25, 35, 80, 20]);
+      expect(annualPatternFor('physics').parts[1].summary, 'Any 5 of 7 questions, 2 marks each');
+      expect(annualPatternFor('physics').parts[3].summary, 'Any 3 of 4 questions, 5 marks each + any 2 of 3 problems, 5 marks each');
+      expect(const PaperSlot(ItemKind.short, 7, 2, attempt: 5).withCount(5).answered, 3, reason: 'two spare, as before');
+    });
+
+    test('a bank built before 3-mark questions had their own list still makes a paper', () {
+      final old = BankChapter.fromJson({..._chapterJson(), 'md': null}..remove('md'));
+      expect(old.longs.every((q) => q.marks == 3), isTrue);
+      final p = buildPaper(chapters: [old], pattern: pucPatterns.first, title: 'M', seed: 1);
+      expect(p.sections.firstWhere((s) => s.part.label == 'C').items.every((i) => i.text.startsWith('Describe') || i.kind == ItemKind.problem), isTrue);
     });
 
     test('set B has the same questions in another order and its key follows', () {

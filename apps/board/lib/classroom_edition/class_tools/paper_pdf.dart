@@ -75,12 +75,28 @@ void _paperPages(pw.Document doc, Paper p) {
         ..._header(p),
         for (final (si, s) in p.sections.indexed) ...[
           pw.SizedBox(height: si == 0 ? 4 : 12),
-          pw.Text(
-            p.sections.length == 1 && s.part.label == 'A' && p.minutes == 0 ? s.part.title : 'Part ${s.part.label} — ${s.part.title} ${s.marksLine}',
-            style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: _navy),
-          ),
-          pw.SizedBox(height: 4),
-          for (final i in s.items) _item(p, i),
+          if (p.sections.length == 1 && s.part.label == 'A' && p.minutes == 0)
+            pw.Text(s.part.title, style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: _navy))
+          else
+            pw.Row(
+              children: [
+                pw.Expanded(
+                  child: pw.Text(s.heading, style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: _navy)),
+                ),
+                pw.Text(s.marksLine, style: pw.TextStyle(fontSize: 10.5, fontWeight: pw.FontWeight.bold, color: _navy)),
+              ],
+            ),
+          for (final g in s.groups) ...[
+            if (p.minutes > 0) ...[
+              pw.SizedBox(height: 3),
+              pw.Text(
+                s.groups.length > 1 ? '${g.instruction} ${g.marksLine}' : g.instruction,
+                style: const pw.TextStyle(fontSize: 10, color: _muted),
+              ),
+            ],
+            pw.SizedBox(height: 2),
+            for (final i in g.items) _item(p, i),
+          ],
         ],
       ],
     ),

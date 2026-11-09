@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:kinetix_lessons/kinetix_lessons.dart';
 
+import '../local/classroom_store.dart' show pucYearOf;
+
 /// The PUC lessons bundled with the Classroom edition (assets/lessons/puc, built by
 /// packages/kinetix_lessons/tool/bundle_puc.py from the Zynetix chapter packs): a catalogue of
 /// levels, subjects, chapters and topics, and one gzipped file per chapter with its lessons and
@@ -139,7 +141,7 @@ class CatChapter {
 
   factory CatChapter.fromJson(Map<String, dynamic> j) => CatChapter(
     id: j['id'] as String,
-    year: j['year'] == 'puc2' ? 2 : 1,
+    year: pucYearOf(j['year'], id: j['id'] as String) ?? 0,
     subject: j['subject'] as String,
     number: j['number'] as int,
     title: L10n.of(j['title']),

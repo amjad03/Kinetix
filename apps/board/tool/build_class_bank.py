@@ -182,15 +182,49 @@ def en(v):
     return v if isinstance(v, str) else ''
 
 
-# --- Descriptive questions from the lessons --------------------------------------------------
+# --- Written questions from the lessons -------------------------------------------------------
+#
+# Parts B–D of a mock test need questions that read as a teacher would set them for 2, 3 or 5
+# marks. The lessons have no such bank, so this builds one, conservatively, from:
+#   * the lesson objectives that are already exam instructions ("Define …", "State …",
+#     "Distinguish between …", "Derive …"), rewritten only where a fixed rule applies
+#     ("Tell X from Y" → "Distinguish between X and Y"; a trailing "and use …" skill is dropped);
+#   * the recap's real questions ("Why is speed a derived quantity?") with their answers;
+#   * the recap's homework that reads as an exam question (not "NCERT Exercise …", tables to
+#     make, numericals without an answer);
+#   * the worked examples (problems), sized 2, 3 or 5 marks by how much they ask.
+# Anything else is left out: a part with too few questions is shortened on the paper rather
+# than filled with flash-card stems ("Flux Φ = ?") or skills ("Use additivity …").
+# The same checks run in the board (lib/classroom_edition/class_tools/paper.dart, examPromptProblem).
 
-SHORT_VERBS = {'define', 'state', 'name', 'tell', 'write', 'list', 'give', 'identify', 'recall', 'recognise',
-               'recognize', 'label', 'classify', 'mention', 'what', 'distinguish', 'differentiate'}
-LONG_VERBS = {'explain', 'describe', 'derive', 'discuss', 'compare', 'prove', 'show', 'analyse', 'analyze',
-              'illustrate', 'justify', 'draw', 'outline', 'interpret', 'evaluate', 'examine', 'trace', 'deduce',
-              'relate', 'contrast', 'establish', 'obtain', 'apply'}
 NEEDS_FIGURE = re.compile(r'\b(this code|the code|following code|this program|the program below|below|shown|figure|'
                           r'diagram|graph|table|the circuit|picture|image|the map|above)\b', re.I)
+# A written prompt may ask for a diagram; it must not lean on one that is not printed.
+REFERS_TO_FIGURE = re.compile(r'\b(shown|figure|fig\.|below|above|the circuit|this code|the code|following code|'
+                              r'the given (?:table|graph|data)|in the quiz|the quiz|the lesson|this lesson)\b', re.I)
+PRONOUN = re.compile(r'\b(it|its|their|them|they|these|this|those|each|such|here)\b', re.I)
+WORDS = re.compile(r"[A-Za-z][A-Za-z'’-]+")
+
+# Objective verb → marks (2, 3 or 5). Verbs not listed are skills, not exam questions.
+TWO = {'define', 'state', 'name', 'list', 'give', 'write', 'mention', 'classify'}
+THREE = {'distinguish', 'differentiate', 'contrast', 'compare', 'explain', 'outline', 'draw', 'sketch', 'justify',
+         'show', 'trace'}
+FIVE = {'derive', 'obtain', 'prove', 'establish', 'describe', 'discuss'}
+# A longer answer for these, whatever the verb.
+FIVE_WORDS = re.compile(r'\b(mechanism|working|construction|structure and|process of|life cycle|cycle|experiment|'
+                        r'method|theory|model|pathway|stages|steps of|parts and)\b', re.I)
+# Skills tacked on to an objective ("State and use …", "Define X and find it for …").
+SKILL_TAIL = re.compile(r'\s+and\s+(use|apply|find|calculate|compute|solve|read|interpret|count|identify|recognise|'
+                        r'recognize|predict|test|decide|choose|handle|work out)\b.*$', re.I)
+SKILL_PAIR = re.compile(r'^(\w+)\s+and\s+(use|apply|read|interpret|identify|recognise|recognize)\s+', re.I)
+QUESTION_START = re.compile(r'^(what|why|how|which|when|where|who|whom|whose|name|give|state|define|is|are|does|do|can|'
+                            r'in what|mention|list|write|distinguish|differentiate|explain)\b', re.I)
+ANSWER_IN = re.compile(r'\s*\((?:answer|ans)\s*[:=]\s*([^()]*(?:\([^()]*\)[^()]*)*)\)\s*\.?\s*$', re.I)
+ACTIVITY = re.compile(r'^(ncert|miscellaneous|make|copy|collect|count|prepare|revise|read|watch|try|visit|observe|'
+                      r'look|find out|search|do |practise|practice)\b|\b(a table|a chart|a poster|a model|a project|'
+                      r'exercise \d|ex\. ?\d|your (?:home|house|school|town|locality))\b', re.I)
+NUMERIC = re.compile(r'^(find|calculate|compute|determine|evaluate|solve|how many|how much|what is the value|'
+                     r'convert|balance|if |a |an |the |two |three |for |using |at what|insert|express|show that)', re.I)
 
 
 def sentence(s):
@@ -201,35 +235,206 @@ def sentence(s):
     return s if s[-1] in '.?!' else s + '.'
 
 
-def lesson_parts(lesson):
+def exam_prompt_problem(q):
+    """Why [q] cannot be printed as an exam question as it stands, or None."""
+    t = q.strip()
+    if re.search(r'(=|:|→|⇒|->)\s*\?', t):
+        return 'flash-card stem'
+    if len(WORDS.findall(t)) < 3:
+        return 'too short'
+    if '?' in t[:-1] and not re.search(r'\?\s+[A-Z(]', t):
+        return 'question mark inside'
+    if re.search(r'(^|\s)\(?A[.)]\s.*\s\(?B[.)]\s', t):
+        return 'option letters'  # "A. … B. …" (a unit such as "5 A." alone is not an option)
+    if re.match(r'^(explain|describe|discuss|answer|define|state)\s*:', t, re.I):
+        return 'template glue'
+    if re.search(r'\b(one or more options|which of the following|choose the correct|pick the|true or false)\b', t, re.I):
+        return 'multiple-choice stem'
+    if REFERS_TO_FIGURE.search(t):
+        return 'refers to a missing figure'
+    if not t[0].isupper() and not t[0].isdigit():
+        return 'lower-case start'
+    return None
+
+
+def _tidy(s):
+    s = re.sub(r'\s+', ' ', s).strip().rstrip('.').strip()
+    return s
+
+
+def objective_prompt(o, subject):
+    """An objective as an exam question: (text, marks), or None when it is a skill, not a question."""
+    s = _tidy(plain(o))
+    if not s or ':' in s or '?' in s or PRONOUN.search(s) or REFERS_TO_FIGURE.search(s):
+        return None
+    s = SKILL_PAIR.sub(lambda m: m.group(1) + ' ', s)
+    s = SKILL_TAIL.sub('', s)
+    words = s.split()
+    if len(words) < 3:
+        return None
+    verb = words[0].lower()
+    rest = ' '.join(words[1:])
+    if verb == 'tell':
+        m = re.match(r'^(.+?) (?:from|and) (.+?) apart$', rest) or re.match(r'^(.+?) from (.+)$', rest)
+        if not m:
+            return None
+        return f'Distinguish between {m.group(1)} and {m.group(2)}.', 3
+    if verb in ('distinguish', 'differentiate', 'contrast'):
+        if subject == 'maths':
+            return None  # "Differentiate eˣ" is calculus, not a comparison
+        rest = re.sub(r'^between\s+', '', rest)
+        m = re.match(r'^(.+?) from (.+)$', rest)
+        rest = f'{m.group(1)} and {m.group(2)}' if m else rest
+        if ' and ' not in rest:
+            return None
+        return f'Distinguish between {rest}.', 3
+    if verb == 'explain' and re.match(r'^that\b', rest):
+        return None
+    if verb == 'show' and not re.match(r'^(that|how)\b', rest):
+        return None
+    if verb == 'show' and rest.startswith('how'):
+        verb, rest = 'explain', rest
+        s = 'Explain ' + rest
+    if verb == 'draw':
+        if not re.search(r'\b(diagram|structure|projections?|graph|curve|circuit|set-up|apparatus)\b', rest, re.I):
+            return None
+    if verb == 'write' and ('=' in rest or not re.match(r'^(the|a|an|two|three|any)\b', rest)):
+        return None
+    if verb == 'give' and not re.match(r'^(the|two|three|an?|examples?|one)\b', rest):
+        return None
+    if verb in ('list', 'give', 'name', 'state', 'mention') and re.match(r'^(applications?|uses?|advantages?|features?|examples?|properties|functions?|types?)\b', rest) and ' of ' not in rest:
+        return None  # "List applications in medicine": of what?
+    if verb == 'describe' and re.match(r'^(events?|a|an)\b', rest) and not FIVE_WORDS.search(rest):
+        return None
+    if subject == 'maths' and verb not in ('define', 'state', 'derive', 'prove'):
+        return None  # Maths papers ask problems; its other objectives are skills
+    if subject == 'maths' and verb == 'prove' and re.search(r'\b(by induction|a function|results|formulas|inequalities)\b', rest):
+        return None
+    if verb in TWO:
+        marks = 2
+    elif verb in THREE:
+        marks = 5 if FIVE_WORDS.search(rest) and verb in ('explain', 'trace', 'outline') else 3
+    elif verb in FIVE:
+        marks = 5 if verb in ('derive', 'obtain', 'prove', 'establish', 'discuss') or FIVE_WORDS.search(rest) else 3
+    else:
+        return None
+    text = sentence(s[0].upper() + s[1:])
+    return (text, marks) if exam_prompt_problem(text) is None else None
+
+
+def problem_size(q, steps, subject):
+    """2, 3 or 5: how many marks a worked problem is worth on a PUC paper."""
+    numbers = len(re.findall(r'\d+(?:\.\d+)?', q))
+    parts = len(re.findall(r'\(([a-e]|i{1,3}|iv)\)', q))
+    asks = len(re.findall(r'\b(find|calculate|determine|what|how|also|and the|show that|hence)\b', q, re.I))
+    if subject == 'maths':
+        # Board maths: 2 marks for a one-step result, 5 for a full method (several parts, or long).
+        if parts >= 2 or len(q) >= 95 or len(steps) >= 4:
+            return 5
+        return 2 if len(q) < 55 and len(steps) <= 2 else 3
+    if parts >= 3 or (len(q) >= 120 and numbers >= 2 and (asks >= 2 or parts >= 2)) or len(q) >= 170:
+        return 5
+    if len(q) < 75 and len(steps) <= 2 and parts == 0:
+        return 2
+    return 3
+
+
+def homework_item(h, subject, tp, key):
+    """A recap homework line as ('w', question, marks, answer) or ('p', question, answer, size), or None."""
+    s = plain(h).strip()
+    if not s or ACTIVITY.search(s) or REFERS_TO_FIGURE.search(re.sub(r'\(NCERT[^)]*\)', '', s)):
+        return None
+    s = re.sub(r'\s*\(NCERT[^)]*\)', '', s)
+    s = re.sub(r'\s*(?:Answer|Write|Explain)? ?in (?:one|two|three|four|five|\d+) (?:lines?|sentences?|words?|points?)\.?|\s*Write (?:one|two|three|four|five|\d+) (?:lines?|sentences?|points?)\.?', '', s, flags=re.I).strip()
+    answer = ''
+    m = ANSWER_IN.search(s)
+    if m:
+        answer, s = m.group(1).strip(), s[:m.start()].strip()
+    s = sentence(s)
+    if exam_prompt_problem(s) or PRONOUN.search(re.sub(r'\b(each|such|this|these)\b', '', s, flags=re.I)) and not answer:
+        return None
+    first = s.split()[0].lower()
+    numeric = bool(re.search(r'\d', s)) and (NUMERIC.match(s) or re.search(r'\b(find|calculate|how many|how much)\b', s, re.I))
+    if subject == 'maths' or numeric:
+        if not answer:
+            return None  # a problem needs its answer for the key
+        return 'p', s, answer, problem_size(s, [], subject)
+    if first in ('why', 'what', 'name', 'give', 'list', 'write', 'state', 'define', 'mention', 'which', 'how') or s.endswith('?'):
+        return 'w', s, 2 if len(s) < 110 else 3, answer or key
+    if first in ('explain', 'distinguish', 'differentiate', 'compare', 'draw', 'sketch', 'show', 'trace', 'classify', 'predict', 'arrange', 'outline'):
+        if first == 'differentiate' and not re.match(r'^differentiate between\b', s, re.I):
+            return None
+        return 'w', s, 3, answer or key
+    if first in ('describe', 'derive', 'discuss', 'prove'):
+        return 'w', s, 5, answer or key
+    return None
+
+
+def _overlap(a, b):
+    wa = {w.lower() for w in WORDS.findall(a) if len(w) > 3}
+    wb = {w.lower() for w in WORDS.findall(b) if len(w) > 3}
+    return len(wa & wb)
+
+
+def lesson_parts(lesson, subject='physics'):
+    """A lesson's written questions by marks (2, 3, 5) and its problems."""
     tp = (lesson.get('topicId') or '').split('.')[-1]
-    objectives, recap, shorts, problems = [], [], [], []
+    objectives, recap, concepts, homework = [], [], [], []
+    written = {2: [], 3: [], 5: []}
+    problems = []
     for b in lesson.get('blocks', []):
         t = b.get('type')
         if t == 'intro':
             objectives += [en(o) for o in b.get('objectives', []) if en(o)]
+        elif t == 'concept':
+            pts = [plain(en(p)) for p in b.get('points', []) if en(p)]
+            concepts.append((plain(en(b.get('title'))), [p for p in pts if '?' not in p]))
         elif t == 'recap':
             pts = [plain(en(p)) for p in b.get('points', [])]
             ans = [plain(en(a)) for a in b.get('answers', [])]
+            homework += [en(h) for h in b.get('homework', []) if en(h)]
             for k, p in enumerate(pts):
-                if p.endswith('?') and len(p.split()) >= 4 and k < len(ans) and ans[k]:
-                    shorts.append({'tp': tp, 'q': p, 'a': ans[k]})
-                    recap.append(ans[k])
-                elif p:
+                a = ans[k] if k < len(ans) else ''
+                if p.endswith('?') and a:
+                    if exam_prompt_problem(p) is None and QUESTION_START.match(p):
+                        written[2].append({'tp': tp, 'q': p, 'a': a})
+                        recap.append(a)
+                    else:
+                        # A flash card ("Flux Φ = ?") is not a question, but it is a good key line.
+                        stem = re.sub(r'\s*[:=→]?\s*\?$', '', p).strip()
+                        sep = ' = ' if p.rstrip('?').rstrip().endswith('=') else (' → ' if '→' in p[-4:] else ': ')
+                        recap.append(sentence(stem + sep + a.rstrip('.')))
+                elif p and '?' not in p:
                     recap.append(p)
         elif t == 'example':
             q, a = plain(en(b.get('problem'))), plain(en(b.get('answer')))
-            if q and a and not NEEDS_FIGURE.search(q) and len(q) < 420:
-                steps = [plain(en(x)) for x in b.get('steps', [])][:8]
-                problems.append({'tp': tp, 'q': q, 'a': a, 'st': [x for x in steps if x]})
-    longs = []
+            if q and a and not NEEDS_FIGURE.search(q) and len(q) < 420 and exam_prompt_problem(q) is None:
+                steps = [x for x in (plain(en(x)) for x in b.get('steps', [])[:8]) if x]
+                problems.append({'tp': tp, 'q': q, 'a': a, 'st': steps, 'm': problem_size(q, steps, subject)})
+
+    def key(q):
+        best = max(concepts, key=lambda c: _overlap(q, c[0] + ' ' + ' '.join(c[1])), default=None)
+        if best and _overlap(q, best[0] + ' ' + ' '.join(best[1])) >= 1 and best[1]:
+            return ' '.join(p.rstrip('.') + '.' for p in best[1][:4])
+        return ' '.join(recap[:3])
+
     for o in objectives:
-        first = re.split(r'\W+', o.strip(), maxsplit=1)[0].lower()
-        if first in SHORT_VERBS:
-            shorts.append({'tp': tp, 'q': sentence(o), 'a': ' '.join(recap[:2])})
-        elif first in LONG_VERBS:
-            longs.append({'tp': tp, 'q': sentence(o), 'pts': recap[:4]})
-    return shorts, longs, problems
+        r = objective_prompt(o, subject)
+        if r:
+            written[r[1]].append({'tp': tp, 'q': r[0], 'a': key(r[0])})
+    for h in homework:
+        r = homework_item(h, subject, tp, '')
+        if not r:
+            continue
+        if r[0] == 'p':
+            problems.append({'tp': tp, 'q': r[1], 'a': r[2], 'st': [], 'm': r[3]})
+        else:
+            written[r[2]].append({'tp': tp, 'q': r[1], 'a': r[3] or key(r[1])})
+    return written, problems
+
+
+def _norm(q):
+    return re.sub(r'[^a-z0-9]+', ' ', q.lower()).strip()
 
 
 def formula_items(pack_dir, lessons):
@@ -323,7 +528,12 @@ def main():
         pack = json.load(open(os.path.join(d, 'pack.json'), encoding='utf-8')) if os.path.exists(os.path.join(d, 'pack.json')) else {}
         chapter_id = pack.get('chapterId') or name
         meta = chapters_meta.get(chapter_id, {})
-        year = int(name[3])
+        # The year comes from the chapter's own id ("puc2-physics-01-…"), checked against the
+        # syllabus and the pack folder: a chapter filed under the wrong year is an error, not a guess.
+        years = {int(x[3]) for x in (chapter_id, name, meta.get('year') or chapter_id) if re.match(r'puc[12]', x or '')}
+        if len(years) != 1:
+            sys.exit(f'{name}: the chapter id, pack folder and syllabus disagree on the year ({chapter_id}, {meta.get("year")})')
+        year = years.pop()
         subject = meta.get('subject')
         if not subject:
             rest = chapter_id[5:]
@@ -340,13 +550,28 @@ def main():
         if not topics:
             topics = [[(l.get('topicId') or '').split('.')[-1], plain(en(l.get('title')))] for l in lessons]
         title = plain(en(meta.get('title'))) or name[5:].replace('-', ' ').capitalize()
-        shorts, longs, problems = [], [], []
+        chapter_mcqs = mcqs(d)
+        written = {2: [], 3: [], 5: []}
+        problems, seen = [], set()
         for lesson in lessons:
-            s, lg, p = lesson_parts(lesson)
-            shorts += s
-            longs += lg
-            problems += p
-        ch = {'id': chapter_id, 'n': number, 't': title, 'topics': topics, 'q': mcqs(d), 'sh': shorts, 'lg': longs,
+            w, p = lesson_parts(lesson, subject)
+            for m in written:
+                for x in w[m]:
+                    if _norm(x['q']) not in seen:
+                        seen.add(_norm(x['q']))
+                        written[m].append(x)
+            for x in p:
+                if _norm(x['q']) not in seen:
+                    seen.add(_norm(x['q']))
+                    problems.append(x)
+        # A question that is also one of the chapter's MCQ stems stays in Part A only.
+        stems = {_norm(q['s']) for q in chapter_mcqs}
+        problems = [x for x in problems if _norm(x['q']) not in stems]
+        for m in written:
+            written[m] = [x for x in written[m] if _norm(x['q']) not in stems]
+        # 'sh' 2 marks, 'md' 3 marks, 'lg' 5 marks (written); 'pr' problems with their size 'm'.
+        ch = {'id': chapter_id, 'n': number, 't': title, 'topics': topics, 'q': chapter_mcqs, 'sh': written[2], 'md': written[3],
+              'lg': [{'tp': x['tp'], 'q': x['q'], 'pts': [x['a']] if x['a'] else []} for x in written[5]],
               'pr': problems, 'f': formula_items(d, lessons)}
         subjects.setdefault((year, subject), []).append(ch)
 
@@ -355,7 +580,7 @@ def main():
         if f.endswith('.json.gz') or f == 'index.json':
             os.remove(os.path.join(args.out, f))
     index = {'v': 1, 'subjects': [], 'patterns': []}
-    total = {'q': 0, 'sh': 0, 'lg': 0, 'pr': 0, 'f': 0}
+    total = {'q': 0, 'sh': 0, 'md': 0, 'lg': 0, 'pr': 0, 'f': 0}
     for (year, subject), chs in sorted(subjects.items()):
         chs.sort(key=lambda c: (c['n'], c['id']))
         file = f'puc{year}-{subject}.json.gz'
@@ -376,7 +601,7 @@ def main():
         json.dump(index, f, ensure_ascii=False, separators=(',', ':'))
     size = sum(os.path.getsize(os.path.join(args.out, f)) for f in os.listdir(args.out) if f != 'README.txt')
     print(f"Class bank: {len(index['subjects'])} subjects, {sum(len(s['chapters']) for s in index['subjects'])} chapters, "
-          f"{total['q']} MCQs, {total['sh']} short, {total['lg']} long, {total['pr']} problems, {total['f']} formulas, "
+          f"{total['q']} MCQs, {total['sh']} two-mark, {total['md']} three-mark, {total['lg']} five-mark, {total['pr']} problems, {total['f']} formulas, "
           f"{len(index['patterns'])} entrance patterns; {size / 1e6:.1f} MB in {args.out}")
 
 

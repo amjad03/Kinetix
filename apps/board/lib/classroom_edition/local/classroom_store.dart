@@ -35,6 +35,28 @@ class CeTeacher {
       CeTeacher(id: '${j['id']}', name: '${j['name'] ?? ''}', subject: '${j['subject'] ?? ''}', colour: (j['colour'] as num?)?.toInt() ?? 0);
 }
 
+/// The PUC year (1 or 2) of a chapter: from its id's prefix ("puc2-physics-01-…"), which is
+/// what the bundles file it under, else from its `year` field ("puc2", "2", 2, "II PUC").
+/// Null when neither says. (Reading anything but exactly "puc2" as 1st PUC put 2nd PUC
+/// chapters under 1st PUC.)
+int? pucYearOf(Object? year, {String id = ''}) {
+  final byId = RegExp(r'^puc([12])-').firstMatch(id);
+  if (byId != null) return int.parse(byId[1]!);
+  return pucYearOfName('$year');
+}
+
+/// 1 or 2 for a class or level's name: "puc2", "2nd PUC A", "II PUC", "Second PUC", "12",
+/// "Class XII"; null when it does not say.
+int? pucYearOfName(String? name) {
+  final s = (name ?? '').trim().toLowerCase();
+  if (s.isEmpty) return null;
+  if (RegExp(r'^puc ?([12])$').hasMatch(s)) return int.parse(s[s.length - 1]);
+  if (RegExp(r'^[12]$').hasMatch(s)) return int.parse(s);
+  if (RegExp(r'\b(2nd|ii|second|12|12th|xii|grade 12|class 12)\b').hasMatch(s) && !RegExp(r'\b(1st|first)\b').hasMatch(s)) return 2;
+  if (RegExp(r'\b(1st|i|first|11|11th|xi|grade 11|class 11)\b').hasMatch(s)) return 1;
+  return null;
+}
+
 /// One class (section) of the college: 1st or 2nd PUC and a section letter. Students are roll
 /// numbers 1 to [rollCount]; the Classroom edition never keeps a student's name.
 @immutable

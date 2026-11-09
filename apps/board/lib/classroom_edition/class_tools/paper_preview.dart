@@ -21,58 +21,74 @@ class PaperPage extends StatelessWidget {
       if (left <= 0) break;
       body.add(
         Padding(
-          padding: const EdgeInsets.only(top: 14, bottom: 4),
-          child: Text(
-            'Part ${s.part.label} — ${s.part.title} ${s.marksLine}',
-            style: ceText(15, w: FontWeight.w700, c: CeC.navy),
+          padding: const EdgeInsets.only(top: 14, bottom: 2),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(s.heading, style: ceText(15, w: FontWeight.w700, c: CeC.navy)),
+              ),
+              Text(s.marksLine, style: ceText(14, w: FontWeight.w700, c: CeC.navy)),
+            ],
           ),
         ),
       );
-      for (final i in s.items) {
-        if (left-- <= 0) break;
-        final n = p.items.indexOf(i) + 1;
+      for (final g in s.groups) {
+        if (left <= 0) break;
         body.add(
           Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 34,
-                  child: Text(
-                    '$n.',
-                    style: ceText(14.5, w: FontWeight.w700, c: CeC.body),
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(i.text, style: ceText(14.5, c: CeC.body, height: 1.35)),
-                      if (i.options.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 3),
-                          child: Wrap(
-                            spacing: 22,
-                            runSpacing: 2,
-                            children: [for (final (k, o) in i.options.indexed) Text('(${String.fromCharCode(97 + k)}) $o', style: ceText(13.5, c: CeC.body))],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 30,
-                  child: Text(
-                    i.marks == 1 && i.kind == ItemKind.mcq ? '' : fmtMarks(i.marks),
-                    textAlign: TextAlign.right,
-                    style: ceText(13.5, c: CeC.muted),
-                  ),
-                ),
-              ],
+            padding: const EdgeInsets.only(top: 4, bottom: 2),
+            child: Text(
+              s.groups.length > 1 ? '${g.instruction} ${g.marksLine}' : g.instruction,
+              style: ceText(14, c: CeC.body).copyWith(fontStyle: FontStyle.italic),
             ),
           ),
         );
+        for (final i in g.items) {
+          if (left-- <= 0) break;
+          final n = p.items.indexOf(i) + 1;
+          body.add(
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 34,
+                    child: Text(
+                      '$n.',
+                      style: ceText(14.5, w: FontWeight.w700, c: CeC.body),
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(i.text, style: ceText(14.5, c: CeC.body, height: 1.35)),
+                        if (i.options.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 3),
+                            child: Wrap(
+                              spacing: 22,
+                              runSpacing: 2,
+                              children: [for (final (k, o) in i.options.indexed) Text('(${String.fromCharCode(97 + k)}) $o', style: ceText(13.5, c: CeC.body))],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    width: 30,
+                    child: Text(
+                      i.marks == 1 && i.kind == ItemKind.mcq ? '' : fmtMarks(i.marks),
+                      textAlign: TextAlign.right,
+                      style: ceText(13.5, c: CeC.muted),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
       }
     }
     return Container(

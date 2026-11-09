@@ -6,16 +6,33 @@ import 'bank.dart';
 /// longer written answer (3 or 5 marks) or a problem to solve.
 enum ItemKind { mcq, short, long, problem }
 
-/// [count] questions of [kind], [marks] each.
+/// [count] questions of [kind], [marks] each, of which the students answer [attempt] (null:
+/// all of them; "Answer any FIVE of the following" is `PaperSlot(…, 7, 2, attempt: 5)`).
+/// [size] is the bank's size of question to draw on (2, 3 or 5 marks).
 class PaperSlot {
-  const PaperSlot(this.kind, this.count, this.marks);
+  const PaperSlot(this.kind, this.count, this.marks, {this.attempt, this.fixedSize});
   final ItemKind kind;
   final int count;
   final num marks;
-  num get total => count * marks;
+  final int? attempt;
+
+  /// The bank size to draw on when it is not the one [marks] implies (Mathematics' 6-mark
+  /// questions are 5-mark problems).
+  final int? fixedSize;
+
+  /// How many are answered.
+  int get answered => attempt == null ? count : attempt!.clamp(0, count);
+  num get total => answered * marks;
+  int get size => fixedSize ?? (marks <= 2 ? 2 : (marks <= 4 ? 3 : 5));
+
+  /// The same slot with [n] questions offered, keeping the same number of spare ones.
+  PaperSlot withCount(int n) {
+    final spare = count - answered;
+    return PaperSlot(kind, n, marks, attempt: attempt == null ? null : (n > spare ? n - spare : n), fixedSize: fixedSize);
+  }
 }
 
-/// A part of the paper ("Part B — Answer briefly").
+/// A part of the paper ("Part B — Two-mark questions").
 class PaperPart {
   const PaperPart(this.label, this.title, this.slots);
   final String label;
@@ -25,14 +42,16 @@ class PaperPart {
   num get total => slots.fold<num>(0, (a, s) => a + s.total);
   int get count => slots.fold(0, (a, s) => a + s.count);
 
-  /// "5 questions, 1 mark each", "1 question, 5 marks + 1 problem, 3 marks".
-  String get summary => slots
-      .map((s) {
+  /// "5 questions, 1 mark each", "Any 5 of 7, 2 marks each", "Any 3 of 4, 5 marks each + any 2 of 3 problems, 5 marks each".
+  String get summary => [
+    for (final (i, s) in slots.indexed)
+      () {
         final what = s.kind == ItemKind.problem ? (s.count == 1 ? 'problem' : 'problems') : (s.count == 1 ? 'question' : 'questions');
-        final marks = s.count == 1 ? '${fmtMarks(s.marks)} mark${s.marks == 1 ? '' : 's'}' : '${fmtMarks(s.marks)} mark${s.marks == 1 ? '' : 's'} each';
-        return '${s.count} $what, $marks';
-      })
-      .join(' + ');
+        final marks = '${fmtMarks(s.marks)} mark${s.marks == 1 ? '' : 's'}${s.count == 1 ? '' : ' each'}';
+        final head = s.answered < s.count ? '${i == 0 ? 'Any' : 'any'} ${s.answered} of ${s.count} $what' : '${s.count} $what';
+        return '$head, $marks';
+      }(),
+  ].join(' + ');
 
   PaperPart withSlots(List<PaperSlot> s) => PaperPart(label, title, s);
 }
@@ -61,23 +80,28 @@ String fmtMinutes(int m) {
   return '$h hour${h == 1 ? '' : 's'}${r == 0 ? '' : ' $r minutes'}';
 }
 
-const _a = 'Answer in one word or one sentence';
-const _b = 'Answer briefly';
-const _c = 'Answer in a short paragraph';
-const _d = 'Answer in detail';
+const _a = 'Multiple choice';
+const _b = 'Two-mark questions';
+const _c = 'Three-mark questions';
+const _d = 'Five-mark questions';
 
-/// The PUC board pattern, at three sizes (Karnataka PU: Part A one-mark, B two-mark, C
-/// three-mark, D five-mark questions and problems).
+// Shorthands for the patterns below.
+const _mcq = ItemKind.mcq, _sh = ItemKind.short, _lg = ItemKind.long, _pr = ItemKind.problem;
+
+/// The PUC board pattern at three sizes, with the board's internal choice ("Answer any FIVE of
+/// the following"): Part A one-mark multiple choice, B two-mark, C three-mark and D five-mark
+/// questions and problems. The annual paper is subject by subject ([pucPatternsFor]); these
+/// are the shapes for any subject.
 const pucPatterns = [
   PaperPattern(
     id: 'puc-chapter',
     name: 'Chapter test',
     minutes: 45,
     parts: [
-      PaperPart('A', _a, [PaperSlot(ItemKind.mcq, 5, 1)]),
-      PaperPart('B', _b, [PaperSlot(ItemKind.short, 3, 2)]),
-      PaperPart('C', _c, [PaperSlot(ItemKind.long, 2, 3)]),
-      PaperPart('D', _d, [PaperSlot(ItemKind.long, 1, 5), PaperSlot(ItemKind.problem, 1, 3)]),
+      PaperPart('A', _a, [PaperSlot(_mcq, 5, 1)]),
+      PaperPart('B', _b, [PaperSlot(_sh, 4, 2, attempt: 3)]),
+      PaperPart('C', _c, [PaperSlot(_lg, 4, 3, attempt: 3)]),
+      PaperPart('D', _d, [PaperSlot(_lg, 2, 5, attempt: 1)]),
     ],
   ),
   PaperPattern(
@@ -85,10 +109,10 @@ const pucPatterns = [
     name: 'Unit test',
     minutes: 90,
     parts: [
-      PaperPart('A', _a, [PaperSlot(ItemKind.mcq, 10, 1)]),
-      PaperPart('B', _b, [PaperSlot(ItemKind.short, 4, 2)]),
-      PaperPart('C', _c, [PaperSlot(ItemKind.long, 2, 3)]),
-      PaperPart('D', _d, [PaperSlot(ItemKind.long, 1, 5), PaperSlot(ItemKind.problem, 2, 3)]),
+      PaperPart('A', _a, [PaperSlot(_mcq, 10, 1)]),
+      PaperPart('B', _b, [PaperSlot(_sh, 5, 2, attempt: 3)]),
+      PaperPart('C', _c, [PaperSlot(_lg, 4, 3, attempt: 3)]),
+      PaperPart('D', _d, [PaperSlot(_lg, 2, 5, attempt: 1), PaperSlot(_pr, 2, 5, attempt: 1)]),
     ],
   ),
   PaperPattern(
@@ -96,10 +120,10 @@ const pucPatterns = [
     name: 'Annual pattern',
     minutes: 195,
     parts: [
-      PaperPart('A', _a, [PaperSlot(ItemKind.mcq, 20, 1)]),
-      PaperPart('B', _b, [PaperSlot(ItemKind.short, 5, 2)]),
-      PaperPart('C', _c, [PaperSlot(ItemKind.long, 5, 3)]),
-      PaperPart('D', _d, [PaperSlot(ItemKind.long, 3, 5), PaperSlot(ItemKind.problem, 2, 5)]),
+      PaperPart('A', _a, [PaperSlot(_mcq, 20, 1)]),
+      PaperPart('B', _b, [PaperSlot(_sh, 7, 2, attempt: 5)]),
+      PaperPart('C', _c, [PaperSlot(_lg, 7, 3, attempt: 5)]),
+      PaperPart('D', _d, [PaperSlot(_lg, 4, 5, attempt: 3), PaperSlot(_pr, 3, 5, attempt: 2)]),
     ],
   ),
   PaperPattern(
@@ -107,10 +131,59 @@ const pucPatterns = [
     name: 'Multiple choice',
     minutes: 30,
     parts: [
-      PaperPart('A', 'Choose the right answer', [PaperSlot(ItemKind.mcq, 20, 1)]),
+      PaperPart('A', 'Choose the right answer', [PaperSlot(_mcq, 20, 1)]),
     ],
   ),
 ];
+
+/// The annual paper of the Karnataka PU board for [subject] (the bank's slug), in the shape of
+/// its model papers: 70 marks (Mathematics 80), Part A 20 one-mark questions, then two-, three-
+/// and five-mark parts with internal choice, and Part E where the subject has one (Chemistry's
+/// numerical problems, Mathematics' 6- and 4-mark questions with an either/or, Biology's
+/// application questions).
+PaperPattern annualPatternFor(String subject) => switch (subject) {
+  'physics' => pucPatterns[2],
+  'chemistry' => const PaperPattern(
+    id: 'puc-annual',
+    name: 'Annual pattern',
+    minutes: 195,
+    parts: [
+      PaperPart('A', _a, [PaperSlot(_mcq, 20, 1)]),
+      PaperPart('B', _b, [PaperSlot(_sh, 5, 2, attempt: 3)]),
+      PaperPart('C', _c, [PaperSlot(_lg, 5, 3, attempt: 3)]),
+      PaperPart('D', _d, [PaperSlot(_lg, 6, 5, attempt: 4)]),
+      PaperPart('E', 'Numerical problems', [PaperSlot(_pr, 7, 3, attempt: 5)]),
+    ],
+  ),
+  'maths' => const PaperPattern(
+    id: 'puc-annual',
+    name: 'Annual pattern',
+    minutes: 195,
+    parts: [
+      PaperPart('A', _a, [PaperSlot(_mcq, 20, 1)]),
+      PaperPart('B', _b, [PaperSlot(_sh, 8, 2, attempt: 6)]),
+      PaperPart('C', _c, [PaperSlot(_lg, 8, 3, attempt: 6)]),
+      PaperPart('D', _d, [PaperSlot(_lg, 6, 5, attempt: 4)]),
+      PaperPart('E', 'Long answers', [PaperSlot(_pr, 2, 6, attempt: 1, fixedSize: 5), PaperSlot(_pr, 2, 4, attempt: 1, fixedSize: 3)]),
+    ],
+  ),
+  'biology' => const PaperPattern(
+    id: 'puc-annual',
+    name: 'Annual pattern',
+    minutes: 195,
+    parts: [
+      PaperPart('A', _a, [PaperSlot(_mcq, 20, 1)]),
+      PaperPart('B', _b, [PaperSlot(_sh, 8, 2, attempt: 5)]),
+      PaperPart('C', _c, [PaperSlot(_lg, 8, 3, attempt: 5)]),
+      PaperPart('D', _d, [PaperSlot(_lg, 6, 5, attempt: 4)]),
+      PaperPart('E', 'Application questions', [PaperSlot(_pr, 2, 5, attempt: 1)]),
+    ],
+  ),
+  _ => pucPatterns[2],
+};
+
+/// The PUC patterns offered for [subject]: chapter test, unit test, its annual paper, multiple choice.
+List<PaperPattern> pucPatternsFor(String subject) => [pucPatterns[0], pucPatterns[1], annualPatternFor(subject), pucPatterns[3]];
 
 /// An entrance paper's section for one subject as a multiple-choice pattern.
 PaperPattern entranceAsPattern(EntrancePattern e, String subject) {
@@ -139,6 +212,32 @@ PaperPattern worksheetPattern({int mcq = 6, int short = 2, int problems = 2}) =>
   ],
 );
 
+const _numberWords = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN'];
+
+/// Why [text] cannot go on a paper as a written question (Parts B–E), or null when it reads as
+/// one: a flash-card stem ("Flux Φ = ?"), a question mark followed by more text, option letters,
+/// "Explain: …" glue, a multiple-choice stem, a figure that is not printed, a lower-case start.
+/// The bank builder (tool/build_class_bank.py, exam_prompt_problem) applies the same rules.
+String? examPromptProblem(String text) {
+  final t = text.trim();
+  if (RegExp(r'(=|:|→|⇒|->)\s*\?').hasMatch(t)) return 'flash-card stem';
+  if (RegExp(r"[A-Za-z][A-Za-z'’-]+").allMatches(t).length < 3) return 'too short';
+  if (t.length > 1 && t.substring(0, t.length - 1).contains('?') && !RegExp(r'\?\s+[A-Z(]').hasMatch(t)) return 'question mark inside';
+  if (RegExp(r'(^|\s)\(?A[.)]\s.*\s\(?B[.)]\s').hasMatch(t)) return 'option letters';
+  if (RegExp(r'^(explain|describe|discuss|answer|define|state)\s*:', caseSensitive: false).hasMatch(t)) return 'template glue';
+  if (RegExp(r'\b(one or more options|which of the following|choose the correct|pick the|true or false)\b', caseSensitive: false).hasMatch(t)) return 'multiple-choice stem';
+  if (RegExp(r'\b(shown|figure|fig\.|below|above|the circuit|this code|the code|following code|the given (?:table|graph|data)|in the quiz|the quiz|the lesson|this lesson)\b', caseSensitive: false).hasMatch(t)) {
+    return 'refers to a missing figure';
+  }
+  final c = t.codeUnitAt(0);
+  if (!(t[0].toUpperCase() == t[0] && t[0].toLowerCase() != t[0]) && !(c >= 48 && c <= 57)) return 'lower-case start';
+  return null;
+}
+
+/// A question's text for comparing (two prompts that differ only in spacing or punctuation are
+/// the same question).
+String normQuestion(String s) => s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), ' ').trim();
+
 /// One question on a paper, with what goes in the answer key.
 class PaperItem {
   const PaperItem({required this.kind, required this.text, this.options = const [], required this.marks, this.answer = '', this.steps = const [], this.chapterId = '', this.topic = '', this.id = ''});
@@ -153,18 +252,50 @@ class PaperItem {
   final String topic;
 }
 
-class PaperSection {
-  const PaperSection(this.part, this.items);
-  final PaperPart part;
+/// One instruction's questions within a part: "Answer any FIVE of the following questions."
+class PaperGroup {
+  const PaperGroup(this.slot, this.items, {required this.attempt});
+  final PaperSlot slot;
   final List<PaperItem> items;
-  num get total => items.fold<num>(0, (a, i) => a + i.marks);
 
-  /// "(1 × 5 = 5)", "(5 + 3 = 8)".
-  String get marksLine {
-    if (items.isEmpty) return '';
-    final same = items.every((i) => i.marks == items.first.marks);
-    return same ? '(${fmtMarks(items.first.marks)} × ${items.length} = ${fmtMarks(total)})' : '(${items.map((i) => fmtMarks(i.marks)).join(' + ')} = ${fmtMarks(total)})';
+  /// How many of [items] are answered.
+  final int attempt;
+
+  bool get choice => attempt < items.length;
+  num get marks => slot.marks;
+  num get total => attempt * marks;
+
+  /// "Answer any FIVE of the following questions.", "Answer all the questions.".
+  String get instruction {
+    final what = slot.kind == ItemKind.problem ? 'problems' : 'questions';
+    if (slot.kind == ItemKind.mcq) return items.length == 1 ? 'Choose the correct answer.' : 'Choose the correct answer for each question.';
+    if (!choice) return items.length == 1 ? 'Answer the following ${what == 'problems' ? 'problem' : 'question'}.' : 'Answer all the following $what.';
+    final n = attempt < _numberWords.length ? _numberWords[attempt] : '$attempt';
+    return 'Answer any $n of the following $what.';
   }
+
+  /// "(5 × 2 = 10)".
+  String get marksLine => '($attempt × ${fmtMarks(marks)} = ${fmtMarks(total)})';
+}
+
+/// A part of the paper as printed: its instructions and questions.
+class PaperSection {
+  const PaperSection(this.part, this.groups);
+  final PaperPart part;
+  final List<PaperGroup> groups;
+
+  List<PaperItem> get items => [for (final g in groups) ...g.items];
+  num get total => groups.fold<num>(0, (a, g) => a + g.total);
+
+  /// "(1 × 5 = 5)", "(15 + 10 = 25)".
+  String get marksLine {
+    if (groups.isEmpty) return '';
+    if (groups.length == 1) return groups.single.marksLine;
+    return '(${groups.map((g) => fmtMarks(g.total)).join(' + ')} = ${fmtMarks(total)})';
+  }
+
+  /// "Part B — Two-mark questions".
+  String get heading => 'Part ${part.label} — ${part.title}';
 }
 
 /// A paper ready to print: the header, its parts and the answer key.
@@ -217,8 +348,12 @@ class Paper {
 }
 
 /// Makes a paper of [pattern] from [chapters] (questions spread over the chapters and their
-/// topics, chosen with [seed]). A written question the bank lacks is replaced by another
-/// written kind of the same marks; when none is left the slot shrinks.
+/// topics, chosen with [seed]). Each part takes questions of its own size only: 2-mark written
+/// questions for Part B, 3-mark for Part C, 5-mark for Part D, problems sized for their marks
+/// (Mathematics also takes problems in Parts B–D, as its papers do); every written question
+/// must pass [examPromptProblem] and none is asked twice. A part that the chapters cannot fill
+/// offers fewer questions with the same choice, and is left out when there are none: the
+/// paper is shorter, never padded.
 Paper buildPaper({
   required List<BankChapter> chapters,
   required PaperPattern pattern,
@@ -239,61 +374,76 @@ Paper buildPaper({
   final mcqs = pool((c) => c.questions, (q) => q.topic);
   // PUC-tagged and easier questions first for Part A.
   mcqs.sort((a, b) => (a.puc ? 0 : 1).compareTo(b.puc ? 0 : 1));
-  final shorts = pool((c) => c.shorts, (q) => q.topic);
-  final longs = pool((c) => c.longs, (q) => q.topic);
-  final problems = pool((c) => c.problems, (q) => q.topic);
+  // A written question that is also a multiple-choice stem would be asked twice (or with its
+  // options missing): Part A keeps it.
+  final stems = {for (final c in chapters) for (final q in c.questions) normQuestion(q.stem)};
+  bool fit(String text) => examPromptProblem(text) == null && !stems.contains(normQuestion(text));
+  final written = {
+    for (final m in const [2, 3, 5])
+      m: pool((c) => [...c.shorts, ...c.mediums, ...c.longs].where((q) => q.marks == m && fit(q.question)), (q) => q.topic),
+  };
+  final problems = {
+    for (final m in const [2, 3, 5]) m: pool((c) => c.problems.where((q) => q.size == m && fit(q.question)), (q) => q.topic),
+  };
+  final maths = chapters.any((c) => c.id.contains('-maths-')) || ClassBank.slug(subject) == 'maths';
   final used = <String>{};
 
-  PaperItem? take(ItemKind kind, num marks) {
-    PaperItem? from(ItemKind k) {
-      switch (k) {
-        case ItemKind.mcq:
-          final q = _spread(mcqs, used, (q) => q.id, (q) => '${q.chapterId}|${q.topic}');
-          return q == null
-              ? null
-              : PaperItem(
-                  kind: k,
-                  id: q.id,
-                  text: q.stem,
-                  options: q.options,
-                  marks: marks,
-                  answer: q.answerText,
-                  steps: [if (q.explanation.isNotEmpty) q.explanation],
-                  chapterId: q.chapterId,
-                  topic: q.topic,
-                );
-        case ItemKind.short || ItemKind.long:
-          final q = _spread(k == ItemKind.short ? shorts : longs, used, (q) => q.question, (q) => '${q.chapterId}|${q.topic}');
-          return q == null ? null : PaperItem(kind: k, id: q.question, text: q.question, marks: marks, answer: q.answer, chapterId: q.chapterId, topic: q.topic);
-        case ItemKind.problem:
-          final q = _spread(problems, used, (q) => q.question, (q) => '${q.chapterId}|${q.topic}');
-          return q == null ? null : PaperItem(kind: k, id: q.question, text: q.question, marks: marks, answer: q.answer, steps: q.steps, chapterId: q.chapterId, topic: q.topic);
-      }
-    }
+  PaperItem? fromWritten(int size, num marks) {
+    final q = _spread(written[size]!, used, (q) => normQuestion(q.question), (q) => '${q.chapterId}|${q.topic}');
+    return q == null
+        ? null
+        : PaperItem(kind: size == 2 ? ItemKind.short : ItemKind.long, id: q.question, text: q.question, marks: marks, answer: q.answer, chapterId: q.chapterId, topic: q.topic);
+  }
 
-    final order = switch (kind) {
-      ItemKind.mcq => [ItemKind.mcq],
-      ItemKind.short => [ItemKind.short, ItemKind.long],
-      ItemKind.long => [ItemKind.long, ItemKind.problem, ItemKind.short],
-      ItemKind.problem => [ItemKind.problem, ItemKind.long],
-    };
-    for (final k in order) {
-      final item = from(k);
-      if (item != null) return item;
+  PaperItem? fromProblems(int size, num marks) {
+    final q = _spread(problems[size]!, used, (q) => normQuestion(q.question), (q) => '${q.chapterId}|${q.topic}');
+    return q == null
+        ? null
+        : PaperItem(kind: ItemKind.problem, id: q.question, text: q.question, marks: marks, answer: q.answer, steps: q.steps, chapterId: q.chapterId, topic: q.topic);
+  }
+
+  PaperItem? take(PaperSlot slot) {
+    if (slot.kind == ItemKind.mcq) {
+      final q = _spread(mcqs, used, (q) => q.id, (q) => '${q.chapterId}|${q.topic}');
+      return q == null
+          ? null
+          : PaperItem(
+              kind: ItemKind.mcq,
+              id: q.id,
+              text: q.stem,
+              options: q.options,
+              marks: slot.marks,
+              answer: q.answerText,
+              steps: [if (q.explanation.isNotEmpty) q.explanation],
+              chapterId: q.chapterId,
+              topic: q.topic,
+            );
     }
-    return null;
+    final size = slot.size;
+    if (slot.kind == ItemKind.problem) return fromProblems(size, slot.marks);
+    // Written parts: Mathematics alternates its theory and problems; other subjects ask the
+    // theory first and fall back to a problem of the same size.
+    if (maths && r.nextBool()) return fromProblems(size, slot.marks) ?? fromWritten(size, slot.marks);
+    return fromWritten(size, slot.marks) ?? fromProblems(size, slot.marks);
   }
 
   final sections = <PaperSection>[];
   for (final part in pattern.parts) {
-    final items = <PaperItem>[];
+    final groups = <PaperGroup>[];
     for (final slot in part.slots) {
+      final items = <PaperItem>[];
       for (var i = 0; i < slot.count; i++) {
-        final item = take(slot.kind, slot.marks);
+        final item = take(slot);
         if (item != null) items.add(item);
       }
+      if (items.isEmpty) continue;
+      // Fewer questions than the slot asks for: keep the same number spare ("any 3 of 5" with
+      // four found is "any 2 of 4"); with no room for a choice, all of them.
+      final spare = slot.count - slot.answered;
+      final attempt = items.length == slot.count ? slot.answered : (items.length > spare ? items.length - spare : items.length);
+      groups.add(PaperGroup(slot, items, attempt: attempt));
     }
-    if (items.isNotEmpty) sections.add(PaperSection(part, items));
+    if (groups.isNotEmpty) sections.add(PaperSection(part, groups));
   }
   return Paper(title: title, college: college, className: className, subject: subject, chapters: [for (final c in chapters) c.title], minutes: pattern.minutes, sections: sections, note: pattern.note);
 }
@@ -326,8 +476,11 @@ Paper shuffledPaper(Paper p, {required int seed, String set = 'B'}) {
     sections: [
       for (final s in p.sections)
         PaperSection(s.part, [
-          for (final i in [...s.items]..shuffle(r))
-            if (i.kind == ItemKind.mcq && i.options.length > 1) _shuffleOptions(i, r) else i,
+          for (final g in s.groups)
+            PaperGroup(g.slot, [
+              for (final i in [...g.items]..shuffle(r))
+                if (i.kind == ItemKind.mcq && i.options.length > 1) _shuffleOptions(i, r) else i,
+            ], attempt: g.attempt),
         ]),
     ],
   );

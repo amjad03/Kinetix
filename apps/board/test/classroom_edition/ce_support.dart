@@ -12,7 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Monday 9 November 2026, 10:05: the 2nd period (9:50–10:45) is on.
 final ceMonday = DateTime(2026, 11, 9, 10, 5);
 
-/// A PU college as the design shows it: six teachers, five classes of 40, Monday's timetable.
+/// A PU college as the design shows it (with 1st PUC A on a 1st PUC chapter; the design had
+/// put Electric Charges and Fields, a 2nd PUC chapter, there): six teachers, five classes of 40, Monday's timetable.
 CeSetup sampleCollege() {
   const teachers = [
     CeTeacher(id: 'lr', name: 'Lakshmi Rao', subject: 'Physics', colour: 0),
@@ -30,7 +31,9 @@ CeSetup sampleCollege() {
     classes: CeSetup.starter.classes,
     slots: [
       slot('p0', 1, '08:55', '09:50', 'c1b', 'Mathematics', 'ks'),
-      slot('p1', 1, '09:50', '10:45', 'c1a', 'Physics', 'lr', room: 'Room 12', topic: 'Electric Charges and Fields'),
+      // Each topic is a chapter of its class's year (puc_years_test.dart checks): Units and
+      // Measurement is 1st PUC, Current Electricity 2nd PUC.
+      slot('p1', 1, '09:50', '10:45', 'c1a', 'Physics', 'lr', room: 'Room 12', topic: 'Units and Measurement'),
       slot('p2', 1, '11:00', '11:55', 'c2b', 'Physics', 'lr', topic: 'Current Electricity'),
       slot('p3', 1, '13:30', '14:25', 'c1c', 'Physics', 'lr', topic: 'Practical: Vernier callipers'),
       slot('p4', 1, '14:30', '15:25', 'c2a', 'Physics', 'lr', topic: 'Revision: electrostatics'),

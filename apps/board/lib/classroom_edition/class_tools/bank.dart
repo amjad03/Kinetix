@@ -65,15 +65,18 @@ class BankQuestion {
   );
 }
 
-/// A written question: a short answer (2 marks) or a longer one (3 or 5 marks), with what the
-/// answer key looks for.
+/// A written question worth [marks] (2, 3 or 5) as the bank sized it, with what the answer key
+/// looks for.
 @immutable
 class BankWritten {
-  const BankWritten({required this.chapterId, this.topic = '', required this.question, required this.answer});
+  const BankWritten({required this.chapterId, this.topic = '', required this.question, required this.answer, this.marks = 2});
 
   final String chapterId;
   final String topic;
   final String question;
+
+  /// 2 (Part B), 3 (Part C) or 5 (Part D).
+  final int marks;
 
   /// The key: an answer, or the points to look for.
   final String answer;
@@ -82,13 +85,16 @@ class BankWritten {
 /// A worked problem: the question, its answer and the steps.
 @immutable
 class BankProblem {
-  const BankProblem({required this.chapterId, this.topic = '', required this.question, required this.answer, this.steps = const []});
+  const BankProblem({required this.chapterId, this.topic = '', required this.question, required this.answer, this.steps = const [], this.size = 3});
 
   final String chapterId;
   final String topic;
   final String question;
   final String answer;
   final List<String> steps;
+
+  /// The marks it is sized for: 2 (one step), 3 or 5 (a full numerical).
+  final int size;
 }
 
 /// A formula: its name, TeX, the same as plain text and a note.
@@ -114,6 +120,7 @@ class BankChapter {
     this.topics = const [],
     this.questions = const [],
     this.shorts = const [],
+    this.mediums = const [],
     this.longs = const [],
     this.problems = const [],
     this.formulas = const [],
@@ -126,7 +133,9 @@ class BankChapter {
   /// (id, title), in the syllabus order.
   final List<(String, String)> topics;
   final List<BankQuestion> questions;
+  /// Written questions for 2 marks (Part B), 3 marks (Part C) and 5 marks (Part D).
   final List<BankWritten> shorts;
+  final List<BankWritten> mediums;
   final List<BankWritten> longs;
   final List<BankProblem> problems;
   final List<BankFormula> formulas;
@@ -152,12 +161,28 @@ class BankChapter {
           if (((q['o'] as List?)?.length ?? 0) >= 2) BankQuestion.fromJson(id, q),
       ],
       shorts: [for (final s in maps('sh')) BankWritten(chapterId: id, topic: '${s['tp'] ?? ''}', question: '${s['q']}', answer: '${s['a'] ?? ''}')],
+      mediums: [for (final s in maps('md')) BankWritten(chapterId: id, topic: '${s['tp'] ?? ''}', question: '${s['q']}', answer: '${s['a'] ?? ''}', marks: 3)],
       longs: [
-        for (final s in maps('lg')) BankWritten(chapterId: id, topic: '${s['tp'] ?? ''}', question: '${s['q']}', answer: [for (final p in (s['pts'] as List?) ?? const []) '$p'].join(' ')),
+        for (final s in maps('lg'))
+          BankWritten(
+            chapterId: id,
+            topic: '${s['tp'] ?? ''}',
+            question: '${s['q']}',
+            answer: [for (final p in (s['pts'] as List?) ?? const []) '$p'].join(' '),
+            // A bank built before 3-mark questions had their own list kept them here.
+            marks: j.containsKey('md') ? 5 : 3,
+          ),
       ],
       problems: [
         for (final p in maps('pr'))
-          BankProblem(chapterId: id, topic: '${p['tp'] ?? ''}', question: '${p['q']}', answer: '${p['a'] ?? ''}', steps: [for (final s in (p['st'] as List?) ?? const []) '$s']),
+          BankProblem(
+            chapterId: id,
+            topic: '${p['tp'] ?? ''}',
+            question: '${p['q']}',
+            answer: '${p['a'] ?? ''}',
+            steps: [for (final s in (p['st'] as List?) ?? const []) '$s'],
+            size: (p['m'] as num?)?.toInt() ?? 3,
+          ),
       ],
       formulas: [
         for (final f in maps('f')) BankFormula(chapterId: id, topic: '${f['tp'] ?? ''}', name: '${f['n'] ?? ''}', tex: '${f['tex'] ?? ''}', text: '${f['txt'] ?? ''}', note: '${f['note'] ?? ''}'),
@@ -253,7 +278,7 @@ class SubjectBank {
   /// Entrance-exam patterns with a section for this subject.
   final List<EntrancePattern> patterns;
 
-  bool get isEmpty => chapters.every((c) => c.questions.isEmpty && c.formulas.isEmpty && c.shorts.isEmpty && c.problems.isEmpty);
+  bool get isEmpty => chapters.every((c) => c.questions.isEmpty && c.formulas.isEmpty && c.shorts.isEmpty && c.mediums.isEmpty && c.longs.isEmpty && c.problems.isEmpty);
 
   BankChapter? chapter(String? id) => chapters.where((c) => c.id == id).firstOrNull;
 

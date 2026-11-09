@@ -31,7 +31,7 @@ CeSetup _college() {
     slots: [
       for (final x in s.slots)
         x.id == 'p1'
-            ? x.copyWith(classId: 'c2a')
+            ? x.copyWith(classId: 'c2a', topic: 'Electric Charges and Fields')
             : x.id == 'p4'
             ? x.copyWith(classId: 'c1a', topic: 'Units and Measurement')
             : x,
