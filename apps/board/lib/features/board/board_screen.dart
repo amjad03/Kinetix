@@ -2879,7 +2879,8 @@ class _BoardScreenState extends State<BoardScreen> {
         (const Key('menu-simple-board'), _ceSimple ? Icons.apps_rounded : Icons.crop_square_rounded, _ceSimple ? 'Show all tools' : 'Simple board', () => _ceSetSimple(!_ceSimple), true),
         (const Key('menu-tour'), Icons.tour_outlined, 'Guided tour', () => _ceTour(practice: true, stay: false), true),
       ],
-      (
+      // "Preview as interactive panel" is a tool for whoever builds the board, not for a class.
+      if (!Edition.classroom) (
         const Key('menu-preview'),
         board.panelPreview ? Icons.close_fullscreen : Icons.aspect_ratio,
         board.panelPreview ? UiStrings.of(context).exitPreview : UiStrings.of(context).previewPanel,
@@ -2958,11 +2959,10 @@ class _BoardScreenState extends State<BoardScreen> {
           header: (ctx) => classToolsHeader(ctx, onTool: _openClassTools),
           appsTitle: 'Classroom',
           apps: [
+            // Study Material, Take attendance and Recordings need the college's server: not
+            // offered in the offline Classroom edition.
             ('lessons', Icons.auto_stories_outlined, 'Lessons', () => _show(PanelKind.lessons)),
-            ('study-material', Icons.library_books_outlined, s('appStudyMaterial'), _openSearch),
             if (!board.localClass && board.isSignedIn) ('live-class', Icons.sensors, s('appLiveClass'), () => unawaited(toggleClassLive(context, board))),
-            ('attendance', Icons.how_to_reg_outlined, s('appAttendance'), _attendance),
-            ('recordings', Icons.video_library_outlined, s('appRecordings'), _openRecordings),
             ('books', Icons.menu_book_outlined, s('appBooks'), () => _openPanel(PanelKind.books)),
           ],
           others: const [],

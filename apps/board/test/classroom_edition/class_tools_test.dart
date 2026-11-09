@@ -572,7 +572,7 @@ void main() {
     await tapKey(tester, 'ce-class-tools');
     await tapKey(tester, 'ce-tool-quiz');
     await _loaded(tester);
-    expect(find.text('From Zynetix School · 8 questions in this chapter'), findsOneWidget);
+    expect(find.text('From the question bank · 8 questions in this chapter'), findsOneWidget);
     await tapKey(tester, 'ce-quiz-start');
     expect(find.byKey(const Key('ce-quiz-progress')), findsOneWidget);
     expect(find.text('Question 1 of 5'), findsOneWidget);

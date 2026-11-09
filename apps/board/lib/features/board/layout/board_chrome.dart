@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import '../../../classroom_edition/edition.dart';
+import '../../../classroom_edition/l10n/ce_strings.dart';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -357,18 +358,23 @@ class _ClassBarState extends State<ClassBar> {
                   // A local class (Classroom edition) has no server for phones to watch it on.
                   if (!board.localClass) ...[gap, GoLiveChip(board: board)],
                   gap,
-                  ActionChip(
-                    key: const Key('attendance-chip'),
-                    avatar: const Icon(Icons.groups_outlined, size: 18),
-                    label: Text(
-                      board.roster.isEmpty
-                          ? l.noClassList
-                          : marked == 0
-                          ? l.takeAttendance(board.roster.length)
-                          : l.presentOfTotal(board.pickable.length, board.roster.length),
+                  // A local class (Classroom edition) is roll numbers only, with no attendance
+                  // to send to a server: the chip just says how many.
+                  if (board.localClass)
+                    Chip(key: const Key('attendance-chip'), avatar: const Icon(Icons.groups_outlined, size: 18), label: Text(CeS.of(context).students(board.roster.length)))
+                  else
+                    ActionChip(
+                      key: const Key('attendance-chip'),
+                      avatar: const Icon(Icons.groups_outlined, size: 18),
+                      label: Text(
+                        board.roster.isEmpty
+                            ? l.noClassList
+                            : marked == 0
+                            ? l.takeAttendance(board.roster.length)
+                            : l.presentOfTotal(board.pickable.length, board.roster.length),
+                      ),
+                      onPressed: widget.onAttendance,
                     ),
-                    onPressed: widget.onAttendance,
-                  ),
                   if (left != null) ...[
                     gap,
                     Chip(key: const Key('period-left'), avatar: const Icon(Icons.hourglass_bottom, size: 18), label: Text(ls.minutesLeft(left))),

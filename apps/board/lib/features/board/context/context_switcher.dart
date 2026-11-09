@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../../classroom_edition/edition.dart';
 import '../../../core/models.dart';
 import '../../../l10n/feature_strings.dart';
 import '../../../l10n/l10n.dart';
@@ -99,6 +100,9 @@ ClassContext resolveClassContext(SessionContext? session, ContextOverride pick) 
 /// "Maths · Class 7" for the top bar.
 String contextLabel(BuildContext context, ClassContext c) {
   final s = contextStrings(context);
+  // Classroom edition: the class chip beside it names the class ("1st PUC A · Physics"), so this
+  // one says the subject alone, never a bare "College".
+  if (Edition.classroom) return context.l10n.subjectName(c.subject);
   final grade = switch (c.band) {
     GradeBand.college => s['college'],
     _ when c.grade == null => '',
@@ -125,6 +129,8 @@ class ContextChip extends StatelessWidget {
       listenable: pick,
       builder: (context, _) {
         final icon = Icon(subjectStyles[ctx().subject]!.icon, size: 18);
+        // The Classroom edition always names the subject (a bare icon told teachers nothing).
+        final compact = this.compact && !Edition.classroom;
         final label = contextLabel(context, ctx());
         return ActionChip(
           key: const Key('ctx-chip'),

@@ -15,13 +15,16 @@ export 'pin_pad.dart' show askSchoolPin, chooseNewPin, CePinPad;
 
 /// The Classroom edition's Settings: the college, teachers, classes (roll numbers), the
 /// timetable and the school PIN. Opened after [askSchoolPin].
-Future<void> openClassroomSettings(BuildContext context, ClassroomStore store) =>
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => ClassroomSettingsPage(store: store)));
+/// [onPair] (from the start screen) pairs the board with the Teacher App, for a college on the
+/// ERP (Advanced); without it Advanced says to pair from the start screen.
+Future<void> openClassroomSettings(BuildContext context, ClassroomStore store, {VoidCallback? onPair}) =>
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => ClassroomSettingsPage(store: store, onPair: onPair)));
 
 class ClassroomSettingsPage extends StatefulWidget {
-  const ClassroomSettingsPage({super.key, required this.store});
+  const ClassroomSettingsPage({super.key, required this.store, this.onPair});
 
   final ClassroomStore store;
+  final VoidCallback? onPair;
 
   @override
   State<ClassroomSettingsPage> createState() => _ClassroomSettingsPageState();
@@ -34,7 +37,7 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   Widget build(BuildContext context) => Theme(
     data: ceTheme(context),
     child: DefaultTabController(
-      length: 5,
+      length: 6,
       child: Scaffold(
         key: const Key('ce-settings-page'),
         backgroundColor: CeC.page,
@@ -49,12 +52,13 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
               Tab(key: Key('ce-tab-classes'), text: 'Classes'),
               Tab(key: Key('ce-tab-college'), text: 'College and PIN'),
               Tab(key: Key('ce-tab-backup'), text: 'Backup & restore'),
+              Tab(key: Key('ce-tab-advanced'), text: 'Advanced'),
             ],
           ),
         ),
         body: ListenableBuilder(
           listenable: store,
-          builder: (context, _) => TabBarView(children: [_timetable(), _teachers(), _classes(), _collegeTab(), BackupTab(store: store)]),
+          builder: (context, _) => TabBarView(children: [_timetable(), _teachers(), _classes(), _collegeTab(), BackupTab(store: store), _advancedTab()]),
         ),
       ),
     ),
@@ -417,9 +421,40 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
     ],
   );
 
+  // --- Advanced -----------------------------------------------------------------------------
+
+  Widget _advancedTab() => ListView(
+    padding: const EdgeInsets.all(Kx.s24),
+    children: [
+      Text('Pair with the Teacher App', style: ceHeading(20)),
+      const SizedBox(height: Kx.s8),
+      Text(
+        'Only for a college that also uses the Zynetix ERP. This board works fully without it: classes, '
+        'timetable, lessons and class tools all stay on the board.',
+        style: ceText(16),
+      ),
+      const SizedBox(height: Kx.s12),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: OutlinedButton.icon(
+          key: const Key('ce-pair'),
+          style: ceSoftButton(),
+          onPressed: widget.onPair,
+          icon: const Icon(Icons.phonelink_ring_outlined),
+          label: const Text('Pair with Teacher App'),
+        ),
+      ),
+      if (widget.onPair == null) ...[
+        const SizedBox(height: Kx.s8),
+        Text('End the class and open Settings from the start screen to pair.', style: ceText(15)),
+      ],
+    ],
+  );
+
   Future<void> _changePin() async {
     if (await chooseNewPin(context, store) && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('The school PIN is changed.')));
     }
   }
 }
+

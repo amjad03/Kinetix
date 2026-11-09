@@ -194,12 +194,12 @@ Widget noBank(ToolEnv env, {String what = 'questions'}) => ToolEmpty(
   title: env.subject.isEmpty ? 'Start a class first' : 'No $what for ${env.subject} yet',
   line: env.subject.isEmpty
       ? 'Pick your class on the start screen. The class tools then use its subject and roll numbers.'
-      : 'They come with the Zynetix School question bank or with the lessons for this subject. Ask your college\'s IT person to install the latest Zynetix Board.',
+      : 'They come with the question bank or with the lessons for this subject. Ask whoever looks after the board to install the latest Zynetix Classroom.',
 );
 
 /// A line saying where the questions come from.
 String bankLine(SubjectBank b) => switch (b.source) {
-  BankSource.school => 'From Zynetix School',
+  BankSource.school => 'From the question bank',
   BankSource.lessons => 'From the lessons\' quick checks',
   BankSource.none => '',
 };

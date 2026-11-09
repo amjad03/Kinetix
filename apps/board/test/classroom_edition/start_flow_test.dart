@@ -25,7 +25,9 @@ void main() {
     expect(find.text('Now · 9:50 – 10:45'), findsOneWidget);
     expect(find.text('Later today'), findsOneWidget);
     expect(find.text('2nd PUC B · Physics'), findsOneWidget);
-    expect(find.byKey(const Key('ce-pair')), findsOneWidget);
+    // No ERP on the start screen: pairing is in Settings → Advanced.
+    expect(find.byKey(const Key('ce-pair')), findsNothing);
+    expect(find.textContaining('ERP'), findsNothing);
 
     await tapKey(tester, 'ce-start-class');
     await settle(tester, 10);
@@ -42,7 +44,7 @@ void main() {
     expect(board.classroom.currentTeacher!.id, 'lr');
     // The class bar shows the class, the roll numbers to mark, and no Go live (no server).
     expect(find.text('1st PUC A · Physics'), findsWidgets);
-    expect(find.text('40 students · Take attendance'), findsOneWidget);
+    expect(find.text('40 students'), findsOneWidget);
     expect(find.byKey(const Key('go-live')), findsNothing);
     // Attendance is kept on the board only: nothing waits to go to a server.
     board.markAttendance({'roll-3': AttendanceMark.absent});
@@ -106,9 +108,11 @@ void main() {
     await closeBoard(tester, board);
   });
 
-  testWidgets('Pair with Teacher App runs the usual enrolment, and Back returns', (tester) async {
+  testWidgets('Settings → Advanced → Pair with Teacher App runs the usual enrolment, and Back returns', (tester) async {
     final board = (await tester.runAsync(() => classroomBoard(seed: sampleCollege())))!;
     await pumpApp(tester, board);
+    await openCeSettings(tester);
+    await tapKey(tester, 'ce-tab-advanced');
     await tapKey(tester, 'ce-pair');
     expect(find.byType(EnrollScreen), findsOneWidget);
     await tapKey(tester, 'ce-pair-back');

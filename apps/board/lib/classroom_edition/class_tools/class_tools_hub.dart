@@ -146,7 +146,7 @@ class _ClassToolsHubState extends State<ClassToolsHub> {
         const SizedBox(height: 22),
         Text(
           env.bank.source == BankSource.lessons
-              ? 'Questions come from the lessons\' quick checks. The full Zynetix School bank adds mock-test questions, formulas and more.'
+              ? 'Questions come from the lessons\' quick checks. The full question bank adds mock-test questions, formulas and more.'
               : 'No question bank for ${env.subject.isEmpty ? 'this class' : env.subject} on this board yet: Teams, Pick a roll no. and Timer still work.',
           key: const Key('ce-tools-bank-note'),
           style: ceText(15),

@@ -284,7 +284,7 @@ class _BoardSettingsDialogState extends State<BoardSettingsDialog> {
               ),
             ],
           ),
-          (
+          if (!Edition.classroom) (
             [UiStrings.of(context).previewPanel, UiStrings.of(context).previewPanelHint, UiStrings.of(context).display],
             [
               SwitchListTile(
@@ -374,9 +374,11 @@ class _BoardSettingsDialogState extends State<BoardSettingsDialog> {
           ),
           if (Edition.ai) ([l.aiPen], [AiPenSettingsSection(board: board)]),
           ([l.projectorTitle], [ProjectorSettingsSection(projector: board.projector)]),
-          ([l.profilesTitle, l.switchTeacher], [ProfileSettingsSection(board: board)]),
+          // The Classroom edition has its own "Who's teaching now?" and no server for profiles.
+          if (!Edition.classroom) ([l.profilesTitle, l.switchTeacher], [ProfileSettingsSection(board: board)]),
           ([l.kioskTitle], [KioskSettingsSection(kiosk: board.kiosk)]),
-          (
+          // 3D models from a server: an online tool (none in the Classroom edition).
+          if (Edition.onlineTools) (
             [for (final k in ['title', 'hint', 'field']) modelServerStrings(boardLang(context))[k], '3D'],
             [const ModelServerSection()],
           ),

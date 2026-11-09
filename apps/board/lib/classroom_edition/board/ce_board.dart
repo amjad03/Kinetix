@@ -391,7 +391,7 @@ Widget classToolsHeader(BuildContext ctx, {required void Function(String id) onT
       spacing: Kx.s8,
       children: [
         Text('Class tools', style: ctx.text.titleMedium?.copyWith(color: CeC.navy, fontWeight: FontWeight.w600)),
-        Text('from Zynetix School · no phones, no internet', style: ctx.text.bodyMedium?.copyWith(color: CeC.muted)),
+        Text('Ready on this board · no phones, no internet', style: ctx.text.bodyMedium?.copyWith(color: CeC.muted)),
       ],
     ),
     const SizedBox(height: Kx.s12),

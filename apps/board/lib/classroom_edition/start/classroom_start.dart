@@ -19,8 +19,8 @@ enum _Scene { start, who, pair }
 
 /// The Classroom edition's first screens on a board with no ERP enrolment (README.md): the
 /// start screen with "Start my class" for the period on the board's own timetable, and "Who's
-/// teaching now?" with the teachers kept on the board. "Pair with Teacher App" runs the usual
-/// enrolment for colleges on the Zynetix ERP.
+/// teaching now?" with the teachers kept on the board. Pairing with the Teacher App (a college
+/// on the ERP) is in Settings → Advanced, and runs the usual enrolment.
 class ClassroomStart extends StatefulWidget {
   const ClassroomStart({super.key, required this.board});
 
@@ -104,7 +104,17 @@ class _ClassroomStartState extends State<ClassroomStart> {
   }
 
   Future<void> _settings() async {
-    if (await askSchoolPin(context, store) && mounted) await openClassroomSettings(context, store);
+    if (await askSchoolPin(context, store) && mounted) {
+      await openClassroomSettings(
+        context,
+        store,
+        // Settings → Advanced: pairing with the Teacher App, for a college on the ERP.
+        onPair: () {
+          Navigator.of(context).popUntil((r) => r.isFirst);
+          if (mounted) setState(() => _scene = _Scene.pair);
+        },
+      );
+    }
   }
 
   @override
@@ -117,7 +127,6 @@ class _ClassroomStartState extends State<ClassroomStart> {
         onStart: () => unawaited(_start()),
         onWho: () => setState(() => _scene = _Scene.who),
         onPractice: () => unawaited(_practice()),
-        onPair: () => setState(() => _scene = _Scene.pair),
         onSettings: () => unawaited(_settings()),
       ),
       _Scene.who => CeWhoScreen(
@@ -226,14 +235,13 @@ class CeStartScreen extends StatelessWidget {
     required this.onStart,
     required this.onWho,
     required this.onPractice,
-    required this.onPair,
     this.onSettings,
   });
 
   final ClassroomStore store;
   final CeTeacher? teacher;
   final CeSlot? slot;
-  final VoidCallback onStart, onWho, onPractice, onPair;
+  final VoidCallback onStart, onWho, onPractice;
   final VoidCallback? onSettings;
 
   @override
@@ -316,15 +324,6 @@ class CeStartScreen extends StatelessWidget {
                                 label: Text(name == null ? 'Choose who’s teaching' : 'Not $name? Choose who’s teaching'),
                               ),
                               OutlinedButton.icon(key: const Key('ce-practice'), onPressed: onPractice, style: ceSoftButton(), icon: const Icon(Icons.gesture), label: const Text('Practice board')),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.phonelink_ring_outlined, size: 20, color: CeC.muted),
-                              const SizedBox(width: 8),
-                              Text('College uses Zynetix ERP? ', style: ceText(15)),
-                              TextButton(key: const Key('ce-pair'), onPressed: onPair, child: Text('Pair with Teacher App', style: ceText(15, w: FontWeight.w600, c: CeC.accent))),
                             ],
                           ),
                         ],
