@@ -12,6 +12,7 @@ import 'paper_library.dart';
 import 'paper_model.dart';
 import 'paper_viewer.dart';
 import 'practice.dart';
+import '../l10n/ce_strings.dart';
 
 /// Past papers (a Class tool): the board's library of KCET, NEET, JEE, COMEDK, PUC and CBSE
 /// papers, filtered by exam, year and subject; each shown full screen on the board with its
@@ -63,7 +64,7 @@ class _PastPapersViewState extends State<PastPapersView> {
     if (!_bundledChecked && widget.library == null) {
       _bundledChecked = true;
       final r = await l.importBundled();
-      if (r.added.isNotEmpty) env.host.showMessage('${r.added.length} bundled papers added to the library');
+      if (r.added.isNotEmpty) env.host.showMessage(ceTr('{n} bundled papers added to the library', {'n': r.added.length}));
     }
   }
 
@@ -87,11 +88,11 @@ class _PastPapersViewState extends State<PastPapersView> {
   }
 
   Future<void> _remove(Paper p) async {
-    final ok = await askPapersPin(context, store, why: 'Removing ${p.longTitle} takes it off this board for everyone.');
+    final ok = await askPapersPin(context, store, why: context.ce('Removing {title} takes it off this board for everyone.', {'title': p.longTitle}));
     if (!ok) return;
     await lib!.remove(p);
     setState(() => open = null);
-    env.host.showMessage('${p.title} removed from this board');
+    env.host.showMessage(ceTr('{title} removed from this board', {'title': p.title}));
   }
 
   void _openPaper(Paper p) => setState(() {
@@ -113,10 +114,10 @@ class _PastPapersViewState extends State<PastPapersView> {
 
   Widget _library(PaperLibrary l) {
     final header = ToolHeader(
-      title: 'Past papers',
+      title: context.ce('Past papers'),
       onBack: env.back,
-      pill: l.isEmpty ? null : toolPill(l.papers.length == 1 ? '1 paper' : '${l.papers.length} papers', key: const Key('ce-papers-count')),
-      trailing: [toolButton('Add papers', icon: Icons.usb_rounded, key: const Key('ce-papers-add-button'), onPressed: _add)],
+      pill: l.isEmpty ? null : toolPill(l.papers.length == 1 ? ceTr('1 paper') : ceTr('{n} papers', {'n': l.papers.length}), key: const Key('ce-papers-count')),
+      trailing: [toolButton(ceTr('Add papers'), icon: Icons.usb_rounded, key: const Key('ce-papers-add-button'), onPressed: _add)],
     );
     if (l.isEmpty) {
       return Column(
@@ -140,7 +141,7 @@ class _PastPapersViewState extends State<PastPapersView> {
                 controller: search,
                 style: ceText(18, c: CeC.navy),
                 decoration: InputDecoration(
-                  hintText: 'Search: exam, year, subject, shift…',
+                  hintText: context.ce('Search: exam, year, subject, shift…'),
                   prefixIcon: const Icon(Icons.search_rounded),
                   suffixIcon: search.text.isEmpty
                       ? null
@@ -162,23 +163,23 @@ class _PastPapersViewState extends State<PastPapersView> {
           ],
         ),
         const SizedBox(height: 14),
-        _chipRow('Exam', [
-          choiceChip('All exams', on: filter.exam == null, offIcon: null, tick: false, key: const Key('ce-papers-exam-all'), onTap: () => setState(() => filter = PaperFilter(search: filter.search))),
+        _chipRow(ceTr('Exam'), [
+          choiceChip(ceTr('All exams'), on: filter.exam == null, offIcon: null, tick: false, key: const Key('ce-papers-exam-all'), onTap: () => setState(() => filter = PaperFilter(search: filter.search))),
           for (final e in choices.exams)
             choiceChip(e.label, on: filter.exam == e, offIcon: null, tick: false, key: Key('ce-papers-exam-${e.id}'), onTap: () => setState(() => filter = PaperFilter(exam: filter.exam == e ? null : e, search: filter.search))),
         ]),
         if (choices.years.length > 1) ...[
           const SizedBox(height: 10),
-          _chipRow('Year', [
-            choiceChip('All years', on: filter.year == null, offIcon: null, tick: false, onTap: () => setState(() => filter = PaperFilter(exam: filter.exam, search: filter.search))),
+          _chipRow(ceTr('Year'), [
+            choiceChip(ceTr('All years'), on: filter.year == null, offIcon: null, tick: false, onTap: () => setState(() => filter = PaperFilter(exam: filter.exam, search: filter.search))),
             for (final y in choices.years)
               choiceChip('$y', on: filter.year == y, offIcon: null, tick: false, key: Key('ce-papers-year-$y'), onTap: () => setState(() => filter = PaperFilter(exam: filter.exam, year: filter.year == y ? null : y, search: filter.search))),
           ]),
         ],
         if (choices.subjects.length > 1) ...[
           const SizedBox(height: 10),
-          _chipRow('Subject', [
-            choiceChip('All subjects', on: filter.subject == null, offIcon: null, tick: false, onTap: () => setState(() => filter = PaperFilter(exam: filter.exam, year: filter.year, search: filter.search))),
+          _chipRow(ceTr('Subject'), [
+            choiceChip(ceTr('All subjects'), on: filter.subject == null, offIcon: null, tick: false, onTap: () => setState(() => filter = PaperFilter(exam: filter.exam, year: filter.year, search: filter.search))),
             for (final s in choices.subjects)
               choiceChip(
                 s,
@@ -193,7 +194,7 @@ class _PastPapersViewState extends State<PastPapersView> {
         const SizedBox(height: 18),
         Expanded(
           child: shown.isEmpty
-              ? Center(child: Text('No paper matches. Tap All exams, or clear the search.', key: const Key('ce-papers-none'), style: ceText(18)))
+              ? Center(child: Text(context.ce('No paper matches. Tap All exams, or clear the search.'), key: const Key('ce-papers-none'), style: ceText(18)))
               : LayoutBuilder(
                   builder: (context, box) {
                     final cols = box.maxWidth > 1300 ? 4 : (box.maxWidth > 820 ? 3 : 2);
@@ -254,13 +255,13 @@ class _PastPapersViewState extends State<PastPapersView> {
                 spacing: 6,
                 runSpacing: 6,
                 children: [
-                  if (p.hasKey) _badge(Icons.key_outlined, 'Answer key'),
-                  if (p.hasQuestions) _badge(Icons.quiz_outlined, '${p.questionCount} questions'),
+                  if (p.hasKey) _badge(Icons.key_outlined, ceTr('Answer key')),
+                  if (p.hasQuestions) _badge(Icons.quiz_outlined, ceTr('{n} questions', {'n': p.questionCount})),
                   if (p.language != 'English') _badge(Icons.translate_rounded, p.language),
                 ],
               ),
               const SizedBox(height: 8),
-              Text(p.source.isEmpty ? 'Source: not given' : 'Source: ${p.source}', maxLines: 1, overflow: TextOverflow.ellipsis, style: ceText(13.5)),
+              Text(p.source.isEmpty ? ceTr('Source: not given') : ceTr('Source: {source}', {'source': p.source}), maxLines: 1, overflow: TextOverflow.ellipsis, style: ceText(13.5)),
             ],
           ),
         ),
@@ -293,14 +294,14 @@ class _PastPapersViewState extends State<PastPapersView> {
           children: [
             ceIconDot(Icons.history_edu_outlined, bg: CeC.blue, size: 72),
             const SizedBox(height: 18),
-            Text('No past papers on this board yet', textAlign: TextAlign.center, style: ceHeading(28)),
+            Text(context.ce('No past papers on this board yet'), textAlign: TextAlign.center, style: ceHeading(28)),
             const SizedBox(height: 10),
-            Text('Show KCET, NEET, JEE, COMEDK and PUC papers on the board, with their answer keys and the exam\'s timer. Here is how to add them:', textAlign: TextAlign.center, style: ceText(18, height: 1.45)),
+            Text(context.ce('Show KCET, NEET, JEE, COMEDK and PUC papers on the board, with their answer keys and the exam\'s timer. Here is how to add them:'), textAlign: TextAlign.center, style: ceText(18, height: 1.45)),
             const SizedBox(height: 22),
-            for (final (n, line) in const [
-              (1, 'Copy the paper PDFs, or a Zynetix paper pack (.zip), onto a USB stick.'),
-              (2, 'Plug the USB stick into the board.'),
-              (3, 'Tap Add papers, type the school PIN and pick the files.'),
+            for (final (n, line) in [
+              (1, ceTr('Copy the paper PDFs, or a Zynetix paper pack (.zip), onto a USB stick.')),
+              (2, ceTr('Plug the USB stick into the board.')),
+              (3, ceTr('Tap Add papers, type the school PIN and pick the files.')),
             ])
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -319,7 +320,7 @@ class _PastPapersViewState extends State<PastPapersView> {
                 ),
               ),
             const SizedBox(height: 14),
-            toolButton('Add papers', icon: Icons.usb_rounded, filled: true, key: const Key('ce-papers-empty-add'), onPressed: _add),
+            toolButton(ceTr('Add papers'), icon: Icons.usb_rounded, filled: true, key: const Key('ce-papers-empty-add'), onPressed: _add),
           ],
         ),
       ),
@@ -368,35 +369,35 @@ class _PastPapersViewState extends State<PastPapersView> {
           onBack: () => setState(() => open = null),
           pill: p.session.isEmpty ? null : toolPill(p.session),
           trailing: [
-            TextButton.icon(key: const Key('ce-paper-remove'), onPressed: () => _remove(p), icon: const Icon(Icons.delete_outline), label: const Text('Remove')),
+            TextButton.icon(key: Key('ce-paper-remove'), onPressed: () => _remove(p), icon: Icon(Icons.delete_outline), label: Text(context.ce('Remove'))),
           ],
         ),
         const SizedBox(height: 6),
         Text(
-          [p.subjectLine, p.language, if (p.pageCount > 0) '${p.pageCount} pages'].join(' · '),
+          [p.subjectLine, p.language, if (p.pageCount > 0) ceTr('{n} pages', {'n': p.pageCount})].join(' · '),
           style: ceText(18, c: CeC.body),
         ),
         const SizedBox(height: 2),
-        Text(p.source.isEmpty ? 'Source: not given' : 'Source: ${p.source}', style: ceText(15)),
+        Text(p.source.isEmpty ? ceTr('Source: not given') : ceTr('Source: {source}', {'source': p.source}), style: ceText(15)),
         const SizedBox(height: 22),
         Wrap(
           spacing: 16,
           runSpacing: 16,
           children: [
-            action(Icons.slideshow_outlined, 'Show on board', 'Full screen, page by page. Pinch to zoom; put a page on the board.', CeC.blue, 'ce-paper-show', () => openPaperViewer(context, lib: l, paper: p, host: env.host)),
+            action(Icons.slideshow_outlined, ceTr('Show on board'), ceTr('Full screen, page by page. Pinch to zoom; put a page on the board.'), CeC.blue, 'ce-paper-show', () => openPaperViewer(context, lib: l, paper: p, host: env.host)),
             action(
               Icons.key_outlined,
-              'Show answer key',
-              p.hasKey ? 'The paper and its key side by side.' : 'No answer key yet. Add it with Add papers.',
+              ceTr('Show answer key'),
+              p.hasKey ? ceTr('The paper and its key side by side.') : ceTr('No answer key yet. Add it with Add papers.'),
               CeC.mint,
               'ce-paper-key',
               p.hasKey ? () => openPaperViewer(context, lib: l, paper: p, host: env.host, showKey: true) : null,
             ),
-            action(Icons.timer_outlined, 'Exam timer', '${p.exam.label}: ${rule.timeLine}. A big countdown for a full mock.', CeC.butter, 'ce-paper-timer', () => openExamTimer(context, exam: p.exam, title: p.title)),
+            action(Icons.timer_outlined, ceTr('Exam timer'), ceTr('{exam}: {time}. A big countdown for a full mock.', {'exam': p.exam.label, 'time': rule.timeLine}), CeC.butter, 'ce-paper-timer', () => openExamTimer(context, exam: p.exam, title: p.title)),
             action(
               Icons.quiz_outlined,
-              'Practise questions',
-              p.hasQuestions ? '${p.questionCount} questions, one at a time. ${rule.markingLine}.' : 'This paper has no question set. Paper packs can bring one.',
+              ceTr('Practise questions'),
+              p.hasQuestions ? ceTr('{n} questions, one at a time. {marking}.', {'n': p.questionCount, 'marking': rule.markingLine}) : ceTr('This paper has no question set. Paper packs can bring one.'),
               CeC.lavender,
               'ce-paper-practise',
               p.hasQuestions ? () => _startPractice(l, p) : null,
@@ -436,11 +437,11 @@ class _PastPapersViewState extends State<PastPapersView> {
       key: const Key('ce-papers-practice-setup'),
       padding: EdgeInsets.zero,
       children: [
-        ToolHeader(title: 'Practise ${p.exam.label}', onBack: () => setState(() => practising = false), pill: toolPill(p.exam.rule.markingLine, icon: Icons.rule_rounded, bg: CeC.butter)),
+        ToolHeader(title: ceTr('Practise {exam}', {'exam': p.exam.label}), onBack: () => setState(() => practising = false), pill: toolPill(p.exam.rule.markingLine, icon: Icons.rule_rounded, bg: CeC.butter)),
         const SizedBox(height: 8),
-        Text('Questions from the ${p.exam.label} papers on this board. Pick the years and chapters.', style: ceText(17)),
+        Text(ceTr('Questions from the {exam} papers on this board. Pick the years and chapters.', {'exam': p.exam.label}), style: ceText(17)),
         const SizedBox(height: 20),
-        _chipRow('Year', [
+        _chipRow(ceTr('Year'), [
           for (final y in allYears)
             choiceChip('$y', on: years.contains(y), offIcon: Icons.add, key: Key('ce-practice-year-$y'), onTap: () => setState(() {
               years.contains(y) ? (years.length > 1 ? years.remove(y) : null) : years.add(y);
@@ -448,13 +449,13 @@ class _PastPapersViewState extends State<PastPapersView> {
             })),
         ]),
         const SizedBox(height: 14),
-        _chipRow('Chapter', [
-          choiceChip('All chapters', on: chapters.isEmpty, offIcon: null, tick: false, key: const Key('ce-practice-chapter-all'), onTap: () => setState(() => chapters = {})),
+        _chipRow(ceTr('Chapter'), [
+          choiceChip(ceTr('All chapters'), on: chapters.isEmpty, offIcon: null, tick: false, key: const Key('ce-practice-chapter-all'), onTap: () => setState(() => chapters = {})),
           for (final c in allChapters)
             choiceChip(c, on: chapters.contains(c), offIcon: null, key: Key('ce-practice-chapter-$c'), onTap: () => setState(() => chapters.contains(c) ? chapters.remove(c) : chapters.add(c))),
         ]),
         const SizedBox(height: 24),
-        Text(items.length == 1 ? '1 question' : '${items.length} questions', key: const Key('ce-practice-count'), style: ceHeading(26)),
+        Text(items.length == 1 ? ceTr('1 question') : ceTr('{n} questions', {'n': items.length}), key: const Key('ce-practice-count'), style: ceHeading(26)),
         const SizedBox(height: 14),
         Wrap(
           spacing: 16,
@@ -464,22 +465,22 @@ class _PastPapersViewState extends State<PastPapersView> {
               key: const Key('ce-practice-board-card'),
               icon: Icons.co_present_outlined,
               colour: CeC.lavender,
-              title: 'Practise on the board',
-              line: 'One question at a time, the options as big tiles. Tap the class\'s answer, then Reveal answer.',
-              action: toolButton('Start', icon: Icons.play_arrow_rounded, filled: true, key: const Key('ce-practice-start'), onPressed: items.isEmpty ? null : () => openPractice(context, lib: l, items: items, title: title, host: env.host)),
+              title: context.ce('Practise on the board'),
+              line: context.ce('One question at a time, the options as big tiles. Tap the class\'s answer, then Reveal answer.'),
+              action: toolButton(ceTr('Start'), icon: Icons.play_arrow_rounded, filled: true, key: const Key('ce-practice-start'), onPressed: items.isEmpty ? null : () => openPractice(context, lib: l, items: items, title: title, host: env.host)),
             ),
             infoCard(
               key: const Key('ce-practice-quiz-card'),
               icon: Icons.fact_check_outlined,
               colour: CeC.mint,
-              title: 'Class quiz from this paper',
-              line: 'Each question on the board; tap roll numbers right or wrong. Scores use ${p.exam.label} marking and go to the class records.${quizzable < items.length ? ' ${items.length - quizzable} numerical or multi-answer questions are left out.' : ''}',
+              title: context.ce('Class quiz from this paper'),
+              line: ceTr('Each question on the board; tap roll numbers right or wrong. Scores use {exam} marking and go to the class records.', {'exam': p.exam.label}) + (quizzable < items.length ? ' ${ceTr('{n} numerical or multi-answer questions are left out.', {'n': items.length - quizzable})}' : ''),
               action: toolButton(
-                'Start the class quiz',
+                ceTr('Start the class quiz'),
                 icon: Icons.groups_2_outlined,
                 filled: true,
                 key: const Key('ce-practice-class-quiz'),
-                onPressed: quizzable == 0 ? null : () => env.open('quiz', arg: paperQuiz(env: env, lib: l, items: items, title: '$title class quiz', backArg: p.id)),
+                onPressed: quizzable == 0 ? null : () => env.open('quiz', arg: paperQuiz(env: env, lib: l, items: items, title: ceTr('{title} class quiz', {'title': title}), backArg: p.id)),
               ),
             ),
           ].map((w) => SizedBox(width: 600, child: w)).toList(),

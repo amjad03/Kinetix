@@ -10,6 +10,8 @@ import 'package:printing/printing.dart';
 
 import '../local/classroom_store.dart';
 import '../ui/ce_style.dart';
+import '../l10n/ce_strings.dart';
+import '../ui/ce_pdf_text.dart';
 
 /// The school PIN typed on a big on-screen number pad (no keyboard pops up over the board):
 /// dots for the digits typed, the message under them, 1–9, ⌫, 0 and OK. A keyboard's digits,
@@ -90,7 +92,7 @@ class _CePinPadState extends State<CePinPad> {
   Future<void> _ok() async {
     if (_busy || _left != null) return;
     if (_pin.length < widget.minLength) {
-      setState(() => _error = 'Type ${widget.minLength} to ${widget.maxLength} digits.');
+      setState(() => _error = context.ce('Type {min} to {max} digits.', {'min': widget.minLength, 'max': widget.maxLength}));
       return;
     }
     setState(() => _busy = true);
@@ -128,7 +130,7 @@ class _CePinPadState extends State<CePinPad> {
   Widget build(BuildContext context) {
     final left = _left;
     final message = left != null
-        ? 'Too many wrong PINs. Try again in ${left.inMinutes}:${(left.inSeconds % 60).toString().padLeft(2, '0')}.'
+        ? context.ce('Too many wrong PINs. Try again in {time}.', {'time': '${left.inMinutes}:${(left.inSeconds % 60).toString().padLeft(2, '0')}'})
         : _error;
     Widget key(String label, {Key? k, VoidCallback? onTap, IconData? icon, bool primary = false}) => SizedBox(
       width: 104,
@@ -217,7 +219,7 @@ Widget _padDialog(BuildContext ctx, {required Key key, required Widget pad}) => 
       Positioned(
         right: 8,
         top: 8,
-        child: IconButton(key: const Key('ce-pin-cancel'), tooltip: 'Cancel', onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close, color: CeC.muted)),
+        child: IconButton(key: Key('ce-pin-cancel'), tooltip: ceTr('Cancel'), onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close, color: CeC.muted)),
       ),
     ],
   ),
@@ -225,9 +227,9 @@ Widget _padDialog(BuildContext ctx, {required Key key, required Widget pad}) => 
 
 String _lockMessage(ClassroomStore store) {
   final until = store.pinLockedUntil;
-  if (until == null) return 'Too many wrong PINs.';
+  if (until == null) return ceTr('Too many wrong PINs.');
   final m = (until.difference(store.now()).inSeconds / 60).ceil();
-  return 'Too many wrong PINs. Try again in $m minute${m == 1 ? '' : 's'}.';
+  return m == 1 ? ceTr('Too many wrong PINs. Try again in 1 minute.') : ceTr('Too many wrong PINs. Try again in {n} minutes.', {'n': m});
 }
 
 Duration? Function() _lockedFor(ClassroomStore store) => () => store.pinLocked ? store.pinLockedUntil!.difference(store.now()) : null;
@@ -243,8 +245,8 @@ Future<bool> askSchoolPin(BuildContext context, ClassroomStore store, {String? r
       ctx,
       key: const Key('ce-pin-dialog'),
       pad: CePinPad(
-        title: 'School PIN',
-        subtitle: reason ?? 'Settings change the timetable, teachers and classes for everyone who uses this board.',
+        title: context.ce('School PIN'),
+        subtitle: reason ?? context.ce('Settings change the timetable, teachers and classes for everyone who uses this board.'),
         okLabel: okLabel,
         lockedFor: _lockedFor(store),
         onSubmit: (pin) async {
@@ -257,11 +259,11 @@ Future<bool> askSchoolPin(BuildContext context, ClassroomStore store, {String? r
             case PinCheck.lockedOut:
               return _lockMessage(store);
             case PinCheck.wrong:
-              return 'That is not the school PIN. ${r.attemptsLeft} ${r.attemptsLeft == 1 ? 'try' : 'tries'} left.';
+              return r.attemptsLeft == 1 ? ceTr('That is not the school PIN. 1 try left.') : ceTr('That is not the school PIN. {n} tries left.', {'n': r.attemptsLeft});
           }
         },
         footer: store.hasRecoveryCode
-            ? TextButton(key: const Key('ce-pin-forgot'), onPressed: () => Navigator.pop(ctx, 'forgot'), child: Text('Forgot the PIN?', style: ceText(16, w: FontWeight.w600, c: CeC.accent)))
+            ? TextButton(key: Key('ce-pin-forgot'), onPressed: () => Navigator.pop(ctx, 'forgot'), child: Text(context.ce('Forgot the PIN?'), style: ceText(16, w: FontWeight.w600, c: CeC.accent)))
             : null,
       ),
     ),
@@ -289,23 +291,23 @@ Future<bool> chooseNewPin(BuildContext context, ClassroomStore store, {bool forc
         pad: CePinPad(
           key: ValueKey('${first == null}$mismatch'),
           initialError: first == null ? mismatch : null,
-          title: first == null ? (forced ? 'Choose the college’s own PIN' : 'New school PIN') : 'Type the new PIN again',
+          title: first == null ? (forced ? context.ce('Choose the college’s own PIN') : context.ce('New school PIN')) : context.ce('Type the new PIN again'),
           subtitle: first == null
-              ? (forced ? 'The PIN is still 1234, which everyone knows. Choose 4 to 8 digits that only staff will know.' : '4 to 8 digits that only staff will know.')
-              : 'To be sure it is right.',
+              ? (forced ? context.ce('The PIN is still 1234, which everyone knows. Choose 4 to 8 digits that only staff will know.') : context.ce('4 to 8 digits that only staff will know.'))
+              : context.ce('To be sure it is right.'),
           onSubmit: (p) async {
             if (first == null) {
               mismatch = null;
-              if (p == ClassroomStore.defaultPin) return 'Choose a PIN other than 1234.';
-              if (RegExp(r'^(\d)\1+$').hasMatch(p)) return 'Choose a PIN that is not one digit repeated.';
-              if ('0123456789'.contains(p) || '9876543210'.contains(p)) return 'Choose a PIN that is not a run of digits.';
+              if (p == ClassroomStore.defaultPin) return context.ce('Choose a PIN other than 1234.');
+              if (RegExp(r'^(\d)\1+$').hasMatch(p)) return context.ce('Choose a PIN that is not one digit repeated.');
+              if ('0123456789'.contains(p) || '9876543210'.contains(p)) return context.ce('Choose a PIN that is not a run of digits.');
               set(() => first = p);
               return null;
             }
             if (p != first) {
               set(() {
                 first = null;
-                mismatch = 'The two PINs were not the same. Choose the PIN again.';
+                mismatch = context.ce('The two PINs were not the same. Choose the PIN again.');
               });
               return null;
             }
@@ -340,20 +342,20 @@ Future<bool> _forgotPin(BuildContext context, ClassroomStore store) async {
           if (r.ok) return Navigator.pop(ctx, true);
           set(() {
             busy = false;
-            error = r.check == PinCheck.lockedOut ? _lockMessage(store) : 'That is not the recovery code. ${r.attemptsLeft} ${r.attemptsLeft == 1 ? 'try' : 'tries'} left.';
+            error = r.check == PinCheck.lockedOut ? _lockMessage(store) : (r.attemptsLeft == 1 ? context.ce('That is not the recovery code. 1 try left.') : context.ce('That is not the recovery code. {n} tries left.', {'n': r.attemptsLeft}));
           });
         }
 
         return AlertDialog(
           key: const Key('ce-forgot-dialog'),
-          title: const Text('Forgot the school PIN?'),
+          title: Text(context.ce('Forgot the school PIN?')),
           content: SizedBox(
             width: 520,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Type the recovery code that was printed or saved when the PIN was chosen (like K7QF-2MXD-9RTA).', style: ceText(17, c: CeC.navy)),
+                Text(context.ce('Type the recovery code that was printed or saved when the PIN was chosen (like K7QF-2MXD-9RTA).'), style: ceText(17, c: CeC.navy)),
                 const SizedBox(height: 16),
                 TextField(
                   key: const Key('ce-forgot-code'),
@@ -361,15 +363,15 @@ Future<bool> _forgotPin(BuildContext context, ClassroomStore store) async {
                   autofocus: true,
                   textCapitalization: TextCapitalization.characters,
                   style: ceHeading(26, w: FontWeight.w600),
-                  decoration: InputDecoration(labelText: 'Recovery code', errorText: error),
+                  decoration: InputDecoration(labelText: context.ce('Recovery code'), errorText: error),
                   onSubmitted: (_) => unawaited(check()),
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-            FilledButton(key: const Key('ce-forgot-ok'), onPressed: busy ? null : () => unawaited(check()), child: const Text('Choose a new PIN')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.ce('Cancel'))),
+            FilledButton(key: Key('ce-forgot-ok'), onPressed: busy ? null : () => unawaited(check()), child: Text(context.ce('Choose a new PIN'))),
           ],
         );
       },
@@ -387,13 +389,13 @@ Future<void> showRecoveryCode(BuildContext context, String code, {String college
   builder: (ctx) => AlertDialog(
     key: const Key('ce-recovery-dialog'),
     icon: const Icon(Icons.key_outlined, size: 40),
-    title: const Text('Keep this recovery code safe'),
+    title: Text(context.ce('Keep this recovery code safe')),
     content: SizedBox(
       width: 620,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('If the school PIN is ever forgotten, this code lets the principal choose a new one. It is shown only now.', textAlign: TextAlign.center, style: ceText(17, c: CeC.navy)),
+          Text(context.ce('If the school PIN is ever forgotten, this code lets the principal choose a new one. It is shown only now.'), textAlign: TextAlign.center, style: ceText(17, c: CeC.navy)),
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
@@ -406,14 +408,14 @@ Future<void> showRecoveryCode(BuildContext context, String code, {String college
             runSpacing: 12,
             alignment: WrapAlignment.center,
             children: [
-              OutlinedButton.icon(key: const Key('ce-recovery-print'), style: ceSoftButton(), onPressed: () => unawaited(_print(ctx, code, college)), icon: const Icon(Icons.print_outlined), label: const Text('Print')),
-              OutlinedButton.icon(key: const Key('ce-recovery-save'), style: ceSoftButton(), onPressed: () => unawaited(_saveCode(ctx, code, college)), icon: const Icon(Icons.save_alt), label: const Text('Save as a file')),
+              OutlinedButton.icon(key: Key('ce-recovery-print'), style: ceSoftButton(), onPressed: () => unawaited(_print(ctx, code, college)), icon: Icon(Icons.print_outlined), label: Text(context.ce('Print'))),
+              OutlinedButton.icon(key: Key('ce-recovery-save'), style: ceSoftButton(), onPressed: () => unawaited(_saveCode(ctx, code, college)), icon: Icon(Icons.save_alt), label: Text(context.ce('Save as a file'))),
             ],
           ),
         ],
       ),
     ),
-    actions: [FilledButton(key: const Key('ce-recovery-done'), onPressed: () => Navigator.pop(ctx), child: const Text('I have kept it safe'))],
+    actions: [FilledButton(key: Key('ce-recovery-done'), onPressed: () => Navigator.pop(ctx), child: Text(context.ce('I have kept it safe')))],
   ),
 );
 
@@ -422,7 +424,23 @@ String _codeText(String code, String college) =>
 
 Future<void> _print(BuildContext context, String code, String college) async {
   try {
-    final doc = pw.Document(title: 'School PIN recovery code');
+    final doc = await recoveryCodePdf(code, college, lang: context.ceLang);
+    await Printing.layoutPdf(name: ceTr('School PIN recovery code'), onLayout: (_) async => doc);
+  } catch (e) {
+    if (context.mounted) ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(context.ce('Could not print: {error}', {'error': e}))));
+  }
+}
+
+/// The recovery code on an A4 page, in [lang] (Kannada through [CePdfText]).
+Future<Uint8List> recoveryCodePdf(String code, String college, {String lang = 'en', CePdfText? pdfText}) async {
+  final px = pdfText ?? CePdfText();
+  final title = ceIn(lang, 'School PIN recovery code');
+  final how = ceIn(lang, 'If the school PIN is forgotten, tap "Forgot the PIN?" on the PIN pad and type this code.');
+  final keep = ceIn(lang, 'Keep this page locked away, not near the board.');
+  await px.prepare([title], size: 26, bold: true);
+  await px.prepare([college], size: 16);
+  await px.prepare([how, keep], size: 14, maxWidth: 500);
+    final doc = pw.Document(title: title);
     doc.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
@@ -431,8 +449,8 @@ Future<void> _print(BuildContext context, String code, String college) async {
           children: [
             pw.Text('Zynetix Classroom', style: pw.TextStyle(fontSize: 14, color: PdfColors.grey700)),
             pw.SizedBox(height: 6),
-            pw.Text('School PIN recovery code', style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold)),
-            if (college.isNotEmpty) pw.Text(college, style: const pw.TextStyle(fontSize: 16)),
+            px.text(title, size: 26, bold: true),
+            if (college.isNotEmpty) px.text(college, size: 16),
             pw.SizedBox(height: 28),
             pw.Container(
               padding: const pw.EdgeInsets.all(18),
@@ -440,25 +458,21 @@ Future<void> _print(BuildContext context, String code, String college) async {
               child: pw.Text(code, style: pw.TextStyle(fontSize: 40, fontWeight: pw.FontWeight.bold, letterSpacing: 4)),
             ),
             pw.SizedBox(height: 28),
-            pw.Text('If the school PIN is forgotten, tap "Forgot the PIN?" on the PIN pad and type this code.', style: const pw.TextStyle(fontSize: 14)),
+            px.text(how, size: 14, maxWidth: 500),
             pw.SizedBox(height: 6),
-            pw.Text('Keep this page locked away, not near the board.', style: const pw.TextStyle(fontSize: 14)),
+            px.text(keep, size: 14, maxWidth: 500),
           ],
         ),
       ),
     );
-    final bytes = await doc.save();
-    await Printing.layoutPdf(name: 'School PIN recovery code', onLayout: (_) async => bytes);
-  } catch (e) {
-    if (context.mounted) ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text('Could not print: $e')));
-  }
+  return doc.save();
 }
 
 Future<void> _saveCode(BuildContext context, String code, String college) async {
   try {
     final saved = await FilePicker.saveFile(fileName: 'zynetix-pin-recovery-code.txt', bytes: utf8.encode(_codeText(code, college)), type: FileType.custom, allowedExtensions: const ['txt']);
-    if (saved != null && context.mounted) ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(content: Text('Recovery code saved.')));
+    if (saved != null && context.mounted) ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(context.ce('Recovery code saved.'))));
   } catch (e) {
-    if (context.mounted) ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text('Could not save: $e')));
+    if (context.mounted) ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(context.ce('Could not save: {error}', {'error': e}))));
   }
 }

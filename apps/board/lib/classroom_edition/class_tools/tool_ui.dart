@@ -5,6 +5,7 @@ import '../classroom_hooks.dart';
 import '../ui/ce_style.dart';
 import 'bank.dart';
 import 'class_records.dart';
+import '../l10n/ce_strings.dart';
 
 /// What every Class tool works with: the board ([host]), this class's records, the subject's
 /// bank, and the hub's navigation.
@@ -63,7 +64,7 @@ class ToolHeader extends StatelessWidget {
     children: [
       IconButton(
         key: const Key('ce-tools-back'),
-        tooltip: 'All class tools',
+        tooltip: context.ce('All class tools'),
         onPressed: onBack,
         icon: const Icon(Icons.arrow_back_rounded, color: CeC.navy),
       ),
@@ -189,18 +190,18 @@ class ToolEmpty extends StatelessWidget {
 }
 
 /// The empty state for a subject with no questions on this board.
-Widget noBank(ToolEnv env, {String what = 'questions'}) => ToolEmpty(
+Widget noBank(ToolEnv env, {String? what}) => ToolEmpty(
   icon: Icons.inventory_2_outlined,
-  title: env.subject.isEmpty ? 'Start a class first' : 'No $what for ${env.subject} yet',
+  title: env.subject.isEmpty ? ceTr('Start a class first') : ceTr('No {what} for {subject} yet', {'what': what ?? ceTr('questions'), 'subject': env.subject}),
   line: env.subject.isEmpty
-      ? 'Pick your class on the start screen. The class tools then use its subject and roll numbers.'
-      : 'They come with the question bank or with the lessons for this subject. Ask whoever looks after the board to install the latest Zynetix Classroom.',
+      ? ceTr('Pick your class on the start screen. The class tools then use its subject and roll numbers.')
+      : ceTr('They come with the question bank or with the lessons for this subject. Ask whoever looks after the board to install the latest Zynetix Classroom.'),
 );
 
 /// A line saying where the questions come from.
 String bankLine(SubjectBank b) => switch (b.source) {
-  BankSource.school => 'From the question bank',
-  BankSource.lessons => 'From the lessons\' quick checks',
+  BankSource.school => ceTr('From the question bank'),
+  BankSource.lessons => ceTr('From the lessons’ quick checks'),
   BankSource.none => '',
 };
 
@@ -246,7 +247,7 @@ class ChapterPicker extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Text('Chapters', style: ceHeading(26)),
+                  child: Text(context.ce('Chapters'), style: ceHeading(26)),
                 ),
                 const SizedBox(height: 8),
                 Flexible(
@@ -268,7 +269,7 @@ class ChapterPicker extends StatelessWidget {
                 ),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close')),
+                  child: TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(context.ce('Close'))),
                 ),
               ],
             ),
@@ -297,7 +298,7 @@ class ChapterPicker extends StatelessWidget {
       children: [
         for (final c in chosen) choiceChip(c.title, on: true, onTap: () => _toggle(c.id), key: Key('ce-chip-${c.id}')),
         for (final c in next) choiceChip(c.title, on: false, onTap: () => _toggle(c.id), key: Key('ce-chip-${c.id}'), offIcon: multi ? Icons.add : Icons.swap_horiz),
-        if (offered.length > chosen.length + next.length) choiceChip('All chapters', on: false, offIcon: Icons.list_rounded, onTap: () => _all(context), key: const Key('ce-chapters-all')),
+        if (offered.length > chosen.length + next.length) choiceChip(ceTr('All chapters'), on: false, offIcon: Icons.list_rounded, onTap: () => _all(context), key: const Key('ce-chapters-all')),
       ],
     );
   }

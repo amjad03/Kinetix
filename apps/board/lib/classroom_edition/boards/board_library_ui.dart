@@ -7,9 +7,10 @@ import 'package:intl/intl.dart';
 import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
 import 'board_library.dart';
+import '../../l10n/l10n.dart' show BoardL10n;
+import '../l10n/ce_strings.dart';
 
 final _day = DateFormat('d MMM yyyy');
-final _dayTime = DateFormat('d MMM yyyy, h:mm a');
 
 /// The name a board is saved with first: "1st PUC A · Physics · 9 Nov 2026".
 String ceDefaultBoardTitle({required String className, required String subject, required DateTime at}) => [className, subject, _day.format(at)].where((x) => x.trim().isNotEmpty).join(' · ');
@@ -46,7 +47,7 @@ class _CeSaveBoardDialogState extends State<CeSaveBoardDialog> {
     key: const Key('ce-save-dialog'),
     scrollable: true,
     icon: const Icon(Icons.save_outlined, size: 36),
-    title: const Text('Save on this board'),
+    title: Text(context.ce('Save on this board')),
     content: SizedBox(
       width: 560,
       child: Column(
@@ -59,7 +60,7 @@ class _CeSaveBoardDialogState extends State<CeSaveBoardDialog> {
             autofocus: true,
             maxLength: 120,
             style: ceText(20, c: CeC.navy),
-            decoration: const InputDecoration(labelText: 'Name of the board'),
+            decoration: InputDecoration(labelText: context.ce('Name of the board')),
             onSubmitted: (_) => _done(asNew: widget.current == null),
           ),
           const SizedBox(height: 4),
@@ -67,19 +68,19 @@ class _CeSaveBoardDialogState extends State<CeSaveBoardDialog> {
             children: [
               const Icon(Icons.lock_outline, size: 18, color: CeC.muted),
               const SizedBox(width: 8),
-              Expanded(child: Text('Kept on this board only${widget.teacherName.isEmpty ? '' : ', in ${widget.teacherName}’s boards'}. Open it again from Open, any day.', style: ceText(15))),
+              Expanded(child: Text(widget.teacherName.isEmpty ? context.ce('Kept on this board only. Open it again from Open, any day.') : context.ce('Kept on this board only, in {name}’s boards. Open it again from Open, any day.', {'name': widget.teacherName}), style: ceText(15))),
             ],
           ),
         ],
       ),
     ),
     actions: [
-      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-      if (widget.current != null) OutlinedButton(key: const Key('ce-save-new'), onPressed: () => _done(asNew: true), child: const Text('Save as a new board')),
+      TextButton(onPressed: () => Navigator.pop(context), child: Text(context.ce('Cancel'))),
+      if (widget.current != null) OutlinedButton(key: Key('ce-save-new'), onPressed: () => _done(asNew: true), child: Text(context.ce('Save as a new board'))),
       FilledButton(
         key: const Key('ce-save-ok'),
         onPressed: () => _done(asNew: widget.current == null),
-        child: const Text('Save'),
+        child: Text(context.ce('Save')),
       ),
     ],
   );
@@ -132,9 +133,9 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
   Future<void> _delete(LocalBoardEntry e) async {
     final ok = await ceConfirmRemove(
       context,
-      title: 'Delete “${e.title}”?',
-      body: 'Its ${e.pages} ${e.pages == 1 ? 'page goes' : 'pages go'} from this board for good. Boards in a backup stay in the backup.',
-      confirm: 'Delete board',
+      title: context.ce('Delete “{title}”?', {'title': e.title}),
+      body: e.pages == 1 ? context.ce('Its 1 page goes from this board for good. Boards in a backup stay in the backup.') : context.ce('Its {n} pages go from this board for good. Boards in a backup stay in the backup.', {'n': e.pages}),
+      confirm: context.ce('Delete board'),
     );
     if (!ok) return;
     await widget.library.delete(e.id);
@@ -171,12 +172,12 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Open a board', style: ceHeading(32)),
-                        Text('Your boards saved on this board', style: ceText(17)),
+                        Text(context.ce('Open a board'), style: ceHeading(32)),
+                        Text(context.ce('Your boards saved on this board'), style: ceText(17)),
                       ],
                     ),
                   ),
-                  IconButton(key: const Key('ce-library-close'), tooltip: 'Close', onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, size: 30)),
+                  IconButton(key: Key('ce-library-close'), tooltip: context.ce('Close'), onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, size: 30)),
                 ],
               ),
               const SizedBox(height: 24),
@@ -191,7 +192,7 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
                         onChanged: (_) => setState(() {}),
                         style: ceText(18, c: CeC.navy),
                         decoration: InputDecoration(
-                          hintText: 'Search by name',
+                          hintText: context.ce('Search by name'),
                           prefixIcon: const Icon(Icons.search),
                           filled: true,
                           fillColor: Colors.white,
@@ -204,12 +205,12 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
                   const SizedBox(width: 20),
                   ChoiceChip(
                     key: const Key('ce-library-this-class'),
-                    label: Text(widget.className.isEmpty ? 'This class' : widget.className),
+                    label: Text(widget.className.isEmpty ? context.ce('This class') : widget.className),
                     selected: !_allClasses,
                     onSelected: (_) => setState(() => _allClasses = false),
                   ),
                   const SizedBox(width: 10),
-                  ChoiceChip(key: const Key('ce-library-all'), label: const Text('All my classes'), selected: _allClasses, onSelected: (_) => setState(() => _allClasses = true)),
+                  ChoiceChip(key: Key('ce-library-all'), label: Text(context.ce('All my classes')), selected: _allClasses, onSelected: (_) => setState(() => _allClasses = true)),
                 ],
               ),
               const SizedBox(height: 20),
@@ -220,11 +221,11 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
                         children: [
                           // Recent only when there are more boards than it shows.
                           if (!searching && _recent.isNotEmpty && _all!.length > _recent.length) ...[
-                            Text('Recent', style: ceHeading(22)),
+                            Text(context.ce('Recent'), style: ceHeading(22)),
                             const SizedBox(height: 12),
                             _grid(_recent, 'ce-recent'),
                             const SizedBox(height: 28),
-                            Text(_allClasses ? 'All my boards' : 'Boards for ${widget.className.isEmpty ? 'this class' : widget.className}', style: ceHeading(22)),
+                            Text(_allClasses ? context.ce('All my boards') : (widget.className.isEmpty ? context.ce('Boards for this class') : context.ce('Boards for {name}', {'name': widget.className})), style: ceHeading(22)),
                             const SizedBox(height: 12),
                           ],
                           if (shown.isEmpty)
@@ -234,10 +235,10 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
                               child: Center(
                                 child: Text(
                                   searching
-                                      ? 'No board is called that. Try another word, or All my classes.'
+                                      ? context.ce('No board is called that. Try another word, or All my classes.')
                                       : (_all!.isEmpty
-                                            ? 'No boards saved yet. Tap Save on the board’s menu to keep today’s board here.'
-                                            : 'No boards for this class yet. Tap All my classes to see the others.'),
+                                            ? context.ce('No boards saved yet. Tap Save on the board’s menu to keep today’s board here.')
+                                            : context.ce('No boards for this class yet. Tap All my classes to see the others.')),
                                   textAlign: TextAlign.center,
                                   style: ceText(19),
                                 ),
@@ -301,8 +302,8 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
                         Text(
                           [
                             if (_allClasses || keyPrefix == 'ce-recent') e.className,
-                            '${e.pages} ${e.pages == 1 ? 'page' : 'pages'}',
-                            _dayTime.format(e.savedAt),
+                            e.pages == 1 ? context.ce('1 page') : context.ce('{n} pages', {'n': e.pages}),
+                            DateFormat('d MMM yyyy, h:mm a', context.dateLocale).format(e.savedAt),
                           ].where((x) => x.isNotEmpty).join(' · '),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -314,7 +315,7 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
                   if (keyPrefix == 'ce-board')
                     IconButton(
                       key: Key('ce-board-delete-${e.id}'),
-                      tooltip: 'Delete',
+                      tooltip: context.ce('Delete'),
                       onPressed: () => unawaited(_delete(e)),
                       icon: const Icon(Icons.delete_outline, color: CeC.muted),
                     ),

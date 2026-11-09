@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../class_tools/tool_ui.dart';
 import '../ui/ce_style.dart';
 import 'exam_rules.dart';
+import '../l10n/ce_strings.dart';
 
 /// How far along an exam countdown is (the timer's colour).
 enum CountdownPhase { ready, running, lastTen, lastFive, paused, timeUp }
@@ -138,12 +139,12 @@ class _ExamTimerScreenState extends State<ExamTimerScreen> {
   Widget build(BuildContext context) {
     final c = countdown;
     final (bg, line) = switch (c.phase) {
-      CountdownPhase.ready => (CeC.mint, 'Tap Start when the class is ready.'),
-      CountdownPhase.running => (CeC.mint, 'Time left'),
-      CountdownPhase.lastTen => (CeC.butter, 'Last 10 minutes. Check your answers.'),
-      CountdownPhase.lastFive => (CeC.peach, 'Last 5 minutes.'),
-      CountdownPhase.paused => (CeC.lavender, 'Paused'),
-      CountdownPhase.timeUp => (CeC.pink, 'Time is up. Pens down.'),
+      CountdownPhase.ready => (CeC.mint, ceTr('Tap Start when the class is ready.')),
+      CountdownPhase.running => (CeC.mint, ceTr('Time left')),
+      CountdownPhase.lastTen => (CeC.butter, ceTr('Last 10 minutes. Check your answers.')),
+      CountdownPhase.lastFive => (CeC.peach, ceTr('Last 5 minutes.')),
+      CountdownPhase.paused => (CeC.lavender, ceTr('Paused')),
+      CountdownPhase.timeUp => (CeC.pink, ceTr('Time is up. Pens down.')),
     };
     final ends = c.endsAt;
     return Theme(
@@ -159,7 +160,7 @@ class _ExamTimerScreenState extends State<ExamTimerScreen> {
               children: [
                 Row(
                   children: [
-                    toolButton('Close', icon: Icons.close_rounded, key: const Key('ce-timer-close'), onPressed: () => Navigator.of(context).pop()),
+                    toolButton(ceTr('Close'), icon: Icons.close_rounded, key: const Key('ce-timer-close'), onPressed: () => Navigator.of(context).pop()),
                     const SizedBox(width: 20),
                     Expanded(
                       child: Text(
@@ -202,7 +203,7 @@ class _ExamTimerScreenState extends State<ExamTimerScreen> {
                           ),
                         ),
                         Text(
-                          ends == null ? 'Total ${formatMinutes(c.total.inMinutes)}' : 'Ends at ${TimeOfDay.fromDateTime(ends).format(context)}',
+                          ends == null ? ceTr('Total {time}', {'time': formatMinutes(c.total.inMinutes)}) : ceTr('Ends at {time}', {'time': TimeOfDay.fromDateTime(ends).format(context)}),
                           style: ceText(24, w: FontWeight.w600, c: CeC.navy),
                         ),
                         const SizedBox(height: 24),
@@ -213,14 +214,14 @@ class _ExamTimerScreenState extends State<ExamTimerScreen> {
                 const SizedBox(height: 18),
                 Row(
                   children: [
-                    toolButton('− 5 min', key: const Key('ce-timer-less'), onPressed: () => c.add(const Duration(minutes: -5))),
+                    toolButton(ceTr('− 5 min'), key: const Key('ce-timer-less'), onPressed: () => c.add(const Duration(minutes: -5))),
                     const SizedBox(width: 12),
-                    toolButton('+ 5 min', key: const Key('ce-timer-more'), onPressed: () => c.add(const Duration(minutes: 5))),
+                    toolButton(ceTr('+ 5 min'), key: const Key('ce-timer-more'), onPressed: () => c.add(const Duration(minutes: 5))),
                     const Spacer(),
-                    toolButton('Reset', icon: Icons.restart_alt_rounded, key: const Key('ce-timer-reset'), onPressed: () => c.reset()),
+                    toolButton(ceTr('Reset'), icon: Icons.restart_alt_rounded, key: const Key('ce-timer-reset'), onPressed: () => c.reset()),
                     const SizedBox(width: 12),
                     toolButton(
-                      c.running ? 'Pause' : (c.started && !c.timeUp ? 'Go on' : 'Start'),
+                      c.running ? ceTr('Pause') : (c.started && !c.timeUp ? ceTr('Go on') : ceTr('Start')),
                       icon: c.running ? Icons.pause_rounded : Icons.play_arrow_rounded,
                       filled: true,
                       key: const Key('ce-timer-start'),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../ui/ce_style.dart';
 import 'paper.dart';
+import '../l10n/ce_strings.dart';
 
 /// A paper as it prints (A4, white): the header with the Roll No. line, the parts and their
 /// questions. [maxItems] cuts it short (the board picture shows the first page's worth).
@@ -123,7 +124,7 @@ class PaperPage extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  'Roll No. ________',
+                  ceTr('Roll No. ________'),
                   textAlign: TextAlign.center,
                   style: ceText(14.5, w: FontWeight.w700, c: CeC.body),
                 ),

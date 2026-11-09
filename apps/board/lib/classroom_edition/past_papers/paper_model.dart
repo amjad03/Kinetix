@@ -1,3 +1,4 @@
+import '../l10n/ce_strings.dart';
 import 'package:flutter/foundation.dart';
 
 import 'exam_rules.dart';
@@ -62,7 +63,7 @@ class Paper {
   String get title => '${exam.label} $year';
 
   /// "Physics, Chemistry, Biology" ('All subjects' when none is named).
-  String get subjectLine => subjects.isEmpty ? 'All subjects' : subjects.join(', ');
+  String get subjectLine => subjects.isEmpty ? ceTr('All subjects') : subjects.join(', ');
 
   /// "NEET 2024 · Shift 1 · Physics".
   String get longTitle => [title, if (session.isNotEmpty) session, if (subjects.isNotEmpty) subjectLine].join(' · ');

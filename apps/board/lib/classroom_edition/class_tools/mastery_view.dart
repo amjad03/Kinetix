@@ -4,6 +4,7 @@ import '../ui/ce_style.dart';
 import 'class_logic.dart';
 import 'paper_pdf.dart';
 import 'tool_ui.dart';
+import '../l10n/ce_strings.dart';
 
 const masteryColours = {
   MasteryLevel.none: Color(0xFFF8FAFC),
@@ -44,16 +45,16 @@ class _MasteryViewState extends State<MasteryView> {
 
   late String? chapterId = widget.chapterId ?? recorded.firstOrNull;
 
-  String chapterTitle(String id) => env.bank.chapter(id)?.title ?? (id.isEmpty ? 'Questions' : id);
+  String chapterTitle(String id) => env.bank.chapter(id)?.title ?? (id.isEmpty ? ceTr('Questions') : id);
 
   MasteryMap get map => buildMastery(records: env.records.records, rolls: env.rolls, chapterId: chapterId, titleOf: (c, t) => env.bank.topicTitle(c, t), now: env.now());
 
   Future<void> _print(MasteryMap m) async {
     try {
-      final bytes = await masteryPdf(m, title: 'Mastery map', subtitle: [env.classLine, if (chapterId != null) chapterTitle(chapterId!)].join(' · '));
+      final bytes = await masteryPdf(m, title: context.ce('Mastery map'), subtitle: [env.classLine, if (chapterId != null) chapterTitle(chapterId!)].join(' · '));
       await ClassToolsOut.print(bytes, 'Mastery-map.pdf');
     } catch (e) {
-      env.host.showMessage('Could not print: $e');
+      env.host.showMessage(ceTr('Could not print: {error}', {'error': e}));
     }
   }
 
@@ -64,15 +65,15 @@ class _MasteryViewState extends State<MasteryView> {
     final header = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ToolHeader(title: 'Mastery map', onBack: env.back),
+        ToolHeader(title: context.ce('Mastery map'), onBack: env.back),
         LayoutBuilder(
           builder: (context, box) {
-            final sub = Text([env.classLine, if (chapterId != null) chapterTitle(chapterId!), 'from class quizzes and mock tests'].where((s) => s.isNotEmpty).join(' · '), style: ceText(17));
+            final sub = Text([env.classLine, if (chapterId != null) chapterTitle(chapterId!), ceTr('from class quizzes and mock tests')].where((s) => s.isNotEmpty).join(' · '), style: ceText(17));
             final legend = Wrap(
               spacing: 18,
               runSpacing: 6,
               children: [
-                for (final (l, name) in const [(MasteryLevel.notYet, 'Not yet'), (MasteryLevel.gettingThere, 'Getting there'), (MasteryLevel.secure, 'Secure'), (MasteryLevel.mastered, 'Mastered')])
+                for (final (l, name) in [(MasteryLevel.notYet, ceTr('Not yet')), (MasteryLevel.gettingThere, ceTr('Getting there')), (MasteryLevel.secure, ceTr('Secure')), (MasteryLevel.mastered, ceTr('Mastered'))])
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -124,8 +125,8 @@ class _MasteryViewState extends State<MasteryView> {
       return Column(
         children: [
           header,
-          const Expanded(
-            child: ToolEmpty(icon: Icons.grid_view_rounded, title: 'Nothing to show yet', line: 'Give a class quiz, or enter a mock test\'s marks. Every topic then fills in here, by roll number.'),
+          Expanded(
+            child: ToolEmpty(icon: Icons.grid_view_rounded, title: context.ce('Nothing to show yet'), line: context.ce('Give a class quiz, or enter a mock test\'s marks. Every topic then fills in here, by roll number.')),
           ),
         ],
       );
@@ -140,11 +141,11 @@ class _MasteryViewState extends State<MasteryView> {
         const SizedBox(height: 14),
         Row(
           children: [
-            Expanded(child: Text('Only roll numbers are shown. Updated after every class quiz.', style: ceText(15))),
-            toolButton('Print', icon: Icons.print_outlined, onPressed: () => _print(m), key: const Key('ce-mastery-print')),
+            Expanded(child: Text(context.ce('Only roll numbers are shown. Updated after every class quiz.'), style: ceText(15))),
+            toolButton(ceTr('Print'), icon: Icons.print_outlined, onPressed: () => _print(m), key: const Key('ce-mastery-print')),
             const SizedBox(width: 12),
             toolButton(
-              'Make a revision quiz',
+              ceTr('Make a revision quiz'),
               icon: Icons.fact_check_outlined,
               filled: true,
               key: const Key('ce-mastery-revise'),
@@ -179,7 +180,7 @@ class _MasteryViewState extends State<MasteryView> {
                   SizedBox(
                     width: labelW,
                     child: Text(
-                      'Roll number',
+                      ceTr('Roll number'),
                       style: ceText(13.5, w: FontWeight.w600, c: CeC.navy),
                     ),
                   ),
@@ -204,7 +205,7 @@ class _MasteryViewState extends State<MasteryView> {
                   SizedBox(
                     width: classW,
                     child: Text(
-                      'Class',
+                      ceTr('Class'),
                       textAlign: TextAlign.right,
                       style: ceText(13.5, w: FontWeight.w600, c: CeC.navy),
                     ),

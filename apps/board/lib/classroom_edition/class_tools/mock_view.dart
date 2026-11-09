@@ -8,6 +8,7 @@ import 'paper.dart';
 import 'paper_pdf.dart';
 import 'paper_preview.dart';
 import 'tool_ui.dart';
+import '../l10n/ce_strings.dart';
 
 /// Mock test: the PUC board pattern (or an entrance pattern) built from the chosen chapters,
 /// previewed as it prints with a Roll No. line, printed for the class or exported as PDF with the
@@ -33,7 +34,7 @@ class _MockTestViewState extends State<MockTestView> {
   int get mockNo => env.records.records.mocks.length + 1;
   String get mockId => 'mock-$seed-${pattern.id}-${chapters.join(',')}';
   MockRecord? get saved => env.records.records.mocks.where((m) => m.id == mockId).firstOrNull;
-  String get title => saved?.title ?? 'Mock test $mockNo';
+  String get title => saved?.title ?? ceTr('Mock test {n}', {'n': mockNo});
 
   PaperPattern get effective => PaperPattern(id: pattern.id, name: pattern.name, minutes: pattern.minutes, parts: parts, note: pattern.note);
 
@@ -82,7 +83,7 @@ class _MockTestViewState extends State<MockTestView> {
       final bytes = await paperPdf(print ? sets : [sets.first], copies: copies);
       await (print ? ClassToolsOut.print : ClassToolsOut.share)(bytes, p.fileName);
     } catch (e) {
-      env.host.showMessage('Could not make the PDF: $e');
+      env.host.showMessage(ceTr('Could not make the PDF: {error}', {'error': e}));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -98,7 +99,7 @@ class _MockTestViewState extends State<MockTestView> {
       pixelRatio: 1.5,
       at: const Offset(460, 40),
     );
-    env.host.showMessage('The paper is on the board');
+    env.host.showMessage(ceTr('The paper is on the board'));
   }
 
   @override
@@ -106,7 +107,7 @@ class _MockTestViewState extends State<MockTestView> {
     if (env.bank.chapters.isEmpty) {
       return Column(
         children: [
-          ToolHeader(title: 'Mock test', onBack: env.back),
+          ToolHeader(title: context.ce('Mock test'), onBack: env.back),
           Expanded(child: noBank(env)),
         ],
       );
@@ -143,17 +144,17 @@ class _MockTestViewState extends State<MockTestView> {
               setState(() => entering = true);
             },
       icon: const Icon(Icons.edit_note_rounded),
-      label: Text('Enter marks for ${p.title}'),
+      label: Text(context.ce('Enter marks for {title}', {'title': p.title})),
     );
     final content = <Widget>[
-      ToolHeader(title: 'Mock test', onBack: env.back),
+      ToolHeader(title: context.ce('Mock test'), onBack: env.back),
       Padding(
         padding: const EdgeInsets.only(left: 52),
-        child: Text('PUC board pattern. Made from your lessons, on this board.', style: ceText(17)),
+        child: Text(context.ce('PUC board pattern. Made from your lessons, on this board.'), style: ceText(17)),
       ),
       const SizedBox(height: 22),
       Text(
-        'Chapters',
+        ceTr('Chapters'),
         style: ceText(17, w: FontWeight.w600, c: CeC.navy),
       ),
       const SizedBox(height: 10),
@@ -181,7 +182,7 @@ class _MockTestViewState extends State<MockTestView> {
                 child: Row(
                   children: [
                     Text(
-                      'Part ${part.label}',
+                      ceTr('Part {label}', {'label': part.label}),
                       style: ceText(17, w: FontWeight.w700, c: CeC.navy),
                     ),
                     const SizedBox(width: 14),
@@ -214,14 +215,14 @@ class _MockTestViewState extends State<MockTestView> {
         spacing: 10,
         runSpacing: 10,
         children: [
-          toolPill('${fmtMarks(p.maxMarks)} marks', icon: Icons.star_border_rounded, bg: CeC.butter, key: const Key('ce-mock-marks')),
+          toolPill(ceTr('{n} marks', {'n': fmtMarks(p.maxMarks)}), icon: Icons.star_border_rounded, bg: CeC.butter, key: const Key('ce-mock-marks')),
           if (p.minutes > 0) toolPill(fmtMinutes(p.minutes), icon: Icons.timer_outlined, bg: CeC.blue),
-          toolPill('Answer key on its own page', icon: Icons.key_outlined, bg: CeC.mint),
+          toolPill(ceTr('Answer key on its own page'), icon: Icons.key_outlined, bg: CeC.mint),
         ],
       ),
       if (p.maxMarks < effective.maxMarks) ...[
         const SizedBox(height: 8),
-        Text('These chapters have fewer questions than the pattern asks for; the paper is shorter.', style: ceText(14.5, c: CeC.red)),
+        Text(context.ce('These chapters have fewer questions than the pattern asks for; the paper is shorter.'), style: ceText(14.5, c: CeC.red)),
       ],
       const SizedBox(height: 10),
       SwitchListTile(
@@ -230,21 +231,21 @@ class _MockTestViewState extends State<MockTestView> {
         value: shuffle,
         onChanged: (v) => setState(() => shuffle = v),
         title: Text(
-          'Shuffle the order for each bench',
+          ceTr('Shuffle the order for each bench'),
           style: ceText(17, w: FontWeight.w600, c: CeC.navy),
         ),
-        subtitle: Text('Neighbours get the same questions in a different order', style: ceText(14.5)),
+        subtitle: Text(context.ce('Neighbours get the same questions in a different order'), style: ceText(14.5)),
       ),
       const SizedBox(height: 10),
       if (last != null)
         infoCard(
           icon: Icons.insights_rounded,
-          title: 'Last time: ${last.title}',
-          line: 'Class average ${fmtMarks((last.average ?? 0).round())} of ${fmtMarks(last.maxMarks)}, from ${last.marks.length} roll numbers.',
+          title: ceTr('Last time: {title}', {'title': last.title}),
+          line: ceTr('Class average {avg} of {max}, from {n} roll numbers.', {'avg': fmtMarks((last.average ?? 0).round()), 'max': fmtMarks(last.maxMarks), 'n': last.marks.length}),
           action: enterMarks,
         )
       else
-        infoCard(icon: Icons.insights_rounded, title: 'After the test', line: 'Enter each roll number\'s marks here. They go into the mastery map with the class quizzes.', action: enterMarks),
+        infoCard(icon: Icons.insights_rounded, title: context.ce('After the test'), line: context.ce('Enter each roll number\'s marks here. They go into the mastery map with the class quizzes.'), action: enterMarks),
       if (!wide) ...[const SizedBox(height: 20), SizedBox(height: 760, child: PaperDesk(paper: p))],
       const SizedBox(height: 20),
     ];
@@ -252,9 +253,9 @@ class _MockTestViewState extends State<MockTestView> {
       spacing: 12,
       runSpacing: 12,
       children: [
-        toolButton('Put on board', icon: Icons.co_present_outlined, onPressed: p.isEmpty ? null : _putOnBoard, key: const Key('ce-mock-board')),
-        toolButton('Export PDF', icon: Icons.picture_as_pdf_outlined, onPressed: busy || p.isEmpty ? null : () => _out(print: false), key: const Key('ce-mock-pdf')),
-        toolButton('Print ${env.present.length} copies', icon: Icons.print_outlined, filled: true, onPressed: busy || p.isEmpty ? null : () => _out(print: true), key: const Key('ce-mock-print')),
+        toolButton(ceTr('Put on board'), icon: Icons.co_present_outlined, onPressed: p.isEmpty ? null : _putOnBoard, key: const Key('ce-mock-board')),
+        toolButton(ceTr('Export PDF'), icon: Icons.picture_as_pdf_outlined, onPressed: busy || p.isEmpty ? null : () => _out(print: false), key: const Key('ce-mock-pdf')),
+        toolButton(ceTr('Print {n} copies', {'n': env.present.length}), icon: Icons.print_outlined, filled: true, onPressed: busy || p.isEmpty ? null : () => _out(print: true), key: const Key('ce-mock-print')),
       ],
     );
     return Column(
@@ -319,12 +320,12 @@ class _MarksEntryState extends State<_MarksEntry> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ToolHeader(
-          title: 'Marks · ${m.title}',
+          title: ceTr('Marks · {title}', {'title': m.title}),
           onBack: widget.onDone,
-          pill: toolPill('out of ${fmtMarks(m.maxMarks)}', bg: CeC.butter),
+          pill: toolPill(ceTr('out of {n}', {'n': fmtMarks(m.maxMarks)}), bg: CeC.butter),
         ),
         const SizedBox(height: 10),
-        Text('Tap a roll number, type the marks, then Next. ${m.marks.length} of ${env.present.length} entered${avg == null ? '' : ' · class average ${avg.toStringAsFixed(1)}'}.', style: ceText(16)),
+        Text([ceTr('Tap a roll number, type the marks, then Next.'), ceTr('{n} of {total} entered', {'n': m.marks.length, 'total': env.present.length}) + (avg == null ? '.' : ' · ${ceTr('class average {avg}', {'avg': avg.toStringAsFixed(1)})}.')].join(' '), style: ceText(16)),
         const SizedBox(height: 14),
         Expanded(
           child: Row(
@@ -398,7 +399,7 @@ class _MarksEntryState extends State<_MarksEntry> {
                       child: Column(
                         children: [
                           Text(
-                            roll == null ? '' : 'Roll ${rollLabel(roll!)}',
+                            roll == null ? '' : ceTr('Roll {n}', {'n': rollLabel(roll!)}),
                             style: ceText(17, w: FontWeight.w600, c: CeC.navy),
                           ),
                           Text(typed.isEmpty ? (roll != null && m.marks[roll] != null ? fmtMarks(m.marks[roll]!) : '–') : typed, style: ceHeading(48)),
@@ -433,7 +434,7 @@ class _MarksEntryState extends State<_MarksEntry> {
                       ),
                     SizedBox(
                       width: double.infinity,
-                      child: toolButton('Next', icon: Icons.arrow_forward, filled: true, onPressed: typed.isEmpty ? null : _commit, key: const Key('ce-marks-next')),
+                      child: toolButton(ceTr('Next'), icon: Icons.arrow_forward, filled: true, onPressed: typed.isEmpty ? null : _commit, key: const Key('ce-marks-next')),
                     ),
                   ],
                 ),

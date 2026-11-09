@@ -16,6 +16,7 @@ import 'lesson_board.dart';
 import 'lesson_embeds.dart';
 import 'lesson_library.dart';
 import 'lesson_progress.dart';
+import '../l10n/ce_strings.dart';
 
 /// The Lessons tab of the split panel (Classroom edition): the PUC lessons bundled on the board,
 /// taught step by step. Level and subject chips, pastel chapter cards with how much the class
@@ -140,9 +141,9 @@ class LessonsPanelState extends State<LessonsPanel> {
 
   String? _tip() {
     final c = lesson;
-    if (c == null) return chapter == null ? 'Tap a chapter, or Continue to carry on from last class.' : 'Tap a lesson to teach it step by step.';
-    if (c.isLast && _wbAtEnd) return 'Last step. Put it on the board, then tap Done.';
-    return 'Explain the picture, then tap Next for step ${c.index + 2}.';
+    if (c == null) return chapter == null ? ceTr('Tap a chapter, or Continue to carry on from last class.') : ceTr('Tap a lesson to teach it step by step.');
+    if (c.isLast && _wbAtEnd) return ceTr('Last step. Put it on the board, then tap Done.');
+    return ceTr('Explain the picture, then tap Next for step {n}.', {'n': c.index + 2});
   }
 
   ClassRoom _room() => ClassRoom(rollCount: host.rolls.isEmpty ? 40 : host.rolls.length, absent: host.absentRolls);
@@ -227,7 +228,7 @@ class LessonsPanelState extends State<LessonsPanel> {
     }
     if (c.isLast) {
       progress.markTaught(classKey, topic!.id, total: c.blocks.length);
-      host.showMessage('“${topic!.title.t(Lang.en)}” marked as taught');
+      host.showMessage(ceTr('“{title}” marked as taught', {'title': topic!.title.t(Lang.en)}));
       closeLesson();
       return;
     }
@@ -301,7 +302,7 @@ class LessonsPanelState extends State<LessonsPanel> {
       formula: keyFormula(b, board: items),
       note: keyNote(b, c.revealed, l),
     );
-    host.showMessage('Step ${c.index + 1} is on the board. Write on it, move it or rub it out.');
+    host.showMessage(ceTr('Step {n} is on the board. Write on it, move it or rub it out.', {'n': c.index + 1}));
     return placed;
   }
 
@@ -326,7 +327,7 @@ class LessonsPanelState extends State<LessonsPanel> {
     key: const Key('ce-lessons-panel'),
     color: CeC.page,
     child: error != null
-        ? Center(child: Text('The lessons could not be opened on this board.', style: ceText(17, c: CeC.navy)))
+        ? Center(child: Text(context.ce('The lessons could not be opened on this board.'), style: ceText(17, c: CeC.navy)))
         : cat == null
         ? const Center(child: CircularProgressIndicator())
         : lesson != null
@@ -390,26 +391,26 @@ class LessonsPanelState extends State<LessonsPanel> {
       children: [
         Row(
           children: [
-            Expanded(child: Text('Lessons', style: ceHeading(32))),
-            cePill('On this board · no internet needed', icon: Icons.offline_pin_outlined),
+            Expanded(child: Text(context.ce('Lessons'), style: ceHeading(32))),
+            cePill(ceTr('On this board · no internet needed'), icon: Icons.offline_pin_outlined),
           ],
         ),
         const SizedBox(height: 6),
-        Text('Short, ready lessons for Karnataka PUC. Pick a chapter and teach it step by step.', style: ceText(16)),
+        Text(context.ce('Short, ready lessons for Karnataka PUC. Pick a chapter and teach it step by step.'), style: ceText(16)),
         const SizedBox(height: 18),
         Wrap(
           spacing: 8,
           runSpacing: 8,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            _chip('1st PUC', on: year == 1, onTap: () => pickYear(1), key: const Key('lessons-year-1')),
-            _chip('2nd PUC', on: year == 2, onTap: () => pickYear(2), key: const Key('lessons-year-2')),
+            _chip(ceTr('1st PUC'), on: year == 1, onTap: () => pickYear(1), key: const Key('lessons-year-1')),
+            _chip(ceTr('2nd PUC'), on: year == 2, onTap: () => pickYear(2), key: const Key('lessons-year-2')),
             Container(width: 1, height: 38, color: CeC.line, margin: const EdgeInsets.symmetric(horizontal: 4)),
             for (final s in shown) _chip(subjectName(s), on: s == subject, icon: subjectIconOf(s), onTap: () => pickSubject(s), key: Key('lessons-subject-$s')),
             if (more.isNotEmpty)
               PopupMenuButton<String>(
                 key: const Key('lessons-more-subjects'),
-                tooltip: 'More subjects',
+                tooltip: context.ce('More subjects'),
                 onSelected: pickSubject,
                 itemBuilder: (_) => [
                   for (final s in more)
@@ -423,7 +424,7 @@ class LessonsPanelState extends State<LessonsPanel> {
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(99), border: Border.all(color: CeC.line)),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: [Text('More subjects', style: ceText(15, w: FontWeight.w600, c: CeC.navy)), const Icon(Icons.expand_more, size: 20, color: CeC.navy)],
+                    children: [Text(context.ce('More subjects'), style: ceText(15, w: FontWeight.w600, c: CeC.navy)), const Icon(Icons.expand_more, size: 20, color: CeC.navy)],
                   ),
                 ),
               ),
@@ -469,11 +470,11 @@ class LessonsPanelState extends State<LessonsPanel> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Continue where you stopped', style: ceText(14, w: FontWeight.w600, c: CeC.accent)),
+                Text(context.ce('Continue where you stopped'), style: ceText(14, w: FontWeight.w600, c: CeC.accent)),
                 const SizedBox(height: 2),
                 Text(t.title.t(Lang.en), style: ceHeading(22), maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 2),
-                Text('Chapter ${ch.number} · step ${p.step + 1} of ${p.total} · about $left minutes left', style: ceText(15)),
+                Text(ceTr('Chapter {n} · step {step} of {total} · about {left} minutes left', {'n': ch.number, 'step': p.step + 1, 'total': p.total, 'left': left}), style: ceText(15)),
               ],
             ),
           ),
@@ -483,7 +484,7 @@ class LessonsPanelState extends State<LessonsPanel> {
             onPressed: () => openTopic(t),
             style: ceBigButton(),
             icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Continue'),
+            label: Text(context.ce('Continue')),
           ),
         ],
       ),
@@ -507,7 +508,7 @@ class LessonsPanelState extends State<LessonsPanel> {
             children: [
               Row(
                 children: [
-                  Text('Chapter ${ch.number}', style: ceText(14, w: FontWeight.w600, c: CeC.navy.withValues(alpha: 0.7))),
+                  Text(ceTr('Chapter {n}', {'n': ch.number}), style: ceText(14, w: FontWeight.w600, c: CeC.navy.withValues(alpha: 0.7))),
                   const Spacer(),
                   ceIconDot(chapterIcon(ch), size: 40),
                 ],
@@ -517,8 +518,8 @@ class LessonsPanelState extends State<LessonsPanel> {
               const Spacer(),
               Row(
                 children: [
-                  Expanded(child: Text('$n lessons · ${ch.diagrams} diagrams', style: ceText(14), overflow: TextOverflow.ellipsis)),
-                  Text(done == 0 ? 'Not started' : '$done of $n taught', style: ceText(14, w: FontWeight.w600, c: CeC.navy)),
+                  Expanded(child: Text(ceTr('{n} lessons · {d} diagrams', {'n': n, 'd': ch.diagrams}), style: ceText(14), overflow: TextOverflow.ellipsis)),
+                  Text(done == 0 ? ceTr('Not started') : ceTr('{n} of {total} taught', {'n': done, 'total': n}), style: ceText(14, w: FontWeight.w600, c: CeC.navy)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -545,11 +546,11 @@ class LessonsPanelState extends State<LessonsPanel> {
             IconButton(key: const Key('lessons-back'), onPressed: () => setState(() => chapter = null), icon: const Icon(Icons.arrow_back, color: CeC.navy)),
             const SizedBox(width: 4),
             Expanded(child: Text('${ch.year == 2 ? '2nd' : '1st'} PUC · ${subjectName(ch.subject)}', style: ceText(16, w: FontWeight.w600, c: CeC.navy))),
-            cePill('${_taughtIn(ch)} of ${ch.topics.length} taught', bg: CeC.pastel(i)),
+            cePill(ceTr('{n} of {total} taught', {'n': _taughtIn(ch), 'total': ch.topics.length}), bg: CeC.pastel(i)),
           ],
         ),
         const SizedBox(height: 12),
-        Text('Chapter ${ch.number}', style: ceText(15, w: FontWeight.w600, c: CeC.accent)),
+        Text(ceTr('Chapter {n}', {'n': ch.number}), style: ceText(15, w: FontWeight.w600, c: CeC.accent)),
         Text(ch.title.t(Lang.en), style: ceHeading(32)),
         if (ch.title.kn != null) Text(ch.title.kn!, style: ceText(18, c: CeC.muted)),
         const SizedBox(height: 20),
@@ -561,10 +562,10 @@ class LessonsPanelState extends State<LessonsPanel> {
   Widget _topicRow(CatTopic t, int n, Color tint) {
     final p = progress.of(classKey, t.id);
     final status = p == null
-        ? 'Not started'
+        ? ceTr('Not started')
         : p.taught
-        ? 'Taught'
-        : 'Step ${p.step + 1} of ${p.total}';
+        ? ceTr('Taught')
+        : ceTr('Step {n} of {total}', {'n': p.step + 1, 'total': p.total});
     return Material(
       key: Key('lessons-topic-${t.id}'),
       color: Colors.white,
@@ -590,7 +591,7 @@ class LessonsPanelState extends State<LessonsPanel> {
                   children: [
                     Text(t.title.t(Lang.en), style: ceHeading(19, height: 1.2)),
                     const SizedBox(height: 4),
-                    Text(['${t.steps} steps', '${t.minutes} min', if (t.kannada) 'English · ಕನ್ನಡ'].join(' · '), style: ceText(14)),
+                    Text([ceTr('{n} steps', {'n': t.steps}), ceTr('{n} min', {'n': t.minutes}), if (t.kannada) 'English · ಕನ್ನಡ'].join(' · '), style: ceText(14)),
                   ],
                 ),
               ),
@@ -604,8 +605,8 @@ class LessonsPanelState extends State<LessonsPanel> {
                   _ => progress.markTaught(classKey, t.id, taught: false, total: t.steps),
                 },
                 itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'start', child: Text('Teach from the start')),
-                  if (!(p?.taught ?? false)) const PopupMenuItem(value: 'taught', child: Text('Mark as taught')) else const PopupMenuItem(value: 'untaught', child: Text('Mark as not taught')),
+                  PopupMenuItem(value: 'start', child: Text(context.ce('Teach from the start'))),
+                  if (!(p?.taught ?? false)) PopupMenuItem(value: 'taught', child: Text(context.ce('Mark as taught'))) else PopupMenuItem(value: 'untaught', child: Text(context.ce('Mark as not taught'))),
                 ],
               ),
             ],
@@ -633,9 +634,9 @@ class LessonsPanelState extends State<LessonsPanel> {
               IconButton(key: const Key('lessons-player-back'), onPressed: closeLesson, icon: const Icon(Icons.arrow_back, color: CeC.navy)),
               const SizedBox(width: 4),
               Expanded(
-                child: Text('Chapter ${ch.number} · ${ch.title.t(l)}', style: ceText(16, w: FontWeight.w600, c: CeC.navy), maxLines: 1, overflow: TextOverflow.ellipsis),
+                child: Text('${ceTr('Chapter {n}', {'n': ch.number})} · ${ch.title.t(l)}', style: ceText(16, w: FontWeight.w600, c: CeC.navy), maxLines: 1, overflow: TextOverflow.ellipsis),
               ),
-              cePill('Step ${c.index + 1} of $n', bg: CeC.lavender, key: const Key('lessons-step-count')),
+              cePill(ceTr('Step {n} of {total}', {'n': c.index + 1, 'total': n}), bg: CeC.lavender, key: const Key('lessons-step-count')),
             ],
           ),
           const SizedBox(height: 12),
@@ -703,7 +704,7 @@ class LessonsPanelState extends State<LessonsPanel> {
                   shape: const CircleBorder(),
                   child: IconButton(
                     key: const Key('lessons-read-aloud'),
-                    tooltip: c.speaking ? 'Stop reading' : 'Read aloud',
+                    tooltip: c.speaking ? ceTr('Stop reading') : ceTr('Read aloud'),
                     onPressed: line == null || line.isEmpty
                         ? null
                         : () {
@@ -722,7 +723,7 @@ class LessonsPanelState extends State<LessonsPanel> {
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxHeight: 76),
                     child: SingleChildScrollView(
-                      child: Text(line == null || line.isEmpty ? 'Explain this step in your own words.' : '“$line”', style: ceText(18, c: CeC.body, height: 1.35)),
+                      child: Text(line == null || line.isEmpty ? ceTr('Explain this step in your own words.') : '“$line”', style: ceText(18, c: CeC.body, height: 1.35)),
                     ),
                   ),
                 ),
@@ -733,14 +734,14 @@ class LessonsPanelState extends State<LessonsPanel> {
           const SizedBox(height: 16),
           Row(
             children: [
-              OutlinedButton.icon(key: const Key('lessons-back-step'), onPressed: c.isFirst ? null : back, style: ceSoftButton(), icon: const Icon(Icons.chevron_left), label: const Text('Back')),
+              OutlinedButton.icon(key: Key('lessons-back-step'), onPressed: c.isFirst ? null : back, style: ceSoftButton(), icon: Icon(Icons.chevron_left), label: Text(context.ce('Back'))),
               const SizedBox(width: 12),
               OutlinedButton.icon(
                 key: const Key('lessons-next'),
                 onPressed: next,
                 style: ceSoftButton(),
                 icon: Icon(last ? Icons.check : Icons.chevron_right),
-                label: Text(last ? 'Done' : 'Next'),
+                label: Text(last ? ceTr('Done') : ceTr('Next')),
               ),
               const Spacer(),
               FilledButton.icon(
@@ -748,7 +749,7 @@ class LessonsPanelState extends State<LessonsPanel> {
                 onPressed: () => unawaited(putOnBoard()),
                 style: ceBigButton(),
                 icon: const Icon(Icons.add_to_photos_outlined),
-                label: const Text('Put on board'),
+                label: Text(context.ce('Put on board')),
               ),
             ],
           ),
@@ -877,15 +878,15 @@ String? nextLessonLineFor(CeClass cls, String subjectName, {LessonLibrary? libra
     final t = cat.topic(last);
     final p = prog.of(cls.id, last);
     if (ch != null && t != null && p != null && !p.taught && ch.subject == subject && ch.year == cls.year) {
-      return 'Next lesson: ${t.title.en} · step ${p.step + 1} of ${p.total}';
+      return ceTr('Next lesson: {title} · step {n} of {total}', {'title': t.title.en, 'n': p.step + 1, 'total': p.total});
     }
   }
   for (final ch in chapters) {
     for (final t in ch.topics) {
-      if (!(prog.of(cls.id, t.id)?.taught ?? false)) return 'Next lesson: ${t.title.en}';
+      if (!(prog.of(cls.id, t.id)?.taught ?? false)) return ceTr('Next lesson: {title}', {'title': t.title.en});
     }
   }
-  return 'All ${subjectName.trim()} lessons taught';
+  return ceTr('All {subject} lessons taught', {'subject': subjectName.trim()});
 }
 
 /// Fills [ClassroomHooks.nextLessonLine] and loads the catalogue and progress in the background

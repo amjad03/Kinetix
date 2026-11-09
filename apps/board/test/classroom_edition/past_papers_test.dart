@@ -198,7 +198,7 @@ void main() {
       expect(() => readPaperPack(zip({'manifest.json': manifest([], format: 'other')})), throwsA(isA<FormatException>().having((e) => e.message, 'm', contains('not a Zynetix paper pack'))));
       expect(
         () => readPaperPack(zip({'manifest.json': manifest([{'exam': 'neet', 'year': 2024, 'paper': 'p.pdf'}], version: 2), 'p.pdf': pdfA})),
-        throwsA(isA<FormatException>().having((e) => e.message, 'm', contains('newer Zynetix Board'))),
+        throwsA(isA<FormatException>().having((e) => e.message, 'm', contains('newer Zynetix Classroom'))),
       );
       expect(() => readPaperPack(zip({'manifest.json': manifest([])})), throwsA(isA<FormatException>().having((e) => e.message, 'm', contains('no papers'))));
     });

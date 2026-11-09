@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'classroom_edition/edition.dart';
 import 'classroom_edition/lessons/lessons_panel.dart' show installLessonHooks;
+import 'classroom_edition/l10n/ce_strings.dart';
 import 'classroom_edition/local/sample_college.dart';
 import 'classroom_edition/start/classroom_start.dart';
 import 'classroom_edition/ui/phone_fit.dart';
@@ -138,9 +139,13 @@ class KinetixBoardApp extends StatelessWidget {
     ModelCatalogue.downloads = Edition.onlineTools;
     MlKitHandwriting.downloadsAllowed = () => Edition.onlineTools;
     // The board's language: its own setting, or the signed-in teacher's while they teach.
+    CeLang.code = controller.language.name;
     return ListenableBuilder(
       listenable: controller,
-      builder: (context, _) => MaterialApp(
+      builder: (context, _) {
+        // The Classroom edition's words for code with no context (PDFs, tool lists).
+        CeLang.code = controller.language.name;
+        return MaterialApp(
         title: Edition.appName,
         debugShowCheckedModeBanner: false,
         theme: KinetixTheme.light(),
@@ -190,7 +195,7 @@ class KinetixBoardApp extends StatelessWidget {
           builder: (context, _) => switch (controller.stage) {
             BoardStage.loading => const Scaffold(body: Center(child: CircularProgressIndicator())),
             // The Classroom edition starts offline, from the board's own timetable; pairing
-            // with the ERP (the enrolment screen) is a link on its start screen.
+            // with the ERP (the enrolment screen) is in its Settings → Advanced.
             BoardStage.needsEnrollment => Edition.classroom ? ClassroomStart(board: controller) : EnrollScreen(controller: controller),
             // Concept videos are suggested over the board when a period starts.
             // The lock screen and PIN offer of shared-board profiles go over it (features/profiles).
@@ -203,7 +208,8 @@ class KinetixBoardApp extends StatelessWidget {
                 : ProfileLock(board: controller, child: BoardScreen(board: controller)),
           },
         ),
-      ),
+      );
+      },
     );
   }
 }

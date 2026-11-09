@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../l10n/ce_strings.dart';
+
 /// One board saved on this board's own storage (Classroom edition, no server).
 @immutable
 class LocalBoardEntry {
@@ -162,7 +164,7 @@ class LocalBoardLibrary extends ChangeNotifier {
     final old = id == null ? null : await entry(id);
     final e = LocalBoardEntry(
       id: old?.id ?? newId(),
-      title: title.trim().isEmpty ? 'Board' : title.trim(),
+      title: title.trim().isEmpty ? ceTr('Board') : title.trim(),
       teacherId: old?.teacherId ?? teacherId,
       classId: old?.classId ?? classId,
       className: className.isEmpty ? old?.className ?? '' : className,

@@ -6,6 +6,7 @@ import 'paper.dart';
 import 'paper_pdf.dart';
 import 'paper_preview.dart';
 import 'tool_ui.dart';
+import '../l10n/ce_strings.dart';
 
 /// Worksheets from the bank (no AI): pick the chapter and topics and how many of each kind,
 /// preview, print or export with a Roll No. line and the answer key on its own page.
@@ -30,7 +31,7 @@ class _WorksheetsViewState extends State<WorksheetsView> {
   Paper get sheet => buildPaper(
     chapters: [?chapter],
     pattern: worksheetPattern(mcq: mcq, short: short, problems: problems),
-    title: 'Worksheet',
+    title: context.ce('Worksheet'),
     seed: seed,
     college: env.college,
     className: env.className,
@@ -45,7 +46,7 @@ class _WorksheetsViewState extends State<WorksheetsView> {
       final bytes = await paperPdf([p], withKey: withKey);
       await (print ? ClassToolsOut.print : ClassToolsOut.share)(bytes, p.fileName);
     } catch (e) {
-      env.host.showMessage('Could not make the PDF: $e');
+      env.host.showMessage(ceTr('Could not make the PDF: {error}', {'error': e}));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -56,7 +57,7 @@ class _WorksheetsViewState extends State<WorksheetsView> {
     if (env.bank.chapters.isEmpty) {
       return Column(
         children: [
-          ToolHeader(title: 'Worksheets', onBack: env.back),
+          ToolHeader(title: context.ce('Worksheets'), onBack: env.back),
           Expanded(child: noBank(env)),
         ],
       );
@@ -65,17 +66,17 @@ class _WorksheetsViewState extends State<WorksheetsView> {
     final p = sheet;
     final rail = <Widget>[
       ToolHeader(
-        title: 'Worksheets',
+        title: context.ce('Worksheets'),
         onBack: env.back,
-        trailing: [TextButton.icon(key: const Key('ce-ws-new'), onPressed: () => setState(() => seed++), icon: const Icon(Icons.refresh), label: const Text('New set'))],
+        trailing: [TextButton.icon(key: Key('ce-ws-new'), onPressed: () => setState(() => seed++), icon: Icon(Icons.refresh), label: Text(context.ce('New set')))],
       ),
       Padding(
         padding: const EdgeInsets.only(left: 52),
-        child: Text('From the question bank, with a Roll No. line. Print, or put on the board.', style: ceText(17)),
+        child: Text(context.ce('From the question bank, with a Roll No. line. Print, or put on the board.'), style: ceText(17)),
       ),
       const SizedBox(height: 20),
       Text(
-        'Chapter',
+        ceTr('Chapter'),
         style: ceText(17, w: FontWeight.w600, c: CeC.navy),
       ),
       const SizedBox(height: 10),
@@ -90,7 +91,7 @@ class _WorksheetsViewState extends State<WorksheetsView> {
       if (c != null && c.topics.length > 1) ...[
         const SizedBox(height: 18),
         Text(
-          'Topics',
+          ceTr('Topics'),
           style: ceText(17, w: FontWeight.w600, c: CeC.navy),
         ),
         const SizedBox(height: 10),
@@ -98,7 +99,7 @@ class _WorksheetsViewState extends State<WorksheetsView> {
           spacing: 10,
           runSpacing: 10,
           children: [
-            choiceChip('All topics', on: topics.isEmpty, offIcon: null, onTap: () => setState(() => topics = {})),
+            choiceChip(ceTr('All topics'), on: topics.isEmpty, offIcon: null, onTap: () => setState(() => topics = {})),
             for (final (id, title) in c.topics) choiceChip(title, on: topics.contains(id), offIcon: null, onTap: () => setState(() => topics.contains(id) ? topics.remove(id) : topics.add(id))),
           ],
         ),
@@ -109,11 +110,11 @@ class _WorksheetsViewState extends State<WorksheetsView> {
         decoration: BoxDecoration(color: CeC.peach, borderRadius: BorderRadius.circular(24)),
         child: Column(
           children: [
-            _row('Multiple choice', '1 mark each', mcq, (v) => setState(() => mcq = v), 'mcq', max: 20),
+            _row(ceTr('Multiple choice'), ceTr('1 mark each'), mcq, (v) => setState(() => mcq = v), 'mcq', max: 20),
             const SizedBox(height: 10),
-            _row('Short answers', '2 marks each', short, (v) => setState(() => short = v), 'short', max: 8),
+            _row(ceTr('Short answers'), ceTr('2 marks each'), short, (v) => setState(() => short = v), 'short', max: 8),
             const SizedBox(height: 10),
-            _row('Problems', '3 marks each', problems, (v) => setState(() => problems = v), 'problems', max: 8),
+            _row(ceTr('Problems'), ceTr('3 marks each'), problems, (v) => setState(() => problems = v), 'problems', max: 8),
           ],
         ),
       ),
@@ -123,19 +124,19 @@ class _WorksheetsViewState extends State<WorksheetsView> {
         value: withKey,
         onChanged: (v) => setState(() => withKey = v),
         title: Text(
-          'Answer key on its own page',
+          ceTr('Answer key on its own page'),
           style: ceText(17, w: FontWeight.w600, c: CeC.navy),
         ),
-        subtitle: Text('Printed last, for you', style: ceText(14.5)),
+        subtitle: Text(context.ce('Printed last, for you'), style: ceText(14.5)),
       ),
-      if (p.items.length < mcq + short + problems) Text('This chapter has ${p.items.length} questions of these kinds; the sheet is shorter.', style: ceText(14.5, c: CeC.red)),
+      if (p.items.length < mcq + short + problems) Text(ceTr('This chapter has {n} questions of these kinds; the sheet is shorter.', {'n': p.items.length}), style: ceText(14.5, c: CeC.red)),
     ];
     final actions = Wrap(
       spacing: 12,
       runSpacing: 12,
       children: [
         toolButton(
-          'Put on board',
+          ceTr('Put on board'),
           icon: Icons.co_present_outlined,
           onPressed: p.isEmpty
               ? null
@@ -151,8 +152,8 @@ class _WorksheetsViewState extends State<WorksheetsView> {
                 },
           key: const Key('ce-ws-board'),
         ),
-        toolButton('Export PDF', icon: Icons.picture_as_pdf_outlined, onPressed: busy || p.isEmpty ? null : () => _out(false), key: const Key('ce-ws-pdf')),
-        toolButton('Print', icon: Icons.print_outlined, filled: true, onPressed: busy || p.isEmpty ? null : () => _out(true), key: const Key('ce-ws-print')),
+        toolButton(ceTr('Export PDF'), icon: Icons.picture_as_pdf_outlined, onPressed: busy || p.isEmpty ? null : () => _out(false), key: const Key('ce-ws-pdf')),
+        toolButton(ceTr('Print'), icon: Icons.print_outlined, filled: true, onPressed: busy || p.isEmpty ? null : () => _out(true), key: const Key('ce-ws-print')),
       ],
     );
     return LayoutBuilder(

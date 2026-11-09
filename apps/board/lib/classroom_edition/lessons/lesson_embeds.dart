@@ -10,6 +10,7 @@ import '../../features/sim_hub/sim_entry.dart';
 import '../../features/sim_hub/sim_hub_panel.dart' show simHubOnlineCheck;
 import '../../features/sim_hub/sim_server.dart';
 import '../ui/ce_style.dart';
+import '../l10n/ce_strings.dart';
 
 /// The lesson's sims, labs and 3D from the board's own packages; PhET sims from the board's
 /// offline copies (assets/simhub/phet, the Simulations hub's), so they run with no internet.
@@ -59,7 +60,7 @@ class _LessonPhetState extends State<LessonPhet> {
   Widget build(BuildContext context) {
     if (_none) {
       return Center(
-        child: Text('The PhET sim “${widget.simId}” opens on the board itself.', textAlign: TextAlign.center, style: zText(30, FontWeight.w500).copyWith(color: Z.onStage2)),
+        child: Text(ceTr('The PhET sim “{id}” opens on the board itself.', {'id': widget.simId}), textAlign: TextAlign.center, style: zText(30, FontWeight.w500).copyWith(color: Z.onStage2)),
       );
     }
     return _web?.view() ?? const Center(child: CircularProgressIndicator());
@@ -120,14 +121,14 @@ class _ConceptVideoCardState extends State<ConceptVideoCard> {
               style: FilledButton.styleFrom(backgroundColor: CeC.accent, minimumSize: const Size(0, 96), padding: const EdgeInsets.symmetric(horizontal: 48), textStyle: zText(34)),
               onPressed: () => openLessonVideo(v.embedUrl()),
               icon: const Icon(Icons.open_in_new, size: 40),
-              label: const Text('Open the video'),
+              label: Text(context.ce('Open the video')),
             )
           else
             Container(
               key: const Key('lesson-video-offline'),
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
               decoration: BoxDecoration(color: CeC.peach, borderRadius: BorderRadius.circular(99)),
-              child: Text('Needs internet', style: zText(34).copyWith(color: CeC.navy)),
+              child: Text(context.ce('Needs internet'), style: zText(34).copyWith(color: CeC.navy)),
             ),
         ],
       ),

@@ -37,7 +37,8 @@ void startLocalClass(BoardController board, {required CeTeacher teacher, require
     teacherId: teacher.isGuest ? 'local-guest' : 'local-${teacher.id}',
     teacherName: teacher.name,
     institutionName: store.college.isEmpty ? null : store.college,
-    language: 'en',
+    // The board's own language (the start screen's ಕನ್ನಡ / English switch) carries on into the class.
+    language: board.boardLanguage.name,
     sectionId: cls.id,
     sectionName: cls.name,
     subjectName: subject.trim().isEmpty ? null : subject.trim(),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
+import '../l10n/ce_strings.dart';
 
 /// The Classroom edition's colours (the Zynetix website's navy, blue and pastels).
 abstract final class CeC {
@@ -85,12 +86,12 @@ Widget ceBrand({double size = 40}) => Row(
       child: Icon(Icons.draw_outlined, color: Colors.white, size: size * 0.55),
     ),
     const SizedBox(width: 12),
-    Text('Zynetix Board', style: ceHeading(size * 0.6)),
+    Text(ceTr('Zynetix Board'), style: ceHeading(size * 0.6)),
     const SizedBox(width: 12),
     Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(color: CeC.lavender, borderRadius: BorderRadius.circular(99)),
-      child: Text('Classroom edition', style: ceText(14, w: FontWeight.w600, c: CeC.navy)),
+      child: Text(ceTr('Classroom edition'), style: ceText(14, w: FontWeight.w600, c: CeC.navy)),
     ),
   ],
 );

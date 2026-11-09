@@ -13,6 +13,7 @@ import 'package:kinetix_labs/kinetix_labs.dart' show LabReport, LabSpeech;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../cast/cast_panel.dart';
+import '../../classroom_edition/l10n/ce_strings.dart';
 import '../../classroom_edition/board/ce_board.dart';
 import '../../classroom_edition/boards/board_library.dart';
 import '../../classroom_edition/boards/board_library_ui.dart';
@@ -2603,10 +2604,10 @@ class _BoardScreenState extends State<BoardScreen> {
         accent: const Color(0xFF835400),
       ),
       if (Edition.classroom) ...{
-        'colours': BarItem(const Key('ce-colours'), Icons.palette_outlined, 'Colours', () => _toggle(BoardPopover.pen), selected: _popover == BoardPopover.pen, color: const Color(0xFFBE185D)),
-        'lessons': BarItem(const Key('ce-lessons'), Icons.auto_stories_outlined, 'Lessons', () => _panel == PanelKind.lessons ? _closePanel() : _show(PanelKind.lessons), selected: _panel == PanelKind.lessons, color: const Color(0xFF13165A)),
-        'class-tools': BarItem(const Key('ce-class-tools'), Icons.school_outlined, 'Class tools', _run(_openClassroomApps), selected: _panel == PanelKind.classTools, color: const Color(0xFF7C3AED)),
-        if (_ceSimple) 'show-all': BarItem(const Key('ce-show-all'), Icons.apps_rounded, 'Show all tools', () => _ceSetSimple(false)) else 'simple': BarItem(const Key('ce-simple'), Icons.crop_square_rounded, 'Simple board', () => _ceSetSimple(true)),
+        'colours': BarItem(const Key('ce-colours'), Icons.palette_outlined, ceTr('Colours'), () => _toggle(BoardPopover.pen), selected: _popover == BoardPopover.pen, color: const Color(0xFFBE185D)),
+        'lessons': BarItem(const Key('ce-lessons'), Icons.auto_stories_outlined, ceTr('Lessons'), () => _panel == PanelKind.lessons ? _closePanel() : _show(PanelKind.lessons), selected: _panel == PanelKind.lessons, color: const Color(0xFF13165A)),
+        'class-tools': BarItem(const Key('ce-class-tools'), Icons.school_outlined, ceTr('Class tools'), _run(_openClassroomApps), selected: _panel == PanelKind.classTools, color: const Color(0xFF7C3AED)),
+        if (_ceSimple) 'show-all': BarItem(const Key('ce-show-all'), Icons.apps_rounded, ceTr('Show all tools'), () => _ceSetSimple(false)) else 'simple': BarItem(const Key('ce-simple'), Icons.crop_square_rounded, ceTr('Simple board'), () => _ceSetSimple(true)),
       },
       'search': BarItem(const Key('tbar-search'), Icons.search, ts.search, _run(_openSearch)),
       'record': BarItem(const Key('tbar-record'), _capture == null ? Icons.fiber_manual_record_outlined : Icons.stop_circle_outlined, ts.record, _run(() => unawaited(_toggleRecording())), selected: _capture != null),
@@ -2875,9 +2876,9 @@ class _BoardScreenState extends State<BoardScreen> {
       (const Key('menu-eye-comfort'), Icons.visibility_outlined, l.toolEyeComfort, () => setState(() => _popover = BoardPopover.eyeComfort), true),
       (const Key('menu-settings'), Icons.settings_outlined, l.boardSettings, _openSettings, true),
       if (Edition.classroom) ...[
-        (const Key('menu-college-settings'), Icons.admin_panel_settings_outlined, 'College settings', () => unawaited(_ceCollegeSettings()), true),
-        (const Key('menu-simple-board'), _ceSimple ? Icons.apps_rounded : Icons.crop_square_rounded, _ceSimple ? 'Show all tools' : 'Simple board', () => _ceSetSimple(!_ceSimple), true),
-        (const Key('menu-tour'), Icons.tour_outlined, 'Guided tour', () => _ceTour(practice: true, stay: false), true),
+        (const Key('menu-college-settings'), Icons.admin_panel_settings_outlined, ceTr('College settings'), () => unawaited(_ceCollegeSettings()), true),
+        (const Key('menu-simple-board'), _ceSimple ? Icons.apps_rounded : Icons.crop_square_rounded, _ceSimple ? ceTr('Show all tools') : ceTr('Simple board'), () => _ceSetSimple(!_ceSimple), true),
+        (const Key('menu-tour'), Icons.tour_outlined, ceTr('Guided tour'), () => _ceTour(practice: true, stay: false), true),
       ],
       // "Preview as interactive panel" is a tool for whoever builds the board, not for a class.
       if (!Edition.classroom) (
@@ -2957,11 +2958,11 @@ class _BoardScreenState extends State<BoardScreen> {
         showClassroomApps(
           context,
           header: (ctx) => classToolsHeader(ctx, onTool: _openClassTools),
-          appsTitle: 'Classroom',
+          appsTitle: ceTr('Classroom'),
           apps: [
             // Study Material, Take attendance and Recordings need the college's server: not
             // offered in the offline Classroom edition.
-            ('lessons', Icons.auto_stories_outlined, 'Lessons', () => _show(PanelKind.lessons)),
+            ('lessons', Icons.auto_stories_outlined, ceTr('Lessons'), () => _show(PanelKind.lessons)),
             if (!board.localClass && board.isSignedIn) ('live-class', Icons.sensors, s('appLiveClass'), () => unawaited(toggleClassLive(context, board))),
             ('books', Icons.menu_book_outlined, s('appBooks'), () => _openPanel(PanelKind.books)),
           ],

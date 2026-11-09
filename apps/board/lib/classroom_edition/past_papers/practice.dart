@@ -14,6 +14,7 @@ import 'exam_rules.dart';
 import 'page_cache.dart';
 import 'paper_library.dart';
 import 'paper_model.dart';
+import '../l10n/ce_strings.dart';
 
 /// A question of a past paper, with the paper it is from.
 typedef PracticeItem = ({Paper paper, PaperQuestion q});
@@ -82,7 +83,7 @@ PresetQuiz paperQuiz({required ToolEnv env, required PaperLibrary lib, required 
   final max = asked.fold<double>(0, (s, it) => s + it.q.marking(it.paper.exam).$1);
   return PresetQuiz(
     title: title,
-    line: [title, if (asked.length < items.length) '${items.length - asked.length} numerical or multi-answer questions left out'].join(' · '),
+    line: [title, if (asked.length < items.length) ceTr('{n} numerical or multi-answer questions left out', {'n': items.length - asked.length})].join(' · '),
     questions: questions,
     topicTitles: {for (final e in byId.entries) e.key: e.value.q.chapter.isEmpty ? e.value.paper.title : e.value.q.chapter},
     picture: (q) async {
@@ -93,7 +94,7 @@ PresetQuiz paperQuiz({required ToolEnv env, required PaperLibrary lib, required 
       final it = byId[q.id]!;
       return it.q.score(it.paper.exam, right);
     },
-    scoreLine: rule == null ? 'Each paper\'s own marking' : '${exams.single.label} marking: ${rule.markingLine}',
+    scoreLine: rule == null ? ceTr('Each paper’s own marking') : ceTr('{exam} marking: {marking}', {'exam': exams.single.label, 'marking': rule.markingLine}),
     backTo: 'papers',
     backArg: backArg.isEmpty ? null : backArg,
     onFinish: (totals) async {
@@ -176,7 +177,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
         at: const Offset(96, 120),
       );
     }
-    host.showMessage('Question ${q.number} is on the board');
+    host.showMessage(ceTr('Question {n} is on the board', {'n': q.number}));
   }
 
   @override
@@ -197,20 +198,20 @@ class _PracticeScreenState extends State<PracticeScreen> {
               children: [
                 Row(
                   children: [
-                    toolButton('Close', icon: Icons.close_rounded, key: const Key('ce-practice-close'), onPressed: () => Navigator.of(context).pop()),
+                    toolButton(ceTr('Close'), icon: Icons.close_rounded, key: const Key('ce-practice-close'), onPressed: () => Navigator.of(context).pop()),
                     const SizedBox(width: 18),
                     Flexible(child: Text(widget.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: ceHeading(28))),
                     const SizedBox(width: 14),
-                    toolPill('Question ${index + 1} of ${items.length}', key: const Key('ce-practice-progress')),
+                    toolPill(ceTr('Question {n} of {total}', {'n': index + 1, 'total': items.length}), key: const Key('ce-practice-progress')),
                     const Spacer(),
-                    toolPill(minus == 0 ? '+${formatMarks(plus)} right' : '+${formatMarks(plus)} right · −${formatMarks(minus)} wrong', icon: Icons.rule_rounded, bg: CeC.butter),
+                    toolPill(minus == 0 ? ceTr('+{n} right', {'n': formatMarks(plus)}) : ceTr('+{right} right · −{wrong} wrong', {'right': formatMarks(plus), 'wrong': formatMarks(minus)}), icon: Icons.rule_rounded, bg: CeC.butter),
                     const SizedBox(width: 10),
-                    toolPill('Class score ${formatMarks(total)}  ($right right, $wrong wrong)', key: const Key('ce-practice-score'), bg: CeC.mint),
+                    toolPill(ceTr('Class score {score}  ({right} right, {wrong} wrong)', {'score': formatMarks(total), 'right': right, 'wrong': wrong}), key: const Key('ce-practice-score'), bg: CeC.mint),
                   ],
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  [it.paper.longTitle, 'Q${q.number}', if (q.section.isNotEmpty) 'Section ${q.section}', if (q.chapter.isNotEmpty) q.chapter].join(' · '),
+                  [it.paper.longTitle, 'Q${q.number}', if (q.section.isNotEmpty) ceTr('Section {s}', {'s': q.section}), if (q.chapter.isNotEmpty) q.chapter].join(' · '),
                   style: ceText(17, w: FontWeight.w600, c: CeC.navy),
                 ),
                 const SizedBox(height: 14),
@@ -220,9 +221,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
                   children: [
                     _arrow(Icons.chevron_left_rounded, index > 0 ? () => _go(index - 1) : null, 'ce-practice-prev'),
                     const SizedBox(width: 16),
-                    if (widget.host != null) toolButton('Put on board', icon: Icons.move_to_inbox_outlined, key: const Key('ce-practice-put'), onPressed: _put),
+                    if (widget.host != null) toolButton(ceTr('Put on board'), icon: Icons.move_to_inbox_outlined, key: const Key('ce-practice-put'), onPressed: _put),
                     const Spacer(),
-                    if (shown) _verdict() else toolButton('Reveal answer', icon: Icons.visibility_outlined, filled: true, key: const Key('ce-practice-reveal'), onPressed: () => setState(() => revealed.add(index))),
+                    if (shown) _verdict() else toolButton(ceTr('Reveal answer'), icon: Icons.visibility_outlined, filled: true, key: const Key('ce-practice-reveal'), onPressed: () => setState(() => revealed.add(index))),
                     const Spacer(),
                     _arrow(Icons.chevron_right_rounded, index < items.length - 1 ? () => _go(index + 1) : null, 'ce-practice-next'),
                   ],
@@ -237,14 +238,14 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   Widget _verdict() {
     if (!q.hasOptions) {
-      return toolPill('Answer: ${q.value}', key: const Key('ce-practice-answer'), bg: CeC.mint);
+      return toolPill(ceTr('Answer: {answer}', {'answer': q.value}), key: const Key('ce-practice-answer'), bg: CeC.mint);
     }
     final p = pick;
     final (text, bg) = p.isEmpty
-        ? ('Answer: ${q.answerLabel}', CeC.mint)
+        ? (ceTr('Answer: {answer}', {'answer': q.answerLabel}), CeC.mint)
         : q.isRight(p)
-        ? ('Right! +${formatMarks(q.score(it.paper.exam, true))}   Answer: ${q.answerLabel}', CeC.mint)
-        : ('Not quite ${formatMarks(q.score(it.paper.exam, false))}   Answer: ${q.answerLabel}', CeC.pink);
+        ? (ceTr('Right! +{n}   Answer: {answer}', {'n': formatMarks(q.score(it.paper.exam, true)), 'answer': q.answerLabel}), CeC.mint)
+        : (ceTr('Not quite {n}   Answer: {answer}', {'n': formatMarks(q.score(it.paper.exam, false)), 'answer': q.answerLabel}), CeC.pink);
     return Container(
       key: const Key('ce-practice-answer'),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -259,7 +260,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
         ? FutureBuilder<Uint8List?>(
             future: _picture(index),
             builder: (context, snap) => snap.data == null
-                ? Center(child: snap.connectionState == ConnectionState.done ? Text('The picture of this question is missing.', style: ceText(18)) : const CircularProgressIndicator())
+                ? Center(child: snap.connectionState == ConnectionState.done ? Text(context.ce('The picture of this question is missing.'), style: ceText(18)) : const CircularProgressIndicator())
                 : Container(
                     padding: const EdgeInsets.all(10),
                     decoration: ceCard(shadow: false),
@@ -363,7 +364,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
     child: Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(color: shown ? CeC.mint : Colors.white, borderRadius: BorderRadius.circular(24)),
-      child: Text(shown ? 'Answer: ${q.value}' : 'A numerical answer. Let the class work it out, then tap Reveal answer.', textAlign: TextAlign.center, style: ceText(28, c: CeC.navy)),
+      child: Text(shown ? ceTr('Answer: {answer}', {'answer': q.value}) : ceTr('A numerical answer. Let the class work it out, then tap Reveal answer.'), textAlign: TextAlign.center, style: ceText(28, c: CeC.navy)),
     ),
   );
 

@@ -11,6 +11,7 @@ import 'exam_timer.dart';
 import 'page_cache.dart';
 import 'paper_library.dart';
 import 'paper_model.dart';
+import '../l10n/ce_strings.dart';
 
 /// Opens [paper] full screen on the board ([showKey]: with its answer key beside it).
 /// [host] puts a page on the board (null: no Put on board, e.g. from Settings).
@@ -133,12 +134,12 @@ class _PaperViewerScreenState extends State<PaperViewerScreen> {
       // As big as fits under the title on a 1920 × 1080 board page.
       final w = math.min(1640.0, 880 / aspect);
       if (host.wb.elements.isNotEmpty) host.newPage();
-      final title = crop == null ? '${paper.title} · page ${page + 1}' : '${paper.title} · part of page ${page + 1}';
+      final title = crop == null ? '${paper.title} · ${ceTr('page {n}', {'n': page + 1})}' : '${paper.title} · ${ceTr('part of page {n}', {'n': page + 1})}';
       await host.putImage(png, width: w, title: title, at: Offset(math.max(60, (1920 - w) / 2), 40));
-      host.showMessage(crop == null ? 'Page ${page + 1} is on the board' : 'That part of page ${page + 1} is on the board');
+      host.showMessage(crop == null ? ceTr('Page {n} is on the board', {'n': page + 1}) : ceTr('That part of page {n} is on the board', {'n': page + 1}));
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      host.showMessage('Could not put the page on the board: $e');
+      host.showMessage(ceTr('Could not put the page on the board: {error}', {'error': e}));
       if (mounted) setState(() => putting = false);
     }
   }
@@ -178,7 +179,7 @@ class _PaperViewerScreenState extends State<PaperViewerScreen> {
     padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
     child: Row(
       children: [
-        toolButton('Close', icon: Icons.close_rounded, key: const Key('ce-viewer-close'), onPressed: () => Navigator.of(context).pop()),
+        toolButton(ceTr('Close'), icon: Icons.close_rounded, key: const Key('ce-viewer-close'), onPressed: () => Navigator.of(context).pop()),
         const SizedBox(width: 20),
         Flexible(
           child: Column(
@@ -186,25 +187,25 @@ class _PaperViewerScreenState extends State<PaperViewerScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(paper.longTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: ceHeading(26)),
-              if (paper.source.isNotEmpty) Text('Source: ${paper.source}', maxLines: 1, overflow: TextOverflow.ellipsis, style: ceText(14)),
+              if (paper.source.isNotEmpty) Text(ceTr('Source: {source}', {'source': paper.source}), maxLines: 1, overflow: TextOverflow.ellipsis, style: ceText(14)),
             ],
           ),
         ),
         const SizedBox(width: 16),
-        if (pages > 0) toolPill('Page ${page + 1} of $pages', key: const Key('ce-viewer-page')),
+        if (pages > 0) toolPill(ceTr('Page {n} of {total}', {'n': page + 1, 'total': pages}), key: const Key('ce-viewer-page')),
         const Spacer(),
         toolButton(
-          keyOn ? 'Hide answer key' : 'Show answer key',
+          keyOn ? ceTr('Hide answer key') : ceTr('Show answer key'),
           icon: Icons.key_outlined,
           key: const Key('ce-viewer-key'),
           onPressed: paper.hasKey ? _toggleKey : null,
         ),
         const SizedBox(width: 12),
-        toolButton('Timer', icon: Icons.timer_outlined, key: const Key('ce-viewer-timer'), onPressed: () => openExamTimer(context, exam: paper.exam, title: paper.title)),
+        toolButton(ceTr('Timer'), icon: Icons.timer_outlined, key: const Key('ce-viewer-timer'), onPressed: () => openExamTimer(context, exam: paper.exam, title: paper.title)),
         if (widget.host != null) ...[
           const SizedBox(width: 12),
           toolButton(
-            putting ? 'Putting…' : (zoomedIn ? 'Put this part on board' : 'Put page on board'),
+            putting ? ceTr('Putting…') : (zoomedIn ? ceTr('Put this part on board') : ceTr('Put page on board')),
             icon: Icons.move_to_inbox_outlined,
             filled: true,
             key: const Key('ce-viewer-put'),
@@ -219,7 +220,7 @@ class _PaperViewerScreenState extends State<PaperViewerScreen> {
     if (loading) return const Center(child: CircularProgressIndicator());
     final doc = pdf;
     if (doc == null || doc.pageCount == 0) {
-      return const ToolEmpty(icon: Icons.broken_image_outlined, title: 'This paper cannot be opened', line: 'The file may be damaged. Remove it from the library and add it again from the USB stick.');
+      return ToolEmpty(icon: Icons.broken_image_outlined, title: context.ce('This paper cannot be opened'), line: context.ce('The file may be damaged. Remove it from the library and add it again from the USB stick.'));
     }
     final paperPane = _Pane(
       key: const Key('ce-viewer-paper'),
@@ -267,11 +268,11 @@ class _PaperViewerScreenState extends State<PaperViewerScreen> {
               ceIconDot(Icons.key_outlined, bg: CeC.mint, size: 40),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(doc == null ? 'Answer key' : 'Answer key · page ${keyPage + 1} of ${doc.pageCount}', maxLines: 1, overflow: TextOverflow.ellipsis, style: ceHeading(22)),
+                child: Text(doc == null ? ceTr('Answer key') : ceTr('Answer key · page {n} of {total}', {'n': keyPage + 1, 'total': doc.pageCount}), maxLines: 1, overflow: TextOverflow.ellipsis, style: ceHeading(22)),
               ),
-              choiceChip('Side by side', on: !overlay, offIcon: null, tick: false, key: const Key('ce-viewer-key-side'), onTap: () => setState(() => overlay = false)),
+              choiceChip(ceTr('Side by side'), on: !overlay, offIcon: null, tick: false, key: const Key('ce-viewer-key-side'), onTap: () => setState(() => overlay = false)),
               const SizedBox(width: 8),
-              choiceChip('On top', on: overlay, offIcon: null, tick: false, key: const Key('ce-viewer-key-overlay'), onTap: () => setState(() => overlay = true)),
+              choiceChip(ceTr('On top'), on: overlay, offIcon: null, tick: false, key: const Key('ce-viewer-key-overlay'), onTap: () => setState(() => overlay = true)),
             ],
           ),
         ),

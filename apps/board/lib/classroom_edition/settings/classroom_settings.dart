@@ -11,6 +11,7 @@ import '../start/classroom_start.dart' show editTeacher;
 import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
 import 'pin_pad.dart';
+import '../l10n/ce_strings.dart';
 
 export 'pin_pad.dart' show askSchoolPin, chooseNewPin, CePinPad;
 
@@ -35,7 +36,9 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   ClassroomStore get store => widget.store;
 
   @override
-  Widget build(BuildContext context) => Theme(
+  Widget build(BuildContext context) {
+    context.ceDependOnLanguage();
+    return Theme(
     data: ceTheme(context),
     child: DefaultTabController(
       length: 7,
@@ -44,17 +47,17 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
         backgroundColor: CeC.page,
         appBar: AppBar(
           backgroundColor: CeC.page,
-          title: Text('College settings', style: ceHeading(24)),
-          bottom: const TabBar(
+          title: Text(context.ce('College settings'), style: ceHeading(24)),
+          bottom: TabBar(
             isScrollable: true,
             tabs: [
-              Tab(key: Key('ce-tab-timetable'), text: 'Timetable'),
-              Tab(key: Key('ce-tab-teachers'), text: 'Teachers'),
-              Tab(key: Key('ce-tab-classes'), text: 'Classes'),
-              Tab(key: Key('ce-tab-college'), text: 'College and PIN'),
-              Tab(key: Key('ce-tab-backup'), text: 'Backup & restore'),
-              Tab(key: Key('ce-tab-board'), text: 'This board'),
-              Tab(key: Key('ce-tab-advanced'), text: 'Advanced'),
+              Tab(key: Key('ce-tab-timetable'), text: context.ce('Timetable')),
+              Tab(key: Key('ce-tab-teachers'), text: context.ce('Teachers')),
+              Tab(key: Key('ce-tab-classes'), text: context.ce('Classes')),
+              Tab(key: Key('ce-tab-college'), text: context.ce('College and PIN')),
+              Tab(key: Key('ce-tab-backup'), text: context.ce('Backup & restore')),
+              Tab(key: Key('ce-tab-board'), text: context.ce('This board')),
+              Tab(key: Key('ce-tab-advanced'), text: context.ce('Advanced')),
             ],
           ),
         ),
@@ -65,6 +68,7 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
       ),
     ),
   );
+  }
 
   Widget _list(List<Widget> children, {required String add, required Key addKey, required VoidCallback onAdd, String? empty}) => ListView(
     padding: const EdgeInsets.all(Kx.s24),
@@ -108,10 +112,10 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
           onTap: () => unawaited(editTeacher(context, store, t, pinChecked: true)),
         ),
     ],
-    add: 'Add a teacher',
+    add: context.ce('Add a teacher'),
     addKey: const Key('ce-set-add-teacher'),
     onAdd: () => unawaited(editTeacher(context, store, null)),
-    empty: 'No teachers yet. Add each teacher who uses this board; they tap their card to start a class.',
+    empty: context.ce('No teachers yet. Add each teacher who uses this board; they tap their card to start a class.'),
   );
 
   // --- Classes ------------------------------------------------------------------------------
@@ -123,11 +127,11 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
           key: Key('ce-set-class-${c.id}'),
           leading: ceIconDot(Icons.groups_outlined, bg: CeC.pastel(c.year == 2 ? 1 : 3), size: 40),
           title: c.name,
-          subtitle: [if (c.stream.isNotEmpty) c.stream, 'Roll numbers 1–${c.rollCount}'].join(' · '),
+          subtitle: [if (c.stream.isNotEmpty) c.stream, context.ce('Roll numbers 1–{n}', {'n': c.rollCount})].join(' · '),
           onTap: () => unawaited(_editClass(c)),
         ),
     ],
-    add: 'Add a class',
+    add: context.ce('Add a class'),
     addKey: const Key('ce-set-add-class'),
     onAdd: () => unawaited(_editClass(null)),
   );
@@ -142,7 +146,7 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, set) => AlertDialog(
           key: const Key('ce-class-dialog'),
-          title: Text(c == null ? 'Add a class' : 'Edit ${c.name}'),
+          title: Text(c == null ? context.ce('Add a class') : context.ce('Edit {name}', {'name': c.name})),
           content: SizedBox(
             width: 480,
             child: Column(
@@ -151,34 +155,34 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
               children: [
                 SegmentedButton<int>(
                   key: const Key('ce-class-year'),
-                  segments: const [ButtonSegment(value: 1, label: Text('1st PUC')), ButtonSegment(value: 2, label: Text('2nd PUC'))],
+                  segments: [ButtonSegment(value: 1, label: Text(context.ce('1st PUC'))), ButtonSegment(value: 2, label: Text(context.ce('2nd PUC')))],
                   selected: {year},
                   onSelectionChanged: (v) => set(() => year = v.single),
                 ),
                 const SizedBox(height: Kx.s12),
-                TextField(key: const Key('ce-class-section'), controller: section, textCapitalization: TextCapitalization.characters, decoration: const InputDecoration(labelText: 'Section (A, B, C …)')),
+                TextField(key: Key('ce-class-section'), controller: section, textCapitalization: TextCapitalization.characters, decoration: InputDecoration(labelText: context.ce('Section (A, B, C …)'))),
                 const SizedBox(height: Kx.s12),
-                TextField(key: const Key('ce-class-stream'), controller: stream, textCapitalization: TextCapitalization.words, decoration: const InputDecoration(labelText: 'Stream (optional: Science, Commerce, Arts)')),
+                TextField(key: Key('ce-class-stream'), controller: stream, textCapitalization: TextCapitalization.words, decoration: InputDecoration(labelText: context.ce('Stream (optional: Science, Commerce, Arts)'))),
                 const SizedBox(height: Kx.s12),
                 TextField(
                   key: const Key('ce-class-rolls'),
                   controller: rolls,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
-                  decoration: const InputDecoration(labelText: 'Number of students (roll numbers 1 to …)', helperText: 'Only roll numbers are kept on this board, never names.'),
+                  decoration: InputDecoration(labelText: context.ce('Number of students (roll numbers 1 to …)'), helperText: context.ce('Only roll numbers are kept on this board, never names.')),
                 ),
               ],
             ),
           ),
           actionsAlignment: MainAxisAlignment.spaceBetween,
           actions: [
-            if (c != null) ceRemoveAction(key: const Key('ce-class-remove'), label: 'Remove class…', onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
+            if (c != null) ceRemoveAction(key: Key('ce-class-remove'), label: context.ce('Remove class…'), onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.ce('Cancel'))),
                 const SizedBox(width: Kx.s8),
-                FilledButton(key: const Key('ce-class-save'), onPressed: () => Navigator.pop(ctx, 'save'), child: const Text('Save')),
+                FilledButton(key: Key('ce-class-save'), onPressed: () => Navigator.pop(ctx, 'save'), child: Text(context.ce('Save'))),
               ],
             ),
           ],
@@ -199,22 +203,21 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
     final periods = store.slots.where((s) => s.classId == c.id).length;
     final ok = await ceConfirmRemove(
       context,
-      title: 'Remove ${c.name}?',
+      title: context.ce('Remove {name}?', {'name': c.name}),
       body: [
-        if (periods > 0) 'Its $periods ${periods == 1 ? 'period comes' : 'periods come'} off the timetable.' else 'It has no periods on the timetable.',
-        'Its marks, mock tests and lesson progress stay saved on this board but are not shown while the class is gone.',
+        if (periods == 1) context.ce('Its 1 period comes off the timetable.') else if (periods > 1) context.ce('Its {n} periods come off the timetable.', {'n': periods}) else context.ce('It has no periods on the timetable.'),
+        context.ce('Its marks, mock tests and lesson progress stay saved on this board but are not shown while the class is gone.'),
       ].join(' '),
-      confirm: 'Remove class',
+      confirm: context.ce('Remove class'),
     );
     if (!ok || !mounted) return;
     final before = store.setup;
     await store.removeClass(c.id);
-    if (mounted) ceUndoSnack(context, '${c.name} removed.', () => unawaited(store.replace(before)));
+    if (mounted) ceUndoSnack(context, context.ce('{name} removed.', {'name': c.name}), () => unawaited(store.replace(before)));
   }
 
   // --- Timetable ----------------------------------------------------------------------------
 
-  static const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   Widget _timetable() {
     final byDay = <int, List<CeSlot>>{};
@@ -225,27 +228,27 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
       [
         for (var d = 1; d <= 7; d++)
           if (byDay[d] != null) ...[
-            Padding(padding: const EdgeInsets.only(top: Kx.s12, bottom: Kx.s8), child: Text(_days[d - 1], style: ceHeading(20))),
+            Padding(padding: const EdgeInsets.only(top: Kx.s12, bottom: Kx.s8), child: Text(ceDay(context, d), style: ceHeading(20))),
             for (final s in byDay[d]!..sort((a, b) => a.startMinute.compareTo(b.startMinute)))
               _tile(
                 key: Key('ce-set-slot-${s.id}'),
                 leading: Text('${s.start}\n${s.end}', style: ceText(14, w: FontWeight.w600, c: CeC.navy)),
                 title: [store.classById(s.classId)?.name ?? '?', s.subject].where((x) => x.isNotEmpty).join(' · '),
-                subtitle: [store.teacher(s.teacherId)?.name ?? 'No teacher', s.room, s.topic].where((x) => x.isNotEmpty).join(' · '),
+                subtitle: [store.teacher(s.teacherId)?.name ?? context.ce('No teacher'), s.room, s.topic].where((x) => x.isNotEmpty).join(' · '),
                 onTap: () => unawaited(_editSlot(s)),
               ),
           ],
       ],
-      add: 'Add a period',
+      add: context.ce('Add a period'),
       addKey: const Key('ce-set-add-slot'),
       onAdd: () => unawaited(_editSlot(null)),
-      empty: 'No periods yet. Add each period of the week; "Start my class" then opens the period on now.',
+      empty: context.ce('No periods yet. Add each period of the week; "Start my class" then opens the period on now.'),
     );
   }
 
   Future<void> _editSlot(CeSlot? s) async {
     if (store.classes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Add a class first.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.ce('Add a class first.'))));
       return;
     }
     var weekday = s?.weekday ?? store.now().weekday.clamp(1, 6);
@@ -263,7 +266,7 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, set) => AlertDialog(
           key: const Key('ce-slot-dialog'),
-          title: Text(s == null ? 'Add a period' : 'Edit period'),
+          title: Text(s == null ? context.ce('Add a period') : context.ce('Edit period')),
           content: SizedBox(
             width: 560,
             child: SingleChildScrollView(
@@ -274,22 +277,22 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
                   Wrap(
                     spacing: 6,
                     children: [
-                      for (var d = 1; d <= 7; d++) ChoiceChip(key: Key('ce-slot-day-$d'), label: Text(_days[d - 1]), selected: weekday == d, onSelected: (_) => set(() => weekday = d)),
+                      for (var d = 1; d <= 7; d++) ChoiceChip(key: Key('ce-slot-day-$d'), label: Text(ceDay(context, d, short: true)), selected: weekday == d, onSelected: (_) => set(() => weekday = d)),
                     ],
                   ),
                   const SizedBox(height: Kx.s12),
                   Row(
                     children: [
-                      Expanded(child: TextField(key: const Key('ce-slot-start'), controller: start, decoration: const InputDecoration(labelText: 'Starts (HH:MM)'))),
+                      Expanded(child: TextField(key: Key('ce-slot-start'), controller: start, decoration: InputDecoration(labelText: context.ce('Starts (HH:MM)')))),
                       const SizedBox(width: Kx.s12),
-                      Expanded(child: TextField(key: const Key('ce-slot-end'), controller: end, decoration: const InputDecoration(labelText: 'Ends (HH:MM)'))),
+                      Expanded(child: TextField(key: Key('ce-slot-end'), controller: end, decoration: InputDecoration(labelText: context.ce('Ends (HH:MM)')))),
                     ],
                   ),
                   const SizedBox(height: Kx.s12),
                   DropdownButtonFormField<String>(
                     key: const Key('ce-slot-class'),
                     initialValue: classId,
-                    decoration: const InputDecoration(labelText: 'Class'),
+                    decoration: InputDecoration(labelText: context.ce('Class')),
                     items: [for (final c in store.classes) DropdownMenuItem(value: c.id, child: Text(c.name))],
                     onChanged: (v) => set(() => classId = v ?? classId),
                   ),
@@ -297,9 +300,9 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
                   DropdownButtonFormField<String?>(
                     key: const Key('ce-slot-teacher'),
                     initialValue: teacherId,
-                    decoration: const InputDecoration(labelText: 'Teacher'),
+                    decoration: InputDecoration(labelText: context.ce('Teacher')),
                     items: [
-                      const DropdownMenuItem<String?>(value: null, child: Text('No teacher')),
+                      DropdownMenuItem<String?>(value: null, child: Text(context.ce('No teacher'))),
                       for (final t in store.teachers) DropdownMenuItem<String?>(value: t.id, child: Text(t.name)),
                     ],
                     onChanged: (v) => set(() {
@@ -308,11 +311,11 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
                     }),
                   ),
                   const SizedBox(height: Kx.s12),
-                  TextField(key: const Key('ce-slot-subject'), controller: subject, textCapitalization: TextCapitalization.words, decoration: const InputDecoration(labelText: 'Subject')),
+                  TextField(key: Key('ce-slot-subject'), controller: subject, textCapitalization: TextCapitalization.words, decoration: InputDecoration(labelText: context.ce('Subject'))),
                   const SizedBox(height: Kx.s12),
-                  TextField(key: const Key('ce-slot-room'), controller: room, decoration: const InputDecoration(labelText: 'Room (optional)')),
+                  TextField(key: Key('ce-slot-room'), controller: room, decoration: InputDecoration(labelText: context.ce('Room (optional)'))),
                   const SizedBox(height: Kx.s12),
-                  TextField(key: const Key('ce-slot-topic'), controller: topic, decoration: const InputDecoration(labelText: 'Chapter or topic (optional)')),
+                  TextField(key: Key('ce-slot-topic'), controller: topic, decoration: InputDecoration(labelText: context.ce('Chapter or topic (optional)'))),
                   if (error != null) Padding(padding: const EdgeInsets.only(top: Kx.s12), child: Text(error!, style: TextStyle(color: Theme.of(ctx).colorScheme.error))),
                 ],
               ),
@@ -320,23 +323,23 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
           ),
           actionsAlignment: MainAxisAlignment.spaceBetween,
           actions: [
-            if (s != null) ceRemoveAction(key: const Key('ce-slot-remove'), label: 'Remove period…', onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
+            if (s != null) ceRemoveAction(key: Key('ce-slot-remove'), label: context.ce('Remove period…'), onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.ce('Cancel'))),
             const SizedBox(width: Kx.s8),
             FilledButton(
               key: const Key('ce-slot-save'),
               onPressed: () {
                 final a = start.text.trim(), b = end.text.trim();
                 if (!time.hasMatch(a) || !time.hasMatch(b) || CeSlot.minuteOf(b) <= CeSlot.minuteOf(a)) {
-                  set(() => error = 'Times are HH:MM on a 24-hour clock, and the period must end after it starts.');
+                  set(() => error = context.ce('Times are HH:MM on a 24-hour clock, and the period must end after it starts.'));
                   return;
                 }
                 Navigator.pop(ctx, 'save');
               },
-              child: const Text('Save'),
+              child: Text(context.ce('Save')),
             ),
               ],
             ),
@@ -367,20 +370,19 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
 
   Future<void> _removeSlot(CeSlot s) async {
     final what = [store.classById(s.classId)?.name, s.subject].whereType<String>().where((x) => x.isNotEmpty).join(' · ');
-    final when = '${_longDays[s.weekday - 1]} ${CeSlot.short(s.start)}–${CeSlot.short(s.end)}';
+    final when = '${ceDay(context, s.weekday)} ${CeSlot.short(s.start)}–${CeSlot.short(s.end)}';
     final ok = await ceConfirmRemove(
       context,
-      title: 'Remove this period?',
-      body: '$when${what.isEmpty ? '' : ', $what'}, comes off the timetable. “Start my class” no longer opens it.',
-      confirm: 'Remove period',
+      title: context.ce('Remove this period?'),
+      body: context.ce('{when}, comes off the timetable. “Start my class” no longer opens it.', {'when': what.isEmpty ? when : '$when, $what'}),
+      confirm: context.ce('Remove period'),
     );
     if (!ok || !mounted) return;
     final before = store.setup;
     await store.removeSlot(s.id);
-    if (mounted) ceUndoSnack(context, 'Period removed.', () => unawaited(store.replace(before)));
+    if (mounted) ceUndoSnack(context, context.ce('Period removed.'), () => unawaited(store.replace(before)));
   }
 
-  static const _longDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   // --- College and PIN ----------------------------------------------------------------------
 
@@ -389,36 +391,38 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   Widget _collegeTab() => ListView(
     padding: const EdgeInsets.all(Kx.s24),
     children: [
-      Text('College name', style: ceHeading(20)),
+      Text(context.ce('College name'), style: ceHeading(20)),
       const SizedBox(height: Kx.s8),
       Row(
         children: [
-          Expanded(child: TextField(key: const Key('ce-college-name'), controller: _collegeName, textCapitalization: TextCapitalization.words, decoration: const InputDecoration(hintText: 'e.g. Soundarya PU College'))),
+          Expanded(child: TextField(key: Key('ce-college-name'), controller: _collegeName, textCapitalization: TextCapitalization.words, decoration: InputDecoration(hintText: context.ce('e.g. Soundarya PU College')))),
           const SizedBox(width: Kx.s12),
           FilledButton(
             key: const Key('ce-college-save'),
             onPressed: () async {
               await store.replace(store.setup.copyWith(college: _collegeName.text.trim()));
-              if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Saved')));
+              if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.ce('Saved'))));
             },
-            child: const Text('Save'),
+            child: Text(context.ce('Save')),
           ),
         ],
       ),
       const SizedBox(height: Kx.s32),
-      Text('School PIN', style: ceHeading(20)),
+      Text(context.ce('School PIN'), style: ceHeading(20)),
       const SizedBox(height: Kx.s8),
       Text(
         store.pinIsDefault
-            ? 'The PIN is still 1234. Choose the college’s own PIN.'
-            : 'Only staff who know the PIN can change these settings. After 5 wrong PINs the board waits a minute, and longer after each one more.'
-                  '${store.hasRecoveryCode ? '' : ' Change the PIN once to get a recovery code for when it is forgotten.'}',
+            ? context.ce('The PIN is still 1234. Choose the college’s own PIN.')
+            : [
+                context.ce('Only staff who know the PIN can change these settings. After 5 wrong PINs the board waits a minute, and longer after each one more.'),
+                if (!store.hasRecoveryCode) context.ce('Change the PIN once to get a recovery code for when it is forgotten.'),
+              ].join(' '),
         style: ceText(16),
       ),
       const SizedBox(height: Kx.s12),
       Align(
         alignment: Alignment.centerLeft,
-        child: OutlinedButton.icon(key: const Key('ce-change-pin'), style: ceSoftButton(), onPressed: () => unawaited(_changePin()), icon: const Icon(Icons.pin_outlined), label: const Text('Change PIN')),
+        child: OutlinedButton.icon(key: Key('ce-change-pin'), style: ceSoftButton(), onPressed: () => unawaited(_changePin()), icon: Icon(Icons.pin_outlined), label: Text(context.ce('Change PIN'))),
       ),
       const SizedBox(height: Kx.s32),
       const PastPapersSettingsEntry(),
@@ -430,15 +434,15 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   Widget _boardTab() => ListView(
     padding: const EdgeInsets.all(Kx.s24),
     children: [
-      Text('Screen size', style: ceHeading(20)),
+      Text(context.ce('Screen size'), style: ceHeading(20)),
       const SizedBox(height: Kx.s8),
-      Text('How big buttons and writing are on this board. Saved on this board only.', style: ceText(16)),
+      Text(context.ce('How big buttons and writing are on this board. Saved on this board only.'), style: ceText(16)),
       const SizedBox(height: Kx.s12),
       Wrap(
         spacing: Kx.s12,
         runSpacing: Kx.s12,
         children: [
-          for (final (s, label, sample) in [(CeScreenSize.smaller, 'Smaller', 20.0), (CeScreenSize.normal, 'Normal', 26.0), (CeScreenSize.larger, 'Larger', 32.0)])
+          for (final (s, label, sample) in [(CeScreenSize.smaller, context.ce('Smaller'), 20.0), (CeScreenSize.normal, context.ce('Normal'), 26.0), (CeScreenSize.larger, context.ce('Larger'), 32.0)])
             _SizeChoice(key: Key('ce-screen-size-${s.name}'), label: label, sample: sample, selected: store.screenSize == s, onTap: () => unawaited(store.setScreenSize(s))),
         ],
       ),
@@ -450,11 +454,10 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   Widget _advancedTab() => ListView(
     padding: const EdgeInsets.all(Kx.s24),
     children: [
-      Text('Pair with the Teacher App', style: ceHeading(20)),
+      Text(context.ce('Pair with the Teacher App'), style: ceHeading(20)),
       const SizedBox(height: Kx.s8),
       Text(
-        'Only for a college that also uses the Zynetix ERP. This board works fully without it: classes, '
-        'timetable, lessons and class tools all stay on the board.',
+        context.ce('Only for a college that also uses the Zynetix ERP. This board works fully without it: classes, timetable, lessons and class tools all stay on the board.'),
         style: ceText(16),
       ),
       const SizedBox(height: Kx.s12),
@@ -465,19 +468,19 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
           style: ceSoftButton(),
           onPressed: widget.onPair,
           icon: const Icon(Icons.phonelink_ring_outlined),
-          label: const Text('Pair with Teacher App'),
+          label: Text(context.ce('Pair with Teacher App')),
         ),
       ),
       if (widget.onPair == null) ...[
         const SizedBox(height: Kx.s8),
-        Text('End the class and open Settings from the start screen to pair.', style: ceText(15)),
+        Text(context.ce('End the class and open Settings from the start screen to pair.'), style: ceText(15)),
       ],
     ],
   );
 
   Future<void> _changePin() async {
     if (await chooseNewPin(context, store) && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('The school PIN is changed.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.ce('The school PIN is changed.'))));
     }
   }
 }
@@ -509,7 +512,7 @@ class _SizeChoice extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Aa', style: ceHeading(sample)),
+              Text(context.ce('Aa'), style: ceHeading(sample)),
               const SizedBox(height: 6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

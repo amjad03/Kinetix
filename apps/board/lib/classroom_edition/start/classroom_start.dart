@@ -13,7 +13,9 @@ import '../local/local_class.dart';
 import '../settings/classroom_settings.dart';
 import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
+import 'language_switch.dart';
 import 'setup_problem.dart';
+import '../l10n/ce_strings.dart';
 
 enum _Scene { start, who, pair }
 
@@ -122,6 +124,7 @@ class _ClassroomStartState extends State<ClassroomStart> {
     final child = switch (_scene) {
       _Scene.start => CeStartScreen(
         store: store,
+        board: widget.board,
         teacher: _teacher,
         slot: _slot,
         onStart: () => unawaited(_start()),
@@ -149,7 +152,7 @@ class _ClassroomStartState extends State<ClassroomStart> {
                 style: ceSoftButton(),
                 onPressed: () => setState(() => _scene = _Scene.start),
                 icon: const Icon(Icons.arrow_back),
-                label: const Text('Back'),
+                label: Text(context.ce('Back')),
               ),
             ),
           ),
@@ -188,10 +191,13 @@ class _ClassroomStartState extends State<ClassroomStart> {
 
 /// The top strip of the start screens: the brand, "Works offline", the college and Settings.
 class _TopStrip extends StatelessWidget {
-  const _TopStrip({required this.store, this.onSettings});
+  const _TopStrip({required this.store, this.onSettings, this.board});
 
   final ClassroomStore store;
   final VoidCallback? onSettings;
+
+  /// For the ಕನ್ನಡ / English switch.
+  final BoardController? board;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -199,19 +205,30 @@ class _TopStrip extends StatelessWidget {
     child: Row(
       children: [
         ceBrand(),
-        const Spacer(),
-        cePill('Works offline · saved on this board', icon: Icons.cloud_off_outlined, bg: Colors.white),
-        if (store.college.isNotEmpty) ...[const SizedBox(width: 12), cePill(store.college, icon: Icons.account_balance_outlined, bg: Colors.white, key: const Key('ce-college'))],
+        const SizedBox(width: 24),
+        if (board != null) CeLanguageSwitch(board: board!),
+        const SizedBox(width: 16),
+        // The pills give way (with an ellipsis) before the buttons do.
+        Expanded(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Flexible(child: cePill(context.ce('Works offline · saved on this board'), icon: Icons.cloud_off_outlined, bg: Colors.white)),
+              if (store.college.isNotEmpty) ...[const SizedBox(width: 12), Flexible(child: cePill(store.college, icon: Icons.account_balance_outlined, bg: Colors.white, key: const Key('ce-college')))],
+            ],
+          ),
+        ),
         if (onSettings != null) ...[
-          const SizedBox(width: 8),
-          IconButton(
-            key: const Key('ce-settings'),
-            tooltip: 'College settings',
-            visualDensity: VisualDensity.compact,
-            constraints: const BoxConstraints.tightFor(width: 40, height: 40),
-            padding: EdgeInsets.zero,
-            onPressed: onSettings,
-            icon: const Icon(Icons.settings_outlined, color: CeC.muted, size: 22),
+          const SizedBox(width: 12),
+          Tooltip(
+            message: context.ce('College settings'),
+            child: OutlinedButton.icon(
+              key: const Key('ce-settings'),
+              style: ceSoftButton().copyWith(minimumSize: const WidgetStatePropertyAll(Size(64, 64))),
+              onPressed: onSettings,
+              icon: const Icon(Icons.settings_outlined),
+              label: Text(context.ce('Settings')),
+            ),
           ),
         ],
       ],
@@ -219,11 +236,10 @@ class _TopStrip extends StatelessWidget {
   );
 }
 
-String _greeting(DateTime t) => t.hour < 12 ? 'Good morning' : (t.hour < 17 ? 'Good afternoon' : 'Good evening');
+String _greeting(BuildContext context, DateTime t) => t.hour < 12 ? context.ce('Good morning') : (t.hour < 17 ? context.ce('Good afternoon') : context.ce('Good evening'));
 
-const _weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-String _ordinal(int n) => '$n${n % 100 >= 11 && n % 100 <= 13 ? 'th' : const ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'][n % 10]}';
+/// "2nd" (English) or "2ನೇ" (Kannada).
+String _ordinal(BuildContext context, int n) => context.ceKannada ? '$nನೇ' : '$n${n % 100 >= 11 && n % 100 <= 13 ? 'th' : const ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'][n % 10]}';
 
 /// Screen 01: "Start my class" for the period on now.
 class CeStartScreen extends StatelessWidget {
@@ -236,6 +252,7 @@ class CeStartScreen extends StatelessWidget {
     required this.onWho,
     required this.onPractice,
     this.onSettings,
+    this.board,
   });
 
   final ClassroomStore store;
@@ -244,6 +261,9 @@ class CeStartScreen extends StatelessWidget {
   final VoidCallback onStart, onWho, onPractice;
   final VoidCallback? onSettings;
 
+  /// For the ಕನ್ನಡ / English switch (none in tests that pump the screen alone).
+  final BoardController? board;
+
   @override
   Widget build(BuildContext context) {
     final now = store.now();
@@ -251,12 +271,12 @@ class CeStartScreen extends StatelessWidget {
     final cls = store.classById(s?.classId);
     final onNow = s != null && s.covers(now);
     final name = teacher == null || teacher!.isGuest ? null : teacher!.firstName;
-    final day = _weekdays[now.weekday - 1];
+    final day = ceDay(context, now.weekday);
     final subline = s == null
-        ? (store.slots.isEmpty ? '$day. Add your timetable in Settings, or start a class now.' : '$day. No more periods on your timetable today.')
+        ? (store.slots.isEmpty ? context.ce('{day}. Add your timetable in Settings, or start a class now.', {'day': day}) : context.ce('{day}. No more periods on your timetable today.', {'day': day}))
         : onNow
-        ? '$day, ${_ordinal(store.periodNumber(s))} period. Your class is ready on this board.'
-        : '$day. Your next period starts at ${CeSlot.short(s.start)}.';
+        ? context.ce('{day}, {nth} period. Your class is ready on this board.', {'day': day, 'nth': _ordinal(context, store.periodNumber(s))})
+        : context.ce('{day}. Your next period starts at {time}.', {'day': day, 'time': CeSlot.short(s.start)});
     final later = [
       for (final x in store.today(teacherId: teacher == null || teacher!.isGuest ? null : teacher!.id))
         if (x.startMinute > (s?.startMinute ?? now.hour * 60 + now.minute) && x.id != s?.id) x,
@@ -273,21 +293,21 @@ class CeStartScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _TopStrip(store: store, onSettings: onSettings),
+                    _TopStrip(store: store, onSettings: onSettings, board: board),
                     const SizedBox(height: 56),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: side),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(name == null ? _greeting(now) : '${_greeting(now)}, $name', key: const Key('ce-greeting'), style: ceHeading(44, w: FontWeight.w400)),
+                          Text(name == null ? _greeting(context, now) : '${_greeting(context, now)}, $name', key: const Key('ce-greeting'), style: ceHeading(44, w: FontWeight.w400)),
                           const SizedBox(height: 8),
                           Text(subline, style: ceText(20)),
                           const SizedBox(height: 36),
                           _NowCard(store: store, slot: s, cls: cls, onNow: onNow, teacher: teacher, onStart: onStart),
                           if (later.isNotEmpty) ...[
                             const SizedBox(height: 40),
-                            Text('Later today', style: ceHeading(24)),
+                            Text(context.ce('Later today'), style: ceHeading(24)),
                             const SizedBox(height: 16),
                             Row(
                               children: [
@@ -321,9 +341,9 @@ class CeStartScreen extends StatelessWidget {
                                 onPressed: onWho,
                                 style: ceSoftButton(),
                                 icon: const Icon(Icons.people_alt_outlined),
-                                label: Text(name == null ? 'Choose who’s teaching' : 'Not $name? Choose who’s teaching'),
+                                label: Text(name == null ? context.ce('Choose who’s teaching') : context.ce('Not {name}? Choose who’s teaching', {'name': name})),
                               ),
-                              OutlinedButton.icon(key: const Key('ce-practice'), onPressed: onPractice, style: ceSoftButton(), icon: const Icon(Icons.gesture), label: const Text('Practice board')),
+                              OutlinedButton.icon(key: Key('ce-practice'), onPressed: onPractice, style: ceSoftButton(), icon: Icon(Icons.gesture), label: Text(context.ce('Practice board'))),
                             ],
                           ),
                         ],
@@ -357,7 +377,7 @@ class _NowCard extends StatelessWidget {
     final extra = c == null || s == null ? null : ClassroomHooks.nextLessonLine?.call(c, s.subject);
     final details = [
       ?extra,
-      if (c != null) '${c.rollCount} students',
+      if (c != null) ceStudents(context, c.rollCount),
     ].join(' · ');
     return Container(
       key: const Key('ce-now-card'),
@@ -374,22 +394,22 @@ class _NowCard extends StatelessWidget {
                     spacing: 10,
                     runSpacing: 8,
                     children: [
-                      cePill('${onNow ? 'Now' : 'Next'} · ${CeSlot.short(s.start)} – ${CeSlot.short(s.end)}', icon: Icons.schedule, bg: CeC.mint),
+                      cePill('${onNow ? context.ce('Now') : context.ce('Next')} · ${CeSlot.short(s.start)} – ${CeSlot.short(s.end)}', icon: Icons.schedule, bg: CeC.mint),
                       if (s.room.isNotEmpty) cePill(s.room, icon: Icons.meeting_room_outlined, bg: CeC.blue),
-                      cePill('From your timetable', icon: Icons.event_note_outlined, bg: CeC.lavender),
+                      cePill(context.ce('From your timetable'), icon: Icons.event_note_outlined, bg: CeC.lavender),
                     ],
                   )
                 else
-                  cePill('Not on the timetable', icon: Icons.event_busy_outlined, bg: CeC.butter),
+                  cePill(context.ce('Not on the timetable'), icon: Icons.event_busy_outlined, bg: CeC.butter),
                 const SizedBox(height: 28),
                 Text(
-                  s != null && c != null ? [c.name, s.subject].where((x) => x.isNotEmpty).join(' · ') : 'Teach any class now',
+                  s != null && c != null ? [c.name, s.subject].where((x) => x.isNotEmpty).join(' · ') : context.ce('Teach any class now'),
                   key: const Key('ce-now-class'),
                   style: ceHeading(48),
                 ),
                 const SizedBox(height: 10),
                 if (s != null && s.topic.isNotEmpty) ...[Text(s.topic, style: ceText(24, w: FontWeight.w500, c: CeC.navy)), const SizedBox(height: 6)],
-                Text(s == null ? 'Pick the class and subject, and the board opens for it.' : details, style: ceText(18)),
+                Text(s == null ? context.ce('Pick the class and subject, and the board opens for it.') : details, style: ceText(18)),
               ],
             ),
           ),
@@ -408,10 +428,10 @@ class _NowCard extends StatelessWidget {
                   textStyle: ceText(28, w: FontWeight.w600),
                 ),
                 icon: const Icon(Icons.play_arrow_rounded, size: 40),
-                label: const Text('Start my class'),
+                label: Text(context.ce('Start my class')),
               ),
               const SizedBox(height: 16),
-              Text(s == null ? 'Opens the board for the class you pick' : 'Opens the board with today’s lesson ready', style: ceText(15)),
+              Text(s == null ? context.ce('Opens the board for the class you pick') : context.ce('Opens the board with today’s lesson ready'), style: ceText(15)),
             ],
           ),
         ],
@@ -474,7 +494,7 @@ class CeWhoScreen extends StatelessWidget {
     final c = store.classById(slot?.classId);
     final summary = [
       ?t?.name,
-      if (c != null) [c.name, slot!.subject].where((x) => x.isNotEmpty).join(' · ') + (slot!.covers(store.now()) ? ', now' : ', at ${CeSlot.short(slot!.start)}'),
+      if (c != null) [c.name, slot!.subject].where((x) => x.isNotEmpty).join(' · ') + (slot!.covers(store.now()) ? context.ce(', now') : context.ce(', at {time}', {'time': CeSlot.short(slot!.start)})),
     ].join(' · ');
     return Material(
       color: CeC.page,
@@ -492,9 +512,9 @@ class CeWhoScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 64, bottom: 24),
                   child: Column(
                     children: [
-                      Text('Who’s teaching now?', style: ceHeading(48, w: FontWeight.w400)),
+                      Text(context.ce('Who’s teaching now?'), style: ceHeading(48, w: FontWeight.w400)),
                       const SizedBox(height: 12),
-                      Text('Tap your card. No password on this board — your lessons and settings open for you.', textAlign: TextAlign.center, style: ceText(20)),
+                      Text(context.ce('Tap your card. No password on this board — your lessons and settings open for you.'), textAlign: TextAlign.center, style: ceText(20)),
                       const SizedBox(height: 48),
                       SizedBox(
                         width: gridW,
@@ -516,7 +536,7 @@ class CeWhoScreen extends StatelessWidget {
                               key: const Key('ce-add-teacher'),
                               width: cardW,
                               icon: Icons.person_add_alt_1_outlined,
-                              label: 'Add a teacher',
+                              label: context.ce('Add a teacher'),
                               onTap: () async {
                                 final added = await editTeacher(context, store, null);
                                 if (added != null) onPick(added);
@@ -526,7 +546,7 @@ class CeWhoScreen extends StatelessWidget {
                               key: const Key('ce-guest'),
                               width: cardW,
                               icon: Icons.badge_outlined,
-                              label: 'Guest teacher',
+                              label: context.ce('Guest teacher'),
                               selected: selected == CeTeacher.guestId,
                               onTap: () => onPick(CeTeacher.guest),
                             ),
@@ -541,11 +561,11 @@ class CeWhoScreen extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(side, 0, side, 48),
                 child: Row(
                   children: [
-                    OutlinedButton.icon(key: const Key('ce-who-back'), onPressed: onBack, style: ceSoftButton(), icon: const Icon(Icons.arrow_back), label: const Text('Back')),
+                    OutlinedButton.icon(key: Key('ce-who-back'), onPressed: onBack, style: ceSoftButton(), icon: Icon(Icons.arrow_back), label: Text(context.ce('Back'))),
                     const SizedBox(width: 20),
                     Expanded(child: Text(summary, key: const Key('ce-who-summary'), textAlign: TextAlign.right, overflow: TextOverflow.ellipsis, style: ceText(17, c: CeC.navy))),
                     const SizedBox(width: 20),
-                    FilledButton.icon(key: const Key('ce-who-start'), onPressed: onStart, style: ceBigButton(), icon: const Icon(Icons.play_arrow_rounded), label: const Text('Start my class')),
+                    FilledButton.icon(key: Key('ce-who-start'), onPressed: onStart, style: ceBigButton(), icon: Icon(Icons.play_arrow_rounded), label: Text(context.ce('Start my class'))),
                   ],
                 ),
               ),
@@ -603,7 +623,7 @@ class _TeacherCard extends StatelessWidget {
                 ),
               ),
               if (selected) ...[
-                IconButton(key: const Key('ce-teacher-edit'), tooltip: 'Edit', onPressed: onEdit, icon: const Icon(Icons.edit_outlined, color: CeC.muted)),
+                IconButton(key: Key('ce-teacher-edit'), tooltip: context.ce('Edit'), onPressed: onEdit, icon: const Icon(Icons.edit_outlined, color: CeC.muted)),
                 const Icon(Icons.check_circle, color: CeC.accent, size: 34),
               ],
             ],
@@ -653,7 +673,7 @@ class _ActionCard extends StatelessWidget {
 /// what happens to their periods, and offers Undo for 10 seconds. Answers the teacher added or
 /// changed.
 Future<CeTeacher?> editTeacher(BuildContext context, ClassroomStore store, CeTeacher? t, {bool pinChecked = false}) async {
-  if (t != null && !pinChecked && !await askSchoolPin(context, store, reason: 'Changing or removing a teacher needs the school PIN.')) return null;
+  if (t != null && !pinChecked && !await askSchoolPin(context, store, reason: context.ce('Changing or removing a teacher needs the school PIN.'))) return null;
   if (!context.mounted) return null;
   final name = TextEditingController(text: t?.name ?? '');
   final subject = TextEditingController(text: t?.subject ?? '');
@@ -661,27 +681,27 @@ Future<CeTeacher?> editTeacher(BuildContext context, ClassroomStore store, CeTea
     context: context,
     builder: (ctx) => AlertDialog(
       key: const Key('ce-teacher-dialog'),
-      title: Text(t == null ? 'Add a teacher' : 'Edit ${t.name}'),
+      title: Text(t == null ? context.ce('Add a teacher') : context.ce('Edit {name}', {'name': t.name})),
       content: SizedBox(
         width: 480,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(key: const Key('ce-teacher-name'), controller: name, autofocus: true, textCapitalization: TextCapitalization.words, decoration: const InputDecoration(labelText: 'Name')),
+            TextField(key: Key('ce-teacher-name'), controller: name, autofocus: true, textCapitalization: TextCapitalization.words, decoration: InputDecoration(labelText: context.ce('Name'))),
             const SizedBox(height: Kx.s12),
-            TextField(key: const Key('ce-teacher-subject'), controller: subject, textCapitalization: TextCapitalization.words, decoration: const InputDecoration(labelText: 'Subject (e.g. Physics)')),
+            TextField(key: Key('ce-teacher-subject'), controller: subject, textCapitalization: TextCapitalization.words, decoration: InputDecoration(labelText: context.ce('Subject (e.g. Physics)'))),
           ],
         ),
       ),
       actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
-        if (t != null) ceRemoveAction(key: const Key('ce-teacher-remove'), label: 'Remove teacher…', onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
+        if (t != null) ceRemoveAction(key: Key('ce-teacher-remove'), label: context.ce('Remove teacher…'), onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.ce('Cancel'))),
             const SizedBox(width: Kx.s8),
-            FilledButton(key: const Key('ce-teacher-save'), onPressed: () => Navigator.pop(ctx, 'save'), child: const Text('Save')),
+            FilledButton(key: Key('ce-teacher-save'), onPressed: () => Navigator.pop(ctx, 'save'), child: Text(context.ce('Save'))),
           ],
         ),
       ],
@@ -704,18 +724,18 @@ Future<bool> removeTeacherAsking(BuildContext context, ClassroomStore store, CeT
   final periods = store.slots.where((s) => s.teacherId == t.id).length;
   final ok = await ceConfirmRemove(
     context,
-    title: 'Remove ${t.name}?',
+    title: context.ce('Remove {name}?', {'name': t.name}),
     body: [
-      '${t.firstName}’s card goes from “Who’s teaching now?”.',
-      if (periods > 0) 'Their $periods ${periods == 1 ? 'period stays' : 'periods stay'} on the timetable with no teacher, until you choose one in Settings.',
-      'Boards they saved stay on this board.',
+      context.ce('{name}’s card goes from “Who’s teaching now?”.', {'name': t.firstName}),
+      if (periods == 1) context.ce('Their 1 period stays on the timetable with no teacher, until you choose one in Settings.') else if (periods > 1) context.ce('Their {n} periods stay on the timetable with no teacher, until you choose one in Settings.', {'n': periods}),
+      context.ce('Boards they saved stay on this board.'),
     ].join(' '),
-    confirm: 'Remove teacher',
+    confirm: context.ce('Remove teacher'),
   );
   if (!ok || !context.mounted) return false;
   final before = store.setup;
   await store.removeTeacher(t.id);
-  if (context.mounted) ceUndoSnack(context, '${t.name} removed.', () => unawaited(store.replace(before)));
+  if (context.mounted) ceUndoSnack(context, context.ce('{name} removed.', {'name': t.name}), () => unawaited(store.replace(before)));
   return true;
 }
 
@@ -725,9 +745,9 @@ Future<(CeClass, String)?> pickClass(BuildContext context, ClassroomStore store,
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('No classes on this board yet'),
-        content: const Text('Add the college’s classes in Settings (the gear at the top right).'),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
+        title: Text(context.ce('No classes on this board yet')),
+        content: Text(context.ce('Add the college’s classes in Settings (the gear at the top right).')),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.ce('OK')))],
       ),
     );
     return null;
@@ -739,7 +759,7 @@ Future<(CeClass, String)?> pickClass(BuildContext context, ClassroomStore store,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
         key: const Key('ce-pick-class'),
-        title: const Text('Which class are you teaching?'),
+        title: Text(context.ce('Which class are you teaching?')),
         content: SizedBox(
           width: 560,
           child: Column(
@@ -755,13 +775,13 @@ Future<(CeClass, String)?> pickClass(BuildContext context, ClassroomStore store,
                 ],
               ),
               const SizedBox(height: Kx.s16),
-              TextField(key: const Key('ce-pick-subject'), controller: subj, textCapitalization: TextCapitalization.words, decoration: const InputDecoration(labelText: 'Subject')),
+              TextField(key: Key('ce-pick-subject'), controller: subj, textCapitalization: TextCapitalization.words, decoration: InputDecoration(labelText: context.ce('Subject'))),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(key: const Key('ce-pick-start'), onPressed: () => Navigator.pop(ctx, true), child: const Text('Start')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.ce('Cancel'))),
+          FilledButton(key: Key('ce-pick-start'), onPressed: () => Navigator.pop(ctx, true), child: Text(context.ce('Start'))),
         ],
       ),
     ),

@@ -13,6 +13,7 @@ import 'filename_guess.dart';
 import 'paper_library.dart';
 import 'paper_model.dart';
 import 'paper_pack.dart';
+import '../l10n/ce_strings.dart';
 
 /// A file the teacher picked (from a USB stick or a folder).
 typedef PickedPaperFile = ({String name, Uint8List bytes});
@@ -21,14 +22,14 @@ typedef PickedPaperFile = ({String name, Uint8List bytes});
 Future<List<PickedPaperFile>> Function() pickPaperFiles = _systemPicker;
 
 Future<List<PickedPaperFile>> _systemPicker() async {
-  final files = await FilePicker.pickFiles(dialogTitle: 'Pick papers', type: FileType.custom, allowedExtensions: const ['pdf', 'zip']);
+  final files = await FilePicker.pickFiles(dialogTitle: ceTr('Pick papers'), type: FileType.custom, allowedExtensions: const ['pdf', 'zip']);
   return [for (final f in files) (name: f.name, bytes: await f.xFile.readAsBytes())];
 }
 
 /// Asks for the school PIN before papers are added or removed (the college's number pad, with
 /// its lockout and the first set-up's change from 1234). True when it was right.
-Future<bool> askPapersPin(BuildContext context, ClassroomStore store, {String why = 'Adding papers changes the library for everyone who uses this board.'}) =>
-    askSchoolPin(context, store, reason: why);
+Future<bool> askPapersPin(BuildContext context, ClassroomStore store, {String? why}) =>
+    askSchoolPin(context, store, reason: why ?? context.ce('Adding papers changes the library for everyone who uses this board.'));
 
 /// The "Add papers" page (after the PIN). [files]: already picked (else it starts by asking).
 Future<ImportReport?> openAddPapers(BuildContext context, PaperLibrary lib, {List<PickedPaperFile>? files}) =>
@@ -39,7 +40,7 @@ class ImportItem {
   ImportItem(this.file) : guess = guessFromFileName(file.name) {
     isPack = file.name.toLowerCase().endsWith('.zip');
     final bytes = file.bytes;
-    if (!isPack && !looksLikePdf(bytes)) problem = 'This is not a PDF, or it is damaged.';
+    if (!isPack && !looksLikePdf(bytes)) problem = ceTr('This is not a PDF, or it is damaged.');
     hash = PaperLibrary.hashOf(bytes);
     exam = guess.exam ?? Exam.puc2;
     year = guess.year ?? DateTime.now().year - 1;
@@ -120,7 +121,7 @@ Future<ImportReport> importItems(PaperLibrary lib, List<ImportItem> items, {void
       final target = i.keyFor;
       final id = target == null ? null : (target.startsWith('file:') ? added[int.parse(target.substring(5))]?.id : target);
       if (id == null) {
-        r.problems.add('${i.name}: pick the paper this is the answer key for');
+        r.problems.add('${i.name}: ${ceTr('pick the paper this is the answer key for')}');
       } else {
         await lib.addKey(i.file.bytes, id, fileName: i.name, report: r);
       }
@@ -159,7 +160,7 @@ class _AddPapersPageState extends State<AddPapersPage> {
       final files = await pickPaperFiles();
       if (mounted) _take(files);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not open the files: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.ce('Could not open the files: {error}', {'error': e}))));
     } finally {
       if (mounted) setState(() => picking = false);
     }
@@ -211,20 +212,20 @@ class _AddPapersPageState extends State<AddPapersPage> {
                 children: [
                   IconButton(
                     key: const Key('ce-papers-add-close'),
-                    tooltip: 'Back to the papers',
+                    tooltip: context.ce('Back to the papers'),
                     onPressed: adding ? null : () => Navigator.of(context).pop(report),
                     icon: const Icon(Icons.arrow_back_rounded, color: CeC.navy),
                   ),
                   const SizedBox(width: 4),
-                  Text('Add papers', style: ceHeading(34)),
+                  Text(context.ce('Add papers'), style: ceHeading(34)),
                   const SizedBox(width: 14),
-                  toolPill('Works offline', icon: Icons.wifi_off_rounded, bg: CeC.mint),
+                  toolPill(ceTr('Works offline'), icon: Icons.wifi_off_rounded, bg: CeC.mint),
                   const Spacer(),
                   if (items.isNotEmpty && !adding) ...[
-                    toolButton('Choose more files', icon: Icons.add, key: const Key('ce-papers-pick-more'), onPressed: picking ? null : _pick),
+                    toolButton(ceTr('Choose more files'), icon: Icons.add, key: const Key('ce-papers-pick-more'), onPressed: picking ? null : _pick),
                     const SizedBox(width: 12),
                     toolButton(
-                      _toAdd == 1 ? 'Add 1 file' : 'Add $_toAdd files',
+                      _toAdd == 1 ? ceTr('Add 1 file') : ceTr('Add {n} files', {'n': _toAdd}),
                       icon: Icons.download_done_rounded,
                       filled: true,
                       key: const Key('ce-papers-add-go'),
@@ -249,7 +250,7 @@ class _AddPapersPageState extends State<AddPapersPage> {
     return ListView(
       key: const Key('ce-papers-form'),
       children: [
-        Text('Check what each file is. The board guessed from the file names.', style: ceText(17)),
+        Text(context.ce('Check what each file is. The board guessed from the file names.'), style: ceText(17)),
         const SizedBox(height: 14),
         for (final (n, i) in items.indexed) Padding(padding: const EdgeInsets.only(bottom: 14), child: _itemCard(n, i)),
       ],
@@ -267,15 +268,15 @@ class _AddPapersPageState extends State<AddPapersPage> {
         children: [
           ceIconDot(Icons.usb_rounded, bg: CeC.blue, size: 72),
           const SizedBox(height: 18),
-          Text('Plug in the USB stick with the papers', textAlign: TextAlign.center, style: ceHeading(28)),
+          Text(context.ce('Plug in the USB stick with the papers'), textAlign: TextAlign.center, style: ceHeading(28)),
           const SizedBox(height: 12),
           Text(
-            'Then tap Choose files and open the USB stick (or a folder on the board). Pick one or more PDFs, or a Zynetix paper pack (a .zip file).',
+            ceTr('Then tap Choose files and open the USB stick (or a folder on the board). Pick one or more PDFs, or a Zynetix paper pack (a .zip file).'),
             textAlign: TextAlign.center,
             style: ceText(18, height: 1.45),
           ),
           const SizedBox(height: 26),
-          toolButton(picking ? 'Opening…' : 'Choose files', icon: Icons.folder_open_rounded, filled: true, key: const Key('ce-papers-pick'), onPressed: picking ? null : _pick),
+          toolButton(picking ? ceTr('Opening…') : ceTr('Choose files'), icon: Icons.folder_open_rounded, filled: true, key: const Key('ce-papers-pick'), onPressed: picking ? null : _pick),
         ],
       ),
     ),
@@ -292,7 +293,7 @@ class _AddPapersPageState extends State<AddPapersPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(done >= total ? 'Almost done…' : 'Adding ${done + 1} of $total', style: ceHeading(28)),
+            Text(done >= total ? ceTr('Almost done…') : ceTr('Adding {n} of {total}', {'n': done + 1, 'total': total}), style: ceHeading(28)),
             const SizedBox(height: 8),
             Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: ceText(16)),
             const SizedBox(height: 22),
@@ -301,7 +302,7 @@ class _AddPapersPageState extends State<AddPapersPage> {
               child: LinearProgressIndicator(value: total == 0 ? null : done / total, minHeight: 16, backgroundColor: CeC.lavender),
             ),
             const SizedBox(height: 14),
-            Text('Keep the USB stick in until this is done.', style: ceText(16)),
+            Text(context.ce('Keep the USB stick in until this is done.'), style: ceText(16)),
           ],
         ),
       ),
@@ -315,27 +316,27 @@ class _AddPapersPageState extends State<AddPapersPage> {
         icon: r.nothingNew ? Icons.info_outline : Icons.check_circle_outline,
         colour: r.nothingNew ? CeC.butter : CeC.mint,
         title: r.nothingNew
-            ? 'Nothing new was added'
+            ? ceTr('Nothing new was added')
             : [
-                if (r.added.isNotEmpty) r.added.length == 1 ? '1 paper added' : '${r.added.length} papers added',
-                if (r.keysAdded.isNotEmpty) r.keysAdded.length == 1 ? '1 answer key added' : '${r.keysAdded.length} answer keys added',
+                if (r.added.isNotEmpty) r.added.length == 1 ? ceTr('1 paper added') : ceTr('{n} papers added', {'n': r.added.length}),
+                if (r.keysAdded.isNotEmpty) r.keysAdded.length == 1 ? ceTr('1 answer key added') : ceTr('{n} answer keys added', {'n': r.keysAdded.length}),
               ].join(', '),
-        line: [...r.added, ...r.keysAdded.map((k) => 'Answer key: $k')].join('\n'),
+        line: [...r.added, ...r.keysAdded.map((k) => ceTr('Answer key: {name}', {'name': k}))].join('\n'),
       ),
       if (r.duplicates.isNotEmpty) ...[
         const SizedBox(height: 14),
-        infoCard(icon: Icons.copy_all_outlined, colour: CeC.blue, title: 'Already on this board, so skipped', line: r.duplicates.join('\n')),
+        infoCard(icon: Icons.copy_all_outlined, colour: CeC.blue, title: context.ce('Already on this board, so skipped'), line: r.duplicates.join('\n')),
       ],
       if (r.problems.isNotEmpty) ...[
         const SizedBox(height: 14),
-        infoCard(icon: Icons.error_outline, colour: CeC.pink, title: 'Not added', line: r.problems.join('\n')),
+        infoCard(icon: Icons.error_outline, colour: CeC.pink, title: context.ce('Not added'), line: r.problems.join('\n')),
       ],
       const SizedBox(height: 22),
       Row(
         children: [
-          toolButton('Add more papers', icon: Icons.add, onPressed: () => setState(() => report = null)),
+          toolButton(ceTr('Add more papers'), icon: Icons.add, onPressed: () => setState(() => report = null)),
           const SizedBox(width: 12),
-          toolButton('Done', icon: Icons.check, filled: true, key: const Key('ce-papers-add-done'), onPressed: () => Navigator.of(context).pop(r)),
+          toolButton(ceTr('Done'), icon: Icons.check, filled: true, key: const Key('ce-papers-add-done'), onPressed: () => Navigator.of(context).pop(r)),
         ],
       ),
     ],
@@ -355,9 +356,9 @@ class _AddPapersPageState extends State<AddPapersPage> {
               Text(
                 i.problem ??
                     (i.duplicateOf != null
-                        ? 'Already on this board (${i.duplicateOf!.longTitle}). It will be skipped.'
+                        ? ceTr('Already on this board ({title}). It will be skipped.', {'title': i.duplicateOf!.longTitle})
                         : i.isPack
-                        ? 'A paper pack: its papers, answer keys and questions come in as they are.'
+                        ? ceTr('A paper pack: its papers, answer keys and questions come in as they are.')
                         : '${_size(i.file.bytes.length)} PDF'),
                 style: ceText(15, c: i.problem != null ? CeC.red : CeC.muted),
               ),
@@ -365,7 +366,7 @@ class _AddPapersPageState extends State<AddPapersPage> {
           ),
         ),
         IconButton(
-          tooltip: 'Leave this file out',
+          tooltip: context.ce('Leave this file out'),
           onPressed: () => setState(() {
             items = [...items]..removeAt(n);
             for (final k in items) {
@@ -381,17 +382,17 @@ class _AddPapersPageState extends State<AddPapersPage> {
     if (!i.skipped && !i.isPack) {
       final papersInBatch = [
         for (final (j, p) in items.indexed)
-          if (!p.isPack && !p.isKey && !p.skipped) ('file:$j', '${p.label} (new: ${p.name})'),
+          if (!p.isPack && !p.isKey && !p.skipped) ('file:$j', '${p.label} (${ceTr('new: {name}', {'name': p.name})})'),
       ];
       final keyChoices = [...papersInBatch, for (final p in lib.papers) (p.id, p.longTitle)];
       children.addAll([
         const SizedBox(height: 16),
         Row(
           children: [
-            label('This file is'),
-            choiceChip('A question paper', on: !i.isKey, offIcon: null, key: Key('ce-papers-is-paper-$n'), onTap: () => setState(() => i.isKey = false)),
+            label(ceTr('This file is')),
+            choiceChip(ceTr('A question paper'), on: !i.isKey, offIcon: null, key: Key('ce-papers-is-paper-$n'), onTap: () => setState(() => i.isKey = false)),
             const SizedBox(width: 10),
-            choiceChip('An answer key', on: i.isKey, offIcon: null, key: Key('ce-papers-is-key-$n'), onTap: () => setState(() {
+            choiceChip(ceTr('An answer key'), on: i.isKey, offIcon: null, key: Key('ce-papers-is-key-$n'), onTap: () => setState(() {
               i.isKey = true;
               matchKeys(items, lib.papers);
             })),
@@ -401,15 +402,15 @@ class _AddPapersPageState extends State<AddPapersPage> {
         if (i.isKey)
           Row(
             children: [
-              label('The answer key for'),
+              label(ceTr('The answer key for')),
               Expanded(
                 child: keyChoices.isEmpty
-                    ? Text('Add the question paper first (in this batch or earlier).', style: ceText(16, c: CeC.red))
+                    ? Text(context.ce('Add the question paper first (in this batch or earlier).'), style: ceText(16, c: CeC.red))
                     : DropdownButtonFormField<String>(
                         key: Key('ce-papers-key-for-$n'),
                         initialValue: keyChoices.any((c) => c.$1 == i.keyFor) ? i.keyFor : null,
                         isExpanded: true,
-                        hint: const Text('Pick the paper'),
+                        hint: Text(context.ce('Pick the paper')),
                         items: [for (final (id, t) in keyChoices) DropdownMenuItem(value: id, child: Text(t, overflow: TextOverflow.ellipsis))],
                         onChanged: (v) => setState(() => i.keyFor = v),
                       ),
@@ -420,7 +421,7 @@ class _AddPapersPageState extends State<AddPapersPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              label('Exam'),
+              label(ceTr('Exam')),
               Expanded(
                 child: Wrap(
                   spacing: 8,
@@ -433,17 +434,17 @@ class _AddPapersPageState extends State<AddPapersPage> {
           const SizedBox(height: 14),
           Row(
             children: [
-              label('Year'),
+              label(ceTr('Year')),
               _yearStepper(i.year, key: Key('ce-papers-year-$n'), onChanged: (v) => setState(() => i.year = v)),
               const SizedBox(width: 32),
-              Text('Shift or session', style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
+              Text(context.ce('Shift or session'), style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
               const SizedBox(width: 12),
               SizedBox(
                 width: 260,
                 child: TextFormField(
                   key: Key('ce-papers-session-$n'),
                   initialValue: i.session,
-                  decoration: const InputDecoration(hintText: 'e.g. Shift 1 (if any)', isDense: true),
+                  decoration: InputDecoration(hintText: context.ce('e.g. Shift 1 (if any)'), isDense: true),
                   onChanged: (v) => i.session = v,
                 ),
               ),
@@ -453,13 +454,13 @@ class _AddPapersPageState extends State<AddPapersPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              label('Subject'),
+              label(ceTr('Subject')),
               Expanded(
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    choiceChip('All subjects', on: i.subjects.isEmpty, offIcon: null, tick: false, onTap: () => setState(() => i.subjects = {})),
+                    choiceChip(ceTr('All subjects'), on: i.subjects.isEmpty, offIcon: null, tick: false, onTap: () => setState(() => i.subjects = {})),
                     for (final s in paperSubjects.take(6))
                       choiceChip(s, on: i.subjects.contains(s), offIcon: null, key: Key('ce-papers-subject-$n-$s'), onTap: () => setState(() => i.subjects.contains(s) ? i.subjects.remove(s) : i.subjects.add(s))),
                   ],
@@ -470,19 +471,19 @@ class _AddPapersPageState extends State<AddPapersPage> {
           const SizedBox(height: 14),
           Row(
             children: [
-              label('Language'),
+              label(ceTr('Language')),
               for (final l in const ['English', 'Kannada', 'Hindi']) ...[
                 choiceChip(l, on: i.language == l, offIcon: null, tick: false, onTap: () => setState(() => i.language = l)),
                 const SizedBox(width: 8),
               ],
               const SizedBox(width: 24),
-              Text('Source', style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
+              Text(context.ce('Source'), style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
               const SizedBox(width: 12),
               Expanded(
                 child: TextFormField(
                   key: Key('ce-papers-source-$n'),
                   initialValue: i.source,
-                  decoration: const InputDecoration(hintText: 'Where it is from, e.g. the exam board\'s website', isDense: true),
+                  decoration: InputDecoration(hintText: context.ce('Where it is from, e.g. the exam board\'s website'), isDense: true),
                   onChanged: (v) => i.source = v,
                 ),
               ),

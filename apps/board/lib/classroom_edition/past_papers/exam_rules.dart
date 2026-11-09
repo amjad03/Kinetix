@@ -2,6 +2,8 @@
 /// ([examRules]) for the timer's defaults and the practice / class-quiz scores.
 library;
 
+import '../l10n/ce_strings.dart';
+
 /// An exam a paper belongs to. [id] is what the index and paper packs store.
 enum Exam {
   kcet('kcet', 'KCET'),
@@ -49,12 +51,12 @@ class ExamRule {
   final String note;
 
   /// "+4 / −1", "+1, no negative marks".
-  String get markingLine => wrong == 0 ? '+${_n(right)} for a right answer, no negative marks' : '+${_n(right)} right, −${_n(wrong)} wrong';
+  String get markingLine => wrong == 0 ? ceTr('+{n} for a right answer, no negative marks', {'n': _n(right)}) : ceTr('+{right} right, −{wrong} wrong', {'right': _n(right), 'wrong': _n(wrong)});
 
   /// "3 h 20 min", "80 min per subject".
   String get timeLine {
     final t = formatMinutes(minutes);
-    return perSubject ? '$t per subject' : t;
+    return perSubject ? ceTr('{time} per subject', {'time': t}) : t;
   }
 }
 
@@ -78,8 +80,8 @@ const examRules = <Exam, ExamRule>{
 String formatMinutes(int minutes) {
   final h = minutes ~/ 60, m = minutes % 60;
   // Under two hours teachers say the minutes ("80 min" for KCET).
-  if (minutes < 120 && m != 0) return '$minutes min';
-  return m == 0 ? '$h h' : '$h h $m min';
+  if (minutes < 120 && m != 0) return ceTr('{n} min', {'n': minutes});
+  return m == 0 ? ceTr('{h} h', {'h': h}) : ceTr('{h} h {m} min', {'h': h, 'm': m});
 }
 
 String _n(double v) => v == v.roundToDouble() ? '${v.toInt()}' : '$v';

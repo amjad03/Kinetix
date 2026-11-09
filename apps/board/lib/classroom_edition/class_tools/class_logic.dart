@@ -1,3 +1,4 @@
+import '../l10n/ce_strings.dart';
 import 'dart:math';
 
 import 'bank.dart';
@@ -132,7 +133,7 @@ String rollLabel(int r) => r.toString().padLeft(2, '0');
 String rollList(List<int> rolls) {
   final s = [for (final r in rolls) rollLabel(r)];
   if (s.length <= 1) return s.join();
-  return '${s.sublist(0, s.length - 1).join(', ')} and ${s.last}';
+  return ceTr('{a} and {b}', {'a': s.sublist(0, s.length - 1).join(', '), 'b': s.last});
 }
 
 /// Topics × roll numbers from the class quizzes (a right answer counts 1, a wrong one 0) and
@@ -182,7 +183,7 @@ MasteryMap buildMastery({required ClassRecords records, required List<int> rolls
         topic: k.split('|').last,
         title: () {
           final named = titleOf?.call(k.split('|').first, k.split('|').last) ?? '';
-          return named.isNotEmpty ? named : (titles[k]?.isNotEmpty ?? false ? titles[k]! : 'Other questions');
+          return named.isNotEmpty ? named : (titles[k]?.isNotEmpty ?? false ? titles[k]! : ceTr('Other questions'));
         }(),
         scores: {
           for (final r in rolls)
@@ -204,8 +205,8 @@ List<MasteryInsight> _insights(List<MasteryRow> rows, DateTime now) {
     out.add(
       MasteryInsight(
         'revisit',
-        'Revisit: ${lower(weak.title)}',
-        '$notYet of ${weak.scores.length} roll numbers are not there yet. Teach it again with a new example, then a short class quiz.',
+        ceTr('Revisit: {topic}', {'topic': lower(weak.title)}),
+        ceTr('{n} of {total} roll numbers are not there yet. Teach it again with a new example, then a short class quiz.', {'n': notYet, 'total': weak.scores.length}),
         rowKeys: [weak.key],
       ),
     );
@@ -213,8 +214,8 @@ List<MasteryInsight> _insights(List<MasteryRow> rows, DateTime now) {
   if (strong != weak || out.isEmpty) {
     out.add(
       strong.classScore! >= 0.6
-          ? MasteryInsight('strongest', 'Strongest: ${lower(strong.title)}', 'Secure for most roll numbers. A short formula drill keeps it fresh.', rowKeys: [strong.key])
-          : MasteryInsight('strongest', 'Closest: ${lower(strong.title)}', 'The class is nearest to secure here. One more quiz should get it there.', rowKeys: [strong.key]),
+          ? MasteryInsight('strongest', ceTr('Strongest: {topic}', {'topic': lower(strong.title)}), ceTr('Secure for most roll numbers. A short formula drill keeps it fresh.'), rowKeys: [strong.key])
+          : MasteryInsight('strongest', ceTr('Closest: {topic}', {'topic': lower(strong.title)}), ceTr('The class is nearest to secure here. One more quiz should get it there.'), rowKeys: [strong.key]),
     );
   }
   final two = sorted.take(2).toList();
@@ -228,9 +229,9 @@ List<MasteryInsight> _insights(List<MasteryRow> rows, DateTime now) {
     final rolls = (group.keys.toList()..sort((a, b) => group[a]!.compareTo(group[b]!))).take(8).toList()..sort();
     var day = now.add(const Duration(days: 1));
     if (day.weekday == DateTime.sunday) day = day.add(const Duration(days: 1));
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    final topics = two.map((r) => lower(r.title)).toSet().join(' and ');
-    out.add(MasteryInsight('group', 'Small group for ${days[day.weekday - 1]}', 'Roll ${rollList(rolls)}: $topics.', rolls: rolls, rowKeys: [for (final r in two) r.key]));
+    final t = two.map((r) => lower(r.title)).toSet().toList();
+    final topics = t.length == 1 ? t.single : ceTr('{a} and {b}', {'a': t.first, 'b': t.last});
+    out.add(MasteryInsight('group', ceTr('Small group for {day}', {'day': ceDayIn(CeLang.code, day.weekday)}), ceTr('Roll {rolls}: {topics}.', {'rolls': rollList(rolls), 'topics': topics}), rolls: rolls, rowKeys: [for (final r in two) r.key]));
   }
   return out;
 }

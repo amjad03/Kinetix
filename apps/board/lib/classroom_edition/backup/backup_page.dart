@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 
+import '../../l10n/l10n.dart' show BoardL10n;
 import '../../core/crash/crash_log.dart';
 import '../class_tools/class_records.dart';
 import '../local/classroom_store.dart';
@@ -14,9 +15,10 @@ import '../ui/ce_style.dart';
 import 'backup.dart';
 import 'marks_export.dart';
 import 'public_documents.dart';
+import '../l10n/ce_strings.dart';
 
-final _when = DateFormat('EEE d MMM yyyy, h:mm a');
-final _date = DateFormat('d MMM yyyy');
+String _whenIn(BuildContext context, DateTime t) => DateFormat('EEE d MMM yyyy, h:mm a', context.dateLocale).format(t);
+String _dateIn(BuildContext context, DateTime t) => DateFormat('d MMM yyyy', context.dateLocale).format(t);
 
 /// How the Backup & restore tab reaches files outside the app (tests replace them): the
 /// system's Save dialog (a USB drive, Google Drive, another folder), its Open dialog for a
@@ -29,7 +31,7 @@ abstract final class CeFiles {
 
   /// A backup file the teacher picks (from a USB drive or Documents/Zynetix); null when cancelled.
   static Future<Uint8List?> Function() pickBackup = () async {
-    final files = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: const ['zip'], dialogTitle: 'Choose a Zynetix Classroom backup');
+    final files = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: const ['zip'], dialogTitle: ceTr('Choose a Zynetix Classroom backup'));
     return files.isEmpty ? null : files.single.readAsBytes();
   };
 
@@ -49,18 +51,18 @@ Future<void> restoreBackupFlow(BuildContext context, ClassroomStore store, {Uint
     if (context.mounted) _snack(context, e.message);
     return;
   } catch (e) {
-    if (context.mounted) _snack(context, 'That file could not be read: $e');
+    if (context.mounted) _snack(context, context.ce('That file could not be read: {error}', {'error': e}));
     return;
   }
   if (!context.mounted) return;
   final ok = await showDialog<bool>(context: context, builder: (ctx) => _RestorePreview(backup: b, current: store));
   if (ok != true || !context.mounted) return;
-  if (!await askSchoolPin(context, store, reason: 'Restoring a backup replaces the college’s set-up, marks and boards on this board. It needs the school PIN.', okLabel: 'Restore')) return;
+  if (!await askSchoolPin(context, store, reason: context.ce('Restoring a backup replaces the college’s set-up, marks and boards on this board. It needs the school PIN.'), okLabel: context.ce('Restore'))) return;
   try {
     await s.restore(b);
-    if (context.mounted) _snack(context, 'Restored the backup from ${_when.format(b.summary.createdAt)}. What was on the board before is kept as a backup too.');
+    if (context.mounted) _snack(context, context.ce('Restored the backup from {when}. What was on the board before is kept as a backup too.', {'when': _whenIn(context, b.summary.createdAt)}));
   } catch (e) {
-    if (context.mounted) _snack(context, 'The backup could not be restored: $e');
+    if (context.mounted) _snack(context, context.ce('The backup could not be restored: {error}', {'error': e}));
   }
 }
 
@@ -129,7 +131,7 @@ class _BackupTabState extends State<BackupTab> {
       setState(() => _last = r);
       await _refresh();
     } catch (e) {
-      if (mounted) _snack(context, 'The backup could not be made: $e');
+      if (mounted) _snack(context, context.ce('The backup could not be made: {error}', {'error': e}));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -139,9 +141,9 @@ class _BackupTabState extends State<BackupTab> {
     final r = _last;
     if (r == null) return;
     try {
-      if (await CeFiles.saveAs(r.name, r.bytes, 'application/zip') && mounted) _snack(context, 'A copy of the backup is saved where you chose.');
+      if (await CeFiles.saveAs(r.name, r.bytes, 'application/zip') && mounted) _snack(context, ceTr('A copy of the backup is saved where you chose.'));
     } catch (e) {
-      if (mounted) _snack(context, 'The copy could not be saved: $e');
+      if (mounted) _snack(context, context.ce('The copy could not be saved: {error}', {'error': e}));
     }
   }
 
@@ -165,8 +167,8 @@ class _BackupTabState extends State<BackupTab> {
     if (printable) unawaited(CeFiles.print(bytes, name).catchError((Object _) {}));
     _snack(
       context,
-      where.isEmpty ? 'Choose where to save $name.' : 'Saved to $where.',
-      action: SnackBarAction(label: 'Copy to USB…', onPressed: () => unawaited(CeFiles.saveAs(name, bytes, mime))),
+      where.isEmpty ? ceTr('Choose where to save {name}.', {'name': name}) : ceTr('Saved to {where}.', {'where': where}),
+      action: SnackBarAction(label: context.ce('Copy to USB…'), onPressed: () => unawaited(CeFiles.saveAs(name, bytes, mime))),
     );
     if (where.isEmpty) await CeFiles.saveAs(name, bytes, mime);
   }
@@ -183,9 +185,8 @@ class _BackupTabState extends State<BackupTab> {
         _section(
           icon: Icons.backup_outlined,
           colour: CeC.mint,
-          title: 'Back up now',
-          body: 'Everything the college keeps on this board: teachers, classes and timetable, the school PIN, marks and mock tests, lesson progress, saved boards and the crash log. '
-              'Kept on the board and in Documents/Zynetix, which stays even if the app is removed. Copy it to a USB drive to keep it off the board too.',
+          title: context.ce('Back up now'),
+          body: context.ce('Everything the college keeps on this board: teachers, classes and timetable, the school PIN, marks and mock tests, lesson progress, saved boards and the crash log. Kept on the board and in Documents/Zynetix, which stays even if the app is removed. Copy it to a USB drive to keep it off the board too.'),
           children: [
             Wrap(
               spacing: 16,
@@ -197,10 +198,10 @@ class _BackupTabState extends State<BackupTab> {
                   style: ceBigButton(),
                   onPressed: _busy ? null : () => unawaited(_backUpNow()),
                   icon: _busy ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white)) : const Icon(Icons.backup_outlined),
-                  label: const Text('Back up now'),
+                  label: Text(context.ce('Back up now')),
                 ),
                 if (_last != null)
-                  OutlinedButton.icon(key: const Key('ce-backup-usb'), style: ceSoftButton(), onPressed: () => unawaited(_copyToUsb()), icon: const Icon(Icons.usb), label: const Text('Copy to a USB drive…')),
+                  OutlinedButton.icon(key: Key('ce-backup-usb'), style: ceSoftButton(), onPressed: () => unawaited(_copyToUsb()), icon: Icon(Icons.usb), label: Text(context.ce('Copy to a USB drive…'))),
               ],
             ),
             if (_last case final r?) ...[
@@ -212,10 +213,10 @@ class _BackupTabState extends State<BackupTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Backed up: ${r.name}', style: ceText(16, w: FontWeight.w600, c: CeC.navy)),
+                    Text(context.ce('Backed up: {name}', {'name': r.name}), style: ceText(16, w: FontWeight.w600, c: CeC.navy)),
                     const SizedBox(height: 4),
                     Text(
-                      r.publicPath != null ? 'Kept on this board and in ${r.publicPath}.' : 'Kept on this board. It could not go to Documents/Zynetix (${r.publicError}); copy it to a USB drive.',
+                      r.publicPath != null ? context.ce('Kept on this board and in {path}.', {'path': r.publicPath}) : context.ce('Kept on this board. It could not go to Documents/Zynetix ({error}); copy it to a USB drive.', {'error': r.publicError}),
                       style: ceText(15),
                     ),
                   ],
@@ -227,24 +228,24 @@ class _BackupTabState extends State<BackupTab> {
         _section(
           icon: Icons.event_repeat_outlined,
           colour: CeC.blue,
-          title: 'Daily backup',
-          body: 'Each day the board is used it backs itself up, and keeps the last ${BackupService.keepDaily} days on the board and in Documents/Zynetix/Daily backups.',
+          title: context.ce('Daily backup'),
+          body: context.ce('Each day the board is used it backs itself up, and keeps the last {n} days on the board and in Documents/Zynetix/Daily backups.', {'n': BackupService.keepDaily}),
           children: [
-            Text(daily.isEmpty ? 'No daily backup yet: the first one is made when a class starts today.' : 'Last daily backup: ${_date.format(daily.first.at)} (${daily.length} kept).', key: const Key('ce-backup-daily'), style: ceText(16, c: CeC.navy)),
+            Text(daily.isEmpty ? context.ce('No daily backup yet: the first one is made when a class starts today.') : context.ce('Last daily backup: {date} ({n} kept).', {'date': _dateIn(context, daily.first.at), 'n': daily.length}), key: const Key('ce-backup-daily'), style: ceText(16, c: CeC.navy)),
           ],
         ),
         _section(
           icon: Icons.settings_backup_restore,
           colour: CeC.peach,
-          title: 'Restore',
-          body: 'Puts a backup back on this board in place of what is here now. You see what is in it first, and it needs the school PIN. What is on the board now is backed up first.',
+          title: context.ce('Restore'),
+          body: context.ce('Puts a backup back on this board in place of what is here now. You see what is in it first, and it needs the school PIN. What is on the board now is backed up first.'),
           children: [
             OutlinedButton.icon(
               key: const Key('ce-restore-file'),
               style: ceSoftButton(),
               onPressed: () => unawaited(restoreBackupFlow(context, store, service: _service).then((_) => _refresh())),
               icon: const Icon(Icons.folder_open_outlined),
-              label: const Text('Choose a backup file (USB drive, Documents)…'),
+              label: Text(context.ce('Choose a backup file (USB drive, Documents)…')),
             ),
             const SizedBox(height: 12),
             for (final b in _onBoard.take(8))
@@ -259,21 +260,21 @@ class _BackupTabState extends State<BackupTab> {
                     'before-restore' => Icons.history,
                     _ => Icons.backup_outlined,
                   }, color: CeC.navy),
-                  title: Text(b.kind == 'daily' ? _date.format(b.at) : _when.format(b.at), style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
+                  title: Text(b.kind == 'daily' ? _dateIn(context, b.at) : _whenIn(context, b.at), style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
                   subtitle: Text(switch (b.kind) {
-                    'daily' => 'Daily backup',
-                    'before-restore' => 'Made before a restore',
-                    _ => 'Backed up by hand',
+                    'daily' => context.ce('Daily backup'),
+                    'before-restore' => context.ce('Made before a restore'),
+                    _ => context.ce('Backed up by hand'),
                   }, style: ceText(14)),
-                  trailing: TextButton(key: Key('ce-restore-${b.name}'), onPressed: () => unawaited(_restoreFrom(b)), child: const Text('Restore…')),
+                  trailing: TextButton(key: Key('ce-restore-${b.name}'), onPressed: () => unawaited(_restoreFrom(b)), child: Text(context.ce('Restore…'))),
                 ),
               ),
           ],
         ),
-        _section(icon: Icons.table_chart_outlined, colour: CeC.lavender, title: 'Export marks', body: 'Marks by roll number for a spreadsheet (CSV) or to print (PDF), saved to Documents/Zynetix/Marks.', children: [_marks()]),
+        _section(icon: Icons.table_chart_outlined, colour: CeC.lavender, title: context.ce('Export marks'), body: context.ce('Marks by roll number for a spreadsheet (CSV) or to print (PDF), saved to Documents/Zynetix/Marks.'), children: [_marks()]),
         Padding(
           padding: const EdgeInsets.only(top: 4, left: 8),
-          child: Text('Crash log: ${_crashFiles == 0 ? 'nothing went wrong on this board' : '$_crashFiles file${_crashFiles == 1 ? '' : 's'}, carried in every backup'}.', key: const Key('ce-crash-log-line'), style: ceText(14)),
+          child: Text(_crashFiles == 0 ? context.ce('Crash log: nothing went wrong on this board.') : context.ce('Crash log: {n} files, carried in every backup.', {'n': _crashFiles}), key: const Key('ce-crash-log-line'), style: ceText(14)),
         ),
       ],
     );
@@ -306,9 +307,9 @@ class _BackupTabState extends State<BackupTab> {
         ),
         const SizedBox(height: 12),
         if (cls == null)
-          Text('Add a class first.', style: ceText(16))
+          Text(context.ce('Add a class first.'), style: ceText(16))
         else if (_records != null && tests.isEmpty)
-          Text('No marks for ${cls.name} yet. Mock tests and class quizzes (Class tools) are kept here.', key: const Key('ce-marks-empty'), style: ceText(16))
+          Text(context.ce('No marks for {name} yet. Mock tests and class quizzes (Class tools) are kept here.', {'name': cls.name}), key: const Key('ce-marks-empty'), style: ceText(16))
         else ...[
           for (final t in tests.reversed)
             Card(
@@ -317,15 +318,15 @@ class _BackupTabState extends State<BackupTab> {
               elevation: 0,
               margin: const EdgeInsets.only(bottom: 8),
               child: ListTile(
-                title: Text('${t.title} · ${_date.format(t.at)}', style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
-                subtitle: Text('Out of ${t.outOf % 1 == 0 ? t.outOf.toInt() : t.outOf} · ${t.marks.length} of ${cls.rollCount} marked', style: ceText(14)),
+                title: Text('${t.title} · ${_dateIn(context, t.at)}', style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
+                subtitle: Text(context.ce('Out of {max} · {n} of {total} marked', {'max': t.outOf % 1 == 0 ? t.outOf.toInt() : t.outOf, 'n': t.marks.length, 'total': cls.rollCount}), style: ceText(14)),
                 trailing: Wrap(
                   spacing: 8,
                   children: [
                     OutlinedButton(
                       key: Key('ce-marks-csv-${t.id}'),
                       onPressed: () => unawaited(_export(marksFileName(cls, t, 'csv'), csvBytes(marksCsv(college: store.college, cls: cls, subject: '', test: t)), 'text/csv')),
-                      child: const Text('CSV'),
+                      child: Text(context.ce('CSV')),
                     ),
                     OutlinedButton(
                       key: Key('ce-marks-pdf-${t.id}'),
@@ -333,7 +334,7 @@ class _BackupTabState extends State<BackupTab> {
                         final pdf = await marksPdf(college: store.college, cls: cls, subject: '', test: t);
                         await _export(marksFileName(cls, t, 'pdf'), pdf, 'application/pdf', printable: true);
                       },
-                      child: const Text('PDF'),
+                      child: Text(context.ce('PDF')),
                     ),
                   ],
                 ),
@@ -344,7 +345,7 @@ class _BackupTabState extends State<BackupTab> {
               key: const Key('ce-marks-all'),
               onPressed: () => unawaited(_export(marksFileName(cls, null, 'csv'), csvBytes(allMarksCsv(college: store.college, cls: cls, subject: '', tests: tests)), 'text/csv')),
               icon: const Icon(Icons.grid_on_outlined),
-              label: Text('All ${tests.length} tests in one sheet (CSV)'),
+              label: Text(context.ce('All {n} tests in one sheet (CSV)', {'n': tests.length})),
             ),
         ],
       ],
@@ -387,27 +388,26 @@ class _RestorePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = backup.summary;
-    String n(int v, String one, [String? many]) => '$v ${v == 1 ? one : (many ?? '${one}s')}';
     final rows = <(IconData, String)>[
-      (Icons.account_balance_outlined, s.college.isEmpty ? 'No college name' : s.college),
-      (Icons.people_alt_outlined, n(s.teachers, 'teacher')),
-      (Icons.groups_outlined, n(s.classes, 'class', 'classes')),
-      (Icons.event_note_outlined, '${n(s.periods, 'period')} on the timetable'),
-      (Icons.fact_check_outlined, s.mockTests + s.quizMarks == 0 ? 'No marks' : 'Marks for ${n(s.marksClasses, 'class', 'classes')}: ${n(s.mockTests, 'mock test')}, ${n(s.quizMarks, 'quiz question')}'),
-      (Icons.auto_stories_outlined, 'Lesson progress for ${n(s.lessonClasses, 'class', 'classes')}'),
-      (Icons.draw_outlined, n(s.boards, 'saved board')),
+      (Icons.account_balance_outlined, s.college.isEmpty ? context.ce('No college name') : s.college),
+      (Icons.people_alt_outlined, context.ce('Teachers: {n}', {'n': s.teachers})),
+      (Icons.groups_outlined, context.ce('Classes: {n}', {'n': s.classes})),
+      (Icons.event_note_outlined, context.ce('Periods on the timetable: {n}', {'n': s.periods})),
+      (Icons.fact_check_outlined, s.mockTests + s.quizMarks == 0 ? context.ce('No marks') : context.ce('Marks for {classes} classes: {mocks} mock tests, {quiz} quiz questions', {'classes': s.marksClasses, 'mocks': s.mockTests, 'quiz': s.quizMarks})),
+      (Icons.auto_stories_outlined, context.ce('Lesson progress for {n} classes', {'n': s.lessonClasses})),
+      (Icons.draw_outlined, context.ce('Saved boards: {n}', {'n': s.boards})),
     ];
     return AlertDialog(
       key: const Key('ce-restore-preview'),
       icon: const Icon(Icons.settings_backup_restore, size: 40),
-      title: Text('Restore the backup from ${_when.format(s.createdAt)}?'),
+      title: Text(context.ce('Restore the backup from {when}?', {'when': _whenIn(context, s.createdAt)})),
       content: SizedBox(
         width: 640,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('This backup has:', style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
+            Text(context.ce('This backup has:'), style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
             const SizedBox(height: 10),
             for (final (i, t) in rows)
               Padding(
@@ -419,8 +419,11 @@ class _RestorePreview extends StatelessWidget {
               padding: const EdgeInsets.all(14),
               decoration: ceCard(color: CeC.butter, shadow: false, r: 16),
               child: Text(
-                'It replaces what is on this board now (${n(current.teachers.length, 'teacher')}, ${n(current.classes.length, 'class', 'classes')}, ${n(current.slots.length, 'period')}). '
-                'What is here now is backed up first.${s.hasPin ? ' The school PIN becomes the one in the backup.' : ''}',
+                [
+                  context.ce('It replaces what is on this board now ({teachers} teachers, {classes} classes, {periods} periods).', {'teachers': current.teachers.length, 'classes': current.classes.length, 'periods': current.slots.length}),
+                  context.ce('What is here now is backed up first.'),
+                  if (s.hasPin) context.ce('The school PIN becomes the one in the backup.'),
+                ].join(' '),
                 style: ceText(16, c: CeC.navy),
               ),
             ),
@@ -428,8 +431,8 @@ class _RestorePreview extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-        FilledButton(key: const Key('ce-restore-ok'), onPressed: () => Navigator.pop(context, true), child: const Text('Restore…')),
+        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.ce('Cancel'))),
+        FilledButton(key: Key('ce-restore-ok'), onPressed: () => Navigator.pop(context, true), child: Text(context.ce('Restore…'))),
       ],
     );
   }

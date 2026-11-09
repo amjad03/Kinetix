@@ -361,7 +361,7 @@ class _ClassBarState extends State<ClassBar> {
                   // A local class (Classroom edition) is roll numbers only, with no attendance
                   // to send to a server: the chip just says how many.
                   if (board.localClass)
-                    Chip(key: const Key('attendance-chip'), avatar: const Icon(Icons.groups_outlined, size: 18), label: Text(CeS.of(context).students(board.roster.length)))
+                    Chip(key: const Key('attendance-chip'), avatar: const Icon(Icons.groups_outlined, size: 18), label: Text(ceStudents(context, board.roster.length)))
                   else
                     ActionChip(
                       key: const Key('attendance-chip'),

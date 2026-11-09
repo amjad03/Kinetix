@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../local/classroom_store.dart';
 import '../ui/ce_style.dart';
+import '../l10n/ce_strings.dart';
 
 /// Over the start screen when the board's saved college set-up could not be read
 /// ([ClassroomStore.problem]): what the board is showing now, that the damaged copy is kept,
@@ -30,12 +31,12 @@ class CeSetupProblemBanner extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('This board’s college settings could not be read', style: ceHeading(26)),
+              Text(context.ce('This board’s college settings could not be read'), style: ceHeading(26)),
               const SizedBox(height: 8),
               Text(
                 problem.usedPrevious
-                    ? 'The board is using the copy saved just before the last change, so check the newest teachers, classes and periods. The damaged copy is kept safely on the board.'
-                    : 'The board is showing the standard classes for now. The damaged copy is kept safely on the board: restore a backup to get your teachers, classes and timetable back.',
+                    ? context.ce('The board is using the copy saved just before the last change, so check the newest teachers, classes and periods. The damaged copy is kept safely on the board.')
+                    : context.ce('The board is showing the standard classes for now. The damaged copy is kept safely on the board: restore a backup to get your teachers, classes and timetable back.'),
                 style: ceText(17, c: CeC.navy),
               ),
             ],
@@ -54,11 +55,11 @@ class CeSetupProblemBanner extends StatelessWidget {
                   style: ceBigButton(),
                   onPressed: onRestore,
                   icon: const Icon(Icons.settings_backup_restore),
-                  label: const Text('Restore a backup'),
+                  label: Text(context.ce('Restore a backup')),
                 ),
                 const SizedBox(height: 12),
               ],
-              OutlinedButton(key: const Key('ce-setup-keep'), style: ceSoftButton(), onPressed: onKeep, child: Text(problem.usedPrevious ? 'Keep this copy' : 'Start with these classes')),
+              OutlinedButton(key: const Key('ce-setup-keep'), style: ceSoftButton(), onPressed: onKeep, child: Text(problem.usedPrevious ? context.ce('Keep this copy') : context.ce('Start with these classes'))),
             ],
           ),
         ),

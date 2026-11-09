@@ -6,6 +6,7 @@ import '../ui/ce_style.dart';
 import 'bank.dart';
 import 'class_logic.dart';
 import 'tool_ui.dart';
+import '../l10n/ce_strings.dart';
 
 /// A class quiz with its questions chosen already (a past paper's, `past_papers/`): no setup,
 /// its own title, the paper's pictures on the board and the exam's marking per roll number.
@@ -175,7 +176,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
       context: context,
       at: const Offset(980, 260),
     );
-    env.host.showMessage('Result on the board');
+    env.host.showMessage(ceTr('Result on the board'));
   }
 
   @override
@@ -185,8 +186,8 @@ class _ClassQuizViewState extends State<ClassQuizView> {
         return Column(
           children: [
             ToolHeader(title: preset!.title, onBack: _back),
-            const Expanded(
-              child: ToolEmpty(icon: Icons.quiz_outlined, title: 'No questions to ask', line: 'This paper has no multiple-choice questions for a class quiz.'),
+            Expanded(
+              child: ToolEmpty(icon: Icons.quiz_outlined, title: context.ce('No questions to ask'), line: context.ce('This paper has no multiple-choice questions for a class quiz.')),
             ),
           ],
         );
@@ -196,7 +197,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
     if (env.bank.chapters.isEmpty || env.bank.chapters.every((c) => c.questions.isEmpty)) {
       return Column(
         children: [
-          ToolHeader(title: 'Class quiz', onBack: env.back),
+          ToolHeader(title: context.ce('Class quiz'), onBack: env.back),
           Expanded(child: noBank(env)),
         ],
       );
@@ -213,15 +214,15 @@ class _ClassQuizViewState extends State<ClassQuizView> {
       padding: EdgeInsets.zero,
       children: [
         ToolHeader(
-          title: 'Class quiz',
+          title: context.ce('Class quiz'),
           onBack: env.back,
-          pill: toolPill('No phones needed', icon: Icons.phonelink_erase_outlined, bg: CeC.mint),
+          pill: toolPill(ceTr('No phones needed'), icon: Icons.phonelink_erase_outlined, bg: CeC.mint),
         ),
         const SizedBox(height: 8),
-        Text('The question goes on the board. The class answers aloud or on paper; you tap roll numbers right or wrong.', style: ceText(17, height: 1.4)),
+        Text(context.ce('The question goes on the board. The class answers aloud or on paper; you tap roll numbers right or wrong.'), style: ceText(17, height: 1.4)),
         const SizedBox(height: 22),
         Text(
-          'Chapter',
+          ceTr('Chapter'),
           style: ceText(17, w: FontWeight.w600, c: CeC.navy),
         ),
         const SizedBox(height: 10),
@@ -237,7 +238,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
         if (c != null && c.topics.length > 1) ...[
           const SizedBox(height: 22),
           Text(
-            'Topics',
+            ceTr('Topics'),
             style: ceText(17, w: FontWeight.w600, c: CeC.navy),
           ),
           const SizedBox(height: 10),
@@ -245,7 +246,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
             spacing: 10,
             runSpacing: 10,
             children: [
-              choiceChip('All topics', on: topics.isEmpty, offIcon: null, onTap: () => setState(() => topics = {})),
+              choiceChip(ceTr('All topics'), on: topics.isEmpty, offIcon: null, onTap: () => setState(() => topics = {})),
               for (final (id, title) in c.topics)
                 if (c.questions.any((q) => q.topic == id))
                   choiceChip(title, on: topics.contains(id), offIcon: null, key: Key('ce-quiz-topic-$id'), onTap: () => setState(() => topics.contains(id) ? topics.remove(id) : topics.add(id))),
@@ -256,7 +257,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
         Row(
           children: [
             Text(
-              'Questions',
+              ceTr('Questions'),
               style: ceText(17, w: FontWeight.w600, c: CeC.navy),
             ),
             const SizedBox(width: 16),
@@ -269,17 +270,17 @@ class _ClassQuizViewState extends State<ClassQuizView> {
           value: onBoard,
           onChanged: (v) => setState(() => onBoard = v),
           title: Text(
-            'Put each question on a new board page',
+            ceTr('Put each question on a new board page'),
             style: ceText(17, w: FontWeight.w600, c: CeC.navy),
           ),
-          subtitle: Text('The answer stays on this panel, for you.', style: ceText(14.5)),
+          subtitle: Text(context.ce('The answer stays on this panel, for you.'), style: ceText(14.5)),
         ),
         const SizedBox(height: 18),
         Row(
           children: [
-            toolButton('Start the quiz', icon: Icons.play_arrow_rounded, filled: true, onPressed: c == null ? null : _start, key: const Key('ce-quiz-start')),
+            toolButton(ceTr('Start the quiz'), icon: Icons.play_arrow_rounded, filled: true, onPressed: c == null ? null : _start, key: const Key('ce-quiz-start')),
             const SizedBox(width: 16),
-            Flexible(child: Text('${bankLine(env.bank)} · ${c?.questions.length ?? 0} questions in this chapter', style: ceText(15))),
+            Flexible(child: Text('${bankLine(env.bank)} · ${ceTr('{n} questions in this chapter', {'n': c?.questions.length ?? 0})}', style: ceText(15))),
           ],
         ),
       ],
@@ -293,10 +294,10 @@ class _ClassQuizViewState extends State<ClassQuizView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ToolHeader(
-            title: preset?.title ?? 'Class quiz',
+            title: preset?.title ?? ceTr('Class quiz'),
             onBack: _back,
-            pill: toolPill('Question ${index + 1} of ${questions.length}', key: const Key('ce-quiz-progress')),
-            trailing: [toolPill('No phones needed', icon: Icons.phonelink_erase_outlined, bg: CeC.mint)],
+            pill: toolPill(ceTr('Question {n} of {total}', {'n': index + 1, 'total': questions.length}), key: const Key('ce-quiz-progress')),
+            trailing: [toolPill(ceTr('No phones needed'), icon: Icons.phonelink_erase_outlined, bg: CeC.mint)],
           ),
           const SizedBox(height: 14),
           _questionCard(),
@@ -305,10 +306,10 @@ class _ClassQuizViewState extends State<ClassQuizView> {
             TextSpan(
               children: [
                 TextSpan(
-                  text: 'Tap a roll number  ',
+                  text: context.ce('Tap a roll number  '),
                   style: ceText(17, w: FontWeight.w700, c: CeC.navy),
                 ),
-                TextSpan(text: 'once for right, twice for wrong${env.absent.isEmpty ? '' : ' · absent ones are greyed out'}', style: ceText(16)),
+                TextSpan(text: ceTr('once for right, twice for wrong') + (env.absent.isEmpty ? '' : ' · ${ceTr('absent ones are greyed out')}'), style: ceText(16)),
               ],
             ),
           ),
@@ -321,7 +322,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
               const SizedBox(width: 12),
               Expanded(child: _stat('${marks.wrong.length}', 'wrong', CeC.pink, const Color(0xFFBE185D), const Key('ce-quiz-wrong'))),
               const SizedBox(width: 12),
-              Expanded(child: _stat('${marks.notMarked}', 'not marked', Colors.white, CeC.navy, const Key('ce-quiz-unmarked'))),
+              Expanded(child: _stat('${marks.notMarked}', ceTr('not marked'), Colors.white, CeC.navy, const Key('ce-quiz-unmarked'))),
             ],
           ),
           const SizedBox(height: 14),
@@ -333,11 +334,11 @@ class _ClassQuizViewState extends State<ClassQuizView> {
                 spacing: 12,
                 runSpacing: 10,
                 children: [
-                  toolButton('Mark all right', onPressed: () => setState(marks.markRestRight), key: const Key('ce-quiz-all-right')),
-                  toolButton(index == questions.length - 1 ? 'Finish' : 'Next question', onPressed: _next, key: const Key('ce-quiz-next')),
+                  toolButton(ceTr('Mark all right'), onPressed: () => setState(marks.markRestRight), key: const Key('ce-quiz-all-right')),
+                  toolButton(index == questions.length - 1 ? ceTr('Finish') : ceTr('Next question'), onPressed: _next, key: const Key('ce-quiz-next')),
                 ],
               ),
-              toolButton('Show result on board', icon: Icons.bar_chart_rounded, filled: true, onPressed: _showResult, key: const Key('ce-quiz-result')),
+              toolButton(ceTr('Show result on board'), icon: Icons.bar_chart_rounded, filled: true, onPressed: _showResult, key: const Key('ce-quiz-result')),
             ],
           ),
         ],
@@ -352,7 +353,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          q.stem.isEmpty ? 'The question is the picture on the board.' : q.stem,
+          q.stem.isEmpty ? ceTr('The question is the picture on the board.') : q.stem,
           key: const Key('ce-quiz-stem'),
           maxLines: 5,
           overflow: TextOverflow.ellipsis,
@@ -447,7 +448,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
               if (absent) ...[
                 const SizedBox(width: 6),
                 Text(
-                  'AB',
+                  ceTr('AB'),
                   style: ceText(12, w: FontWeight.w700, c: fg),
                 ),
               ],
@@ -469,7 +470,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Scores by roll number', style: ceHeading(22)),
+          Text(context.ce('Scores by roll number'), style: ceHeading(22)),
           const SizedBox(height: 4),
           Text(preset!.scoreLine, style: ceText(15)),
           const SizedBox(height: 12),
@@ -517,12 +518,12 @@ class _ClassQuizViewState extends State<ClassQuizView> {
       padding: EdgeInsets.zero,
       children: [
         ToolHeader(
-          title: preset?.title ?? 'Class quiz',
+          title: preset?.title ?? ceTr('Class quiz'),
           onBack: _back,
-          pill: toolPill('Done', icon: Icons.check, bg: CeC.mint),
+          pill: toolPill(ceTr('Done'), icon: Icons.check, bg: CeC.mint),
         ),
         const SizedBox(height: 8),
-        Text('${preset?.line ?? c?.title ?? ''} · saved by roll number for the mastery map', style: ceText(17)),
+        Text('${preset?.line ?? c?.title ?? ''} · ${ceTr('saved by roll number for the mastery map')}', style: ceText(17)),
         const SizedBox(height: 18),
         if (preset?.score != null && totals.isNotEmpty) ...[_scores(), const SizedBox(height: 18)],
         for (final (i, (q, right, wrong, _)) in results.indexed)
@@ -535,7 +536,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
                 SizedBox(width: 44, child: Text('Q${i + 1}', style: ceHeading(20))),
                 Expanded(
                   child: Text(
-                    q.stem.isEmpty ? 'The question in the picture' : q.stem,
+                    q.stem.isEmpty ? ceTr('The question in the picture') : q.stem,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: ceText(16, c: CeC.body),
@@ -553,7 +554,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
                 SizedBox(
                   width: 92,
                   child: Text(
-                    right + wrong == 0 ? 'not marked' : '$right of ${right + wrong}',
+                    right + wrong == 0 ? ceTr('not marked') : ceTr('{n} of {total}', {'n': right, 'total': right + wrong}),
                     textAlign: TextAlign.right,
                     style: ceText(15, w: FontWeight.w600, c: CeC.navy),
                   ),
@@ -567,16 +568,16 @@ class _ClassQuizViewState extends State<ClassQuizView> {
           runSpacing: 12,
           children: [
             toolButton(
-              'Open the mastery map',
+              ceTr('Open the mastery map'),
               icon: Icons.grid_view_rounded,
               filled: true,
               onPressed: () => env.open('mastery', arg: chapterId),
               key: const Key('ce-quiz-mastery'),
             ),
             if (preset == null)
-              toolButton('Another quiz', icon: Icons.refresh, onPressed: () => setState(() => questions = const []))
+              toolButton(ceTr('Another quiz'), icon: Icons.refresh, onPressed: () => setState(() => questions = const []))
             else
-              toolButton('Back to the paper', icon: Icons.arrow_back_rounded, onPressed: _back, key: const Key('ce-quiz-back-to-paper')),
+              toolButton(ceTr('Back to the paper'), icon: Icons.arrow_back_rounded, onPressed: _back, key: const Key('ce-quiz-back-to-paper')),
           ],
         ),
       ],
@@ -632,22 +633,22 @@ class _ResultCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Q$number result', style: ceHeading(40)),
+          Text(ceTr('Q{n} result', {'n': number}), style: ceHeading(40)),
           const SizedBox(height: 24),
-          bar(right, const Color(0xFF6CC08F), 'Right'),
+          bar(right, const Color(0xFF6CC08F), ceTr('Right')),
           const SizedBox(height: 14),
-          bar(wrong, const Color(0xFFF2A7C3), 'Wrong'),
+          bar(wrong, const Color(0xFFF2A7C3), ceTr('Wrong')),
           const SizedBox(height: 14),
-          bar(notMarked, CeC.line, 'Not marked'),
+          bar(notMarked, CeC.line, ceTr('Not marked')),
           const SizedBox(height: 26),
           Text(
-            'Answer: ${question.answerText}',
+            ceTr('Answer: {answer}', {'answer': question.answerText}),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: ceText(28, w: FontWeight.w600, c: CeC.green),
           ),
           const Spacer(),
-          if (revisit.isNotEmpty) Text('Let’s go over it again together.', style: ceText(24, c: CeC.muted)),
+          if (revisit.isNotEmpty) Text(context.ce('Let’s go over it again together.'), style: ceText(24, c: CeC.muted)),
         ],
       ),
     );

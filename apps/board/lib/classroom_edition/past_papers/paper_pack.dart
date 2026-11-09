@@ -1,3 +1,4 @@
+import '../l10n/ce_strings.dart';
 import 'dart:convert';
 
 import 'package:archive/archive.dart';
@@ -66,12 +67,12 @@ class PaperPack {
 /// not a pack this board can read; a paper with a problem is left out and named in
 /// [PaperPack.problems], the rest still come in.
 PaperPack readPaperPack(Uint8List zip) {
-  if (zip.length < 4 || zip[0] != 0x50 || zip[1] != 0x4B) throw const FormatException('This file is not a paper pack (it is not a zip file).');
+  if (zip.length < 4 || zip[0] != 0x50 || zip[1] != 0x4B) throw FormatException(ceTr('This file is not a paper pack (it is not a zip file).'));
   final Archive archive;
   try {
     archive = ZipDecoder().decodeBytes(zip);
   } catch (_) {
-    throw const FormatException('This file is not a paper pack (it is not a zip file).');
+    throw FormatException(ceTr('This file is not a paper pack (it is not a zip file).'));
   }
   Uint8List? file(String path) {
     if (!safePackPath(path)) return null;
@@ -80,19 +81,19 @@ PaperPack readPaperPack(Uint8List zip) {
   }
 
   final raw = file('manifest.json');
-  if (raw == null) throw const FormatException('This zip is not a paper pack: it has no manifest.json.');
+  if (raw == null) throw FormatException(ceTr('This zip is not a paper pack: it has no manifest.json.'));
   final Object? m;
   try {
     m = jsonDecode(utf8.decode(raw));
   } catch (_) {
-    throw const FormatException('The pack\'s manifest.json cannot be read.');
+    throw FormatException(ceTr('The pack’s manifest.json cannot be read.'));
   }
-  if (m is! Map || m['format'] != packFormat) throw const FormatException('This zip is not a Zynetix paper pack.');
+  if (m is! Map || m['format'] != packFormat) throw FormatException(ceTr('This zip is not a Zynetix paper pack.'));
   final version = (m['version'] as num?)?.toInt() ?? 0;
-  if (version < 1) throw const FormatException('The paper pack has no version.');
-  if (version > packVersion) throw const FormatException('This paper pack is for a newer Zynetix Board. Ask your IT person to update the board.');
+  if (version < 1) throw FormatException(ceTr('The paper pack has no version.'));
+  if (version > packVersion) throw FormatException(ceTr('This paper pack is for a newer Zynetix Classroom. Ask whoever looks after the board to update it.'));
   final list = m['papers'];
-  if (list is! List || list.isEmpty) throw const FormatException('The paper pack has no papers in it.');
+  if (list is! List || list.isEmpty) throw FormatException(ceTr('The paper pack has no papers in it.'));
 
   final papers = <PackPaper>[];
   final problems = <String>[];

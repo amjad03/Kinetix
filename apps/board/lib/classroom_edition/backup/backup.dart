@@ -14,6 +14,7 @@ import '../boards/board_library.dart';
 import '../edition.dart';
 import '../lessons/lesson_progress.dart';
 import '../local/classroom_store.dart';
+import '../l10n/ce_strings.dart';
 import 'public_documents.dart';
 
 /// A backup is not one, or is from a newer app.
@@ -130,7 +131,7 @@ class ClassroomBackup {
     try {
       a = ZipDecoder().decodeBytes(bytes);
     } catch (_) {
-      throw const BackupFormatException('This file is not a Zynetix Classroom backup.');
+      throw BackupFormatException(ceTr('This file is not a Zynetix Classroom backup.'));
     }
     String? text(String name) {
       final f = a.findFile(name);
@@ -144,10 +145,10 @@ class ClassroomBackup {
       manifest = (jsonDecode(text('manifest.json') ?? '') as Map).cast<String, dynamic>();
       settings = (jsonDecode(text('settings.json') ?? '') as Map).cast<String, dynamic>();
     } catch (_) {
-      throw const BackupFormatException('This file is not a Zynetix Classroom backup.');
+      throw BackupFormatException(ceTr('This file is not a Zynetix Classroom backup.'));
     }
-    if (manifest['format'] != format) throw const BackupFormatException('This file is not a Zynetix Classroom backup.');
-    if ((manifest['version'] as num? ?? 0) > version) throw const BackupFormatException('This backup is from a newer Zynetix Classroom. Update the app on this board first.');
+    if (manifest['format'] != format) throw BackupFormatException(ceTr('This file is not a Zynetix Classroom backup.'));
+    if ((manifest['version'] as num? ?? 0) > version) throw BackupFormatException(ceTr('This backup is from a newer Zynetix Classroom. Update the app on this board first.'));
     final files = <String, Uint8List>{};
     for (final f in a.files) {
       if (!f.isFile || f.name == 'manifest.json' || f.name == 'settings.json') continue;
@@ -366,7 +367,7 @@ class BackupService {
   /// progress and saved boards. What was there is backed up first (kept on the board as
   /// "before restore"), so a wrong restore can be undone.
   Future<void> restore(ClassroomBackup b) async {
-    if (b.setup == null) throw const BackupFormatException('This backup has no college set-up in it.');
+    if (b.setup == null) throw BackupFormatException(ceTr('This backup has no college set-up in it.'));
     await _write(kind: 'before-restore', name: '$beforeRestorePrefix${_stamp.format(now())}.zip', sub: '', prefix: beforeRestorePrefix, keep: keepBeforeRestore);
     final p = await SharedPreferences.getInstance();
     for (final k in p.getKeys().toList()) {

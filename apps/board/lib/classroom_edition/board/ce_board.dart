@@ -6,6 +6,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../class_tools/class_tools_hub.dart';
 import '../ui/ce_style.dart';
+import '../l10n/ce_strings.dart';
 
 /// One stop of the Classroom edition's guided tour, or of "Show me": the control (by its key on
 /// the board), its icon and what to say.
@@ -21,40 +22,41 @@ class CeStep {
   final String? tryIt;
 }
 
-/// The guided tour (screen 11): Pen, Colours, Undo, Lessons and Class tools.
-const ceTourSteps = [
+/// The guided tour (screen 11): Pen, Colours, Undo, Lessons and Class tools, in the board's
+/// language.
+List<CeStep> get ceTourSteps => [
   CeStep(
     target: Key('tool-pen'),
     icon: Icons.edit,
-    title: 'This is your Pen',
-    body: 'Tap it, then write on the board with your finger or the stylus. Made a mistake? Tap Undo — nothing can break.',
-    tryIt: 'Try it now: write your name in the box on the board.',
+    title: ceTr('This is your Pen'),
+    body: ceTr('Tap it, then write on the board with your finger or the stylus. Made a mistake? Tap Undo — nothing can break.'),
+    tryIt: ceTr('Try it now: write your name in the box on the board.'),
   ),
   CeStep(
     target: Key('ce-colours'),
     icon: Icons.palette_outlined,
-    title: 'Pick a colour',
-    body: 'Colours has red, blue, green and more, and how thick the pen writes. The pen keeps your colour until you change it.',
-    tryIt: 'Try it now: pick red and draw a circle.',
+    title: ceTr('Pick a colour'),
+    body: ceTr('Colours has red, blue, green and more, and how thick the pen writes. The pen keeps your colour until you change it.'),
+    tryIt: ceTr('Try it now: pick red and draw a circle.'),
   ),
   CeStep(
     target: Key('undo'),
     icon: Icons.undo,
-    title: 'Undo puts it back',
-    body: 'Each tap takes back the last thing you did. The Eraser beside it rubs out just a part.',
-    tryIt: 'Try it now: tap Undo to take your circle away.',
+    title: ceTr('Undo puts it back'),
+    body: ceTr('Each tap takes back the last thing you did. The Eraser beside it rubs out just a part.'),
+    tryIt: ceTr('Try it now: tap Undo to take your circle away.'),
   ),
   CeStep(
     target: Key('ce-lessons'),
     icon: Icons.auto_stories_outlined,
-    title: 'Your lessons',
-    body: 'Ready lessons for 1st and 2nd PUC open beside the board. Put any step on the board with one tap.',
+    title: ceTr('Your lessons'),
+    body: ceTr('Ready lessons for 1st and 2nd PUC open beside the board. Put any step on the board with one tap.'),
   ),
   CeStep(
     target: Key('ce-class-tools'),
     icon: Icons.school_outlined,
-    title: 'Class tools',
-    body: 'Class quiz, mock test, teams, pick a roll number and more — all by roll number, with no phones and no internet.',
+    title: ceTr('Class tools'),
+    body: ceTr('Class quiz, mock test, teams, pick a roll number and more — all by roll number, with no phones and no internet.'),
   ),
 ];
 
@@ -80,7 +82,7 @@ Rect? ceRectOf(BuildContext context, Key key, RenderBox ancestor) {
 /// The tour and "Show me" over the board: a dimmed board with a hole around the control and a
 /// coach card above it. With [practice], the practice board's banner shows at the top.
 class CeCoach extends StatefulWidget {
-  const CeCoach({super.key, required this.steps, required this.boardContext, required this.onDone, this.practice = false, this.finishLabel = 'Done'});
+  const CeCoach({super.key, required this.steps, required this.boardContext, required this.onDone, this.practice = false, this.finishLabel});
 
   final List<CeStep> steps;
 
@@ -90,7 +92,8 @@ class CeCoach extends StatefulWidget {
   /// Called with true when the teacher went through to the end, false when they skipped.
   final ValueChanged<bool> onDone;
   final bool practice;
-  final String finishLabel;
+  /// The last step's button (default: Done).
+  final String? finishLabel;
 
   @override
   State<CeCoach> createState() => _CeCoachState();
@@ -152,7 +155,7 @@ class _CeCoachState extends State<CeCoach> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (many) Text('Step ${_i + 1} of ${widget.steps.length}', style: ceText(15, w: FontWeight.w600, c: CeC.accent)),
+                      if (many) Text(context.ce('Step {n} of {total}', {'n': _i + 1, 'total': widget.steps.length}), style: ceText(15, w: FontWeight.w600, c: CeC.accent)),
                       Text(step.title, style: ceHeading(30)),
                     ],
                   ),
@@ -188,10 +191,10 @@ class _CeCoachState extends State<CeCoach> {
                     ),
                 const Spacer(),
                 if (many && !last) ...[
-                  TextButton(key: const Key('ce-tour-skip'), onPressed: () => widget.onDone(false), child: Text('Skip tour', style: ceText(17, w: FontWeight.w600, c: CeC.muted))),
+                  TextButton(key: Key('ce-tour-skip'), onPressed: () => widget.onDone(false), child: Text(context.ce('Skip tour'), style: ceText(17, w: FontWeight.w600, c: CeC.muted))),
                   const SizedBox(width: 8),
                 ],
-                FilledButton(key: const Key('ce-tour-next'), onPressed: _next, style: ceBigButton(), child: Text(last ? widget.finishLabel : 'Next')),
+                FilledButton(key: const Key('ce-tour-next'), onPressed: _next, style: ceBigButton(), child: Text(last ? (widget.finishLabel ?? context.ce('Done')) : context.ce('Next'))),
               ],
             ),
           ],
@@ -293,12 +296,12 @@ class CePracticeBanner extends StatelessWidget {
       children: [
         const Icon(Icons.school_outlined, color: CeC.navy),
         const SizedBox(width: 10),
-        Text('Practice board', style: ceText(17, w: FontWeight.w700, c: CeC.navy)),
+        Text(context.ce('Practice board'), style: ceText(17, w: FontWeight.w700, c: CeC.navy)),
         const SizedBox(width: 10),
-        Flexible(child: Text('Nothing here is saved or shown to the class. Try anything.', overflow: TextOverflow.ellipsis, style: ceText(17, c: CeC.navy))),
+        Flexible(child: Text(context.ce('Nothing here is saved or shown to the class. Try anything.'), overflow: TextOverflow.ellipsis, style: ceText(17, c: CeC.navy))),
         if (onEnd != null) ...[
           const SizedBox(width: 16),
-          FilledButton(key: const Key('ce-end-practice'), onPressed: onEnd, style: ceBigButton().copyWith(minimumSize: const WidgetStatePropertyAll(Size(0, 44))), child: const Text('End practice')),
+          FilledButton(key: Key('ce-end-practice'), onPressed: onEnd, style: ceBigButton().copyWith(minimumSize: WidgetStatePropertyAll(Size(0, 44))), child: Text(context.ce('End practice'))),
         ],
       ],
     ),
@@ -307,7 +310,7 @@ class CePracticeBanner extends StatelessWidget {
 
 /// The practice page: a box to write a name in.
 List<BoardElement> cePracticePage() => [
-  NoteElement(id: newElementId(), rect: const Rect.fromLTWH(660, 456, 600, 140), text: 'Write your name here', color: const Color(0xFFE1EDFB), fontSize: 34),
+  NoteElement(id: newElementId(), rect: Rect.fromLTWH(660, 456, 600, 140), text: ceTr('Write your name here'), color: const Color(0xFFE1EDFB), fontSize: 34),
 ];
 
 /// "What do I do now?" (screen 03): a next-step tip above the toolbar, Undo, and "Show me".
@@ -332,7 +335,7 @@ class CeWhatNow extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('What do I do now?', style: ceText(16, w: FontWeight.w700, c: CeC.navy)),
+            Text(context.ce('What do I do now?'), style: ceText(16, w: FontWeight.w700, c: CeC.navy)),
             const SizedBox(height: 2),
             Text(tip, key: const Key('ce-what-now-tip'), style: ceText(15, c: const Color(0xFF334155))),
           ],
@@ -345,14 +348,14 @@ class CeWhatNow extends StatelessWidget {
           onPressed: onUndo,
           style: TextButton.styleFrom(minimumSize: const Size(0, 48), foregroundColor: CeC.navy, textStyle: ceText(16, w: FontWeight.w600), shape: const StadiumBorder()),
           icon: const Icon(Icons.undo),
-          label: const Text('Undo'),
+          label: Text(context.ce('Undo')),
         ),
         TextButton.icon(
           key: const Key('ce-show-me'),
           onPressed: onShowMe,
           style: TextButton.styleFrom(minimumSize: const Size(0, 48), foregroundColor: CeC.accent, textStyle: ceText(16, w: FontWeight.w600), shape: const StadiumBorder()),
           icon: const Icon(Icons.play_circle_outline),
-          label: const Text('Show me'),
+          label: Text(context.ce('Show me')),
         ),
       ],
     ),
@@ -362,24 +365,24 @@ class CeWhatNow extends StatelessWidget {
 /// What the board says to do next, and the control "Show me" points at.
 ({String tip, CeStep step}) ceNextStep({required BoardTool tool, required bool blank, required int elements, required bool panelLessons, required bool panelClassTools, required bool canAddPage, String? panelTip}) {
   if (panelLessons) {
-    return (tip: panelTip ?? 'Pick a chapter, then put each step on the board.', step: ceTourSteps[3]);
+    return (tip: panelTip ?? ceTr('Pick a chapter, then put each step on the board.'), step: ceTourSteps[3]);
   }
   if (panelClassTools) {
-    return (tip: panelTip ?? 'Pick a tool. Everything works by roll number, no phones needed.', step: ceTourSteps[4]);
+    return (tip: panelTip ?? ceTr('Pick a tool. Everything works by roll number, no phones needed.'), step: ceTourSteps[4]);
   }
   if (tool == BoardTool.eraser) {
-    return (tip: 'Rub out what you need to. Tap Pen to write again.', step: ceTourSteps[0]);
+    return (tip: ceTr('Rub out what you need to. Tap Pen to write again.'), step: ceTourSteps[0]);
   }
   if (blank) {
-    return (tip: 'Pick the Pen and write today’s heading, or open Lessons.', step: ceTourSteps[0]);
+    return (tip: ceTr('Pick the Pen and write today’s heading, or open Lessons.'), step: ceTourSteps[0]);
   }
   if (elements > 25 && canAddPage) {
     return (
-      tip: 'Page getting full? Add a new page at the bottom right.',
-      step: const CeStep(target: Key('add-page'), icon: Icons.add, title: 'Add a page', body: 'A fresh page, and this one is kept. Previous and Next go between them.'),
+      tip: ceTr('Page getting full? Add a new page at the bottom right.'),
+      step: CeStep(target: Key('add-page'), icon: Icons.add, title: ceTr('Add a page'), body: ceTr('A fresh page, and this one is kept. Previous and Next go between them.')),
     );
   }
-  return (tip: 'Keep writing, or open Class tools for a quick class quiz.', step: ceTourSteps[4]);
+  return (tip: ceTr('Keep writing, or open Class tools for a quick class quiz.'), step: ceTourSteps[4]);
 }
 
 /// The Class tools section at the top of Classroom Apps (screen 07).
@@ -390,8 +393,8 @@ Widget classToolsHeader(BuildContext ctx, {required void Function(String id) onT
       crossAxisAlignment: WrapCrossAlignment.end,
       spacing: Kx.s8,
       children: [
-        Text('Class tools', style: ctx.text.titleMedium?.copyWith(color: CeC.navy, fontWeight: FontWeight.w600)),
-        Text('Ready on this board · no phones, no internet', style: ctx.text.bodyMedium?.copyWith(color: CeC.muted)),
+        Text(ceTr('Class tools'), style: ctx.text.titleMedium?.copyWith(color: CeC.navy, fontWeight: FontWeight.w600)),
+        Text(ceTr('Ready on this board · no phones, no internet'), style: ctx.text.bodyMedium?.copyWith(color: CeC.muted)),
       ],
     ),
     const SizedBox(height: Kx.s12),

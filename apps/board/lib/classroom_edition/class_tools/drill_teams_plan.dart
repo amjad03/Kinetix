@@ -9,6 +9,7 @@ import 'bank.dart';
 import 'class_logic.dart';
 import 'class_records.dart';
 import 'tool_ui.dart';
+import '../l10n/ce_strings.dart';
 
 // --- Formula drill --------------------------------------------------------------------------------
 
@@ -43,7 +44,7 @@ class _FormulaDrillViewState extends State<FormulaDrillView> {
       TextElement(id: newElementId(), position: Offset.zero, text: f.name, color: env.ink, fontSize: 40, bold: true, size: measureBoardText(f.name, 40, bold: true)),
       MathElement(id: newElementId(), position: const Offset(0, 80), latex: f.tex, color: env.ink, fontSize: 64, size: Size(size.width * 1.1, size.height * 1.6)),
     ]);
-    env.host.showMessage('Formula on the board');
+    env.host.showMessage(ceTr('Formula on the board'));
   }
 
   @override
@@ -51,8 +52,8 @@ class _FormulaDrillViewState extends State<FormulaDrillView> {
     if (!env.bank.chapters.any((c) => c.formulas.isNotEmpty)) {
       return Column(
         children: [
-          ToolHeader(title: 'Formula drill', onBack: env.back),
-          Expanded(child: noBank(env, what: 'formulas')),
+          ToolHeader(title: context.ce('Formula drill'), onBack: env.back),
+          Expanded(child: noBank(env, what: ceTr('formulas'))),
         ],
       );
     }
@@ -62,9 +63,9 @@ class _FormulaDrillViewState extends State<FormulaDrillView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ToolHeader(
-          title: 'Formula drill',
+          title: context.ce('Formula drill'),
           onBack: env.back,
-          pill: list.isEmpty ? null : toolPill('${index + 1} of ${list.length}', key: const Key('ce-drill-progress')),
+          pill: list.isEmpty ? null : toolPill(ceTr('{n} of {total}', {'n': index + 1, 'total': list.length}), key: const Key('ce-drill-progress')),
         ),
         const SizedBox(height: 12),
         ChapterPicker(
@@ -111,7 +112,7 @@ class _FormulaDrillViewState extends State<FormulaDrillView> {
                                   const Icon(Icons.visibility_off_outlined, size: 40, color: CeC.muted),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Say it aloud, then tap to show',
+                                    ceTr('Say it aloud, then tap to show'),
                                     style: ceText(19, w: FontWeight.w600, c: CeC.navy),
                                   ),
                                 ],
@@ -137,9 +138,9 @@ class _FormulaDrillViewState extends State<FormulaDrillView> {
                         Wrap(
                           spacing: 12,
                           children: [
-                            toolButton('Previous', icon: Icons.chevron_left, onPressed: index > 0 ? () => _go(index - 1) : null),
+                            toolButton(ceTr('Previous'), icon: Icons.chevron_left, onPressed: index > 0 ? () => _go(index - 1) : null),
                             toolButton(
-                              'Shuffle',
+                              ceTr('Shuffle'),
                               icon: Icons.shuffle,
                               onPressed: () => setState(() {
                                 order = [...env.bank.chapter(chapterId)?.formulas ?? const <BankFormula>[]]..shuffle(Random(env.now().millisecond));
@@ -152,9 +153,9 @@ class _FormulaDrillViewState extends State<FormulaDrillView> {
                         Wrap(
                           spacing: 12,
                           children: [
-                            toolButton('Put on board', icon: Icons.co_present_outlined, onPressed: () => _put(f), key: const Key('ce-drill-board')),
+                            toolButton(ceTr('Put on board'), icon: Icons.co_present_outlined, onPressed: () => _put(f), key: const Key('ce-drill-board')),
                             toolButton(
-                              shown ? 'Next formula' : 'Show',
+                              shown ? ceTr('Next formula') : ceTr('Show'),
                               icon: shown ? Icons.chevron_right : Icons.visibility_outlined,
                               filled: true,
                               key: const Key('ce-drill-next'),
@@ -205,7 +206,7 @@ class _TeamsViewState extends State<TeamsView> {
       context: context,
       at: const Offset(900, 120),
     );
-    env.host.showMessage('Scoreboard on the board');
+    env.host.showMessage(ceTr('Scoreboard on the board'));
   }
 
   @override
@@ -216,9 +217,9 @@ class _TeamsViewState extends State<TeamsView> {
       padding: EdgeInsets.zero,
       children: [
         ToolHeader(
-          title: 'Teams',
+          title: context.ce('Teams'),
           onBack: env.back,
-          pill: toolPill('${env.present.length} present', bg: CeC.mint),
+          pill: toolPill(ceTr('{n} present', {'n': env.present.length}), bg: CeC.mint),
         ),
         const SizedBox(height: 14),
         Wrap(
@@ -227,21 +228,21 @@ class _TeamsViewState extends State<TeamsView> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
-              'Teams',
+              ceTr('Teams'),
               style: ceText(17, w: FontWeight.w600, c: CeC.navy),
             ),
             for (final k in const [2, 3, 4, 5, 6]) choiceChip('$k', on: n == k, offIcon: null, tick: false, key: Key('ce-teams-$k'), onTap: () => setState(() => n = k)),
             const SizedBox(width: 12),
-            choiceChip('By benches', on: !mixed, offIcon: null, onTap: () => setState(() => mixed = false)),
-            choiceChip('Mixed', on: mixed, offIcon: null, onTap: () => setState(() => mixed = true)),
-            toolButton(teams.isEmpty ? 'Make teams' : 'Make new teams', icon: Icons.groups_2_outlined, filled: true, onPressed: env.present.isEmpty ? null : _make, key: const Key('ce-teams-make')),
+            choiceChip(ceTr('By benches'), on: !mixed, offIcon: null, onTap: () => setState(() => mixed = false)),
+            choiceChip(ceTr('Mixed'), on: mixed, offIcon: null, onTap: () => setState(() => mixed = true)),
+            toolButton(teams.isEmpty ? ceTr('Make teams') : ceTr('Make new teams'), icon: Icons.groups_2_outlined, filled: true, onPressed: env.present.isEmpty ? null : _make, key: const Key('ce-teams-make')),
           ],
         ),
         const SizedBox(height: 20),
         if (teams.isEmpty)
-          const SizedBox(
+          SizedBox(
             height: 360,
-            child: ToolEmpty(icon: Icons.groups_2_outlined, title: 'No teams yet', line: 'Pick how many teams, then Make teams. Absent roll numbers are left out.'),
+            child: ToolEmpty(icon: Icons.groups_2_outlined, title: context.ce('No teams yet'), line: context.ce('Pick how many teams, then Make teams. Absent roll numbers are left out.')),
           )
         else ...[
           LayoutBuilder(
@@ -270,7 +271,7 @@ class _TeamsViewState extends State<TeamsView> {
                               Text('${t.points}', key: Key('ce-team-points-$i'), style: ceHeading(40)),
                             ],
                           ),
-                          Text('Roll ${rollsLabel(t.rolls)} · ${t.rolls.length}', maxLines: 2, overflow: TextOverflow.ellipsis, style: ceText(15)),
+                          Text('${ceTr('Roll {n}', {'n': rollsLabel(t.rolls)})} · ${t.rolls.length}', maxLines: 2, overflow: TextOverflow.ellipsis, style: ceText(15)),
                           const SizedBox(height: 12),
                           Wrap(
                             spacing: 0,
@@ -301,8 +302,8 @@ class _TeamsViewState extends State<TeamsView> {
             spacing: 12,
             runSpacing: 12,
             children: [
-              toolButton('Put scoreboard on board', icon: Icons.co_present_outlined, filled: true, onPressed: _board, key: const Key('ce-teams-board')),
-              toolButton('Points to zero', icon: Icons.restart_alt, onPressed: () => env.records.setTeams([for (final t in teams) t.withPoints(0)])),
+              toolButton(ceTr('Put scoreboard on board'), icon: Icons.co_present_outlined, filled: true, onPressed: _board, key: const Key('ce-teams-board')),
+              toolButton(ceTr('Points to zero'), icon: Icons.restart_alt, onPressed: () => env.records.setTeams([for (final t in teams) t.withPoints(0)])),
             ],
           ),
         ],
@@ -328,7 +329,7 @@ class _Scoreboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Scoreboard', style: ceHeading(40)),
+          Text(context.ce('Scoreboard'), style: ceHeading(40)),
           const SizedBox(height: 16),
           for (final (i, t) in sorted.indexed)
             Container(
@@ -376,8 +377,8 @@ class ClassPlanView extends StatelessWidget {
     if (env.bank.chapters.isEmpty) {
       return Column(
         children: [
-          ToolHeader(title: 'Class plan', onBack: env.back),
-          Expanded(child: noBank(env, what: 'chapters')),
+          ToolHeader(title: context.ce('Class plan'), onBack: env.back),
+          Expanded(child: noBank(env, what: ceTr('chapters'))),
         ],
       );
     }
@@ -387,28 +388,28 @@ class ClassPlanView extends StatelessWidget {
         final p = plan;
         final v = buildPlan(chapters: [for (final c in env.bank.chapters) (c.id, c.title)], plan: p, today: env.now());
         final status = v.left == 0
-            ? ('Syllabus done', 'Every chapter is taught. Revision from ${date(v.revisionFrom)}.', CeC.mint)
+            ? (ceTr('Syllabus done'), ceTr('Every chapter is taught. Revision from {date}.', {'date': date(v.revisionFrom)}), CeC.mint)
             : v.done == 0 && v.expectedDone > 0
-            ? ('Tick the chapters already taught', 'Then the plan shows whether the class is on track for ${date(p.examDate)}: ${v.left} chapters in ${v.teachingDays} school days.', CeC.blue)
+            ? (ceTr('Tick the chapters already taught'), ceTr('Then the plan shows whether the class is on track for {date}: {left} chapters in {days} school days.', {'date': date(p.examDate), 'left': v.left, 'days': v.teachingDays}), CeC.blue)
             : v.behind > 0
             ? (
-                'Behind by ${v.behind} chapter${v.behind == 1 ? '' : 's'}',
-                '${v.left} chapters in ${v.teachingDays} school days: about ${v.daysPerChapter.toStringAsFixed(1)} days each. An extra period a week would catch up.',
+                v.behind == 1 ? ceTr('Behind by 1 chapter') : ceTr('Behind by {n} chapters', {'n': v.behind}),
+                ceTr('{left} chapters in {days} school days: about {each} days each. An extra period a week would catch up.', {'left': v.left, 'days': v.teachingDays, 'each': v.daysPerChapter.toStringAsFixed(1)}),
                 CeC.peach,
               )
-            : ('On track', '${v.left} chapters in ${v.teachingDays} school days: about ${v.daysPerChapter.toStringAsFixed(1)} days each before revision.', CeC.mint);
+            : (ceTr('On track'), ceTr('{left} chapters in {days} school days: about {each} days each before revision.', {'left': v.left, 'days': v.teachingDays, 'each': v.daysPerChapter.toStringAsFixed(1)}), CeC.mint);
         return ListView(
           key: const Key('ce-plan'),
           padding: EdgeInsets.zero,
           children: [
             ToolHeader(
-              title: 'Class plan',
+              title: context.ce('Class plan'),
               onBack: env.back,
-              pill: toolPill('${v.done} of ${v.steps.length} chapters done', key: const Key('ce-plan-done')),
+              pill: toolPill(ceTr('{n} of {total} chapters done', {'n': v.done, 'total': v.steps.length}), key: const Key('ce-plan-done')),
             ),
             Padding(
               padding: const EdgeInsets.only(left: 52),
-              child: Text('${env.classLine} · every chapter, to the exam date', style: ceText(17)),
+              child: Text('${env.classLine} · ${ceTr('every chapter, to the exam date')}', style: ceText(17)),
             ),
             const SizedBox(height: 18),
             Wrap(
@@ -416,20 +417,20 @@ class ClassPlanView extends StatelessWidget {
               runSpacing: 12,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                toolButton('Exam ${date(p.examDate)} ${p.examDate.year}', icon: Icons.event_outlined, onPressed: () => _date(context), key: const Key('ce-plan-exam')),
+                toolButton(ceTr('Exam {date}', {'date': '${date(p.examDate)} ${p.examDate.year}'}), icon: Icons.event_outlined, onPressed: () => _date(context), key: const Key('ce-plan-exam')),
                 Text(
-                  'Revision',
+                  ceTr('Revision'),
                   style: ceText(17, w: FontWeight.w600, c: CeC.navy),
                 ),
                 for (final w in const [2, 3, 4])
                   choiceChip(
-                    '$w weeks',
+                    ceTr('{n} weeks', {'n': w}),
                     on: p.revisionWeeks == w,
                     offIcon: null,
                     tick: false,
                     onTap: () => env.records.setPlan(subject, p.copyWith(revisionWeeks: w)),
                   ),
-                toolPill('${v.daysLeft} school days left', icon: Icons.hourglass_bottom_rounded, bg: CeC.blue),
+                toolPill(ceTr('{n} school days left', {'n': v.daysLeft}), icon: Icons.hourglass_bottom_rounded, bg: CeC.blue),
               ],
             ),
             const SizedBox(height: 18),
@@ -438,8 +439,8 @@ class ClassPlanView extends StatelessWidget {
               const SizedBox(height: 14),
               infoCard(
                 icon: Icons.today_outlined,
-                title: 'This week: ${v.thisWeek.map((s) => s.title).join(', ')}',
-                line: 'Tick a chapter when it is taught; the plan moves the rest.',
+                title: ceTr('This week: {chapters}', {'chapters': v.thisWeek.map((s) => s.title).join(', ')}),
+                line: context.ce('Tick a chapter when it is taught; the plan moves the rest.'),
                 colour: CeC.lavender,
               ),
             ],
@@ -461,12 +462,12 @@ class ClassPlanView extends StatelessWidget {
                           s.title,
                           style: ceText(17, w: FontWeight.w600, c: s.done ? CeC.muted : CeC.navy),
                         ),
-                        secondary: Text(s.done ? 'Done' : '${date(s.from!)} – ${date(s.to!)}', style: ceText(15, c: s.done ? CeC.green : CeC.body)),
+                        secondary: Text(s.done ? ceTr('Done') : '${date(s.from!)} – ${date(s.to!)}', style: ceText(15, c: s.done ? CeC.green : CeC.body)),
                       ),
                     ListTile(
                       leading: const Icon(Icons.flag_outlined, color: CeC.accent),
                       title: Text(
-                        'Revision and mock tests',
+                        ceTr('Revision and mock tests'),
                         style: ceText(17, w: FontWeight.w600, c: CeC.navy),
                       ),
                       trailing: Text('${date(v.revisionFrom)} – ${date(p.examDate)}', style: ceText(15, c: CeC.body)),
@@ -517,9 +518,9 @@ class _RollPickerViewState extends State<RollPickerView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ToolHeader(
-          title: 'Pick a roll no.',
+          title: context.ce('Pick a roll no.'),
           onBack: env.back,
-          pill: toolPill('${env.present.length - picked.length} still to go', bg: CeC.butter),
+          pill: toolPill(ceTr('{n} still to go', {'n': env.present.length - picked.length}), bg: CeC.butter),
         ),
         const SizedBox(height: 20),
         Expanded(
@@ -530,12 +531,12 @@ class _RollPickerViewState extends State<RollPickerView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Roll number',
+                    ceTr('Roll number'),
                     style: ceText(24, w: FontWeight.w600, c: CeC.navy),
                   ),
                   Text(picked.isEmpty ? '–' : rollLabel(picked.last), key: const Key('ce-picked'), style: ceHeading(200, height: 1.1)),
                   const SizedBox(height: 10),
-                  if (picked.length > 1) Text('Before: ${picked.reversed.skip(1).take(8).map(rollLabel).join(', ')}', style: ceText(17)),
+                  if (picked.length > 1) Text(ceTr('Before: {rolls}', {'rolls': picked.reversed.skip(1).take(8).map(rollLabel).join(', ')}), style: ceText(17)),
                 ],
               ),
             ),
@@ -544,10 +545,10 @@ class _RollPickerViewState extends State<RollPickerView> {
         const SizedBox(height: 16),
         Row(
           children: [
-            Expanded(child: Text('Absent roll numbers are never picked.', style: ceText(15))),
-            toolButton('Start again', onPressed: picked.isEmpty ? null : () => setState(picked.clear)),
+            Expanded(child: Text(context.ce('Absent roll numbers are never picked.'), style: ceText(15))),
+            toolButton(ceTr('Start again'), onPressed: picked.isEmpty ? null : () => setState(picked.clear)),
             const SizedBox(width: 12),
-            toolButton('Pick', icon: Icons.casino_outlined, filled: true, onPressed: env.present.isEmpty ? null : _pick, key: const Key('ce-pick')),
+            toolButton(ceTr('Pick'), icon: Icons.casino_outlined, filled: true, onPressed: env.present.isEmpty ? null : _pick, key: const Key('ce-pick')),
           ],
         ),
       ],
@@ -605,12 +606,12 @@ class _TimerViewState extends State<TimerView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ToolHeader(title: 'Timer', onBack: env.back),
+        ToolHeader(title: context.ce('Timer'), onBack: env.back),
         const SizedBox(height: 12),
         Wrap(
           spacing: 10,
           children: [
-            for (final m in const [1, 2, 3, 5, 10, 15]) choiceChip('$m min', on: total == m * 60, offIcon: null, tick: false, key: Key('ce-timer-$m'), onTap: () => _set(m * 60)),
+            for (final m in const [1, 2, 3, 5, 10, 15]) choiceChip(ceTr('{n} min', {'n': m}), on: total == m * 60, offIcon: null, tick: false, key: Key('ce-timer-$m'), onTap: () => _set(m * 60)),
           ],
         ),
         const SizedBox(height: 20),
@@ -631,9 +632,9 @@ class _TimerViewState extends State<TimerView> {
         Row(
           children: [
             const Spacer(),
-            toolButton('Reset', onPressed: () => _set(total)),
+            toolButton(ceTr('Reset'), onPressed: () => _set(total)),
             const SizedBox(width: 12),
-            toolButton(_t == null ? 'Start' : 'Pause', icon: _t == null ? Icons.play_arrow_rounded : Icons.pause_rounded, filled: true, onPressed: _toggle, key: const Key('ce-timer-go')),
+            toolButton(_t == null ? ceTr('Start') : ceTr('Pause'), icon: _t == null ? Icons.play_arrow_rounded : Icons.pause_rounded, filled: true, onPressed: _toggle, key: const Key('ce-timer-go')),
           ],
         ),
       ],

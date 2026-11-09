@@ -1,3 +1,4 @@
+import '../l10n/ce_strings.dart';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
@@ -171,7 +172,7 @@ class PaperLibrary extends ChangeNotifier {
     final r = report ?? ImportReport();
     final p = byId(paperId);
     if (p == null) {
-      r.problems.add('$fileName: the paper it is the key for is not in the library');
+      r.problems.add(ceTr('{file}: the paper it is the key for is not in the library', {'file': fileName}));
       return null;
     }
     if (!_checkPdf(bytes, fileName, r)) return null;
@@ -191,11 +192,11 @@ class PaperLibrary extends ChangeNotifier {
 
   bool _checkPdf(Uint8List bytes, String fileName, ImportReport r) {
     if (bytes.length > maxFileBytes) {
-      r.problems.add('$fileName is too big (over ${maxFileBytes ~/ (1024 * 1024)} MB)');
+      r.problems.add(ceTr('{file} is too big (over {n} MB)', {'file': fileName, 'n': maxFileBytes ~/ (1024 * 1024)}));
       return false;
     }
     if (!looksLikePdf(bytes)) {
-      r.problems.add('$fileName is not a PDF, or it is damaged');
+      r.problems.add(ceTr('{file} is not a PDF, or it is damaged', {'file': fileName}));
       return false;
     }
     return true;
@@ -205,7 +206,7 @@ class PaperLibrary extends ChangeNotifier {
   Future<ImportReport> addPack(Uint8List zip, {String fileName = 'paper pack', void Function(int done, int total)? onProgress}) async {
     final r = ImportReport();
     if (zip.length > maxFileBytes * 2) {
-      r.problems.add('$fileName is too big');
+      r.problems.add(ceTr('{file} is too big', {'file': fileName}));
       return r;
     }
     final PaperPack pack;
@@ -218,7 +219,7 @@ class PaperLibrary extends ChangeNotifier {
     r.problems.addAll(pack.problems);
     final free = await storage.freeBytes();
     if (free != null && free < zip.length * 2) {
-      r.problems.add('There is not enough space on the board for $fileName.');
+      r.problems.add(ceTr('There is not enough space on the board for {file}.', {'file': fileName}));
       return r;
     }
     for (final (i, pp) in pack.papers.indexed) {

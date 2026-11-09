@@ -244,7 +244,7 @@ void main() {
     await io(tester, 5);
     expect(find.byKey(const Key('ce-restore-preview')), findsOneWidget);
     expect(find.text('Vidya PU College'), findsOneWidget);
-    expect(find.text('2 classes'), findsOneWidget);
+    expect(find.text('Classes: 2'), findsOneWidget);
     expect(find.textContaining('It replaces what is on this board now (6 teachers, 5 classes, 19 periods)'), findsOneWidget);
     await tapKey(tester, 'ce-restore-ok');
     expect(find.text('Restoring a backup replaces the college’s set-up, marks and boards on this board. It needs the school PIN.'), findsOneWidget);
