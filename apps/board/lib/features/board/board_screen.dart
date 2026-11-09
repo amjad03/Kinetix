@@ -13,6 +13,7 @@ import 'package:kinetix_labs/kinetix_labs.dart' show LabReport, LabSpeech;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../cast/cast_panel.dart';
+import '../../classroom_edition/help/ce_help.dart' show openCeHelp;
 import '../../classroom_edition/l10n/ce_strings.dart';
 import '../../classroom_edition/board/ce_board.dart';
 import '../../classroom_edition/boards/board_library.dart';
@@ -2879,6 +2880,7 @@ class _BoardScreenState extends State<BoardScreen> {
         (const Key('menu-college-settings'), Icons.admin_panel_settings_outlined, ceTr('College settings'), () => unawaited(_ceCollegeSettings()), true),
         (const Key('menu-simple-board'), _ceSimple ? Icons.apps_rounded : Icons.crop_square_rounded, _ceSimple ? ceTr('Show all tools') : ceTr('Simple board'), () => _ceSetSimple(!_ceSimple), true),
         (const Key('menu-tour'), Icons.tour_outlined, ceTr('Guided tour'), () => _ceTour(practice: true, stay: false), true),
+        (const Key('menu-ce-help'), Icons.help_outline, ceTr('Help'), () => unawaited(openCeHelp(context, store: board.classroom)), true),
       ],
       // "Preview as interactive panel" is a tool for whoever builds the board, not for a class.
       if (!Edition.classroom) (

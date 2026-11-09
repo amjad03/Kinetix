@@ -13,6 +13,7 @@ import '../local/local_class.dart';
 import '../settings/classroom_settings.dart';
 import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
+import '../help/ce_help.dart';
 import 'language_switch.dart';
 import 'setup_problem.dart';
 import 'setup_wizard.dart';
@@ -227,13 +228,23 @@ class _TopStrip extends StatelessWidget {
         const SizedBox(width: 16),
         // The pills give way (with an ellipsis) before the buttons do.
         Expanded(
+          // On a narrow screen the "Works offline" pill goes first (the start screen sizes
+          // itself by its content's intrinsic height, so no LayoutBuilder here).
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Flexible(child: cePill(context.ce('Works offline · saved on this board'), icon: Icons.cloud_off_outlined, bg: Colors.white)),
+              if (MediaQuery.sizeOf(context).width >= 1500) Flexible(child: cePill(context.ce('Works offline · saved on this board'), icon: Icons.cloud_off_outlined, bg: Colors.white)),
               if (store.college.isNotEmpty) ...[const SizedBox(width: 12), Flexible(child: cePill(store.college, icon: Icons.account_balance_outlined, bg: Colors.white, key: const Key('ce-college')))],
             ],
           ),
+        ),
+        const SizedBox(width: 12),
+        OutlinedButton.icon(
+          key: const Key('ce-help'),
+          style: ceSoftButton().copyWith(minimumSize: const WidgetStatePropertyAll(Size(64, 64))),
+          onPressed: () => unawaited(openCeHelp(context, store: store)),
+          icon: const Icon(Icons.help_outline),
+          label: Text(context.ce('Help')),
         ),
         if (onSettings != null) ...[
           const SizedBox(width: 12),

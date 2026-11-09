@@ -12,6 +12,7 @@ import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
 import 'pin_pad.dart';
 import '../start/setup_wizard.dart' show openSetupWizard;
+import '../help/ce_help.dart' show openCeHelp;
 import 'timetable_editor.dart';
 import '../l10n/ce_strings.dart';
 
@@ -50,6 +51,12 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
         appBar: AppBar(
           backgroundColor: CeC.page,
           title: Text(context.ce('College settings'), style: ceHeading(24)),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: OutlinedButton.icon(key: const Key('ce-settings-help'), style: ceSoftButton(), onPressed: () => unawaited(openCeHelp(context, store: store)), icon: const Icon(Icons.help_outline), label: Text(context.ce('Help'))),
+            ),
+          ],
           bottom: TabBar(
             isScrollable: true,
             tabs: [
