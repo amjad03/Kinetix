@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../../classroom_edition/edition.dart';
 import '../../../core/api_client.dart';
 import '../../../core/board_controller.dart';
 import '../../../core/models.dart';
@@ -58,7 +59,7 @@ class _BadgesPanelState extends State<BadgesPanel> {
   /// The class's students; a demo board with no class open uses the demo class.
   List<Student> get _students {
     final roster = widget.board.pickable;
-    if (roster.isNotEmpty || !Demo.enabled) return roster;
+    if (roster.isNotEmpty || !Demo.enabled || Edition.classroom) return roster;
     return [for (final (i, n) in demoClassNames.indexed) Student(id: 'demo-student-$i', rollNo: '${i + 1}', fullName: n)];
   }
 

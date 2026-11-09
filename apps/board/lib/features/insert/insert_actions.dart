@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 
+import '../../classroom_edition/edition.dart';
 import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import 'device_files.dart';
@@ -77,7 +78,7 @@ List<InsertExtra> insertExtras(
       hint: DeviceFiles.instance.hasCamera ? l.insertPictureHintGallery : l.insertPictureHintFiles,
       onTap: () => insertDevicePicture(context, wb),
     ),
-    if (DeviceFiles.instance.hasCamera)
+    if (DeviceFiles.instance.hasCamera && Edition.onlineTools)
       InsertExtra(
         key: const Key('insert-camera'),
         icon: Icons.photo_camera_outlined,

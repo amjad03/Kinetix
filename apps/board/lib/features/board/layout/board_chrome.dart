@@ -779,13 +779,14 @@ class BoardMenu extends StatelessWidget {
 /// The left quick group from the spec's bottom toolbar: Switch, Profile/Guest, Share, WhatsApp
 /// and End class. Each stays usable whichever side it is on.
 class QuickGroup {
-  const QuickGroup({required this.onSwitch, required this.profileLabel, required this.onProfile, required this.onShare, required this.onWhatsApp, required this.onEndClass, this.signedIn = true});
+  const QuickGroup({required this.onSwitch, required this.profileLabel, required this.onProfile, this.onShare, this.onWhatsApp, required this.onEndClass, this.signedIn = true});
 
   final VoidCallback onSwitch;
   final String profileLabel;
   final VoidCallback onProfile;
-  final VoidCallback onShare;
-  final VoidCallback onWhatsApp;
+  /// Share and WhatsApp (null hides them: a local class has nothing to share with).
+  final VoidCallback? onShare;
+  final VoidCallback? onWhatsApp;
   final VoidCallback onEndClass;
   final bool signedIn;
 
@@ -797,8 +798,8 @@ class QuickGroup {
       for (final b in <Widget>[
       ToolButton(key: const Key('switch-sides'), icon: Icons.swap_horiz, label: s('switch'), onTap: onSwitch),
       ToolButton(key: const Key('quick-profile'), icon: signedIn ? Icons.person_outline : Icons.person_off_outlined, label: profileLabel, onTap: onProfile),
-      ToolButton(key: const Key('quick-share'), icon: Icons.share_outlined, label: s('share'), onTap: onShare),
-      ToolButton(key: const Key('quick-whatsapp'), icon: Icons.chat_outlined, label: s('whatsapp'), onTap: onWhatsApp),
+      if (onShare case final share?) ToolButton(key: const Key('quick-share'), icon: Icons.share_outlined, label: s('share'), onTap: share),
+      if (onWhatsApp case final whatsApp?) ToolButton(key: const Key('quick-whatsapp'), icon: Icons.chat_outlined, label: s('whatsapp'), onTap: whatsApp),
       ToolButton(key: const Key('quick-end-class'), icon: Icons.stop_circle_outlined, iconColor: Kx.record, label: s('endClass'), onTap: onEndClass),
       ]) compact(b),
     ];

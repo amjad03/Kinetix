@@ -5,11 +5,15 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../../core/board_controller.dart';
 import '../../features/enrollment/enroll_screen.dart';
+import '../backup/backup.dart';
+import '../backup/backup_page.dart' show restoreBackupFlow;
 import '../classroom_hooks.dart';
 import '../local/classroom_store.dart';
 import '../local/local_class.dart';
 import '../settings/classroom_settings.dart';
+import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
+import 'setup_problem.dart';
 
 enum _Scene { start, who, pair }
 
@@ -21,6 +25,19 @@ class ClassroomStart extends StatefulWidget {
   const ClassroomStart({super.key, required this.board});
 
   final BoardController board;
+
+  /// Restores a backup after the school PIN (Settings → Backup & restore); offered when the
+  /// saved set-up could not be read.
+  static Future<void> Function(BuildContext context, ClassroomStore store)? restoreBackup = restoreBackupFlow;
+
+  /// Today's daily backup, made when the start screen first shows each day (tests replace it).
+  static Future<void> Function(ClassroomStore store) dailyBackup = (store) async {
+    try {
+      await BackupService(store: store).ensureDaily();
+    } catch (e) {
+      debugPrint('Daily backup not made: $e');
+    }
+  };
 
   @override
   State<ClassroomStart> createState() => _ClassroomStartState();
@@ -41,6 +58,7 @@ class _ClassroomStartState extends State<ClassroomStart> {
   void initState() {
     super.initState();
     store.addListener(_changed);
+    unawaited(ClassroomStart.dailyBackup(store));
   }
 
   @override
@@ -129,7 +147,33 @@ class _ClassroomStartState extends State<ClassroomStart> {
         ],
       ),
     };
-    return Theme(data: ceTheme(context), child: child);
+    final problem = store.problem;
+    return Theme(
+      data: ceTheme(context),
+      // A Scaffold for the start screens' messages (Undo after removing a teacher).
+      child: Scaffold(
+        backgroundColor: CeC.page,
+        body: problem == null || _scene == _Scene.pair
+            ? child
+            : Stack(
+                children: [
+                  Positioned.fill(child: child),
+                  Positioned(
+                    left: 24,
+                    right: 24,
+                    top: 104,
+                    child: Center(
+                      child: CeSetupProblemBanner(
+                        problem: problem,
+                        onKeep: () => unawaited(store.acceptRecovered()),
+                        onRestore: ClassroomStart.restoreBackup == null ? null : () => unawaited(ClassroomStart.restoreBackup!(context, store)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
   }
 }
 
@@ -604,8 +648,14 @@ class _ActionCard extends StatelessWidget {
   );
 }
 
-/// Add (when [t] is null) or edit a teacher: name and subject, no PIN. Answers the new teacher.
-Future<CeTeacher?> editTeacher(BuildContext context, ClassroomStore store, CeTeacher? t) async {
+/// Add (when [t] is null) or edit a teacher: name and subject. Adding needs no PIN (a new
+/// teacher adds themselves on "Who's teaching now?"); changing or removing one needs the school
+/// PIN unless [pinChecked] (College settings asked for it already). Removing asks first, says
+/// what happens to their periods, and offers Undo for 10 seconds. Answers the teacher added or
+/// changed.
+Future<CeTeacher?> editTeacher(BuildContext context, ClassroomStore store, CeTeacher? t, {bool pinChecked = false}) async {
+  if (t != null && !pinChecked && !await askSchoolPin(context, store, reason: 'Changing or removing a teacher needs the school PIN.')) return null;
+  if (!context.mounted) return null;
   final name = TextEditingController(text: t?.name ?? '');
   final subject = TextEditingController(text: t?.subject ?? '');
   final result = await showDialog<String>(
@@ -624,15 +674,23 @@ Future<CeTeacher?> editTeacher(BuildContext context, ClassroomStore store, CeTea
           ],
         ),
       ),
+      actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
-        if (t != null) TextButton(key: const Key('ce-teacher-remove'), onPressed: () => Navigator.pop(ctx, 'remove'), child: const Text('Remove')),
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-        FilledButton(key: const Key('ce-teacher-save'), onPressed: () => Navigator.pop(ctx, 'save'), child: const Text('Save')),
+        if (t != null) ceRemoveAction(key: const Key('ce-teacher-remove'), label: 'Remove teacher…', onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            const SizedBox(width: Kx.s8),
+            FilledButton(key: const Key('ce-teacher-save'), onPressed: () => Navigator.pop(ctx, 'save'), child: const Text('Save')),
+          ],
+        ),
       ],
     ),
   );
+  if (!context.mounted) return null;
   if (result == 'remove' && t != null) {
-    await store.removeTeacher(t.id);
+    await removeTeacherAsking(context, store, t);
     return null;
   }
   if (result != 'save' || name.text.trim().isEmpty) return null;
@@ -640,6 +698,26 @@ Future<CeTeacher?> editTeacher(BuildContext context, ClassroomStore store, CeTea
   final updated = t.copyWith(name: name.text.trim(), subject: subject.text.trim());
   await store.updateTeacher(updated);
   return updated;
+}
+
+/// "Remove Lakshmi Rao?" with what happens to their periods; then Undo for 10 seconds.
+Future<bool> removeTeacherAsking(BuildContext context, ClassroomStore store, CeTeacher t) async {
+  final periods = store.slots.where((s) => s.teacherId == t.id).length;
+  final ok = await ceConfirmRemove(
+    context,
+    title: 'Remove ${t.name}?',
+    body: [
+      '${t.firstName}’s card goes from “Who’s teaching now?”.',
+      if (periods > 0) 'Their $periods ${periods == 1 ? 'period stays' : 'periods stay'} on the timetable with no teacher, until you choose one in Settings.',
+      'Boards they saved stay on this board.',
+    ].join(' '),
+    confirm: 'Remove teacher',
+  );
+  if (!ok || !context.mounted) return false;
+  final before = store.setup;
+  await store.removeTeacher(t.id);
+  if (context.mounted) ceUndoSnack(context, '${t.name} removed.', () => unawaited(store.replace(before)));
+  return true;
 }
 
 /// Off the timetable: which class, and the subject. Null when cancelled.

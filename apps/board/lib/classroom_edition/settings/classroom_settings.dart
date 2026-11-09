@@ -4,61 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../backup/backup_page.dart';
 import '../local/classroom_store.dart';
 import '../start/classroom_start.dart' show editTeacher;
+import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
+import 'pin_pad.dart';
 
-/// Asks for the school PIN (1234 until the college changes it). True when it was right.
-Future<bool> askSchoolPin(BuildContext context, ClassroomStore store) async {
-  final pin = TextEditingController();
-  String? error;
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => StatefulBuilder(
-      builder: (ctx, set) {
-        void check() {
-          if (store.checkPin(pin.text)) {
-            Navigator.pop(ctx, true);
-          } else {
-            set(() => error = 'That is not the school PIN.');
-            pin.clear();
-          }
-        }
-
-        return AlertDialog(
-          key: const Key('ce-pin-dialog'),
-          title: const Text('School PIN'),
-          content: SizedBox(
-            width: 360,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Settings change the timetable, teachers and classes for everyone who uses this board.'),
-                const SizedBox(height: Kx.s12),
-                TextField(
-                  key: const Key('ce-pin'),
-                  controller: pin,
-                  autofocus: true,
-                  obscureText: true,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
-                  decoration: InputDecoration(labelText: 'PIN', errorText: error),
-                  onSubmitted: (_) => check(),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-            FilledButton(key: const Key('ce-pin-ok'), onPressed: check, child: const Text('Open settings')),
-          ],
-        );
-      },
-    ),
-  );
-  return ok == true;
-}
+export 'pin_pad.dart' show askSchoolPin, chooseNewPin, CePinPad;
 
 /// The Classroom edition's Settings: the college, teachers, classes (roll numbers), the
 /// timetable and the school PIN. Opened after [askSchoolPin].
@@ -81,7 +34,7 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   Widget build(BuildContext context) => Theme(
     data: ceTheme(context),
     child: DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         key: const Key('ce-settings-page'),
         backgroundColor: CeC.page,
@@ -95,12 +48,13 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
               Tab(key: Key('ce-tab-teachers'), text: 'Teachers'),
               Tab(key: Key('ce-tab-classes'), text: 'Classes'),
               Tab(key: Key('ce-tab-college'), text: 'College and PIN'),
+              Tab(key: Key('ce-tab-backup'), text: 'Backup & restore'),
             ],
           ),
         ),
         body: ListenableBuilder(
           listenable: store,
-          builder: (context, _) => TabBarView(children: [_timetable(), _teachers(), _classes(), _collegeTab()]),
+          builder: (context, _) => TabBarView(children: [_timetable(), _teachers(), _classes(), _collegeTab(), BackupTab(store: store)]),
         ),
       ),
     ),
@@ -145,7 +99,7 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
           leading: CircleAvatar(backgroundColor: CeC.pastel(t.colour), child: Text(KxAvatar.initials(t.name), style: ceText(15, w: FontWeight.w600, c: CeC.navy))),
           title: t.name,
           subtitle: [t.subject, store.classesOf(t.id)].where((x) => x.isNotEmpty).join(' · '),
-          onTap: () => unawaited(editTeacher(context, store, t)),
+          onTap: () => unawaited(editTeacher(context, store, t, pinChecked: true)),
         ),
     ],
     add: 'Add a teacher',
@@ -210,15 +164,22 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
               ],
             ),
           ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
           actions: [
-            if (c != null) TextButton(key: const Key('ce-class-remove'), onPressed: () => Navigator.pop(ctx, 'remove'), child: const Text('Remove')),
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-            FilledButton(key: const Key('ce-class-save'), onPressed: () => Navigator.pop(ctx, 'save'), child: const Text('Save')),
+            if (c != null) ceRemoveAction(key: const Key('ce-class-remove'), label: 'Remove class…', onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                const SizedBox(width: Kx.s8),
+                FilledButton(key: const Key('ce-class-save'), onPressed: () => Navigator.pop(ctx, 'save'), child: const Text('Save')),
+              ],
+            ),
           ],
         ),
       ),
     );
-    if (result == 'remove' && c != null) return store.removeClass(c.id);
+    if (result == 'remove' && c != null) return _removeClass(c);
     if (result != 'save' || section.text.trim().isEmpty) return;
     final n = int.tryParse(rolls.text) ?? 40;
     if (c == null) {
@@ -226,6 +187,23 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
     } else {
       await store.updateClass(c.copyWith(year: year, section: section.text.trim().toUpperCase(), stream: stream.text.trim(), rollCount: n));
     }
+  }
+
+  Future<void> _removeClass(CeClass c) async {
+    final periods = store.slots.where((s) => s.classId == c.id).length;
+    final ok = await ceConfirmRemove(
+      context,
+      title: 'Remove ${c.name}?',
+      body: [
+        if (periods > 0) 'Its $periods ${periods == 1 ? 'period comes' : 'periods come'} off the timetable.' else 'It has no periods on the timetable.',
+        'Its marks, mock tests and lesson progress stay saved on this board but are not shown while the class is gone.',
+      ].join(' '),
+      confirm: 'Remove class',
+    );
+    if (!ok || !mounted) return;
+    final before = store.setup;
+    await store.removeClass(c.id);
+    if (mounted) ceUndoSnack(context, '${c.name} removed.', () => unawaited(store.replace(before)));
   }
 
   // --- Timetable ----------------------------------------------------------------------------
@@ -334,9 +312,14 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
               ),
             ),
           ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
           actions: [
-            if (s != null) TextButton(key: const Key('ce-slot-remove'), onPressed: () => Navigator.pop(ctx, 'remove'), child: const Text('Remove')),
+            if (s != null) ceRemoveAction(key: const Key('ce-slot-remove'), label: 'Remove period…', onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            const SizedBox(width: Kx.s8),
             FilledButton(
               key: const Key('ce-slot-save'),
               onPressed: () {
@@ -349,11 +332,13 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
               },
               child: const Text('Save'),
             ),
+              ],
+            ),
           ],
         ),
       ),
     );
-    if (result == 'remove' && s != null) return store.removeSlot(s.id);
+    if (result == 'remove' && s != null) return _removeSlot(s);
     if (result != 'save') return;
     String pad(String t) => t.trim().padLeft(5, '0');
     final slot = CeSlot(
@@ -373,6 +358,23 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
       await store.updateSlot(slot);
     }
   }
+
+  Future<void> _removeSlot(CeSlot s) async {
+    final what = [store.classById(s.classId)?.name, s.subject].whereType<String>().where((x) => x.isNotEmpty).join(' · ');
+    final when = '${_longDays[s.weekday - 1]} ${CeSlot.short(s.start)}–${CeSlot.short(s.end)}';
+    final ok = await ceConfirmRemove(
+      context,
+      title: 'Remove this period?',
+      body: '$when${what.isEmpty ? '' : ', $what'}, comes off the timetable. “Start my class” no longer opens it.',
+      confirm: 'Remove period',
+    );
+    if (!ok || !mounted) return;
+    final before = store.setup;
+    await store.removeSlot(s.id);
+    if (mounted) ceUndoSnack(context, 'Period removed.', () => unawaited(store.replace(before)));
+  }
+
+  static const _longDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   // --- College and PIN ----------------------------------------------------------------------
 
@@ -400,7 +402,13 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
       const SizedBox(height: Kx.s32),
       Text('School PIN', style: ceHeading(20)),
       const SizedBox(height: Kx.s8),
-      Text(store.pinIsDefault ? 'The PIN is still 1234. Choose the college’s own PIN.' : 'Only staff who know the PIN can change these settings.', style: ceText(16)),
+      Text(
+        store.pinIsDefault
+            ? 'The PIN is still 1234. Choose the college’s own PIN.'
+            : 'Only staff who know the PIN can change these settings. After 5 wrong PINs the board waits a minute, and longer after each one more.'
+                  '${store.hasRecoveryCode ? '' : ' Change the PIN once to get a recovery code for when it is forgotten.'}',
+        style: ceText(16),
+      ),
       const SizedBox(height: Kx.s12),
       Align(
         alignment: Alignment.centerLeft,
@@ -410,49 +418,8 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   );
 
   Future<void> _changePin() async {
-    final a = TextEditingController(), b = TextEditingController();
-    String? error;
-    final pin = await showDialog<String>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, set) => AlertDialog(
-          key: const Key('ce-new-pin-dialog'),
-          title: const Text('New school PIN'),
-          content: SizedBox(
-            width: 360,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final (k, c, l) in [(const Key('ce-new-pin'), a, 'New PIN (4 to 8 digits)'), (const Key('ce-new-pin-again'), b, 'Type it again')])
-                  TextField(
-                    key: k,
-                    controller: c,
-                    obscureText: true,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
-                    decoration: InputDecoration(labelText: l),
-                  ),
-                if (error != null) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text(error!, style: TextStyle(color: Theme.of(ctx).colorScheme.error))),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-            FilledButton(
-              key: const Key('ce-new-pin-save'),
-              onPressed: () {
-                if (a.text.length < 4) return set(() => error = 'Use 4 to 8 digits.');
-                if (a.text != b.text) return set(() => error = 'The two PINs are not the same.');
-                Navigator.pop(ctx, a.text);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (pin == null) return;
-    await store.setPin(pin);
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('The school PIN is changed.')));
+    if (await chooseNewPin(context, store) && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('The school PIN is changed.')));
+    }
   }
 }

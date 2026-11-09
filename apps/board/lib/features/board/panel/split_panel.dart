@@ -19,6 +19,8 @@ extension PanelTabInfo on PanelTab {
   bool get shown => switch (this) {
     PanelTab.lessons || PanelTab.classTools => Edition.classroom,
     PanelTab.ai => Edition.ai,
+    // The camera and online tools (YouTube videos, the web, casting): not in the Classroom edition.
+    PanelTab.videos || PanelTab.camera || PanelTab.web || PanelTab.cast => Edition.onlineTools,
     _ => true,
   };
 

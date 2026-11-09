@@ -12,19 +12,32 @@ abstract class AutosaveStore {
   Future<String?> read();
   Future<void> write(String data);
   Future<void> clear();
+
+  /// The store for one slot: the Classroom edition keeps each teacher's board for each class
+  /// apart (`ce-teacher-class`), so the next class never opens on someone else's board.
+  AutosaveStore slot(String name) => this;
+
+  /// A slot name as a file name.
+  static String slotFile(String name) => 'autosave_${name.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_')}.json';
 }
 
 /// A file in the app's own folder (application support: not the teacher's Documents), written
 /// beside itself and renamed into place, so a power cut mid-write keeps the copy before.
-class FileAutosaveStore implements AutosaveStore {
-  FileAutosaveStore({Future<Directory> Function()? dir}) : _dir = dir ?? getApplicationSupportDirectory;
+class FileAutosaveStore extends AutosaveStore {
+  FileAutosaveStore({Future<Directory> Function()? dir, this.name = 'autosave_board.json'}) : _dir = dir ?? getApplicationSupportDirectory;
 
   final Future<Directory> Function() _dir;
+
+  /// The file's name in the app's folder.
+  final String name;
+
+  @override
+  AutosaveStore slot(String name) => FileAutosaveStore(dir: _dir, name: AutosaveStore.slotFile(name));
 
   Future<File> _file() async {
     final dir = await _dir();
     await dir.create(recursive: true);
-    return File('${dir.path}${Platform.pathSeparator}autosave_board.json');
+    return File('${dir.path}${Platform.pathSeparator}$name');
   }
 
   @override
@@ -49,9 +62,18 @@ class FileAutosaveStore implements AutosaveStore {
 }
 
 /// For tests and boards without a file system.
-class MemoryAutosaveStore implements AutosaveStore {
+class MemoryAutosaveStore extends AutosaveStore {
   String? data;
   int writes = 0;
+
+  /// The slots' stores, by name.
+  final slots = <String, MemoryAutosaveStore>{};
+
+  @override
+  AutosaveStore slot(String name) => slots[name] ??= newSlot();
+
+  /// A new slot's store (a subclass keeps its own behaviour in its slots).
+  MemoryAutosaveStore newSlot() => MemoryAutosaveStore();
 
   @override
   Future<String?> read() async => data;
@@ -71,7 +93,14 @@ class MemoryAutosaveStore implements AutosaveStore {
 /// back ([start]). A blank board (End class, New) clears it at once, so the next class starts
 /// clean. Saving to "Your Whiteboards" in the cloud is separate (signed-in teachers).
 class BoardAutosave {
-  BoardAutosave({required this.wb, required this.snapshot, AutosaveStore? store, this.delay = const Duration(seconds: 2)}) : _store = store ?? defaultStore;
+  BoardAutosave({required this.wb, required this.snapshot, AutosaveStore? store, String? slot, this.delay = const Duration(seconds: 2)})
+    : _store = slot == null ? (store ?? defaultStore) : (store ?? defaultStore).slot(slot);
+
+  /// Every autosave open now: a crash writes them all before anything else (core/crash).
+  static final open = <BoardAutosave>{};
+
+  /// Writes every open board's waiting change now (the app is crashing).
+  static Future<void> flushAll() => Future.wait([for (final a in open.toList()) a.flush()]);
 
   /// The store new boards use. Tests replace it with a [MemoryAutosaveStore].
   static AutosaveStore defaultStore = FileAutosaveStore();
@@ -145,6 +174,7 @@ class BoardAutosave {
       debugPrint('Autosave: last board not read: $e');
     }
     if (_disposed) return null;
+    open.add(this);
     wb.committed.addListener(changed);
     // Written on before the read finished: keep that.
     if (!wb.isBlank) changed();
@@ -154,6 +184,7 @@ class BoardAutosave {
   /// Stops listening and writes what is waiting.
   Future<void> dispose() {
     _disposed = true;
+    open.remove(this);
     if (_started) wb.committed.removeListener(changed);
     return flush();
   }

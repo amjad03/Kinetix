@@ -1,0 +1,17 @@
+<!-- Zynetix Classroom (KINETIX_EDITION=classroom): merged over src/main/AndroidManifest.xml and
+     the plugins' manifests by android/app/build.gradle.kts. The edition has no camera, no
+     microphone and no speech recognition (no document camera, lesson recording, noise meter,
+     voice commands or live captions), so it asks for none of them. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.CAMERA" tools:node="remove"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove"/>
+    <uses-feature android:name="android.hardware.camera" tools:node="remove"/>
+    <uses-feature android:name="android.hardware.camera.any" tools:node="remove"/>
+    <queries>
+        <!-- Voice questions to KINETIX AI (speech_to_text): not in this edition. -->
+        <intent tools:node="remove">
+            <action android:name="android.speech.RecognitionService"/>
+        </intent>
+    </queries>
+</manifest>

@@ -16,6 +16,12 @@ abstract final class Edition {
   /// offline AI notes, flowchart suggestions, voice commands and live captions.
   static bool get ai => !classroom;
 
+  /// Whether this build has the camera and the online tools: the document camera, photos from
+  /// the camera, concept videos (YouTube), the safe web browser, casting, and 3D models and
+  /// handwriting models downloaded from the internet. None in the Classroom edition, which works
+  /// offline and asks for no camera or microphone (android/app/src/classroom/AndroidManifest.xml).
+  static bool get onlineTools => !classroom;
+
   /// The app's name in this edition.
   static String get appName => classroom ? 'Zynetix Classroom' : 'KINETIX Board';
 }

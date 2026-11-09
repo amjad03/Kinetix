@@ -183,8 +183,16 @@ abstract final class ModelCatalogue {
     for (final m in RemoteModels.all) ModelEntry.downloadable(m),
   ];
 
+  /// Whether models that download on first use are offered. An app that works offline (the
+  /// Classroom edition) turns this off: only the bundled models and those already downloaded
+  /// are listed.
+  static bool downloads = true;
+
   /// The models pickers list, in library order.
-  static List<ModelEntry> get entries => [for (final e in all) if (e.listed) e];
+  static List<ModelEntry> get entries => [
+    for (final e in all)
+      if (e.listed && (downloads || e.remote == null || RemoteModels.cache.isCached(e.remote!))) e,
+  ];
 
   /// Any model by id, listed or not. A downloadable model is also found by its viewer id
   /// (pictures of it on the board link back with that).

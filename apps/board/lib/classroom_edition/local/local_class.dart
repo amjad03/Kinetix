@@ -12,6 +12,15 @@ List<Student> rollRoster(CeClass c) => [for (final n in c.rolls) Student(id: rol
 
 String rollStudentId(int roll) => 'roll-$roll';
 
+/// The board's autosave slot in a local class: one per teacher and class, so a teacher's board
+/// for 1st PUC A never opens for 2nd PUC B or for another teacher (the practice board has its
+/// own).
+String ceAutosaveSlot(ClassroomStore store) {
+  if (ceOpenPractice) return 'ce-practice';
+  final t = store.currentTeacher?.id ?? CeTeacher.guestId;
+  return 'ce-$t-${store.currentClass?.id ?? 'no-class'}';
+}
+
 /// The roll number of a roster entry made by [rollRoster] (null for any other student).
 int? rollOf(Student s) => s.id.startsWith('roll-') ? int.tryParse(s.id.substring(5)) : null;
 
