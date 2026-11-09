@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:kinetix_cards/kinetix_cards.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../classroom_edition/edition.dart';
 import '../../l10n/l10n.dart';
 import '../board/chrome.dart';
 import 'class_poll.dart';
@@ -123,7 +124,8 @@ class _ClassCheckPanelState extends State<ClassCheckPanel> {
                 spacing: Kx.s8,
                 runSpacing: Kx.s8,
                 children: [
-                  if (poll.open && poll.kind == PollKind.mcq)
+                  // Answer cards are read with the camera: not in the Classroom edition.
+                  if (poll.open && poll.kind == PollKind.mcq && Edition.onlineTools)
                     FilledButton.tonalIcon(
                       key: const Key('poll-scan'),
                       onPressed: _scanning ? null : _scan,

@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
-import 'package:kinetix_3d/kinetix_3d.dart' show RemoteModels;
+import 'package:kinetix_3d/kinetix_3d.dart' show ModelCatalogue, RemoteModels;
 import 'package:kinetix_ink/kinetix_ink.dart' show flowSuggestionsEnabled;
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:path_provider/path_provider.dart';
@@ -16,6 +16,7 @@ import 'core/api_client.dart';
 import 'core/app_info.dart';
 import 'core/board_controller.dart';
 import 'core/crash/crash_guard.dart';
+import 'core/handwriting/mlkit_handwriting.dart';
 import 'core/outbox_store.dart';
 import 'core/recording/recordings.dart';
 import 'core/server_config.dart';
@@ -116,6 +117,10 @@ class KinetixBoardApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // No AI in the Classroom edition, flowchart suggestions included (classroom_edition/).
     flowSuggestionsEnabled = Edition.ai;
+    // Offline, no downloads: only the bundled 3D models (and ones downloaded before) are listed,
+    // and no handwriting model is fetched.
+    ModelCatalogue.downloads = Edition.onlineTools;
+    MlKitHandwriting.downloadsAllowed = () => Edition.onlineTools;
     // The board's language: its own setting, or the signed-in teacher's while they teach.
     return ListenableBuilder(
       listenable: controller,
@@ -167,10 +172,13 @@ class KinetixBoardApp extends StatelessWidget {
             BoardStage.needsEnrollment => Edition.classroom ? ClassroomStart(board: controller) : EnrollScreen(controller: controller),
             // Concept videos are suggested over the board when a period starts.
             // The lock screen and PIN offer of shared-board profiles go over it (features/profiles).
-            BoardStage.board => ConceptVideoSuggestions(
-              board: controller,
-              child: ProfileLock(board: controller, child: BoardScreen(board: controller)),
-            ),
+            // No YouTube suggestions in the Classroom edition (no online tools).
+            BoardStage.board => Edition.onlineTools
+                ? ConceptVideoSuggestions(
+                    board: controller,
+                    child: ProfileLock(board: controller, child: BoardScreen(board: controller)),
+                  )
+                : ProfileLock(board: controller, child: BoardScreen(board: controller)),
           },
         ),
       ),

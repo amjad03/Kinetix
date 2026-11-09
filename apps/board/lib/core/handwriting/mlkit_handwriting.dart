@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart' as mlkit;
@@ -15,6 +17,26 @@ class MlKitHandwriting implements HandwritingRecognizer, InkModelReader {
   MlKitHandwriting({mlkit.DigitalInkRecognizerModelManager? manager}) : _manager = manager ?? mlkit.DigitalInkRecognizerModelManager();
 
   final mlkit.DigitalInkRecognizerModelManager _manager;
+
+  /// Whether models may be downloaded at all. The Classroom edition works offline and never
+  /// downloads one: a model not on the device shows as not available, never as an error.
+  static bool Function() downloadsAllowed = () => true;
+
+  /// Whether Google's model server can be reached now (a quick name look-up, nothing is sent),
+  /// so a download is never started offline only to fail. Tests replace it.
+  static Future<bool> Function() online = _canReachGoogle;
+
+  static Future<bool> _canReachGoogle() async {
+    try {
+      final r = await InternetAddress.lookup('dl.google.com').timeout(const Duration(seconds: 3));
+      return r.isNotEmpty && r.first.rawAddress.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Whether the last download was not started because the device was offline.
+  bool lastDownloadOffline = false;
   final Map<String, mlkit.DigitalInkRecognizer> _recognizers = {};
   final Set<String> _unsupported = {};
 
@@ -44,7 +66,8 @@ class MlKitHandwriting implements HandwritingRecognizer, InkModelReader {
     if (_unsupported.contains(model)) return HandwritingModelState.unsupported;
     if (_downloading.value.contains(model)) return HandwritingModelState.downloading;
     try {
-      return await _manager.isModelDownloaded(model) ? HandwritingModelState.ready : HandwritingModelState.needsDownload;
+      if (await _manager.isModelDownloaded(model)) return HandwritingModelState.ready;
+      return downloadsAllowed() ? HandwritingModelState.needsDownload : HandwritingModelState.unsupported;
     } on PlatformException catch (e) {
       if (_noModel(e)) {
         _unsupported.add(model);
@@ -61,7 +84,10 @@ class MlKitHandwriting implements HandwritingRecognizer, InkModelReader {
   @override
   Future<bool> downloadModel(String model) async {
     if (await modelStateOf(model) == HandwritingModelState.ready) return true;
-    if (_unsupported.contains(model)) return false;
+    if (_unsupported.contains(model) || !downloadsAllowed()) return false;
+    // Offline: not started at all (ML Kit would fail after a long wait).
+    lastDownloadOffline = !await online();
+    if (lastDownloadOffline) return false;
     _downloading.value = {..._downloading.value, model};
     try {
       return await _manager.downloadModel(model, isWifiRequired: false);

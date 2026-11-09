@@ -50,8 +50,9 @@ void main() {
       ];
       expect(tabs.take(2), [PanelTab.lessons, PanelTab.classTools]);
       expect(tabs, isNot(contains(PanelTab.ai)));
-      // Every other tab stays.
-      expect(tabs, containsAll([PanelTab.model3d, PanelTab.labs, PanelTab.videos, PanelTab.books, PanelTab.kit, PanelTab.animations, PanelTab.sims, PanelTab.camera, PanelTab.web, PanelTab.cast]));
+      // Every other tab stays, but the camera and the online tools (offline_tools_test.dart).
+      expect(tabs, containsAll([PanelTab.model3d, PanelTab.labs, PanelTab.books, PanelTab.kit, PanelTab.animations, PanelTab.sims]));
+      expect(tabs, isNot(anyOf(contains(PanelTab.videos), contains(PanelTab.camera), contains(PanelTab.web), contains(PanelTab.cast))));
       expect(ToolbarLayouts.classroomDefaults(simple: true), ['pen', 'colours', 'eraser', 'undo', 'lessons', 'class-tools', 'show-all']);
       expect(ToolbarLayouts.classroomDefaults(simple: false).where((id) => id.contains('ai')), isEmpty);
       expect(ToolbarLayouts.classroomDefaults(simple: false).length, ToolbarLayouts.panelMax);

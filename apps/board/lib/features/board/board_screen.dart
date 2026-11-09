@@ -1816,7 +1816,7 @@ class _BoardScreenState extends State<BoardScreen> {
       DrawerTool('ask-class', Icons.how_to_vote_outlined, l.toolAskClass, [ToolGroup.classroom], cls, _run(() => unawaited(_classCheck.ask(context)))),
       DrawerTool('attendance', Icons.how_to_reg_outlined, l.toolAttendance, [ToolGroup.classroom], cls, _run(_attendance)),
       DrawerTool('todays-plan', Icons.event_note_outlined, l.toolTodaysPlan, [ToolGroup.classroom], cls, _run(() => _show(PanelKind.plan))),
-      DrawerTool('concept-videos', Icons.smart_display_outlined, l.toolConceptVideos, [ToolGroup.classroom, ToolGroup.science], cls, _run(() => _show(PanelKind.videos))),
+      if (Edition.onlineTools) DrawerTool('concept-videos', Icons.smart_display_outlined, l.toolConceptVideos, [ToolGroup.classroom, ToolGroup.science], cls, _run(() => _show(PanelKind.videos))),
       // The offline dictionary (language kit), not the kit's word wall of picture words.
       DrawerTool('dictionary', Icons.menu_book_outlined, s.dictionary, [ToolGroup.classroom, ToolGroup.language], lang, _run(() => _openPage(s.dictionary, Icons.menu_book_outlined, (_) => LanguageKitPanel(key: const ValueKey(LanguageTab.dictionary), board: board, wb: _wb)))),
       DrawerTool('mindmap', Icons.bubble_chart_outlined, contextStrings(context)['mindmap'], [ToolGroup.classroom, ToolGroup.language], cls, _run(() => unawaited(MindMapEditor.open(context, _wb)))),
@@ -2006,7 +2006,11 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   /// Opens the panel at [k] (a tab or a page), whatever is showing now.
+  /// The panels of the camera and the online tools (none in the Classroom edition).
+  static const _onlinePanels = {PanelKind.videos, PanelKind.camera, PanelKind.web, PanelKind.cast};
+
   void _show(PanelKind k) {
+    if (!Edition.onlineTools && _onlinePanels.contains(k)) return;
     _popHosted();
     setState(() {
       _popover = null;

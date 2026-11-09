@@ -5,6 +5,7 @@ import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../classroom_edition/edition.dart';
 import '../../l10n/l10n.dart';
 import 'chrome.dart';
 import 'panel/panel_host.dart' show showPanelDialog;
@@ -38,7 +39,7 @@ String aiPenModelName(AppLocalizations l, String model) {
 /// A demo board fetches English and shapes by itself when it is online, so the AI pen converts
 /// from the first stroke. Offline, ML Kit fails quietly and the board asks later.
 Future<void> autoDownloadDemoModels(HandwritingRecognizer handwriting, {VoidCallback? onReady}) async {
-  if (handwriting is! InkModelReader) return;
+  if (handwriting is! InkModelReader || !Edition.onlineTools) return;
   final reader = handwriting as InkModelReader;
   var any = false;
   for (final m in [InkModels.text('en'), InkModels.shapes]) {
@@ -53,7 +54,8 @@ Future<void> autoDownloadDemoModels(HandwritingRecognizer handwriting, {VoidCall
 /// download them, with progress, so writing converts from then on. Asked once per device (Board
 /// settings → AI pen downloads them later too). True when the models were downloaded.
 Future<bool> offerAiPenModels(BuildContext context, HandwritingRecognizer handwriting, String language, {bool force = false}) async {
-  if (handwriting is! InkModelReader) return false;
+  // The Classroom edition downloads nothing (core/handwriting/mlkit_handwriting.dart).
+  if (handwriting is! InkModelReader || !Edition.onlineTools) return false;
   final reader = handwriting as InkModelReader;
   const key = 'aiPen.modelsOffered';
   SharedPreferences? prefs;

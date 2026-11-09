@@ -126,6 +126,17 @@ android {
     }
 }
 
+// Zynetix Classroom has no camera, microphone or speech recognition: its overlay manifest
+// (src/classroom/AndroidManifest.xml) removes CAMERA, RECORD_AUDIO, the camera features and the
+// speech-recognition query, from this app's manifest and from the plugins' (camera, record).
+androidComponents {
+    onVariants { variant ->
+        if (classroomEdition) {
+            variant.sources.manifests.addStaticManifestFile(layout.projectDirectory.file("src/classroom/AndroidManifest.xml").asFile.absolutePath)
+        }
+    }
+}
+
 // Fail a release build early and clearly instead of producing an unsigned or debug-signed app.
 tasks.configureEach {
     if (name == "preReleaseBuild" && useTestSigning) {

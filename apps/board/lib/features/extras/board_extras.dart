@@ -200,8 +200,11 @@ List<DrawerTool> extraDrawerTools(BuildContext context, ExtrasHooks h, {required
     ])
       DrawerTool(id, icon, s[key], const [ToolGroup.language, ToolGroup.classroom], lang, page(key, icon, (_) => LanguageKitPanel(key: ValueKey(t), board: h.board, wb: h.wb, initial: t))),
     // Classroom
-    DrawerTool('doc-camera', Icons.document_scanner_outlined, s['docCamera'], const [ToolGroup.classroom, ToolGroup.science], media, () => run(h.openCamera)),
-    DrawerTool('safe-web', Icons.travel_explore, s['safeWeb'], const [ToolGroup.classroom], media, () => run(h.openWeb)),
+    // The camera and the web: not in the Classroom edition (offline, no camera).
+    if (Edition.onlineTools) ...[
+      DrawerTool('doc-camera', Icons.document_scanner_outlined, s['docCamera'], const [ToolGroup.classroom, ToolGroup.science], media, () => run(h.openCamera)),
+      DrawerTool('safe-web', Icons.travel_explore, s['safeWeb'], const [ToolGroup.classroom], media, () => run(h.openWeb)),
+    ],
     if (Edition.ai) DrawerTool('live-captions', Icons.closed_caption_outlined, s['captions'], const [ToolGroup.classroom, ToolGroup.language], media, () => run(() => unawaited(LiveCaptions.toggle(context)))),
     DrawerTool('magnifier', Icons.zoom_in, s['magnifier'], const [ToolGroup.classroom], cls, () => run(() => BoardMagnifier.toggle(context))),
     DrawerTool('seating-chart', Icons.event_seat_outlined, s['seating'], const [ToolGroup.classroom], cls, page('seating', Icons.event_seat_outlined, (_) => SeatingChartPanel(board: h.board, wb: h.wb))),
