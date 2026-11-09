@@ -5,8 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/device_store.dart';
+import '../ui/screen_fit.dart' show CeScreenSize;
 import 'school_pin.dart';
 
+export '../ui/screen_fit.dart' show CeScreenSize;
 export 'school_pin.dart' show PinCheck, PinResult, SchoolPin;
 
 /// A teacher who uses this board (the Classroom edition keeps them on the board itself: no
@@ -249,6 +251,7 @@ class ClassroomStore extends ChangeNotifier {
   static const lockoutKey = 'classroom.pinLockout';
   static const tourKey = 'classroom.tourSeen';
   static const simpleKey = 'classroom.showAllTools';
+  static const screenSizeKey = 'classroom.screenSize';
 
   /// The PIN Settings asks for until the college changes it.
   static const defaultPin = '1234';
@@ -258,6 +261,9 @@ class ClassroomStore extends ChangeNotifier {
 
   /// "Show all tools" on the board (else the Simple board), remembered on the board.
   bool showAllTools = false;
+
+  /// How big everything is drawn on this board (Settings → This board → Screen size).
+  CeScreenSize screenSize = CeScreenSize.normal;
 
   /// Whether the guided tour has been seen on this board.
   bool tourSeen = false;
@@ -307,6 +313,7 @@ class ClassroomStore extends ChangeNotifier {
       _readLockout(await _store.setting(lockoutKey));
       showAllTools = await _store.setting(simpleKey) == 'true';
       tourSeen = await _store.setting(tourKey) == 'true';
+      screenSize = CeScreenSize.parse(await _store.setting(screenSizeKey));
     } catch (e) {
       debugPrint('Classroom set-up not loaded: $e');
     }
@@ -603,6 +610,12 @@ class ClassroomStore extends ChangeNotifier {
     try {
       await _store.setSetting(simpleKey, '$v');
     } catch (_) {}
+  }
+
+  Future<void> setScreenSize(CeScreenSize s) async {
+    screenSize = s;
+    notifyListeners();
+    await _set(screenSizeKey, s.name);
   }
 
   Future<void> markTourSeen() async {

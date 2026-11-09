@@ -13,6 +13,7 @@ import 'classroom_edition/lessons/lessons_panel.dart' show installLessonHooks;
 import 'classroom_edition/local/sample_college.dart';
 import 'classroom_edition/start/classroom_start.dart';
 import 'classroom_edition/ui/phone_fit.dart';
+import 'classroom_edition/ui/screen_fit.dart';
 import 'core/api_client.dart';
 import 'core/app_info.dart';
 import 'core/board_controller.dart';
@@ -147,13 +148,18 @@ class KinetixBoardApp extends StatelessWidget {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => ListenableBuilder(
-          listenable: controller,
+          listenable: Listenable.merge([controller, controller.classroom]),
           builder: (context, _) {
             // The teacher's App theme, whatever the device or the layout.
             final look = controller.theme.resolve(MediaQuery.platformBrightnessOf(context));
             // Preview as interactive panel: the whole app as a 1920 × 1080 panel shows it.
             // Classroom edition on a phone: the board's 1920 × 1080 layout, scaled to fit.
             return CrashOverlay(
+              // Classroom edition on a 4K panel that reports a pixel ratio of 1: laid out as on a
+              // 1080p panel and scaled up; and the college's Screen size (Smaller / Larger).
+              child: CeScreenFit(
+              enabled: Edition.classroom && !controller.panelPreview,
+              size: controller.classroom.screenSize,
               child: CePhoneFit(
               enabled: Edition.classroom && !controller.panelPreview,
               child: PanelPreview(
@@ -172,6 +178,7 @@ class KinetixBoardApp extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
               ),
               ),
               ),

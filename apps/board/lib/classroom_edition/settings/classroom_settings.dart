@@ -37,7 +37,7 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   Widget build(BuildContext context) => Theme(
     data: ceTheme(context),
     child: DefaultTabController(
-      length: 6,
+      length: 7,
       child: Scaffold(
         key: const Key('ce-settings-page'),
         backgroundColor: CeC.page,
@@ -52,13 +52,14 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
               Tab(key: Key('ce-tab-classes'), text: 'Classes'),
               Tab(key: Key('ce-tab-college'), text: 'College and PIN'),
               Tab(key: Key('ce-tab-backup'), text: 'Backup & restore'),
+              Tab(key: Key('ce-tab-board'), text: 'This board'),
               Tab(key: Key('ce-tab-advanced'), text: 'Advanced'),
             ],
           ),
         ),
         body: ListenableBuilder(
           listenable: store,
-          builder: (context, _) => TabBarView(children: [_timetable(), _teachers(), _classes(), _collegeTab(), BackupTab(store: store), _advancedTab()]),
+          builder: (context, _) => TabBarView(children: [_timetable(), _teachers(), _classes(), _collegeTab(), BackupTab(store: store), _boardTab(), _advancedTab()]),
         ),
       ),
     ),
@@ -421,6 +422,26 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
     ],
   );
 
+  // --- This board ---------------------------------------------------------------------------
+
+  Widget _boardTab() => ListView(
+    padding: const EdgeInsets.all(Kx.s24),
+    children: [
+      Text('Screen size', style: ceHeading(20)),
+      const SizedBox(height: Kx.s8),
+      Text('How big buttons and writing are on this board. Saved on this board only.', style: ceText(16)),
+      const SizedBox(height: Kx.s12),
+      Wrap(
+        spacing: Kx.s12,
+        runSpacing: Kx.s12,
+        children: [
+          for (final (s, label, sample) in [(CeScreenSize.smaller, 'Smaller', 20.0), (CeScreenSize.normal, 'Normal', 26.0), (CeScreenSize.larger, 'Larger', 32.0)])
+            _SizeChoice(key: Key('ce-screen-size-${s.name}'), label: label, sample: sample, selected: store.screenSize == s, onTap: () => unawaited(store.setScreenSize(s))),
+        ],
+      ),
+    ],
+  );
+
   // --- Advanced -----------------------------------------------------------------------------
 
   Widget _advancedTab() => ListView(
@@ -458,3 +479,46 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   }
 }
 
+/// One of Smaller / Normal / Larger: a big card with "Aa" at that size.
+class _SizeChoice extends StatelessWidget {
+  const _SizeChoice({super.key, required this.label, required this.sample, required this.selected, required this.onTap});
+
+  final String label;
+  final double sample;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: selected,
+    label: label,
+    excludeSemantics: true,
+    child: Material(
+      color: selected ? CeC.blue : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: selected ? CeC.accent : CeC.line, width: selected ? 3 : 1.5)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: SizedBox(
+          width: 200,
+          height: 120,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Aa', style: ceHeading(sample)),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (selected) ...[const Icon(Icons.check_circle, color: CeC.accent, size: 22), const SizedBox(width: 6)],
+                  Text(label, style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}

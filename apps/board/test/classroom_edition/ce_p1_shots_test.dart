@@ -43,6 +43,7 @@ void main() {
   for (final (tag, size, dpr, kn) in const [
     ('1080p', Size(1920, 1080), 1.0, false),
     ('4k-dpr1', Size(3840, 2160), 1.0, false),
+    ('4k-dpr2', Size(3840, 2160), 2.0, false),
     ('kannada', Size(1920, 1080), 1.0, true),
   ]) {
     testWidgets('key screens: $tag', (tester) async {
