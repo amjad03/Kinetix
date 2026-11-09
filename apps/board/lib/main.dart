@@ -14,6 +14,7 @@ import 'classroom_edition/l10n/ce_strings.dart';
 import 'classroom_edition/local/sample_college.dart';
 import 'classroom_edition/start/classroom_start.dart';
 import 'classroom_edition/ui/phone_fit.dart';
+import 'classroom_edition/ui/ce_style.dart' show cePanelTheme;
 import 'classroom_edition/ui/screen_fit.dart';
 import 'core/api_client.dart';
 import 'core/app_info.dart';
@@ -179,7 +180,7 @@ class KinetixBoardApp extends StatelessWidget {
                       messages: controller.broadcasts,
                       acknowledged: controller.acknowledgedEmergencies,
                       onDismiss: controller.dismissBroadcast,
-                      child: Theme(data: boardAppTheme(look), child: DeviceLockGate(board: controller, child: RoomSyncGate(board: controller, child: child!))),
+                      child: Theme(data: Edition.classroom ? cePanelTheme(boardAppTheme(look)) : boardAppTheme(look), child: DeviceLockGate(board: controller, child: RoomSyncGate(board: controller, child: child!))),
                     ),
                   ),
                 ),

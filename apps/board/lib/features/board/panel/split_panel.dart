@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import '../../../classroom_edition/edition.dart';
+import '../../../classroom_edition/ui/ce_scroll_row.dart';
 import 'package:kinetix_ink/kinetix_ink.dart';
 import 'package:kinetix_ui/kinetix_ui.dart';
 
@@ -115,27 +116,31 @@ class SplitPanelFrame extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                key: const Key('panel-tabs'),
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
+              child: Builder(
+                builder: (context) {
+                  final tabs = [
                     for (final t in PanelTab.values)
                       if (t.shown)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2),
-                        child: ChoiceChip(
-                          key: Key('panel-tab-${t.name}'),
-                          avatar: Icon(t.icon, size: 18),
-                          label: Text(t.label(s)),
-                          showCheckmark: false,
-                          selected: tab == t,
-                          visualDensity: VisualDensity.compact,
-                          onSelected: (_) => onTab(t),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                          child: ChoiceChip(
+                            key: Key('panel-tab-${t.name}'),
+                            avatar: Icon(t.icon, size: Edition.classroom ? 22 : 18),
+                            label: Text(t.label(s)),
+                            showCheckmark: false,
+                            selected: tab == t,
+                            // The Classroom edition's tabs are full-size touch targets.
+                            visualDensity: Edition.classroom ? VisualDensity.standard : VisualDensity.compact,
+                            padding: Edition.classroom ? const EdgeInsets.symmetric(horizontal: 10, vertical: 20) : null,
+                            labelStyle: Edition.classroom ? const TextStyle(fontSize: 17) : null,
+                            onSelected: (_) => onTab(t),
+                          ),
                         ),
-                      ),
-                  ],
-                ),
+                  ];
+                  // Classroom edition: the tabs fade at an edge with more, and an arrow there scrolls.
+                  if (Edition.classroom) return CeScrollRow(scrollKey: const Key('panel-tabs'), background: c.surfaceContainerLow, children: tabs);
+                  return SingleChildScrollView(key: const Key('panel-tabs'), scrollDirection: Axis.horizontal, child: Row(children: tabs));
+                },
               ),
             ),
             if (onAddToBoard != null)

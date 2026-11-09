@@ -104,8 +104,9 @@ Widget choiceChip(String label, {required bool on, required VoidCallback onTap, 
   child: InkWell(
     customBorder: const StadiumBorder(),
     onTap: onTap,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+    child: Container(
+      constraints: const BoxConstraints(minHeight: ceTarget),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

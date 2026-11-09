@@ -11,6 +11,7 @@ import '../../features/phet/phet_view.dart';
 import '../../features/reader/read_aloud.dart' show ReaderVoice;
 import '../classroom_hooks.dart';
 import '../local/classroom_store.dart';
+import '../ui/ce_more_text.dart';
 import '../ui/ce_style.dart';
 import 'lesson_board.dart';
 import 'lesson_embeds.dart';
@@ -543,7 +544,7 @@ class LessonsPanelState extends State<LessonsPanel> {
       children: [
         Row(
           children: [
-            IconButton(key: const Key('lessons-back'), onPressed: () => setState(() => chapter = null), icon: const Icon(Icons.arrow_back, color: CeC.navy)),
+            IconButton(key: const Key('lessons-back'), tooltip: ceTr('Back'), onPressed: () => setState(() => chapter = null), icon: const Icon(Icons.arrow_back, color: CeC.navy)),
             const SizedBox(width: 4),
             Expanded(child: Text('${ch.year == 2 ? '2nd' : '1st'} PUC · ${subjectName(ch.subject)}', style: ceText(16, w: FontWeight.w600, c: CeC.navy))),
             cePill(ceTr('{n} of {total} taught', {'n': _taughtIn(ch), 'total': ch.topics.length}), bg: CeC.pastel(i)),
@@ -631,7 +632,7 @@ class LessonsPanelState extends State<LessonsPanel> {
         children: [
           Row(
             children: [
-              IconButton(key: const Key('lessons-player-back'), onPressed: closeLesson, icon: const Icon(Icons.arrow_back, color: CeC.navy)),
+              IconButton(key: const Key('lessons-player-back'), tooltip: ceTr('Back'), onPressed: closeLesson, icon: const Icon(Icons.arrow_back, color: CeC.navy)),
               const SizedBox(width: 4),
               Expanded(
                 child: Text('${ceTr('Chapter {n}', {'n': ch.number})} · ${ch.title.t(l)}', style: ceText(16, w: FontWeight.w600, c: CeC.navy), maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -719,12 +720,13 @@ class LessonsPanelState extends State<LessonsPanel> {
                   ),
                 ),
                 const SizedBox(width: 16),
+                // Two lines, then "More" when the step says more (it used to scroll out of sight).
                 Expanded(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 76),
-                    child: SingleChildScrollView(
-                      child: Text(line == null || line.isEmpty ? ceTr('Explain this step in your own words.') : '“$line”', style: ceText(18, c: CeC.body, height: 1.35)),
-                    ),
+                  child: CeMoreText(
+                    line == null || line.isEmpty ? ceTr('Explain this step in your own words.') : '“$line”',
+                    key: const Key('lessons-caption'),
+                    title: ceTr('Step {n} of {total}', {'n': c.index + 1, 'total': n}),
+                    style: ceText(18, c: CeC.body, height: 1.35),
                   ),
                 ),
                 if (t.kannada) ...[const SizedBox(width: 12), _langToggle(c)],

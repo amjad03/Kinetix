@@ -53,17 +53,21 @@ Widget cePill(String label, {IconData? icon, Color bg = CeC.mint, Color fg = CeC
   ),
 );
 
+/// The smallest touch target in the Classroom edition: teachers on a wall-mounted board, often
+/// standing to one side, tap with a whole finger.
+const ceTarget = 64.0;
+
 ButtonStyle ceBigButton({Color bg = CeC.accent}) => FilledButton.styleFrom(
   backgroundColor: bg,
   foregroundColor: Colors.white,
-  minimumSize: const Size(0, 56),
+  minimumSize: const Size(ceTarget, ceTarget),
   padding: const EdgeInsets.symmetric(horizontal: 28),
   shape: const StadiumBorder(),
   textStyle: ceText(17, w: FontWeight.w600),
 );
 
 ButtonStyle ceSoftButton() => OutlinedButton.styleFrom(
-  minimumSize: const Size(0, 56),
+  minimumSize: const Size(ceTarget, ceTarget),
   padding: const EdgeInsets.symmetric(horizontal: 24),
   shape: const StadiumBorder(),
   side: const BorderSide(color: CeC.line, width: 1.5),
@@ -96,9 +100,35 @@ Widget ceBrand({double size = 40}) => Row(
   ],
 );
 
+/// The Classroom edition's panel theme, over the board's own: every button, icon button, chip,
+/// tab, segmented button, list row and dialog action is at least [ceTarget] (64 px) tall, with
+/// standard (not compact) density. `main.dart` puts it over the whole app in this edition.
+ThemeData cePanelTheme(ThemeData base) {
+  const target = Size(ceTarget, ceTarget);
+  ButtonStyle big(ButtonStyle? s) => (s ?? const ButtonStyle()).copyWith(
+    minimumSize: const WidgetStatePropertyAll(target),
+    tapTargetSize: MaterialTapTargetSize.padded,
+    visualDensity: VisualDensity.standard,
+  );
+  return base.copyWith(
+    visualDensity: VisualDensity.standard,
+    materialTapTargetSize: MaterialTapTargetSize.padded,
+    filledButtonTheme: FilledButtonThemeData(style: big(base.filledButtonTheme.style)),
+    outlinedButtonTheme: OutlinedButtonThemeData(style: big(base.outlinedButtonTheme.style)),
+    textButtonTheme: TextButtonThemeData(style: big(base.textButtonTheme.style)),
+    elevatedButtonTheme: ElevatedButtonThemeData(style: big(base.elevatedButtonTheme.style)),
+    iconButtonTheme: IconButtonThemeData(style: big(base.iconButtonTheme.style)),
+    segmentedButtonTheme: SegmentedButtonThemeData(style: big(base.segmentedButtonTheme.style), selectedIcon: base.segmentedButtonTheme.selectedIcon),
+    chipTheme: base.chipTheme.copyWith(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16), labelStyle: (base.chipTheme.labelStyle ?? const TextStyle()).copyWith(fontSize: 17)),
+    listTileTheme: base.listTileTheme.copyWith(minTileHeight: ceTarget, minVerticalPadding: 10),
+    dialogTheme: base.dialogTheme.copyWith(actionsPadding: const EdgeInsets.fromLTRB(24, 8, 24, 24)),
+    tabBarTheme: base.tabBarTheme.copyWith(labelPadding: const EdgeInsets.symmetric(horizontal: 24), labelStyle: (base.tabBarTheme.labelStyle ?? const TextStyle()).copyWith(fontSize: 17)),
+  );
+}
+
 /// A light Material theme for the Classroom edition's own screens (start, settings).
 ThemeData ceTheme(BuildContext context) {
-  final base = Theme.of(context);
+  final base = cePanelTheme(Theme.of(context));
   return base.copyWith(
     colorScheme: base.colorScheme.copyWith(primary: CeC.accent, onPrimary: Colors.white, surface: Colors.white, onSurface: CeC.navy),
     scaffoldBackgroundColor: CeC.page,

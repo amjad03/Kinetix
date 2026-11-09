@@ -197,7 +197,7 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(28), borderSide: BorderSide.none),
-                          suffixIcon: searching ? IconButton(onPressed: () => setState(_search.clear), icon: const Icon(Icons.clear)) : null,
+                          suffixIcon: searching ? IconButton(tooltip: context.ce('Clear the search'), onPressed: () => setState(_search.clear), icon: const Icon(Icons.clear)) : null,
                         ),
                       ),
                     ),

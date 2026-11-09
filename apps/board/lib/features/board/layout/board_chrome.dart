@@ -307,7 +307,14 @@ class _ClassBarState extends State<ClassBar> {
     const gap = SizedBox(width: Kx.s4);
     // One floating pill, like search, the clock and the profile at the top right; its chips
     // sit flat inside it.
-    final chips = ChipTheme.of(context).copyWith(side: BorderSide.none, backgroundColor: Colors.transparent, shape: const StadiumBorder());
+    // The Classroom edition's pills are 64 px touch targets (classroom_edition/ui/ce_style.dart).
+    final chips = ChipTheme.of(context).copyWith(
+      side: BorderSide.none,
+      backgroundColor: Colors.transparent,
+      shape: const StadiumBorder(),
+      padding: Edition.classroom ? const EdgeInsets.symmetric(horizontal: 10, vertical: 20) : null,
+      labelStyle: Edition.classroom ? (ChipTheme.of(context).labelStyle ?? const TextStyle()).copyWith(fontSize: 17) : null,
+    );
     return LayoutBuilder(builder: (context, box) => _bar(context, board, s, l, ls, marked, left, gap, chips, box.maxWidth));
   }
 
@@ -717,7 +724,7 @@ class PageBar extends StatelessWidget {
             ChromeSurface(
               key: const Key('nav-extras'),
               child: ToolbarDensity(
-                compact: true,
+                compact: !Edition.classroom,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -798,8 +805,9 @@ class QuickGroup {
 
   List<Widget> buttons(BuildContext context) {
     final s = SbStrings.of(context);
-    // Icons only (names in tooltips), so the corners leave room for the toolbar between them.
-    Widget compact(Widget b) => ToolbarDensity(compact: true, child: b);
+    // Icons only (names in tooltips), so the corners leave room for the toolbar between them;
+    // the Classroom edition labels them all (teachers new to the board read, not guess).
+    Widget compact(Widget b) => ToolbarDensity(compact: !Edition.classroom, child: b);
     return [
       for (final b in <Widget>[
       ToolButton(key: const Key('switch-sides'), icon: Icons.swap_horiz, label: s('switch'), onTap: onSwitch),

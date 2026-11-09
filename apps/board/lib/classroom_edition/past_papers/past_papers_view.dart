@@ -146,6 +146,7 @@ class _PastPapersViewState extends State<PastPapersView> {
                   suffixIcon: search.text.isEmpty
                       ? null
                       : IconButton(
+                          tooltip: ceTr('Clear the search'),
                           icon: const Icon(Icons.close_rounded),
                           onPressed: () => setState(() {
                             search.clear();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinetix_ink/kinetix_ink.dart' show BoardBackground;
 import 'package:kinetix_ui/kinetix_ui.dart';
 
+import '../../classroom_edition/edition.dart';
 import '../../core/board_controller.dart';
 
 /// Building blocks for the board's floating chrome: toolbars, popovers and panels.
@@ -175,10 +176,11 @@ class ToolButton extends StatelessWidget {
           duration: const Duration(milliseconds: 150),
           // Labels in Hindi and Kannada run longer than English: the button grows a little,
           // then the label is cut with an ellipsis (the tooltip keeps the full name).
-          width: compact ? Kx.boardTarget : null,
+          // The Classroom edition's targets are 64 px (classroom_edition/ui/ce_style.dart).
+          width: compact ? (Edition.classroom ? 64 : Kx.boardTarget) : null,
           constraints: compact ? null : (big ? const BoxConstraints(minWidth: 80, maxWidth: 112) : const BoxConstraints(minWidth: 64, maxWidth: 92)),
           padding: compact ? null : const EdgeInsets.symmetric(horizontal: 4),
-          height: compact ? Kx.boardTarget : (big ? 76 : 60),
+          height: compact ? (Edition.classroom ? 64 : Kx.boardTarget) : (big ? 76 : (Edition.classroom ? 64 : 60)),
           decoration: BoxDecoration(
             color: selected ? c.secondaryContainer : Colors.transparent,
             borderRadius: BorderRadius.circular(Kx.rMd),
