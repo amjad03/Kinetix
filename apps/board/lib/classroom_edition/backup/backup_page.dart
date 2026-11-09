@@ -230,7 +230,7 @@ class _BackupTabState extends State<BackupTab> {
           title: 'Daily backup',
           body: 'Each day the board is used it backs itself up, and keeps the last ${BackupService.keepDaily} days on the board and in Documents/Zynetix/Daily backups.',
           children: [
-            Text(daily.isEmpty ? 'No daily backup yet: the first one is made when a class starts today.' : 'Last daily backup: ${_when.format(daily.first.at)} (${daily.length} kept).', key: const Key('ce-backup-daily'), style: ceText(16, c: CeC.navy)),
+            Text(daily.isEmpty ? 'No daily backup yet: the first one is made when a class starts today.' : 'Last daily backup: ${_date.format(daily.first.at)} (${daily.length} kept).', key: const Key('ce-backup-daily'), style: ceText(16, c: CeC.navy)),
           ],
         ),
         _section(
@@ -259,7 +259,7 @@ class _BackupTabState extends State<BackupTab> {
                     'before-restore' => Icons.history,
                     _ => Icons.backup_outlined,
                   }, color: CeC.navy),
-                  title: Text(_when.format(b.at), style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
+                  title: Text(b.kind == 'daily' ? _date.format(b.at) : _when.format(b.at), style: ceText(17, w: FontWeight.w600, c: CeC.navy)),
                   subtitle: Text(switch (b.kind) {
                     'daily' => 'Daily backup',
                     'before-restore' => 'Made before a restore',

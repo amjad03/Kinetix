@@ -133,7 +133,9 @@ class _CePinPadState extends State<CePinPad> {
     Widget key(String label, {Key? k, VoidCallback? onTap, IconData? icon, bool primary = false}) => SizedBox(
       width: 104,
       height: 84,
-      child: Material(
+      child: Opacity(
+        opacity: left != null ? 0.4 : 1,
+        child: Material(
         color: primary ? CeC.accent : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22), side: BorderSide(color: primary ? CeC.accent : CeC.line, width: 2)),
         child: InkWell(
@@ -146,6 +148,7 @@ class _CePinPadState extends State<CePinPad> {
                 : Text(label, style: ceHeading(primary ? 24 : 34, w: FontWeight.w600, c: primary ? Colors.white : CeC.navy)),
           ),
         ),
+      ),
       ),
     );
     Widget row(List<Widget> keys) => Padding(
@@ -210,7 +213,7 @@ Widget _padDialog(BuildContext ctx, {required Key key, required Widget pad}) => 
   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
   child: Stack(
     children: [
-      Padding(padding: const EdgeInsets.fromLTRB(40, 36, 40, 28), child: pad),
+      Padding(padding: const EdgeInsets.fromLTRB(40, 36, 40, 28), child: SizedBox(width: 560, child: pad)),
       Positioned(
         right: 8,
         top: 8,

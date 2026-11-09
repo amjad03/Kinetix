@@ -218,10 +218,11 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
                     ? const Center(child: CircularProgressIndicator())
                     : ListView(
                         children: [
-                          if (!searching && _recent.isNotEmpty) ...[
+                          // Recent only when there are more boards than it shows.
+                          if (!searching && _recent.isNotEmpty && _all!.length > _recent.length) ...[
                             Text('Recent', style: ceHeading(22)),
                             const SizedBox(height: 12),
-                            _grid([for (final e in _recent) _tile(e, keyPrefix: 'ce-recent')]),
+                            _grid(_recent, 'ce-recent'),
                             const SizedBox(height: 28),
                             Text(_allClasses ? 'All my boards' : 'Boards for ${widget.className.isEmpty ? 'this class' : widget.className}', style: ceHeading(22)),
                             const SizedBox(height: 12),
@@ -243,7 +244,7 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
                               ),
                             )
                           else
-                            _grid([for (final e in shown) _tile(e, keyPrefix: 'ce-board')]),
+                            _grid(shown, 'ce-board'),
                         ],
                       ),
               ),
@@ -254,11 +255,18 @@ class _CeBoardLibraryDialogState extends State<CeBoardLibraryDialog> {
     );
   }
 
-  Widget _grid(List<Widget> tiles) => Wrap(spacing: 20, runSpacing: 20, children: tiles);
+  /// Tiles about 300 wide, as many to a row as fit (two in the panel beside the board).
+  Widget _grid(List<LocalBoardEntry> entries, String keyPrefix) => LayoutBuilder(
+    builder: (context, box) {
+      final cols = ((box.maxWidth + 20) / 300).floor().clamp(1, 6);
+      final w = (box.maxWidth - 20 * (cols - 1)) / cols;
+      return Wrap(spacing: 20, runSpacing: 20, children: [for (final e in entries) _tile(e, keyPrefix: keyPrefix, width: w)]);
+    },
+  );
 
-  Widget _tile(LocalBoardEntry e, {required String keyPrefix}) => SizedBox(
+  Widget _tile(LocalBoardEntry e, {required String keyPrefix, required double width}) => SizedBox(
     key: Key('$keyPrefix-${e.id}'),
-    width: 320,
+    width: width,
     child: Material(
       color: Colors.white,
       shape: RoundedRectangleBorder(

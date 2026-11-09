@@ -105,6 +105,14 @@ void main() {
     final autosave = MemoryAutosaveStore();
     BoardAutosave.defaultStore = autosave;
     final board = (await tester.runAsync(() => classroomBoard(seed: sampleCollege())))!;
+    // Lakshmi's older boards for 2nd PUC B (so Recent has more than it shows).
+    clock = ceMonday.subtract(const Duration(days: 3));
+    await tester.runAsync(() async {
+      for (var i = 1; i <= 4; i++) {
+        await LocalBoardLibrary.instance.save(_board(1), title: 'Current electricity $i', teacherId: 'lr', classId: 'c2b', className: '2nd PUC B');
+      }
+    });
+    clock = ceMonday;
     await pumpApp(tester, board);
     await tapKey(tester, 'ce-start-class');
     await settle(tester, 15);
@@ -129,7 +137,7 @@ void main() {
     await tester.enterText(find.byKey(const Key('ce-save-title')), 'Coulomb’s law');
     await tapKey(tester, 'ce-save-ok');
     await io(tester);
-    final saved = (await tester.runAsync(() => LocalBoardLibrary.instance.list()))!;
+    final saved = (await tester.runAsync(() => LocalBoardLibrary.instance.list(classId: 'c1a')))!;
     expect([for (final e in saved) (e.title, e.teacherId, e.classId, e.subject)], [('Coulomb’s law', 'lr', 'c1a', 'Physics')]);
     expect(File('${dir.path}/lr/c1a/${saved.single.id}.png').existsSync(), isTrue, reason: 'a thumbnail');
 
@@ -138,10 +146,12 @@ void main() {
     expect(find.byKey(const Key('ce-save-new')), findsOneWidget);
     await tapKey(tester, 'ce-save-new');
     await io(tester);
-    expect((await tester.runAsync(() => LocalBoardLibrary.instance.list()))!, hasLength(2));
+    expect((await tester.runAsync(() => LocalBoardLibrary.instance.list(classId: 'c1a')))!, hasLength(2));
 
     // Open: the grid with Recent, search, and delete after asking.
     await menu(tester, 'menu-open');
+    await io(tester);
+    await io(tester);
     await io(tester);
     expect(find.byKey(const Key('ce-library')), findsOneWidget);
     expect(find.text('Recent'), findsOneWidget);
@@ -156,16 +166,19 @@ void main() {
     expect(find.text('Delete “Coulomb’s law”?'), findsOneWidget);
     await tapKey(tester, 'ce-confirm-ok');
     await io(tester);
-    expect((await tester.runAsync(() => LocalBoardLibrary.instance.list()))!, hasLength(1));
+    await io(tester);
+    await io(tester);
+    expect((await tester.runAsync(() => LocalBoardLibrary.instance.list(classId: 'c1a')))!, hasLength(1));
 
     // The other one opens over what is on the board, after asking.
-    final left = (await tester.runAsync(() => LocalBoardLibrary.instance.list()))!.single;
+    final left = (await tester.runAsync(() => LocalBoardLibrary.instance.list(classId: 'c1a')))!.single;
     await tester.enterText(find.byKey(const Key('ce-library-search')), '');
     await settle(tester);
     await tester.tap(find.byKey(Key('ce-recent-${left.id}')));
     await settle(tester);
     expect(find.byKey(const Key('replace-board')), findsOneWidget);
     await tapKey(tester, 'replace-board-open');
+    await io(tester);
     await io(tester);
     expect(find.textContaining('Coulomb’s law'), findsWidgets);
     expect((await tester.runAsync(() => LocalBoardLibrary.instance.entry(left.id)))!.openedAt, isNotNull);

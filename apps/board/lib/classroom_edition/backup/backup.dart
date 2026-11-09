@@ -339,6 +339,14 @@ class BackupService {
     }
   }
 
+  /// When a backup was made, from its name ("…-2026-11-09-1005.zip", "…-2026-11-09.zip").
+  static DateTime? _stampOf(String name) {
+    final m = RegExp(r'(\d{4})-(\d{2})-(\d{2})(?:-(\d{2})(\d{2}))?\.zip$').firstMatch(name);
+    if (m == null) return null;
+    int g(int i) => int.parse(m.group(i) ?? '0');
+    return DateTime(g(1), g(2), g(3), g(4), g(5));
+  }
+
   /// The backups kept on this board, newest first.
   Future<List<BackupFile>> onBoard() async {
     final out = <BackupFile>[];
@@ -348,7 +356,7 @@ class BackupService {
         if (f is! File || !f.path.endsWith('.zip')) continue;
         final n = f.uri.pathSegments.last;
         final k = n.startsWith(beforeRestorePrefix) ? 'before-restore' : kind;
-        out.add(BackupFile(file: f, kind: k, at: f.statSync().modified));
+        out.add(BackupFile(file: f, kind: k, at: _stampOf(n) ?? f.statSync().modified));
       }
     }
     return out..sort((a, b) => b.at.compareTo(a.at));
