@@ -11,6 +11,7 @@ import '../start/classroom_start.dart' show editTeacher;
 import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
 import 'pin_pad.dart';
+import '../start/setup_wizard.dart' show openSetupWizard;
 import 'timetable_editor.dart';
 import '../l10n/ce_strings.dart';
 
@@ -595,6 +596,15 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   Widget _boardTab() => ListView(
     padding: const EdgeInsets.all(Kx.s24),
     children: [
+      Text(context.ce('Set-up'), style: ceHeading(20)),
+      const SizedBox(height: Kx.s8),
+      Text(context.ce('Go through the college, classes, teachers, bell times and PIN again, one step at a time.'), style: ceText(16)),
+      const SizedBox(height: Kx.s12),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: OutlinedButton.icon(key: const Key('ce-rerun-setup'), style: ceSoftButton(), onPressed: () => unawaited(openSetupWizard(context, store)), icon: const Icon(Icons.auto_fix_high_outlined), label: Text(context.ce('Run the set-up again'))),
+      ),
+      const SizedBox(height: Kx.s32),
       Text(context.ce('Screen size'), style: ceHeading(20)),
       const SizedBox(height: Kx.s8),
       Text(context.ce('How big buttons and writing are on this board. Saved on this board only.'), style: ceText(16)),

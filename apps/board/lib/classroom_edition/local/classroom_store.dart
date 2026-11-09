@@ -292,6 +292,7 @@ class ClassroomStore extends ChangeNotifier {
   static const tourKey = 'classroom.tourSeen';
   static const simpleKey = 'classroom.showAllTools';
   static const screenSizeKey = 'classroom.screenSize';
+  static const setupDoneKey = 'classroom.setupDone';
 
   /// The PIN Settings asks for until the college changes it.
   static const defaultPin = '1234';
@@ -304,6 +305,13 @@ class ClassroomStore extends ChangeNotifier {
 
   /// How big everything is drawn on this board (Settings → This board → Screen size).
   CeScreenSize screenSize = CeScreenSize.normal;
+
+  /// Whether the set-up wizard was finished (or skipped through) on this board.
+  bool setupDone = false;
+
+  /// A board nobody has set up: no college name, no teachers, and the wizard never finished.
+  /// The start screen runs the set-up wizard first.
+  bool get needsSetup => !setupDone && college.trim().isEmpty && teachers.isEmpty;
 
   /// Whether the guided tour has been seen on this board.
   bool tourSeen = false;
@@ -354,6 +362,7 @@ class ClassroomStore extends ChangeNotifier {
       showAllTools = await _store.setting(simpleKey) == 'true';
       tourSeen = await _store.setting(tourKey) == 'true';
       screenSize = CeScreenSize.parse(await _store.setting(screenSizeKey));
+      setupDone = await _store.setting(setupDoneKey) == 'true';
     } catch (e) {
       debugPrint('Classroom set-up not loaded: $e');
     }
@@ -692,6 +701,12 @@ class ClassroomStore extends ChangeNotifier {
     screenSize = s;
     notifyListeners();
     await _set(screenSizeKey, s.name);
+  }
+
+  Future<void> markSetupDone() async {
+    setupDone = true;
+    notifyListeners();
+    await _set(setupDoneKey, 'true');
   }
 
   Future<void> markTourSeen() async {

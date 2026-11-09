@@ -15,6 +15,7 @@ import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
 import 'language_switch.dart';
 import 'setup_problem.dart';
+import 'setup_wizard.dart';
 import '../l10n/ce_strings.dart';
 
 enum _Scene { start, who, pair }
@@ -50,6 +51,9 @@ class _ClassroomStartState extends State<ClassroomStart> {
 
   /// The teacher picked on "Who's teaching now?" (else the timetable's teacher for the period).
   String? _picked;
+
+  /// Whether the set-up wizard shows (decided when the set-up has loaded).
+  bool? _wizard;
   late final Timer _tick = Timer.periodic(const Duration(seconds: 30), (_) {
     if (mounted) setState(() {});
   });
@@ -121,6 +125,19 @@ class _ClassroomStartState extends State<ClassroomStart> {
 
   @override
   Widget build(BuildContext context) {
+    // A board nobody has set up: the set-up wizard first (P1 item 10). Decided once, so the
+    // wizard stays while its first steps fill in the college.
+    _wizard ??= store.loaded ? store.needsSetup && store.problem == null : null;
+    if (_wizard ?? false) {
+      return CeSetupWizard(
+        key: const Key('ce-first-run'),
+        store: store,
+        onDone: (tour) {
+          if (mounted) setState(() => _wizard = false);
+          if (tour) unawaited(_practice());
+        },
+      );
+    }
     final child = switch (_scene) {
       _Scene.start => CeStartScreen(
         store: store,

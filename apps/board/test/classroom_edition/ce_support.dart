@@ -16,11 +16,12 @@ final ceMonday = DateTime(2026, 11, 9, 10, 5);
 
 /// A Classroom edition board with no ERP enrolment, started; [seed] is written to its store
 /// first (as Settings would have), the clock is [ceMonday].
-Future<BoardController> classroomBoard({CeSetup? seed, Map<String, Object> prefs = const {}, bool tourSeen = true}) async {
+/// [setupDone]: the set-up wizard was finished (the start screen shows straight away).
+Future<BoardController> classroomBoard({CeSetup? seed, Map<String, Object> prefs = const {}, bool tourSeen = true, bool setupDone = true}) async {
   Edition.classroom = true;
   // PBKDF2 for the school PIN, cheap enough to check inside a widget test's fake clock.
   SchoolPin.iterations = 1000;
-  SharedPreferences.setMockInitialValues({...prefs, if (tourSeen) 'setting.${ClassroomStore.tourKey}': 'true'});
+  SharedPreferences.setMockInitialValues({...prefs, if (tourSeen) 'setting.${ClassroomStore.tourKey}': 'true', if (setupDone) 'setting.${ClassroomStore.setupDoneKey}': 'true'});
   final store = DeviceStore(secrets: MemorySecretStore());
   final board = BoardController(store: store, outboxStore: MemoryOutboxStore());
   board.classroom.now = () => ceMonday;
