@@ -1,4 +1,5 @@
-<!-- Zynetix Classroom (KINETIX_EDITION=classroom): merged over src/main/AndroidManifest.xml and
+<!-- Zynetix Classroom (KINETIX_EDITION=classroom, applicationId in.zynetix.classroom, not
+     in.kinetix.board): merged over src/main/AndroidManifest.xml and
      the plugins' manifests by android/app/build.gradle.kts. The edition has no camera, no
      microphone and no speech recognition (no document camera, lesson recording, noise meter,
      voice commands or live captions), so it asks for none of them. -->

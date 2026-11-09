@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../../classroom_edition/edition.dart';
 import 'native_strings.dart';
 
 const _osm = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -16,6 +17,10 @@ double pathKm(List<LatLng> pts) {
   }
   return m / 1000;
 }
+
+/// The map's picture tiles (from the internet). The Classroom edition works offline and fetches
+/// none: markers, paths and the place quiz still work on a plain background.
+Widget _tiles(String url) => Edition.onlineTools ? TileLayer(urlTemplate: url, userAgentPackageName: 'in.kinetix.board') : const ColoredBox(key: Key('map-offline'), color: Color(0xFFE8F0F7));
 
 Widget _attribution() => const RichAttributionWidget(
   attributions: [TextSourceAttribution('OpenStreetMap contributors (ODbL)'), TextSourceAttribution('Labels-free basemap: CARTO')],
@@ -68,11 +73,11 @@ class _MapLabState extends State<MapLab> {
       child: FlutterMap(
         options: MapOptions(initialCenter: const LatLng(20.6, 78.9), initialZoom: 4.5, onTap: _tap),
         children: [
-          TileLayer(urlTemplate: _streets ? _osm : _carto, userAgentPackageName: 'in.kinetix.board'),
+          _tiles(_streets ? _osm : _carto),
           if (_showMeasure && _path.length > 1) PolylineLayer(polylines: [Polyline(points: _path, strokeWidth: 4, color: Colors.deepOrange)]),
           if (_showMeasure) MarkerLayer(markers: [for (final p in _path) Marker(point: p, width: 12, height: 12, child: const DecoratedBox(decoration: BoxDecoration(color: Colors.deepOrange, shape: BoxShape.circle)))]),
           if (_showMarkers) MarkerLayer(markers: [for (final p in _markers) Marker(point: p, width: 36, height: 36, child: const Icon(Icons.location_on, color: Colors.red, size: 36))]),
-          _attribution(),
+          if (Edition.onlineTools) _attribution(),
         ],
       ),
     ),
@@ -169,9 +174,9 @@ class _GeoQuizState extends State<GeoQuiz> {
         child: FlutterMap(
           options: MapOptions(initialCenter: const LatLng(21, 80), initialZoom: 4.3, onTap: _tap),
           children: [
-            TileLayer(urlTemplate: _carto, userAgentPackageName: 'in.kinetix.board'),
+            _tiles(_carto),
             if (_answer != null) MarkerLayer(markers: [Marker(point: _answer!, width: 36, height: 36, child: const Icon(Icons.location_on, color: Colors.red, size: 36))]),
-            _attribution(),
+            if (Edition.onlineTools) _attribution(),
           ],
         ),
       ),

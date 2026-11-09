@@ -50,6 +50,17 @@ kiosk mode off in the ERP and let the board come online.
 
 ## Android: making Zynetix Board the device owner
 
+The package id depends on the build:
+
+| Build | Package id | Device-owner component |
+| --- | --- | --- |
+| Zynetix Board (KINETIX Board) | `in.kinetix.board` | `in.kinetix.board/app.kinetix.board.KioskAdminReceiver` |
+| Zynetix Classroom (`KINETIX_EDITION=classroom`) | `in.zynetix.classroom` | `in.zynetix.classroom/app.kinetix.board.KioskAdminReceiver` |
+
+The receiver's class name stays `app.kinetix.board.KioskAdminReceiver` in both (it is the code's
+namespace); only the package before the slash changes. The commands below use the Board's id: for
+a Classroom panel put `in.zynetix.classroom` in its place.
+
 Only a device owner can lock fully without a prompt. A device has one owner, set either on a fresh
 device (after a factory reset) or through an MDM.
 
@@ -62,6 +73,7 @@ factory-reset and skip account setup) and only one user.
 2. `adb shell dpm set-device-owner in.kinetix.board/app.kinetix.board.KioskAdminReceiver`
 3. Open the board, enrol it from *ERP → Boards*. With kiosk mode on in the ERP it locks within
    seconds; *Board settings → Kiosk mode* says "On: this device is locked to Zynetix Board."
+   Zynetix Classroom has no ERP: turn kiosk mode on in *Board settings → Kiosk mode* on the panel.
 
 A device owner app cannot be uninstalled from Settings. To **remove** it (stop using kiosk mode on
 that panel, or hand the panel to another use): turn kiosk mode off in the ERP (or leave with the
@@ -71,7 +83,7 @@ PIN), then factory-reset the panel. Zynetix Board does not offer an in-app "give
 
 For more than a handful of panels, use an Android Enterprise MDM. The MDM's own app becomes the
 device owner (QR code or zero-touch enrolment after a factory reset, per the MDM's guide) and you
-add `in.kinetix.board` as the kiosk / lock task app. The board then locks fully (it sees that it is
+add `in.kinetix.board` (Zynetix Classroom: `in.zynetix.classroom`) as the kiosk / lock task app. The board then locks fully (it sees that it is
 allowed), while the lock screen, status bar, home app and updates follow the MDM's policy.
 Zynetix Board itself is not a DPC and cannot be enrolled by QR code on its own.
 

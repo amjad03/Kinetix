@@ -61,7 +61,9 @@
             </intent-filter>
         </activity-alias>
         <!-- Kiosk mode: device admin, so the board can be provisioned as device owner:
-             adb shell dpm set-device-owner in.kinetix.board/app.kinetix.board.KioskAdminReceiver -->
+             adb shell dpm set-device-owner in.kinetix.board/app.kinetix.board.KioskAdminReceiver
+             (Zynetix Classroom, applicationId in.zynetix.classroom:
+             adb shell dpm set-device-owner in.zynetix.classroom/app.kinetix.board.KioskAdminReceiver) -->
         <receiver
             android:name=".KioskAdminReceiver"
             android:exported="true"
