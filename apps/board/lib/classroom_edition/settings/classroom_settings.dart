@@ -6,6 +6,7 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../local/classroom_store.dart';
 import '../start/classroom_start.dart' show editTeacher;
+import '../ui/ce_confirm.dart';
 import '../ui/ce_style.dart';
 import 'pin_pad.dart';
 
@@ -96,7 +97,7 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
           leading: CircleAvatar(backgroundColor: CeC.pastel(t.colour), child: Text(KxAvatar.initials(t.name), style: ceText(15, w: FontWeight.w600, c: CeC.navy))),
           title: t.name,
           subtitle: [t.subject, store.classesOf(t.id)].where((x) => x.isNotEmpty).join(' · '),
-          onTap: () => unawaited(editTeacher(context, store, t)),
+          onTap: () => unawaited(editTeacher(context, store, t, pinChecked: true)),
         ),
     ],
     add: 'Add a teacher',
@@ -161,15 +162,22 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
               ],
             ),
           ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
           actions: [
-            if (c != null) TextButton(key: const Key('ce-class-remove'), onPressed: () => Navigator.pop(ctx, 'remove'), child: const Text('Remove')),
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-            FilledButton(key: const Key('ce-class-save'), onPressed: () => Navigator.pop(ctx, 'save'), child: const Text('Save')),
+            if (c != null) ceRemoveAction(key: const Key('ce-class-remove'), label: 'Remove class…', onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                const SizedBox(width: Kx.s8),
+                FilledButton(key: const Key('ce-class-save'), onPressed: () => Navigator.pop(ctx, 'save'), child: const Text('Save')),
+              ],
+            ),
           ],
         ),
       ),
     );
-    if (result == 'remove' && c != null) return store.removeClass(c.id);
+    if (result == 'remove' && c != null) return _removeClass(c);
     if (result != 'save' || section.text.trim().isEmpty) return;
     final n = int.tryParse(rolls.text) ?? 40;
     if (c == null) {
@@ -177,6 +185,23 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
     } else {
       await store.updateClass(c.copyWith(year: year, section: section.text.trim().toUpperCase(), stream: stream.text.trim(), rollCount: n));
     }
+  }
+
+  Future<void> _removeClass(CeClass c) async {
+    final periods = store.slots.where((s) => s.classId == c.id).length;
+    final ok = await ceConfirmRemove(
+      context,
+      title: 'Remove ${c.name}?',
+      body: [
+        if (periods > 0) 'Its $periods ${periods == 1 ? 'period comes' : 'periods come'} off the timetable.' else 'It has no periods on the timetable.',
+        'Its marks, mock tests and lesson progress stay saved on this board but are not shown while the class is gone.',
+      ].join(' '),
+      confirm: 'Remove class',
+    );
+    if (!ok || !mounted) return;
+    final before = store.setup;
+    await store.removeClass(c.id);
+    if (mounted) ceUndoSnack(context, '${c.name} removed.', () => unawaited(store.replace(before)));
   }
 
   // --- Timetable ----------------------------------------------------------------------------
@@ -285,9 +310,14 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
               ),
             ),
           ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
           actions: [
-            if (s != null) TextButton(key: const Key('ce-slot-remove'), onPressed: () => Navigator.pop(ctx, 'remove'), child: const Text('Remove')),
+            if (s != null) ceRemoveAction(key: const Key('ce-slot-remove'), label: 'Remove period…', onPressed: () => Navigator.pop(ctx, 'remove')) else const SizedBox(),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            const SizedBox(width: Kx.s8),
             FilledButton(
               key: const Key('ce-slot-save'),
               onPressed: () {
@@ -300,11 +330,13 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
               },
               child: const Text('Save'),
             ),
+              ],
+            ),
           ],
         ),
       ),
     );
-    if (result == 'remove' && s != null) return store.removeSlot(s.id);
+    if (result == 'remove' && s != null) return _removeSlot(s);
     if (result != 'save') return;
     String pad(String t) => t.trim().padLeft(5, '0');
     final slot = CeSlot(
@@ -324,6 +356,23 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
       await store.updateSlot(slot);
     }
   }
+
+  Future<void> _removeSlot(CeSlot s) async {
+    final what = [store.classById(s.classId)?.name, s.subject].whereType<String>().where((x) => x.isNotEmpty).join(' · ');
+    final when = '${_longDays[s.weekday - 1]} ${CeSlot.short(s.start)}–${CeSlot.short(s.end)}';
+    final ok = await ceConfirmRemove(
+      context,
+      title: 'Remove this period?',
+      body: '$when${what.isEmpty ? '' : ', $what'}, comes off the timetable. “Start my class” no longer opens it.',
+      confirm: 'Remove period',
+    );
+    if (!ok || !mounted) return;
+    final before = store.setup;
+    await store.removeSlot(s.id);
+    if (mounted) ceUndoSnack(context, 'Period removed.', () => unawaited(store.replace(before)));
+  }
+
+  static const _longDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   // --- College and PIN ----------------------------------------------------------------------
 
