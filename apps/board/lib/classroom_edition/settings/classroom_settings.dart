@@ -13,6 +13,7 @@ import '../ui/ce_style.dart';
 import 'pin_pad.dart';
 import '../start/setup_wizard.dart' show openSetupWizard;
 import '../help/ce_help.dart' show openCeHelp;
+import 'startup_settings.dart' show StartupSection;
 import 'timetable_editor.dart';
 import '../update/update_settings.dart' show UpdateSection;
 import '../l10n/ce_strings.dart';
@@ -625,6 +626,8 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
             _SizeChoice(key: Key('ce-screen-size-${s.name}'), label: label, sample: sample, selected: store.screenSize == s, onTap: () => unawaited(store.setScreenSize(s))),
         ],
       ),
+      const SizedBox(height: Kx.s32),
+      const StartupSection(),
       const SizedBox(height: Kx.s32),
       const UpdateSection(),
     ],

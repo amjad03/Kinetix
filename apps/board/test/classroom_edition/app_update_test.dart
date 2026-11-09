@@ -1,6 +1,5 @@
 // Updates without the Play Store: the manifest, the daily check, the download's SHA-256, an APK
 // from a USB drive, and Settings → This board → App updates.
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 

@@ -8,6 +8,10 @@
     <!-- Updates without the Play Store (Settings → This board → App updates): hands a checked APK
          to Android's installer, which asks the teacher. Android refuses one signed by anyone else. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <!-- "Open Zynetix when the board starts" (BootReceiver.kt): Android 10+ lets an app open itself
+         after a restart only with "Display over other apps", which the teacher turns on in
+         Android's settings when Settings → This board asks. Nothing is drawn over other apps. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.CAMERA" tools:node="remove"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove"/>
     <uses-feature android:name="android.hardware.camera" tools:node="remove"/>

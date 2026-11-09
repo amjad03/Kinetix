@@ -810,4 +810,18 @@ const ceKannada = <String, String>{
   'This APK cannot be installed': 'ಈ APK ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗದು',
   'Install Zynetix Classroom {version}?': 'Zynetix Classroom {version} ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕೇ?',
   'This board has {current}. Android asks you to confirm the update; your classes, marks and boards stay.': 'ಈ ಬೋರ್ಡ್‌ನಲ್ಲಿ {current} ಇದೆ. ಅಪ್‌ಡೇಟ್ ಖಚಿತಪಡಿಸಲು Android ಕೇಳುತ್ತದೆ; ನಿಮ್ಮ ತರಗತಿಗಳು, ಅಂಕಗಳು ಮತ್ತು ಬೋರ್ಡ್‌ಗಳು ಉಳಿಯುತ್ತವೆ.',
+  // Settings → This board → When the board starts (settings/startup_settings.dart).
+  'One more permission': 'ಇನ್ನೊಂದು ಅನುಮತಿ',
+  'Android 10 and later let an app open by itself after a restart only when it may “Display over other apps”. Turn it on for Zynetix Classroom on the next screen, then come back.': 'Android 10 ಮತ್ತು ನಂತರದವು, “ಇತರ ಆ್ಯಪ್‌ಗಳ ಮೇಲೆ ತೋರಿಸಿ” ಅನುಮತಿ ಇದ್ದಾಗ ಮಾತ್ರ ಮರುಆರಂಭದ ನಂತರ ಆ್ಯಪ್ ತಾನೇ ತೆರೆಯಲು ಬಿಡುತ್ತವೆ. ಮುಂದಿನ ಪರದೆಯಲ್ಲಿ Zynetix Classroom ಗೆ ಅದನ್ನು ಆನ್ ಮಾಡಿ, ನಂತರ ಹಿಂದಿರುಗಿ.',
+  'Open the setting': 'ಸೆಟ್ಟಿಂಗ್ ತೆರೆಯಿರಿ',
+  'When the board starts': 'ಬೋರ್ಡ್ ಆರಂಭವಾದಾಗ',
+  'Only on Android boards.': 'Android ಬೋರ್ಡ್‌ಗಳಲ್ಲಿ ಮಾತ್ರ.',
+  'Open Zynetix when the board starts': 'ಬೋರ್ಡ್ ಆರಂಭವಾದಾಗ Zynetix ತೆರೆಯಿರಿ',
+  'After a restart or a power cut the board opens Zynetix Classroom by itself. No kiosk mode or device owner needed.': 'ಮರುಆರಂಭ ಅಥವಾ ವಿದ್ಯುತ್ ಕಡಿತದ ನಂತರ ಬೋರ್ಡ್ ತಾನೇ Zynetix Classroom ತೆರೆಯುತ್ತದೆ. ಕಿಯೋಸ್ಕ್ ಮೋಡ್ ಅಥವಾ ಡಿವೈಸ್ ಓನರ್ ಬೇಕಿಲ್ಲ.',
+  'Android needs “Display over other apps” for this, or Zynetix as the home app.': 'ಇದಕ್ಕೆ Android ಗೆ “ಇತರ ಆ್ಯಪ್‌ಗಳ ಮೇಲೆ ತೋರಿಸಿ” ಅನುಮತಿ, ಅಥವಾ Zynetix ಹೋಮ್ ಆ್ಯಪ್ ಆಗಿರಬೇಕು.',
+  'Zynetix is this board’s home app: the Home button and every start open it.': 'Zynetix ಈ ಬೋರ್ಡ್‌ನ ಹೋಮ್ ಆ್ಯಪ್: ಹೋಮ್ ಬಟನ್ ಮತ್ತು ಪ್ರತಿ ಆರಂಭ ಅದನ್ನೇ ತೆರೆಯುತ್ತವೆ.',
+  'Make Zynetix the home app and the Home button and every start open it, on any panel. Choose the panel’s own launcher there again to undo it.': 'Zynetix ಅನ್ನು ಹೋಮ್ ಆ್ಯಪ್ ಮಾಡಿದರೆ ಯಾವುದೇ ಪ್ಯಾನೆಲ್‌ನಲ್ಲಿ ಹೋಮ್ ಬಟನ್ ಮತ್ತು ಪ್ರತಿ ಆರಂಭ ಅದನ್ನೇ ತೆರೆಯುತ್ತವೆ. ರದ್ದುಮಾಡಲು ಅಲ್ಲಿ ಪ್ಯಾನೆಲ್‌ನ ಸ್ವಂತ ಲಾಂಚರ್ ಅನ್ನು ಮತ್ತೆ ಆಯ್ಕೆಮಾಡಿ.',
+  'Make Zynetix the home app': 'Zynetix ಅನ್ನು ಹೋಮ್ ಆ್ಯಪ್ ಮಾಡಿ',
+  'Stop offering Zynetix as a home app': 'Zynetix ಅನ್ನು ಹೋಮ್ ಆ್ಯಪ್ ಆಗಿ ನೀಡುವುದನ್ನು ನಿಲ್ಲಿಸಿ',
+  'Some panels stop apps from starting by themselves (an “auto-start” or “boot manager” setting): allow Zynetix Classroom there too.': 'ಕೆಲವು ಪ್ಯಾನೆಲ್‌ಗಳು ಆ್ಯಪ್‌ಗಳು ತಾವೇ ಆರಂಭವಾಗುವುದನ್ನು ತಡೆಯುತ್ತವೆ (“ಆಟೋ-ಸ್ಟಾರ್ಟ್” ಅಥವಾ “ಬೂಟ್ ಮ್ಯಾನೇಜರ್” ಸೆಟ್ಟಿಂಗ್): ಅಲ್ಲಿಯೂ Zynetix Classroom ಅನ್ನು ಅನುಮತಿಸಿ.',
 };

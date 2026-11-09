@@ -79,6 +79,30 @@ class MainActivity : FlutterActivity() {
                 result.error("update", e.message, null)
             }
         }
+        // Classroom edition: opening when the board starts, and the home-app helper (BoardStartup.kt).
+        val startup = BoardStartup(this)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "zynetix/startup").setMethodCallHandler { call, result ->
+            try {
+                when (call.method) {
+                    "status" -> result.success(startup.status())
+                    "setOpenOnBoot" -> {
+                        startup.setOpenOnBoot(call.argument<Boolean>("on") ?: false)
+                        result.success(null)
+                    }
+                    "openOverlaySettings" -> {
+                        startup.openOverlaySettings()
+                        result.success(null)
+                    }
+                    "homeApp" -> {
+                        startup.homeApp(call.argument<Boolean>("on") ?: true)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            } catch (e: Exception) {
+                result.error("startup", e.message, null)
+            }
+        }
         // Projector mode: the board on a second display (Projector.kt).
         val presenter = Presenter(this)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kinetix/presenter").setMethodCallHandler { call, result ->
