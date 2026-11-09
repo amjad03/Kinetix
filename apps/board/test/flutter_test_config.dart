@@ -34,4 +34,7 @@ class SilentSounds implements ToolkitSounds {
 class _WriteOnlyAutosave extends MemoryAutosaveStore {
   @override
   Future<String?> read() async => null;
+
+  @override
+  MemoryAutosaveStore newSlot() => _WriteOnlyAutosave();
 }

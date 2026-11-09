@@ -14,10 +14,13 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 
 import '../cast/cast_panel.dart';
 import '../../classroom_edition/board/ce_board.dart';
+import '../../classroom_edition/boards/board_library.dart';
+import '../../classroom_edition/boards/board_library_ui.dart';
 import '../../classroom_edition/class_tools/class_tools_hub.dart';
 import '../../classroom_edition/classroom_hooks.dart';
 import '../../classroom_edition/edition.dart';
 import '../../classroom_edition/lessons/lessons_panel.dart';
+import '../../classroom_edition/local/classroom_store.dart' show CeTeacher;
 import '../../classroom_edition/local/local_class.dart';
 import '../../classroom_edition/settings/classroom_settings.dart';
 import '../../core/board_controller.dart';
@@ -213,7 +216,13 @@ class _BoardScreenState extends State<BoardScreen> {
   Size _canvasSize = const Size(1920, 1080);
 
   /// The board kept on this device a moment after each change (board_autosave.dart).
-  late final BoardAutosave _autosave = BoardAutosave(wb: _wb, snapshot: () => _wb.toSaved(_canvasSize).withModel3dNotes(_modelNotes.toJson()));
+  /// A local class (Classroom edition) keeps each teacher's board for each class in its own
+  /// slot.
+  late final BoardAutosave _autosave = BoardAutosave(
+    wb: _wb,
+    snapshot: () => _wb.toSaved(_canvasSize).withModel3dNotes(_modelNotes.toJson()),
+    slot: board.localClass ? ceAutosaveSlot(board.classroom) : null,
+  );
 
   /// Writes the autosave at once when the app is put away (Home, another app, the lid closed).
   late final AppLifecycleListener _lifecycle;
@@ -1135,6 +1144,7 @@ class _BoardScreenState extends State<BoardScreen> {
 
   Future<void> _save() async {
     setState(() => _popover = null);
+    if (board.localClass) return _ceSave();
     if (!board.isSignedIn) {
       showBoardMessage(context, context.l10n.saveNeedsSignIn);
       return;
@@ -1156,6 +1166,7 @@ class _BoardScreenState extends State<BoardScreen> {
   String _defaultTitle() => board.defaultBoardTitle(DateTime.now(), fallback: context.l10n.defaultBoardName, locale: context.dateLocale);
 
   Future<bool> _saveAs(String title, {required bool share}) async {
+    if (board.localClass) return _ceSaveAs(title);
     try {
       final saved = await board.saveBoard(_snapshot(), title: title, share: share);
       _boardTitle = title;
@@ -1171,6 +1182,7 @@ class _BoardScreenState extends State<BoardScreen> {
   }
 
   void _openWhiteboards() {
+    if (board.localClass) return _ceOpen();
     final api = board.api;
     if (!board.isSignedIn || api == null) {
       showBoardMessage(context, context.l10n.whiteboardsNeedSignIn);
@@ -1182,36 +1194,11 @@ class _BoardScreenState extends State<BoardScreen> {
         child: WhiteboardsDialog(
           api: api,
           onOpen: (summary) async {
-            if (!_wb.isBlank) {
-              final replace = await showPanelDialog<bool>(
-                context: context,
-                builder: (context) => BoardChromeTheme(
-                  child: AlertDialog(
-                    scrollable: true,
-                    icon: const Icon(Icons.warning_amber_rounded),
-                    title: Text(context.l10n.replaceBoardTitle),
-                    content: Text(context.l10n.replaceBoardBody),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
-                      FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.open)),
-                    ],
-                  ),
-                ),
-              );
-              if (replace != true) return;
-            }
+            if (!_wb.isBlank && !await _confirmReplace()) return;
             try {
               final saved = await api.whiteboard(summary.id);
-              _wb.load(saved);
-              // White paper and the dark board are the theme's: shown as this theme has it.
-              for (final p in const [BoardBackground.plain, BoardBackground.night]) {
-                if (_theme != BoardTheme.chalkboard) _wb.replaceBackground(p, themePaper(_theme));
-              }
-              _setModelNotes(saved.model3dNotes);
+              _showSaved(saved, summary.title);
               board.whiteboardId = summary.id;
-              setState(() => _boardTitle = summary.title);
-              _capture?.background = saved.background;
-              _live.background = saved.background;
               if (mounted) showBoardMessage(context, context.l10n.openedBoard(summary.title));
             } catch (e) {
               if (mounted) showBoardMessage(context, context.l10n.couldNotOpenBoard('$e'));
@@ -1220,6 +1207,136 @@ class _BoardScreenState extends State<BoardScreen> {
         ),
       ),
     );
+  }
+
+  /// "Open this board instead of what is on it now?"
+  Future<bool> _confirmReplace() async {
+    final replace = await showPanelDialog<bool>(
+      context: context,
+      builder: (context) => BoardChromeTheme(
+        child: AlertDialog(
+          key: const Key('replace-board'),
+          scrollable: true,
+          icon: const Icon(Icons.warning_amber_rounded),
+          title: Text(context.l10n.replaceBoardTitle),
+          content: Text(context.l10n.replaceBoardBody),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
+            FilledButton(key: const Key('replace-board-open'), onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.open)),
+          ],
+        ),
+      ),
+    );
+    return replace == true;
+  }
+
+  /// Puts a saved board on the board (opened from the cloud or this board's own library).
+  void _showSaved(SavedBoard saved, String title) {
+    _wb.load(saved);
+    // White paper and the dark board are the theme's: shown as this theme has it.
+    for (final p in const [BoardBackground.plain, BoardBackground.night]) {
+      if (_theme != BoardTheme.chalkboard) _wb.replaceBackground(p, themePaper(_theme));
+    }
+    _setModelNotes(saved.model3dNotes);
+    setState(() => _boardTitle = title);
+    _capture?.background = saved.background;
+    _live.background = saved.background;
+  }
+
+  // --- Classroom edition: boards saved on this board (classroom_edition/boards) -----------
+
+  /// The library entry open now (saved or opened in this class), for Save over it.
+  String? _ceBoardId;
+
+  CeTeacher get _ceTeacher => board.classroom.currentTeacher ?? CeTeacher.guest;
+  String get _ceClassId => board.classroom.currentClass?.id ?? 'no-class';
+
+  /// Save in a local class: on this board, in the teacher's boards for the class; named with
+  /// the class, subject and date to start with. Nothing is shared.
+  Future<void> _ceSave() async {
+    if (_wb.isBlank) {
+      showBoardMessage(context, context.l10n.nothingToSave);
+      return;
+    }
+    final store = board.classroom;
+    final t = _ceTeacher;
+    final choice = await showPanelDialog<CeSaveChoice>(
+      context: context,
+      builder: (_) => BoardChromeTheme(
+        child: CeSaveBoardDialog(
+          initialTitle: _boardTitle ?? ceDefaultBoardTitle(className: store.currentClass?.name ?? '', subject: store.currentSubject ?? '', at: store.now()),
+          current: _ceBoardId == null ? null : _boardTitle,
+          teacherName: t.isGuest ? '' : t.firstName,
+        ),
+      ),
+    );
+    if (choice == null || !mounted) return;
+    await _ceSaveAs(choice.title, asNew: choice.asNew);
+  }
+
+  Future<bool> _ceSaveAs(String title, {bool asNew = false}) async {
+    final store = board.classroom;
+    try {
+      final snapshot = _snapshot();
+      Uint8List? thumb;
+      try {
+        final page = _wb.pages.firstWhere((p) => p.elements.isNotEmpty, orElse: () => _wb.pages.first);
+        thumb = await renderPagePng(page.elements, page.background, _canvasSize, maxWidth: 480);
+      } catch (e) {
+        debugPrint('Board thumbnail not drawn: $e');
+      }
+      final e = await LocalBoardLibrary.instance.save(
+        snapshot,
+        title: title,
+        teacherId: _ceTeacher.id,
+        classId: _ceClassId,
+        className: store.currentClass?.name ?? '',
+        subject: store.currentSubject ?? '',
+        id: asNew ? null : _ceBoardId,
+        thumbnail: thumb,
+      );
+      _ceBoardId = e.id;
+      if (mounted) {
+        setState(() => _boardTitle = e.title);
+        showBoardMessage(context, 'Saved on this board: ${e.title}');
+      }
+      return true;
+    } catch (e) {
+      if (mounted) showBoardMessage(context, 'The board could not be saved: $e');
+      return false;
+    }
+  }
+
+  /// Open in a local class: the teacher's boards saved on this board.
+  void _ceOpen() {
+    final store = board.classroom;
+    unawaited(
+      showPanelDialog<void>(
+        context: context,
+        builder: (_) => BoardChromeTheme(
+          child: CeBoardLibraryDialog(
+            library: LocalBoardLibrary.instance,
+            teacherId: _ceTeacher.id,
+            classId: _ceClassId,
+            className: store.currentClass?.name ?? '',
+            onOpen: (e) => unawaited(_ceOpenEntry(e)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _ceOpenEntry(LocalBoardEntry e) async {
+    if (!_wb.isBlank && !await _confirmReplace()) return;
+    final saved = await LocalBoardLibrary.instance.open(e.id);
+    if (!mounted) return;
+    if (saved == null) {
+      showBoardMessage(context, 'That board could not be opened.');
+      return;
+    }
+    _showSaved(saved, e.title);
+    _ceBoardId = e.id;
+    showBoardMessage(context, context.l10n.openedBoard(e.title));
   }
 
   Future<void> _endClass() async {
@@ -2564,8 +2681,9 @@ class _BoardScreenState extends State<BoardScreen> {
       profileLabel: board.session?.teacherName.split(' ').first ?? SbStrings.of(context)('guest'),
       signedIn: board.isSignedIn,
       onProfile: () => _toggle(BoardPopover.profile),
-      onShare: () => unawaited(_shareWhiteboard()),
-      onWhatsApp: () => unawaited(_shareWhiteboard()),
+      // A local class has nothing to share with (Classroom edition).
+      onShare: board.localClass ? null : () => unawaited(_shareWhiteboard()),
+      onWhatsApp: board.localClass ? null : () => unawaited(_shareWhiteboard()),
       onEndClass: () => unawaited(_endClass()),
     );
     final toolbarW = collapsed ? 240.0 : (simple ? 720.0 : (_primary ? 1040.0 : (compact ? 840.0 : 1040.0)));
@@ -2737,10 +2855,10 @@ class _BoardScreenState extends State<BoardScreen> {
       ],
       (const Key('menu-open'), Icons.folder_open_outlined, l.open, _openWhiteboards, true),
       (const Key('save-board'), Icons.save_outlined, l.save, () => unawaited(_save()), true),
-      (const Key('menu-share'), Icons.share_outlined, s.share, () => unawaited(_shareWhiteboard()), true),
+      if (!board.localClass) (const Key('menu-share'), Icons.share_outlined, s.share, () => unawaited(_shareWhiteboard()), true),
       (const Key('menu-apps'), Icons.apps, SbStrings.of(context)('apps'), _openClassroomApps, true),
       (const Key('menu-freeze'), Icons.ac_unit, SbStrings.of(context)('freeze'), () => setState(() => _frozen = true), true),
-      (const Key('menu-versions'), Icons.history, SbStrings.of(context)('versions'), () => unawaited(_versions()), board.isSignedIn && board.whiteboardId.isNotEmpty),
+      if (!board.localClass) (const Key('menu-versions'), Icons.history, SbStrings.of(context)('versions'), () => unawaited(_versions()), board.isSignedIn && board.whiteboardId.isNotEmpty),
       (const Key('menu-import'), Icons.upload_file_outlined, l.importFiles, () => unawaited(importDocument(context, _wb)), true),
       (
         const Key('menu-theme-toggle'),
