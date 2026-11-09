@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/device_store.dart';
+import 'school_pin.dart';
+
+export 'school_pin.dart' show PinCheck, PinResult, SchoolPin;
 
 /// A teacher who uses this board (the Classroom edition keeps them on the board itself: no
 /// accounts, no PIN to teach). [colour] picks the card's pastel.
@@ -218,6 +220,8 @@ class ClassroomStore extends ChangeNotifier {
 
   static const setupKey = 'classroom.setup';
   static const pinKey = 'classroom.pin';
+  static const recoveryKey = 'classroom.pinRecovery';
+  static const lockoutKey = 'classroom.pinLockout';
   static const tourKey = 'classroom.tourSeen';
   static const simpleKey = 'classroom.showAllTools';
 
@@ -233,7 +237,7 @@ class ClassroomStore extends ChangeNotifier {
   /// Whether the guided tour has been seen on this board.
   bool tourSeen = false;
 
-  String? _pinHash;
+  String? _pinHash, _recoveryHash;
 
   /// Who is teaching and which class, while a local class is open (set by [startClass]).
   CeTeacher? currentTeacher;
@@ -267,6 +271,8 @@ class ClassroomStore extends ChangeNotifier {
         }
       }
       _pinHash = await _store.setting(pinKey);
+      _recoveryHash = await _store.setting(recoveryKey);
+      _readLockout(await _store.setting(lockoutKey));
       showAllTools = await _store.setting(simpleKey) == 'true';
       tourSeen = await _store.setting(tourKey) == 'true';
     } catch (e) {
@@ -458,19 +464,105 @@ class ClassroomStore extends ChangeNotifier {
 
   // --- School PIN, tour, the Simple board ---------------------------------------------------
 
-  /// Whether [pin] opens Settings (1234 until the college sets its own).
-  bool checkPin(String pin) => _pinHash == null ? pin == defaultPin : _hash(pin) == _pinHash;
-
+  /// Whether no PIN of the college's own is set yet (1234 opens Settings, and must then be
+  /// changed before anything else).
   bool get pinIsDefault => _pinHash == null;
 
-  Future<void> setPin(String pin) async {
-    _pinHash = _hash(pin);
-    try {
-      await _store.setSetting(pinKey, _pinHash!);
-    } catch (e) {
-      debugPrint('PIN not saved: $e');
+  /// Whether a recovery code was made with the PIN (boards from release 1.0.0 have none until
+  /// the PIN is next changed).
+  bool get hasRecoveryCode => _recoveryHash != null;
+
+  /// Wrong PINs since the last right one (the lockout starts at [SchoolPin.maxAttempts]).
+  int pinFailures = 0;
+
+  /// Lockouts since the last right PIN: each one is twice as long as the one before.
+  int pinLockouts = 0;
+  DateTime? pinLockedUntil;
+
+  /// Whether Settings are locked after too many wrong PINs.
+  bool get pinLocked => pinLockedUntil != null && now().isBefore(pinLockedUntil!);
+
+  /// Checks the school PIN (1234 until the college sets its own). After [SchoolPin.maxAttempts]
+  /// wrong PINs the board locks for a minute, and every wrong PIN after that locks it again for
+  /// twice as long, until the right one is typed. A release 1.0.0 hash is replaced by PBKDF2
+  /// once the right PIN is typed.
+  Future<PinResult> verifyPin(String pin) async {
+    if (pinLocked) return PinResult(PinCheck.lockedOut, lockedUntil: pinLockedUntil);
+    final stored = _pinHash;
+    final ok = stored == null ? pin == defaultPin : await SchoolPin.verify(pin, stored);
+    if (!ok) return _wrongPin();
+    if (stored != null && SchoolPin.isLegacy(stored)) {
+      _pinHash = await SchoolPin.hash(pin);
+      await _set(pinKey, _pinHash!);
     }
+    await _rightPin();
+    return const PinResult(PinCheck.ok);
+  }
+
+  /// Checks a recovery code (for "Forgot the PIN?"); it counts towards the lockout like a PIN.
+  /// The right code lets the college choose a new PIN (and get a new code).
+  Future<PinResult> verifyRecoveryCode(String code) async {
+    if (pinLocked) return PinResult(PinCheck.lockedOut, lockedUntil: pinLockedUntil);
+    final stored = _recoveryHash;
+    final ok = stored != null && await SchoolPin.verify(SchoolPin.normaliseCode(code), stored);
+    if (!ok) return _wrongPin();
+    await _rightPin();
+    return const PinResult(PinCheck.ok);
+  }
+
+  /// Sets the college's own PIN and a new recovery code, which is answered so it can be shown
+  /// once (never kept in the clear).
+  Future<String> setPin(String pin) async {
+    final code = SchoolPin.newRecoveryCode();
+    _pinHash = await SchoolPin.hash(pin);
+    _recoveryHash = await SchoolPin.hash(SchoolPin.normaliseCode(code));
+    await _set(pinKey, _pinHash!);
+    await _set(recoveryKey, _recoveryHash!);
+    await _rightPin();
     notifyListeners();
+    return code;
+  }
+
+  Future<PinResult> _wrongPin() async {
+    pinFailures++;
+    if (pinFailures >= SchoolPin.maxAttempts || pinLockouts > 0) {
+      pinLockouts++;
+      pinFailures = 0;
+      pinLockedUntil = now().add(SchoolPin.lockoutFor(pinLockouts));
+    }
+    await _saveLockout();
+    notifyListeners();
+    if (pinLocked) return PinResult(PinCheck.lockedOut, lockedUntil: pinLockedUntil);
+    return PinResult(PinCheck.wrong, attemptsLeft: SchoolPin.maxAttempts - pinFailures);
+  }
+
+  Future<void> _rightPin() async {
+    if (pinFailures == 0 && pinLockouts == 0 && pinLockedUntil == null) return;
+    pinFailures = 0;
+    pinLockouts = 0;
+    pinLockedUntil = null;
+    await _saveLockout();
+    notifyListeners();
+  }
+
+  void _readLockout(String? raw) {
+    try {
+      final j = raw == null ? null : jsonDecode(raw);
+      if (j is! Map) return;
+      pinFailures = (j['failures'] as num?)?.toInt() ?? 0;
+      pinLockouts = (j['lockouts'] as num?)?.toInt() ?? 0;
+      pinLockedUntil = DateTime.tryParse('${j['until'] ?? ''}');
+    } catch (_) {}
+  }
+
+  Future<void> _saveLockout() => _set(lockoutKey, jsonEncode({'failures': pinFailures, 'lockouts': pinLockouts, 'until': pinLockedUntil?.toIso8601String()}));
+
+  Future<void> _set(String key, String value) async {
+    try {
+      await _store.setSetting(key, value);
+    } catch (e) {
+      debugPrint('Classroom setting $key not saved: $e');
+    }
   }
 
   Future<void> setShowAllTools(bool v) async {
@@ -487,8 +579,6 @@ class ClassroomStore extends ChangeNotifier {
       await _store.setSetting(tourKey, 'true');
     } catch (_) {}
   }
-
-  static String _hash(String pin) => sha256.convert(utf8.encode('zynetix-classroom:$pin')).toString();
 
   final _random = Random();
   String _id(String prefix) => '$prefix${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}${_random.nextInt(1 << 16).toRadixString(36)}';

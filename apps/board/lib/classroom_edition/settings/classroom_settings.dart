@@ -7,58 +7,9 @@ import 'package:kinetix_ui/kinetix_ui.dart';
 import '../local/classroom_store.dart';
 import '../start/classroom_start.dart' show editTeacher;
 import '../ui/ce_style.dart';
+import 'pin_pad.dart';
 
-/// Asks for the school PIN (1234 until the college changes it). True when it was right.
-Future<bool> askSchoolPin(BuildContext context, ClassroomStore store) async {
-  final pin = TextEditingController();
-  String? error;
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => StatefulBuilder(
-      builder: (ctx, set) {
-        void check() {
-          if (store.checkPin(pin.text)) {
-            Navigator.pop(ctx, true);
-          } else {
-            set(() => error = 'That is not the school PIN.');
-            pin.clear();
-          }
-        }
-
-        return AlertDialog(
-          key: const Key('ce-pin-dialog'),
-          title: const Text('School PIN'),
-          content: SizedBox(
-            width: 360,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Settings change the timetable, teachers and classes for everyone who uses this board.'),
-                const SizedBox(height: Kx.s12),
-                TextField(
-                  key: const Key('ce-pin'),
-                  controller: pin,
-                  autofocus: true,
-                  obscureText: true,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
-                  decoration: InputDecoration(labelText: 'PIN', errorText: error),
-                  onSubmitted: (_) => check(),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-            FilledButton(key: const Key('ce-pin-ok'), onPressed: check, child: const Text('Open settings')),
-          ],
-        );
-      },
-    ),
-  );
-  return ok == true;
-}
+export 'pin_pad.dart' show askSchoolPin, chooseNewPin, CePinPad;
 
 /// The Classroom edition's Settings: the college, teachers, classes (roll numbers), the
 /// timetable and the school PIN. Opened after [askSchoolPin].
@@ -400,7 +351,13 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
       const SizedBox(height: Kx.s32),
       Text('School PIN', style: ceHeading(20)),
       const SizedBox(height: Kx.s8),
-      Text(store.pinIsDefault ? 'The PIN is still 1234. Choose the college’s own PIN.' : 'Only staff who know the PIN can change these settings.', style: ceText(16)),
+      Text(
+        store.pinIsDefault
+            ? 'The PIN is still 1234. Choose the college’s own PIN.'
+            : 'Only staff who know the PIN can change these settings. After 5 wrong PINs the board waits a minute, and longer after each one more.'
+                  '${store.hasRecoveryCode ? '' : ' Change the PIN once to get a recovery code for when it is forgotten.'}',
+        style: ceText(16),
+      ),
       const SizedBox(height: Kx.s12),
       Align(
         alignment: Alignment.centerLeft,
@@ -410,49 +367,8 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
   );
 
   Future<void> _changePin() async {
-    final a = TextEditingController(), b = TextEditingController();
-    String? error;
-    final pin = await showDialog<String>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, set) => AlertDialog(
-          key: const Key('ce-new-pin-dialog'),
-          title: const Text('New school PIN'),
-          content: SizedBox(
-            width: 360,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final (k, c, l) in [(const Key('ce-new-pin'), a, 'New PIN (4 to 8 digits)'), (const Key('ce-new-pin-again'), b, 'Type it again')])
-                  TextField(
-                    key: k,
-                    controller: c,
-                    obscureText: true,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
-                    decoration: InputDecoration(labelText: l),
-                  ),
-                if (error != null) Padding(padding: const EdgeInsets.only(top: Kx.s8), child: Text(error!, style: TextStyle(color: Theme.of(ctx).colorScheme.error))),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-            FilledButton(
-              key: const Key('ce-new-pin-save'),
-              onPressed: () {
-                if (a.text.length < 4) return set(() => error = 'Use 4 to 8 digits.');
-                if (a.text != b.text) return set(() => error = 'The two PINs are not the same.');
-                Navigator.pop(ctx, a.text);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (pin == null) return;
-    await store.setPin(pin);
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('The school PIN is changed.')));
+    if (await chooseNewPin(context, store) && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('The school PIN is changed.')));
+    }
   }
 }

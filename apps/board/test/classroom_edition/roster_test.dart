@@ -13,7 +13,10 @@ import 'ce_support.dart';
 /// The Classroom edition keeps the college on the board: teachers, classes (roll numbers only),
 /// the timetable and the school PIN, in the board's settings store.
 void main() {
-  setUpAll(loadBoardFonts);
+  setUpAll(() async {
+    await loadBoardFonts();
+    SchoolPin.iterations = 1000;
+  });
   tearDown(() => Edition.classroom = Edition.built == 'classroom');
 
   ClassroomStore fresh() => ClassroomStore(
@@ -26,7 +29,7 @@ void main() {
     final a = fresh();
     await a.load();
     expect(a.classes, hasLength(5));
-    expect(a.checkPin('1234'), isTrue);
+    expect(a.pinIsDefault, isTrue);
     final t = await a.addTeacher('  Lakshmi Rao ', subject: 'Physics');
     final c = await a.addClass(year: 2, section: 'c', stream: 'Science', rollCount: 35);
     await a.addSlot(CeSlot(id: '', weekday: 1, start: '09:50', end: '10:45', classId: c.id, subject: 'Physics', teacherId: t.id, room: 'Room 12'));
@@ -45,8 +48,8 @@ void main() {
     expect(b.rollsOf(cls.id), [for (var i = 1; i <= 38; i++) i]);
     expect(b.slotNow()!.room, 'Room 12');
     expect(b.classesOf(t.id), '2nd PUC C');
-    expect(b.checkPin('1234'), isFalse);
-    expect(b.checkPin('4321'), isTrue);
+    expect((await b.verifyPin('1234')).ok, isFalse);
+    expect((await b.verifyPin('4321')).ok, isTrue);
     expect(b.showAllTools, isTrue);
     expect(b.tourSeen, isTrue);
     // Never the PIN itself in storage.
@@ -90,11 +93,14 @@ void main() {
     final board = (await tester.runAsync(() => classroomBoard(seed: sampleCollege())))!;
     await pumpApp(tester, board);
     await tapKey(tester, 'ce-settings');
-    await tester.enterText(find.byKey(const Key('ce-pin')), '0000');
-    await tapKey(tester, 'ce-pin-ok');
-    expect(find.text('That is not the school PIN.'), findsOneWidget);
-    await tester.enterText(find.byKey(const Key('ce-pin')), '1234');
-    await tapKey(tester, 'ce-pin-ok');
+    await typePin(tester, '0000');
+    expect(find.text('That is not the school PIN. 4 tries left.'), findsOneWidget);
+    await typePin(tester, '1234');
+    // First set-up: 1234 must be changed before Settings open.
+    expect(find.byKey(const Key('ce-new-pin-dialog')), findsOneWidget);
+    await typePin(tester, '1357');
+    await typePin(tester, '1357');
+    await tapKey(tester, 'ce-recovery-done');
     expect(find.byKey(const Key('ce-settings-page')), findsOneWidget);
 
     // Classes: a new class with its number of students.
@@ -126,10 +132,10 @@ void main() {
     // The PIN.
     await tapKey(tester, 'ce-tab-college');
     await tapKey(tester, 'ce-change-pin');
-    await tester.enterText(find.byKey(const Key('ce-new-pin')), '2468');
-    await tester.enterText(find.byKey(const Key('ce-new-pin-again')), '2468');
-    await tapKey(tester, 'ce-new-pin-save');
-    expect(board.classroom.checkPin('2468'), isTrue);
+    await typePin(tester, '2468');
+    await typePin(tester, '2468');
+    await tapKey(tester, 'ce-recovery-done');
+    expect((await tester.runAsync(() => board.classroom.verifyPin('2468')))!.ok, isTrue);
     await tester.pump(const Duration(seconds: 5));
 
     // All of it is on the board after a restart.
@@ -137,7 +143,7 @@ void main() {
     await tester.runAsync(again.load);
     expect(again.classes.last.rollCount, 35);
     expect(again.slots.last.subject, 'Biology');
-    expect(again.checkPin('2468'), isTrue);
+    expect((await tester.runAsync(() => again.verifyPin('2468')))!.ok, isTrue);
     await closeBoard(tester, board);
   });
 }
