@@ -15,7 +15,7 @@ import '../l10n/ce_strings.dart';
 /// The lesson's sims, labs and 3D from the board's own packages; PhET sims from the board's
 /// offline copies (assets/simhub/phet, the Simulations hub's), so they run with no internet.
 KinetixEmbeds boardLessonEmbeds({void Function(PhetWebView view)? onPhet}) => KinetixEmbeds(
-  hasPhet: (id) => simCatalogue.any((e) => e.id == 'phet-$id' && e.kind == SimKindOf.bundled),
+  hasPhet: (id) => simCatalogue.any((e) => e.id == 'phet-$id' && e.kind == SimKindOf.bundled && simIncluded(e)),
   phet: (id) => LessonPhet(key: ValueKey('phet:$id'), simId: id, onView: onPhet),
 );
 

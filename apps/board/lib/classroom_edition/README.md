@@ -17,8 +17,29 @@ docs/operations/mobile-release.md; build the private assets first, below):
 ```sh
 python3 packages/kinetix_lessons/tool/bundle_puc.py <zynetix-smart-classroom>/content apps/board/assets/lessons/puc --include-school
 python3 apps/board/tool/build_class_bank.py <zynetix-smart-classroom>/content/packs
+bash packages/kinetix_cs/tool/fetch_pyodide.sh   # Python for the CS lessons' code lab, offline
 flutter build apk --release --split-per-abi --target-platform android-arm64,android-arm --dart-define=KINETIX_EDITION=classroom
 ```
+
+What the Classroom APK leaves out (the KINETIX Board keeps all of it; `android/app/build.gradle.kts`):
+
+* Sims and 3D models no PUC lesson uses: only the PhET sims and 3D viewer models in
+  [`classroom_assets.dart`](classroom_assets.dart) go in (16 of 51 PhET sims, 39 of 46 models),
+  and no JupyterLite (the CS lessons run Python in the code lab, which needs Pyodide's core,
+  fetched above). `test/classroom_edition/classroom_assets_test.dart` works the lists out from the
+  lesson files, prints them, and fails when a lesson starts using something left out
+  (`CLASSROOM_ASSETS_WRITE=1 flutter test test/classroom_edition/classroom_assets_test.dart`
+  rewrites them). Gradle excludes the rest as Flutter's assets are copied into the APK; the Sims
+  hub and the 3D library list only what is there (`simIncluded`, `ModelCatalogue.bundledViewerModels`,
+  set in `main.dart`).
+* The camera, WebRTC (casting), speech-to-text and ML Kit handwriting plugins: their code,
+  native libraries and manifest entries. Gradle compiles a copy of Flutter's
+  `GeneratedPluginRegistrant.java` without them and drops them from the classpath; the Dart side
+  never reaches them in this edition (`Edition.onlineTools` / `Edition.ai`).
+* Native libraries are stored compressed (`useLegacyPackaging`): a smaller download, unpacked
+  by Android at install.
+* R8 stays off (`-Pkinetix.minify=true` turns it on, keep rules in `android/app/proguard-rules.pro`):
+  it builds and saves about 7 MB more, but it has not been run on a panel yet.
 
 The edition has its own version, `classroomVersion` in `android/app/build.gradle.kts`
 (1.0.0+1; bump the build for every release, or pass `-Pkinetix.classroomVersion=…`). It needs no

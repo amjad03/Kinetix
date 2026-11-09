@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
+import '../../classroom_edition/edition.dart';
 import 'cast_receiver.dart';
 
 /// Event names from packages/shared (RealtimeEvents).
@@ -107,7 +108,8 @@ class CastController extends ChangeNotifier {
   /// `cast.ice`: approved (by the teacher, or automatically for their own device): get ready for the offer.
   Future<void> onIce(Map<String, dynamic> e) async {
     final id = e['castId'] as String?;
-    if (id == null) return;
+    // Zynetix Classroom has no casting (and its APK no WebRTC; android/app/build.gradle.kts).
+    if (id == null || !Edition.onlineTools) return;
     var t = tile(id);
     if (t == null) {
       t = CastTile(id: id, name: e['name'] as String? ?? '?', teacher: e['role'] == 'teacher');

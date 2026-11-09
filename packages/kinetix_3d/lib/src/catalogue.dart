@@ -188,10 +188,19 @@ abstract final class ModelCatalogue {
   /// are listed.
   static bool downloads = true;
 
+  /// The three.js viewer models this build carries (assets/viewer3d/models/<id>.glb), or null
+  /// for all of them. An app that ships only some (the Classroom edition carries the ones its
+  /// lessons use) sets it; the others are not listed, and a link to one shows the Dart
+  /// renderer's version where there is one.
+  static Set<String>? bundledViewerModels;
+
+  /// Whether this build carries [e]'s viewer model (true for entries without one).
+  static bool carries(ModelEntry e) => e.viewerId == null || e.remote != null || (bundledViewerModels?.contains(e.viewerId) ?? true);
+
   /// The models pickers list, in library order.
   static List<ModelEntry> get entries => [
     for (final e in all)
-      if (e.listed && (downloads || e.remote == null || RemoteModels.cache.isCached(e.remote!))) e,
+      if (e.listed && carries(e) && (downloads || e.remote == null || RemoteModels.cache.isCached(e.remote!))) e,
   ];
 
   /// Any model by id, listed or not. A downloadable model is also found by its viewer id
@@ -261,7 +270,10 @@ class _ModelViewState extends State<ModelView> {
       return KxEmptyState(icon: Icons.view_in_ar_outlined, message: Viewer3dStrings(widget.lang ?? viewerLangOf(context)).unknownModel(widget.id));
     }
     if (entry.solid != null) return SolidExplorer(kind: entry.solid!);
-    if (entry.usesViewer && (Viewer3dEngine.available || !entry.native)) {
+    if (!ModelCatalogue.carries(entry) && !entry.native) {
+      return KxEmptyState(icon: Icons.view_in_ar_outlined, message: Viewer3dStrings(widget.lang ?? viewerLangOf(context)).unknownModel(widget.id));
+    }
+    if (entry.usesViewer && ModelCatalogue.carries(entry) && (Viewer3dEngine.available || !entry.native)) {
       return Model3dViewer(
         key: ValueKey('${entry.viewerId}/${entry.variant}'),
         modelId: entry.viewerId!,

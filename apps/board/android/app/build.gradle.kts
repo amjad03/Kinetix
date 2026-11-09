@@ -124,6 +124,102 @@ android {
             isShrinkResources = minifyRelease
         }
     }
+
+    // Zynetix Classroom: the native libraries go into the APK compressed (Android unpacks them
+    // when it installs the app), which takes about a third off the download for schools that
+    // copy it by USB or fetch it over a slow line. The KINETIX Board keeps them uncompressed.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = classroomEdition
+        }
+    }
+}
+
+// Zynetix Classroom carries only the sims and 3D models its PUC lessons use, and no JupyterLite
+// (lib/classroom_edition/classroom_assets.dart, kept up to date by
+// test/classroom_edition/classroom_assets_test.dart). The rest is left out of the APK here, as
+// Flutter's assets are copied in; the app hides what is not there. The KINETIX Board keeps all.
+fun classroomAssetList(marker: String): Set<String> {
+    val source = file("../../lib/classroom_edition/classroom_assets.dart").readText()
+    val block = source.substringAfter("// classroom-assets:$marker:begin", "").substringBefore("// classroom-assets:$marker:end", "")
+    val ids = Regex("^\\s*'([^']+)',", RegexOption.MULTILINE).findAll(block).map { it.groupValues[1] }.toSet()
+    if (ids.isEmpty()) throw GradleException("classroom_assets.dart has no '$marker' list")
+    return ids
+}
+
+val classroomAssetExcludes: List<String> = if (!classroomEdition) emptyList() else buildList {
+    val phet = classroomAssetList("phet")
+    val models = classroomAssetList("models")
+    file("../../assets/simhub/phet").listFiles()?.filter { it.name.endsWith(".html") && it.name.removeSuffix(".html") !in phet }?.forEach {
+        add("flutter_assets/assets/simhub/phet/${it.name}")
+    }
+    file("../../../../packages/kinetix_3d/assets/viewer3d/models").listFiles()
+        ?.filter { (it.extension == "glb" || it.extension == "json") && it.nameWithoutExtension != "index" && it.nameWithoutExtension !in models }
+        ?.forEach { add("flutter_assets/packages/kinetix_3d/assets/viewer3d/models/${it.name}") }
+    for (dir in classroomAssetList("dropped")) add("flutter_assets/assets/simhub/$dir/**")
+}
+
+tasks.withType<Copy>().configureEach {
+    if (name.startsWith("copyFlutterAssets") && classroomAssetExcludes.isNotEmpty()) exclude(classroomAssetExcludes)
+}
+
+// Zynetix Classroom has no camera, live casting, speech recognition or handwriting recognition,
+// so its APK leaves out those plugins altogether (their code, native libraries and manifest
+// entries): the Dart side never reaches them in this edition (Edition.onlineTools / Edition.ai),
+// and where it could, a missing plugin is a MissingPluginException that is already handled.
+// Flutter registers every plugin in the generated GeneratedPluginRegistrant.java, so this
+// edition compiles a copy without them instead.
+val classroomDroppedPlugins = setOf(
+    "camera_android_camerax",
+    "flutter_webrtc",
+    "speech_to_text",
+    "google_mlkit_digital_ink_recognition",
+    "google_mlkit_commons",
+)
+
+abstract class ClassroomRegistrantTask : DefaultTask() {
+    @get:InputFile
+    abstract val registrant: RegularFileProperty
+
+    @get:Input
+    abstract val dropped: SetProperty<String>
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun write() {
+        var source = registrant.get().asFile.readText()
+        val block = Regex(
+            "\\n[ \\t]*try \\{\\s*flutterEngine\\.getPlugins\\(\\)\\.add\\([^;]*\\);\\s*\\} catch \\(Exception e\\) \\{\\s*" +
+                "Log\\.e\\(TAG, \"Error registering plugin ([A-Za-z0-9_]+), [^\"]*\", e\\);\\s*\\}",
+        )
+        source = block.replace(source) { m -> if (m.groupValues[1] in dropped.get()) "" else m.value }
+        for (name in dropped.get()) {
+            if (source.contains("registering plugin $name,")) throw GradleException("Could not leave $name out of GeneratedPluginRegistrant.java (its format changed?)")
+        }
+        val out = outputDir.get().asFile.resolve("io/flutter/plugins/GeneratedPluginRegistrant.java")
+        out.parentFile.mkdirs()
+        out.writeText(source)
+    }
+}
+
+if (classroomEdition) {
+    val classroomRegistrant = tasks.register<ClassroomRegistrantTask>("classroomPluginRegistrant") {
+        registrant.set(file("src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java"))
+        dropped.set(classroomDroppedPlugins)
+        outputDir.set(layout.buildDirectory.dir("generated/classroom-registrant"))
+    }
+    // src/main/java holds only Flutter's registrant; the edition compiles the filtered copy.
+    android.sourceSets.getByName("main").java.setSrcDirs(emptyList<Any>())
+    androidComponents.onVariants { variant ->
+        variant.sources.java?.addGeneratedSourceDirectory(classroomRegistrant, ClassroomRegistrantTask::outputDir)
+    }
+    // Flutter adds every plugin project as a dependency of the app (…Api configurations); the
+    // classpaths leave these out.
+    configurations.configureEach {
+        for (plugin in classroomDroppedPlugins) exclude(mapOf("module" to plugin))
+    }
 }
 
 // Zynetix Classroom has no camera, microphone or speech recognition: its overlay manifest

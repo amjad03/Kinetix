@@ -249,6 +249,11 @@ final List<SimEntry> simCatalogue = List.unmodifiable([
   ),
 ]);
 
+/// Whether this build carries a catalogue entry. The Classroom edition's APK leaves out the
+/// bundled sims no lesson uses (classroom_edition/classroom_assets.dart; main.dart sets this),
+/// so the hub does not list them. Everything else: all of them.
+bool Function(SimEntry e) simIncluded = (_) => true;
+
 /// What a subject-context registry asks the catalogue: a subject, a class, a search word, offline only.
 /// The search word matches the title and description in English, Hindi or Kannada, the tags
 /// and the source.
@@ -261,13 +266,13 @@ List<SimEntry> filterSims({String? subject, int? grade, String query = '', bool 
       [for (final l in ['en', 'hi', 'kn']) ...[?simTitles[e.id]?[l], ?simDescriptions[e.id]?[l]]].any((t) => t.toLowerCase().contains(q));
   return [
     for (final e in from ?? simCatalogue)
-      if ((subject == null || e.subject == subject) && (grade == null || e.coversGrade(grade)) && (!offlineOnly || e.offline) && (q.isEmpty || hit(e))) e,
+      if (simIncluded(e) && (subject == null || e.subject == subject) && (grade == null || e.coversGrade(grade)) && (!offlineOnly || e.offline) && (q.isEmpty || hit(e))) e,
   ];
 }
 
 SimEntry? simById(String id) {
   for (final e in simCatalogue) {
-    if (e.id == id) return e;
+    if (e.id == id) return simIncluded(e) ? e : null;
   }
   return null;
 }

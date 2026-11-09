@@ -8,7 +8,9 @@ import 'package:kinetix_ink/kinetix_ink.dart' show flowSuggestionsEnabled;
 import 'package:kinetix_ui/kinetix_ui.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'classroom_edition/classroom_assets.dart';
 import 'classroom_edition/edition.dart';
+import 'features/sim_hub/sim_entry.dart' show SimKindOf, simIncluded;
 import 'classroom_edition/lessons/lessons_panel.dart' show installLessonHooks;
 import 'classroom_edition/l10n/ce_strings.dart';
 import 'classroom_edition/local/sample_college.dart';
@@ -138,6 +140,9 @@ class KinetixBoardApp extends StatelessWidget {
     // Offline, no downloads: only the bundled 3D models (and ones downloaded before) are listed,
     // and no handwriting model is fetched.
     ModelCatalogue.downloads = Edition.onlineTools;
+    // The Classroom APK carries only the sims and 3D models its lessons use (classroom_assets.dart).
+    ModelCatalogue.bundledViewerModels = Edition.classroom ? classroomViewerModels : null;
+    simIncluded = Edition.classroom ? (e) => e.kind != SimKindOf.bundled || classroomHasSim(e.asset) : (_) => true;
     MlKitHandwriting.downloadsAllowed = () => Edition.onlineTools;
     // The board's language: its own setting, or the signed-in teacher's while they teach.
     CeLang.code = controller.language.name;
