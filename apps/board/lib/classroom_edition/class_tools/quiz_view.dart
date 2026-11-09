@@ -535,7 +535,7 @@ class _ClassQuizViewState extends State<ClassQuizView> {
                 SizedBox(width: 44, child: Text('Q${i + 1}', style: ceHeading(20))),
                 Expanded(
                   child: Text(
-                    q.stem,
+                    q.stem.isEmpty ? 'The question in the picture' : q.stem,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: ceText(16, c: CeC.body),

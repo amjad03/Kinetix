@@ -74,10 +74,11 @@ const examRules = <Exam, ExamRule>{
   Exam.cbse11: ExamRule(minutes: 180, right: 1),
 };
 
-/// "3 h 20 min", "80 min", "2 h".
+/// "3 h 20 min", "80 min", "1 h", "2 h".
 String formatMinutes(int minutes) {
   final h = minutes ~/ 60, m = minutes % 60;
-  if (h == 0) return '$m min';
+  // Under two hours teachers say the minutes ("80 min" for KCET).
+  if (minutes < 120 && m != 0) return '$minutes min';
   return m == 0 ? '$h h' : '$h h $m min';
 }
 

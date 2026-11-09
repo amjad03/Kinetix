@@ -73,7 +73,6 @@ Future<bool> askPapersPin(BuildContext context, ClassroomStore store, {String wh
       },
     ),
   );
-  pin.dispose();
   return ok == true;
 }
 

@@ -66,6 +66,7 @@ class PaperPack {
 /// not a pack this board can read; a paper with a problem is left out and named in
 /// [PaperPack.problems], the rest still come in.
 PaperPack readPaperPack(Uint8List zip) {
+  if (zip.length < 4 || zip[0] != 0x50 || zip[1] != 0x4B) throw const FormatException('This file is not a paper pack (it is not a zip file).');
   final Archive archive;
   try {
     archive = ZipDecoder().decodeBytes(zip);

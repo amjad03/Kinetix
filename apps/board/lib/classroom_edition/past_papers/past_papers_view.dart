@@ -330,9 +330,8 @@ class _PastPapersViewState extends State<PastPapersView> {
 
   Widget _detail(PaperLibrary l, Paper p) {
     final rule = p.exam.rule;
-    Widget action(IconData icon, String title, String line, Color colour, String key, VoidCallback? onTap) => SizedBox(
-      width: 360,
-      height: 150,
+    Widget action(IconData icon, String title, String line, Color colour, String key, VoidCallback? onTap) => ConstrainedBox(
+      constraints: const BoxConstraints.tightFor(width: 360).copyWith(minHeight: 160),
       child: Opacity(
         opacity: onTap == null ? 0.5 : 1,
         child: Material(
@@ -346,12 +345,13 @@ class _PastPapersViewState extends State<PastPapersView> {
               padding: const EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   ceIconDot(icon, size: 46),
-                  const Spacer(),
+                  const SizedBox(height: 16),
                   Text(title, style: ceHeading(21)),
                   const SizedBox(height: 2),
-                  Text(line, maxLines: 2, overflow: TextOverflow.ellipsis, style: ceText(14.5, height: 1.3)),
+                  Text(line, maxLines: 3, overflow: TextOverflow.ellipsis, style: ceText(14.5, height: 1.3)),
                 ],
               ),
             ),
@@ -482,7 +482,7 @@ class _PastPapersViewState extends State<PastPapersView> {
                 onPressed: quizzable == 0 ? null : () => env.open('quiz', arg: paperQuiz(env: env, lib: l, items: items, title: '$title class quiz', backArg: p.id)),
               ),
             ),
-          ].map((w) => SizedBox(width: 520, child: w)).toList(),
+          ].map((w) => SizedBox(width: 600, child: w)).toList(),
         ),
       ],
     );

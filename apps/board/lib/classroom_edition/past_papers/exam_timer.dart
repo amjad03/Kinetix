@@ -74,10 +74,12 @@ class ExamCountdown extends ChangeNotifier {
   }
 }
 
-/// "3:20:00" or "79:59" (hours only when there are some).
-String clockText(Duration d) {
+/// "3:20:00", "59:59"; with [minutesOnly] (a paper under two hours, KCET's 80 minutes) the
+/// hours are counted as minutes: "80:00".
+String clockText(Duration d, {bool minutesOnly = false}) {
   final s = d.inSeconds, h = s ~/ 3600, m = (s % 3600) ~/ 60, sec = s % 60;
   String two(int v) => v.toString().padLeft(2, '0');
+  if (minutesOnly) return '${two(s ~/ 60)}:${two(sec)}';
   return h > 0 ? '$h:${two(m)}:${two(sec)}' : '${two(m)}:${two(sec)}';
 }
 
@@ -192,7 +194,7 @@ class _ExamTimerScreenState extends State<ExamTimerScreen> {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 40),
                               child: Text(
-                                clockText(c.left),
+                                clockText(c.left, minutesOnly: c.total < const Duration(hours: 2)),
                                 key: const Key('ce-papers-timer-left'),
                                 style: ceHeading(300, w: FontWeight.w500).copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
                               ),

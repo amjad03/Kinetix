@@ -72,9 +72,9 @@ PresetQuiz paperQuiz({required ToolEnv env, required PaperLibrary lib, required 
   for (final it in asked) {
     final id = 'paper:${it.paper.id}:${it.q.number}';
     byId[id] = it;
-    // Recorded under the bank's chapter when its tag names one (the mastery map then shows
+    // Recorded under the bank's chapter when the tag is its title (the mastery map then shows
     // it with the class's other quizzes), else under the tag itself.
-    final chapterId = env.bank.chapterFor(it.q.chapter)?.id ?? (it.q.chapter.isEmpty ? it.paper.title : it.q.chapter);
+    final chapterId = _bankChapter(env.bank, it.q.chapter) ?? (it.q.chapter.isEmpty ? it.paper.title : it.q.chapter);
     questions.add(BankQuestion(id: id, chapterId: chapterId, stem: it.q.stem, options: it.q.options, answer: it.q.correct.single));
   }
   final exams = {for (final it in asked) it.paper.exam};
@@ -102,6 +102,14 @@ PresetQuiz paperQuiz({required ToolEnv env, required PaperLibrary lib, required 
       await env.records.putMock(MockRecord(id: 'paper-${now.millisecondsSinceEpoch}', at: now, title: title, maxMarks: max, chapterIds: {for (final q in questions) q.chapterId}.toList(), marks: totals));
     },
   );
+}
+
+/// The id of [bank]'s chapter titled [tag] (letters and digits compared, any case).
+String? _bankChapter(SubjectBank bank, String tag) {
+  String norm(String s) => s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
+  final t = norm(tag);
+  if (t.isEmpty) return null;
+  return bank.chapters.where((c) => norm(c.title) == t).firstOrNull?.id;
 }
 
 /// Opens the full-screen practice: one question at a time.

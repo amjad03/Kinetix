@@ -291,7 +291,7 @@ class _PaperViewerScreenState extends State<PaperViewerScreen> {
   }
 
   Widget _pageStrip() => Container(
-    height: 132,
+    height: 144,
     color: Colors.white,
     child: ListView.builder(
       key: const Key('ce-viewer-strip'),
