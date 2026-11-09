@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinetix_board/classroom_edition/local/off_thread.dart';
 import 'package:kinetix_board/features/board/board_autosave.dart';
 import 'package:kinetix_board/features/board/context/class_context.dart';
 import 'package:kinetix_board/features/help/tour.dart';
@@ -19,6 +20,9 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
     // Autosave writes to memory, not a file, and a board a test opens never brings back the
     // one before it (test/autosave_test.dart sets a store that does).
     BoardAutosave.defaultStore = _WriteOnlyAutosave();
+    // Lessons and the bank decode on the test's own isolate: a widget test's fake clock cannot
+    // wait for another one (test/classroom_edition/startup_test.dart runs the real thing).
+    OffThread.enabled = false;
   });
   await testMain();
 }

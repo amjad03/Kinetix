@@ -1,11 +1,9 @@
-import 'dart:convert';
-import 'dart:io' show gzip;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:kinetix_lessons/kinetix_lessons.dart';
 
 import '../local/classroom_store.dart' show pucYearOf;
+import '../local/off_thread.dart';
 
 /// The PUC lessons bundled with the Classroom edition (assets/lessons/puc, built by
 /// packages/kinetix_lessons/tool/bundle_puc.py from the Zynetix chapter packs): a catalogue of
@@ -35,25 +33,35 @@ class LessonLibrary {
   /// The catalogue once loaded (null before [catalogue] completes).
   LessonCatalogue? get loaded => _catalogue;
 
+  /// Read the first time something needs it (the Lessons panel, the start screen's "Next
+  /// lesson" line), never while the app starts; decoded off the UI isolate.
   Future<LessonCatalogue> catalogue() => _loading ??= () async {
     final text = await bundle.loadString('$root/catalogue.json', cache: false);
-    return _catalogue = LessonCatalogue.fromJson(jsonDecode(text) as Map<String, dynamic>);
+    final j = await decodeJsonTextOffThread(text, debugName: 'lessons catalogue') as Map<String, dynamic>;
+    final c = _catalogue = LessonCatalogue.fromJson(j);
+    loadedCount.value++;
+    return c;
   }();
+
+  /// Bumped when a catalogue has loaded (the start screen listens, for its "Next lesson" line).
+  static final loadedCount = ValueNotifier<int>(0);
 
   /// A chapter's lessons and questions (cached; the last few chapters stay in memory).
   Future<InstalledPack> chapter(String chapterId) async {
     final hit = _chapters.remove(chapterId);
     if (hit != null) return _chapters[chapterId] = hit;
+    // Unzipped and decoded off the UI isolate (a chapter is up to a few MB of JSON).
     final data = await bundle.load('$root/$chapterId.json.gz');
-    final j = jsonDecode(utf8.decode(gzip.decode(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes)))) as Map<String, dynamic>;
+    final j = await decodeJsonOffThread(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes), debugName: 'lesson $chapterId') as Map<String, dynamic>;
     Map<String, dynamic>? overlay;
     if (school) {
+      ByteData? o;
       try {
-        final o = await bundle.load('$privateRoot/$chapterId.json.gz');
-        overlay = jsonDecode(utf8.decode(gzip.decode(o.buffer.asUint8List(o.offsetInBytes, o.lengthInBytes)))) as Map<String, dynamic>;
+        o = await bundle.load('$privateRoot/$chapterId.json.gz');
       } catch (_) {
         // No School parts in this build (or none for this chapter).
       }
+      if (o != null) overlay = await decodeJsonOffThread(o.buffer.asUint8List(o.offsetInBytes, o.lengthInBytes), debugName: 'lesson overlay $chapterId') as Map<String, dynamic>;
     }
     final pack = packFromJson(j, overlay: overlay);
     _chapters[chapterId] = pack;

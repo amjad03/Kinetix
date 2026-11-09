@@ -1,8 +1,7 @@
-import 'dart:convert';
-import 'dart:io' show gzip;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
+import '../local/off_thread.dart';
 
 /// Where a subject's questions came from.
 enum BankSource {
@@ -343,7 +342,7 @@ abstract final class ClassBank {
   static Future<SubjectBank> _load(int year, String subject, AssetBundle bundle) async {
     if (subject.isEmpty) return SubjectBank(year: year, subject: subject, source: BankSource.none);
     try {
-      final index = jsonDecode(await bundle.loadString('$dir/index.json', cache: false)) as Map<String, dynamic>;
+      final index = await decodeJsonTextOffThread(await bundle.loadString('$dir/index.json', cache: false), debugName: 'bank index') as Map<String, dynamic>;
       final entry = ((index['subjects'] as List?) ?? const []).cast<Map>().where((e) => e['year'] == year && e['subject'] == subject).firstOrNull;
       final patterns = [
         for (final p in (index['patterns'] as List?) ?? const [])
@@ -351,7 +350,8 @@ abstract final class ClassBank {
       ].where((p) => p.sections.any((s) => s.$1 == subject)).toList();
       if (entry != null) {
         final data = await bundle.load('$dir/${entry['file']}');
-        final json = jsonDecode(_text(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes))) as Map<String, dynamic>;
+        // Unzipped and decoded off the UI isolate (a subject's bank is several MB of JSON).
+        final json = await decodeJsonOffThread(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes), debugName: 'bank $year $subject') as Map<String, dynamic>;
         final chapters = [
           for (final c in (json['chapters'] as List?) ?? const [])
             if (c is Map) BankChapter.fromJson(c.cast<String, dynamic>()),
@@ -399,8 +399,6 @@ abstract final class ClassBank {
 
   static Future<Object?> _json(AssetBundle bundle, String key) async {
     final data = await bundle.load(key);
-    return jsonDecode(_text(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes)));
+    return decodeJsonOffThread(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes), debugName: key);
   }
-
-  static String _text(Uint8List bytes) => utf8.decode(bytes.length > 2 && bytes[0] == 0x1f && bytes[1] == 0x8b ? gzip.decode(bytes) : bytes);
 }

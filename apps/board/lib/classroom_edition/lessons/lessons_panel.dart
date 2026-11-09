@@ -868,9 +868,13 @@ IconData stepIcon(Block b) => switch (b.type) {
 /// The start screen's "Next lesson" line for a class and subject: the lesson it stopped in, or
 /// the first one not yet taught. Null until the lessons and progress are loaded.
 String? nextLessonLineFor(CeClass cls, String subjectName, {LessonLibrary? library, LessonProgress? progress}) {
-  final cat = (library ?? LessonLibrary.instance).loaded;
+  final lib = library ?? LessonLibrary.instance;
+  final cat = lib.loaded;
   final prog = progress ?? LessonProgress.instance;
   final subject = subjectIdFor(subjectName);
+  // The catalogue is read the first time it is needed (here, or the Lessons panel), off the UI
+  // isolate; the start screen draws again when it is in (LessonLibrary.loadedCount).
+  if (cat == null && subject != null) unawaited(lib.catalogue().then((_) {}, onError: (Object _) {}));
   if (cat == null || !prog.loaded || subject == null) return null;
   final chapters = cat.chaptersOf(cls.year, subject);
   if (chapters.isEmpty) return null;
@@ -891,10 +895,10 @@ String? nextLessonLineFor(CeClass cls, String subjectName, {LessonLibrary? libra
   return ceTr('All {subject} lessons taught', {'subject': subjectName.trim()});
 }
 
-/// Fills [ClassroomHooks.nextLessonLine] and loads the catalogue and progress in the background
-/// (the Classroom edition's main calls it once).
+/// Fills [ClassroomHooks.nextLessonLine] and loads the progress in the background (the
+/// Classroom edition's main calls it once). The lessons' catalogue is not read while the app
+/// starts: only when the Lessons panel or the start screen's line first needs it.
 void installLessonHooks() {
   ClassroomHooks.nextLessonLine = (cls, subject) => nextLessonLineFor(cls, subject);
-  unawaited(LessonLibrary.instance.catalogue().then((_) {}, onError: (_) {}));
   unawaited(LessonProgress.instance.load().then((_) {}, onError: (_) {}));
 }

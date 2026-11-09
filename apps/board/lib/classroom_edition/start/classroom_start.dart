@@ -8,6 +8,7 @@ import '../../features/enrollment/enroll_screen.dart';
 import '../backup/backup.dart';
 import '../backup/backup_page.dart' show restoreBackupFlow;
 import '../classroom_hooks.dart';
+import '../lessons/lesson_library.dart' show LessonLibrary;
 import '../local/classroom_store.dart';
 import '../local/local_class.dart';
 import '../settings/classroom_settings.dart';
@@ -67,6 +68,7 @@ class _ClassroomStartState extends State<ClassroomStart> {
   void initState() {
     super.initState();
     store.addListener(_changed);
+    LessonLibrary.loadedCount.addListener(_changed);
     unawaited(ClassroomStart.dailyBackup(store));
     // The quiet "update available" dot on Settings: at most one check a day, only online.
     unawaited(AppUpdates.instance.checkDaily().then((_) {}, onError: (Object _) {}));
@@ -76,6 +78,7 @@ class _ClassroomStartState extends State<ClassroomStart> {
   void dispose() {
     _tick.cancel();
     store.removeListener(_changed);
+    LessonLibrary.loadedCount.removeListener(_changed);
     super.dispose();
   }
 
