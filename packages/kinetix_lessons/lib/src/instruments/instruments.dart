@@ -5,15 +5,21 @@ import 'efield.dart';
 import 'graph.dart';
 import 'optics.dart';
 import 'titration.dart';
+import 'physics/registry.dart';
+import 'chemistry/registry.dart';
+import 'biology/registry.dart';
+import 'maths/registry.dart';
 
 export 'design.dart' show BoardSnapshot, InstrumentBoardScope, IX;
+
+final _domains = [physicsInstruments, chemistryInstruments, biologyInstruments, mathsInstruments];
 
 /// The instrument library: one parameterised instrument serves many lessons. A lesson step
 /// references one by id with a topic preset:
 ///
 ///   {"type": "interactive", "kind": "instrument", "instrument": "efield",
 ///    "preset": {"charges": [{"q": 2, "x": -5, "y": 0}, {"q": -2, "x": 5, "y": 0}]}}
-const instrumentIds = ['efield', 'optics', 'titration', 'graph'];
+List<String> get instrumentIds => ['efield', 'optics', 'titration', 'graph', for (final d in _domains) ...d.keys];
 
 /// Builds the instrument a lesson step names, or null for an id the library does not have.
 Widget? buildInstrument(String id, Map<String, dynamic> preset, {Key? key}) => switch (id) {
@@ -21,7 +27,13 @@ Widget? buildInstrument(String id, Map<String, dynamic> preset, {Key? key}) => s
   'optics' => OpticsInstrument(key: key, preset: preset),
   'titration' => TitrationInstrument(key: key, preset: preset),
   'graph' => GraphInstrument(key: key, preset: preset),
-  _ => null,
+  _ => (() {
+    for (final d in _domains) {
+      final b = d[id];
+      if (b != null) return b(preset, key);
+    }
+    return null;
+  })(),
 };
 
 /// The lesson block for `kind: instrument`.
