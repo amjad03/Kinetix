@@ -13,6 +13,8 @@ import '../classroom_hooks.dart';
 import '../local/classroom_store.dart';
 import '../ui/ce_more_text.dart';
 import '../ui/ce_style.dart';
+import '../content_pack/content_library.dart' show ContentLibrary;
+import '../content_pack/content_settings.dart' show TopicVideoButton;
 import 'lesson_board.dart';
 import 'lesson_embeds.dart';
 import 'lesson_library.dart';
@@ -596,6 +598,7 @@ class LessonsPanelState extends State<LessonsPanel> {
                   ],
                 ),
               ),
+              TopicVideoButton(topicId: t.id, host: host, compact: true),
               Text(status, style: ceText(14, w: FontWeight.w600, c: p?.taught ?? false ? CeC.green : CeC.navy)),
               PopupMenuButton<String>(
                 key: Key('lessons-topic-menu-${t.id}'),
@@ -680,7 +683,7 @@ class LessonsPanelState extends State<LessonsPanel> {
                               room: room,
                               paper: tint,
                               whiteboardKey: whiteboardKey,
-                              video: (v, lang) => ConceptVideoCard(video: v, lang: lang),
+                              video: (v, lang) => ConceptVideoCard(video: v, lang: lang, topicId: t.id, step: '${t.id}#${c.index}', host: host),
                             ),
                           ),
                         ),
@@ -901,4 +904,6 @@ String? nextLessonLineFor(CeClass cls, String subjectName, {LessonLibrary? libra
 void installLessonHooks() {
   ClassroomHooks.nextLessonLine = (cls, subject) => nextLessonLineFor(cls, subject);
   unawaited(LessonProgress.instance.load().then((_) {}, onError: (_) {}));
+  // The installed content pack (lesson videos): its small index only, the files stay on disk.
+  unawaited(ContentLibrary.shared().then((_) {}, onError: (_) {}));
 }

@@ -9,6 +9,7 @@ import '../local/classroom_store.dart';
 import '../past_papers/papers_settings.dart';
 import '../start/classroom_start.dart' show editTeacher;
 import '../ui/ce_confirm.dart';
+import '../content_pack/content_settings.dart';
 import '../ui/ce_style.dart';
 import 'pin_pad.dart';
 import '../start/setup_wizard.dart' show openSetupWizard;
@@ -628,6 +629,8 @@ class _ClassroomSettingsPageState extends State<ClassroomSettingsPage> {
       ),
       const SizedBox(height: Kx.s32),
       const StartupSection(),
+      const SizedBox(height: Kx.s32),
+      ContentSettingsSection(store: store),
       const SizedBox(height: Kx.s32),
       const UpdateSection(),
     ],

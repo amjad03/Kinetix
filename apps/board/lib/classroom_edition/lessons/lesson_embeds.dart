@@ -3,14 +3,15 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:kinetix_lessons/kinetix_lessons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../features/phet/phet_view.dart';
 import '../../features/sim_hub/sim_entry.dart';
-import '../../features/sim_hub/sim_hub_panel.dart' show simHubOnlineCheck;
 import '../../features/sim_hub/sim_server.dart';
 import '../ui/ce_style.dart';
 import '../l10n/ce_strings.dart';
+import '../classroom_hooks.dart';
+import '../content_pack/content_library.dart';
+import '../content_pack/pack_video_player.dart';
 
 /// The lesson's sims, labs and 3D from the board's own packages; PhET sims from the board's
 /// offline copies (assets/simhub/phet, the Simulations hub's), so they run with no internet.
@@ -67,68 +68,45 @@ class _LessonPhetState extends State<LessonPhet> {
   }
 }
 
-/// Whether the board is online (concept videos stream; tests replace it).
-Future<bool> Function() lessonOnlineCheck = () => simHubOnlineCheck();
-
-/// Opens a concept video in the browser (tests replace it).
-Future<void> Function(Uri url) openLessonVideo = (u) async {
-  await launchUrl(u, mode: LaunchMode.externalApplication);
-};
-
-/// A concept video: a card that opens the video only when the board is online; offline it
-/// says "Needs internet".
-class ConceptVideoCard extends StatefulWidget {
-  const ConceptVideoCard({super.key, required this.video, required this.lang});
+/// A concept video step. Classroom never streams: the card plays the topic's video from the
+/// installed content pack ([ContentLibrary]), or says it is not on this board.
+class ConceptVideoCard extends StatelessWidget {
+  const ConceptVideoCard({super.key, required this.video, required this.lang, this.topicId, this.step, this.host, this.library});
   final VideoRef video;
   final Lang lang;
-  @override
-  State<ConceptVideoCard> createState() => _ConceptVideoCardState();
-}
-
-class _ConceptVideoCardState extends State<ConceptVideoCard> {
-  bool? _online;
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_check());
-  }
-
-  Future<void> _check() async {
-    final on = await lessonOnlineCheck();
-    if (mounted) setState(() => _online = on);
-  }
+  final String? topicId, step;
+  final ClassroomHost? host;
+  final ContentLibrary? library;
 
   @override
   Widget build(BuildContext context) {
-    final v = widget.video;
-    final online = _online == true;
+    final l = library ?? ContentLibrary.sharedIfOpen;
+    final id = topicId;
+    final item = l == null || id == null ? null : l.videoFor(id, step: step);
     return Container(
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(48)),
       padding: const EdgeInsets.all(64),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(online ? Icons.play_circle_fill : Icons.wifi_off, size: 140, color: online ? CeC.accent : CeC.muted),
+          Icon(item != null ? Icons.play_circle_fill : Icons.sd_storage_outlined, size: 140, color: item != null ? CeC.accent : CeC.muted),
           const SizedBox(height: 32),
-          Text(v.title.t(widget.lang), textAlign: TextAlign.center, style: zTitle(48).copyWith(color: CeC.navy)),
+          Text(item?.title ?? video.title.t(lang), textAlign: TextAlign.center, style: zTitle(48).copyWith(color: CeC.navy)),
           const SizedBox(height: 32),
-          if (_online == null)
-            const CircularProgressIndicator()
-          else if (online)
+          if (item != null && l != null)
             FilledButton.icon(
               key: const Key('lesson-video-open'),
               style: FilledButton.styleFrom(backgroundColor: CeC.accent, minimumSize: const Size(0, 96), padding: const EdgeInsets.symmetric(horizontal: 48), textStyle: zText(34)),
-              onPressed: () => openLessonVideo(v.embedUrl()),
-              icon: const Icon(Icons.open_in_new, size: 40),
-              label: Text(context.ce('Open the video')),
+              onPressed: () => unawaited(openPackVideo(context, lib: l, item: item, host: host)),
+              icon: const Icon(Icons.play_arrow_rounded, size: 40),
+              label: Text(context.ce('Play the video')),
             )
           else
             Container(
               key: const Key('lesson-video-offline'),
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
               decoration: BoxDecoration(color: CeC.peach, borderRadius: BorderRadius.circular(99)),
-              child: Text(context.ce('Needs internet'), style: zText(34).copyWith(color: CeC.navy)),
+              child: Text(context.ce('Not in this board’s content pack'), style: zText(34).copyWith(color: CeC.navy)),
             ),
         ],
       ),
