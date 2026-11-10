@@ -5,6 +5,10 @@ import 'division.dart';
 import 'enzyme.dart';
 import 'photosynthesis.dart';
 import 'heart.dart';
+import 'lungs.dart';
+import 'muscle.dart';
+import 'nephron.dart';
+import 'neuron.dart';
 import 'planttransport.dart';
 import 'respiration.dart';
 
@@ -17,4 +21,8 @@ final Map<String, Widget Function(Map<String, dynamic> preset, Key? key)> biolog
   'bio-respiration': (p, k) => RespirationInstrument(key: k, preset: p),
   'bio-planttransport': (p, k) => PlantTransportInstrument(key: k, preset: p),
   'bio-heart': (p, k) => HeartInstrument(key: k, preset: p),
+  'bio-lungs': (p, k) => LungsInstrument(key: k, preset: p),
+  'bio-nephron': (p, k) => NephronInstrument(key: k, preset: p),
+  'bio-neuron': (p, k) => NeuronInstrument(key: k, preset: p),
+  'bio-muscle': (p, k) => MuscleInstrument(key: k, preset: p),
 };
