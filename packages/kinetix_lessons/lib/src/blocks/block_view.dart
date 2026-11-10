@@ -12,6 +12,7 @@ import 'challenge_view.dart';
 import 'embeds.dart';
 import 'explainer_view.dart';
 import 'interactive_view.dart';
+import '../instruments/instruments.dart';
 import 'lesson_cards.dart';
 import 'math_text.dart';
 import 'quick_check.dart';
@@ -163,6 +164,7 @@ class LessonBlockView extends StatelessWidget {
         ),
       ),
       BlockType.whiteboard => WhiteboardView(key: whiteboardKey ?? ValueKey('wb:${b.id}'), c: c, block: b, compact: true, paper: paper),
+      BlockType.interactive when b.s('kind') == 'instrument' => InstrumentBlockView(key: ValueKey('ins:${b.id}'), raw: b.raw),
       BlockType.interactive => InteractiveView(key: ValueKey('ia:${b.id}'), block: b, lang: l),
       BlockType.challenge => ChallengeView(key: ValueKey('ch:${b.id}'), block: b, lang: l, room: room, recorder: c.recorder),
       BlockType.activity => ActivityView(key: ValueKey('act:${b.id}'), block: b, lang: l, recorder: c.recorder),
