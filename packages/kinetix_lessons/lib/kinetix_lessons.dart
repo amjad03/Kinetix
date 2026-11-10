@@ -13,3 +13,4 @@ export 'src/engine/lesson_controller.dart';
 export 'src/engine/model.dart';
 export 'src/engine/narrator.dart' show Narrator, TimedNarrator;
 export 'src/engine/support.dart';
+export 'src/instruments/instruments.dart' show buildInstrument, instrumentIds, InstrumentBlockView, InstrumentBoardScope, BoardSnapshot;
