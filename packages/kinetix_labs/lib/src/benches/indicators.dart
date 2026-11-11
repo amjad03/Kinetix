@@ -7,7 +7,7 @@ import '../core/bench.dart';
 
 /// Test tubes of everyday substances and a shelf of indicators. Papers
 /// (litmus, turmeric) get a drop of the sample; liquids go into the tube.
-class IndicatorsBench extends LabBench {
+class IndicatorsBench extends LabBench with LabDemo {
   const IndicatorsBench();
 
   /// pH and the sample's own colour.
@@ -25,6 +25,30 @@ class IndicatorsBench extends LabBench {
   };
 
   static const indicators = ['blue-litmus', 'red-litmus', 'turmeric', 'china-rose', 'phenolphthalein', 'methyl-orange', 'universal'];
+
+  /// Strong acids and bases: a tenfold dilution moves the pH one unit
+  /// towards 7. Weak ones move about half a unit; buffers and salts of a
+  /// weak acid and weak base (baking soda) hardly change.
+  static const strong = {'hcl', 'naoh', 'lime'};
+  static const steady = {'soda', 'water', 'salt', 'sugar'};
+
+  /// The pH of the sample after any dilution (setup 'dilution': 1, 10, …).
+  static double phOf(LabParams p) {
+    final s = pStr(p, 'sample', 'lemon');
+    final ph = samples[s]?.$1 ?? 7;
+    final f = pNum(p, 'dilution', 1);
+    if (f <= 1 || steady.contains(s)) return ph;
+    final shift = (strong.contains(s) ? 1.0 : 0.5) * math.log(f) / math.ln10;
+    return ph < 7 ? math.min(ph + shift, 6.8) : math.max(ph - shift, 7.2);
+  }
+
+  static bool dilutes(LabParams p) => p['dilution'] != null;
+
+  static String sampleLabel(LabParams p) {
+    final f = pNum(p, 'dilution', 1);
+    final name = sampleName(pStr(p, 'sample', 'lemon'));
+    return f > 1 ? '$name (1 : ${f.round()})' : name;
+  }
 
   static bool isPaper(String ind) => ind == 'blue-litmus' || ind == 'red-litmus' || ind == 'turmeric';
 
@@ -44,6 +68,7 @@ class IndicatorsBench extends LabBench {
   List<LabControl> controls(LabParams p) => [
         LabChoice('sample', tr('Sample'), [for (final s in samples.keys) (s, sampleName(s))]),
         LabChoice('indicator', tr('Indicator'), [for (final i in indicators) (i, indicatorName(i))]),
+        if (dilutes(p)) LabChoice('dilution', tr('Diluted with water'), [(1.0, tr('Not diluted')), (10.0, '1 : 10'), (100.0, '1 : 100'), (1000.0, '1 : 1000')]),
         LabAction('add', isPaper(pStr(p, 'indicator')) ? tr('Put a drop on the paper') : tr('Add the indicator'), Icons.water_drop_outlined, primary: true),
       ];
 
@@ -51,7 +76,7 @@ class IndicatorsBench extends LabBench {
   LabParams act(String action, LabParams p) {
     if (action == 'add') return {...p, 'added': true};
     // A new sample or indicator starts clean.
-    if (action == 'set:sample' || action == 'set:indicator') return {...p, 'added': false};
+    if (action == 'set:sample' || action == 'set:indicator' || action == 'set:dilution') return {...p, 'added': false};
     return p;
   }
 
@@ -149,19 +174,28 @@ class IndicatorsBench extends LabBench {
   @override
   LabReading read(LabParams p) {
     if (!pBool(p, 'added')) return LabReading.not(tr('Add the indicator first.'));
-    final s = pStr(p, 'sample', 'lemon'), ind = pStr(p, 'indicator', 'blue-litmus');
-    final ph = samples[s]?.$1 ?? 7;
+    final ind = pStr(p, 'indicator', 'blue-litmus');
+    final ph = phOf(p);
     final (_, colour) = colourFor(ind, ph);
-    return LabReading.row([sampleName(s), indicatorName(ind), colour, nature(ind, ph), ind == 'universal' ? ph.round() : '—']);
+    return LabReading.row([sampleLabel(p), indicatorName(ind), colour, nature(ind, ph), ind == 'universal' ? ph.round() : '—']);
   }
 
   @override
   List<String> live(LabParams p) {
-    final s = pStr(p, 'sample', 'lemon'), ind = pStr(p, 'indicator', 'blue-litmus');
-    if (!pBool(p, 'added')) return [sampleName(s), indicatorName(ind)];
-    final ph = samples[s]?.$1 ?? 7;
-    return [sampleName(s), colourFor(ind, ph).$2, if (ind == 'universal') 'pH ≈ ${ph.round()}'];
+    final ind = pStr(p, 'indicator', 'blue-litmus');
+    if (!pBool(p, 'added')) return [sampleLabel(p), indicatorName(ind)];
+    final ph = phOf(p);
+    return [sampleLabel(p), colourFor(ind, ph).$2, if (ind == 'universal') 'pH ≈ ${ph.round()}'];
   }
+
+  @override
+  List<LabParams> demo(LabParams start) => !dilutes(start)
+      ? const []
+      : [
+          for (final s in ['hcl', 'vinegar', 'naoh'])
+            for (final f in [1.0, 10.0, 100.0, 1000.0]) {...start, 'sample': s, 'dilution': f, 'indicator': 'universal', 'added': true},
+          for (final s in ['lemon', 'soda', 'water', 'lime']) {...start, 'sample': s, 'dilution': 1.0, 'indicator': 'universal', 'added': true},
+        ];
 
   @override
   String? result(List<List<Object>> rows) {
@@ -181,6 +215,8 @@ class IndicatorsBench extends LabBench {
       if (base.isNotEmpty) tr('Basic: {list}.', {'list': base.join(', ')}),
       if (neutral.isNotEmpty) tr('Neutral: {list}.', {'list': neutral.join(', ')}),
       if (order.length > 1) tr('From most acidic to most basic: {list}.', {'list': order.map((e) => '${e.key} (${e.value})').join(', ')}),
+      if (rows.any((r) => '${r[0]}'.contains(' (1 : ')))
+        tr('Diluting tenfold moves the pH of a strong acid or alkali one unit towards 7, a weak one about half a unit; it never crosses 7.'),
     ].join(' ');
   }
 
@@ -188,7 +224,8 @@ class IndicatorsBench extends LabBench {
   void paint(Canvas canvas, Size size, LabParams p, double t) {
     final w = size.width, h = size.height;
     final s = pStr(p, 'sample', 'lemon'), ind = pStr(p, 'indicator', 'blue-litmus');
-    final (ph, own) = samples[s] ?? samples['lemon']!;
+    final (_, own) = samples[s] ?? samples['lemon']!;
+    final ph = phOf(p);
     final added = pBool(p, 'added');
     final (colour, name) = colourFor(ind, ph);
 
@@ -203,7 +240,7 @@ class IndicatorsBench extends LabBench {
     canvas.restore();
     canvas.drawRRect(body, stroke(LabInk.ink, 2.5));
     canvas.drawLine(Offset(tube.left - 6, tube.top), Offset(tube.right + 6, tube.top), stroke(LabInk.ink, 2.5));
-    label(canvas, sampleName(s), Offset(tube.center.dx, tube.bottom + 22), size: 14, bold: true);
+    label(canvas, sampleLabel(p), Offset(tube.center.dx, tube.bottom + 22), size: 14, bold: true);
 
     // A dropper above the tube or above the paper.
     final paper = isPaper(ind);
@@ -242,9 +279,9 @@ class IndicatorsBench extends LabBench {
     for (var k = 0; k < 14; k++) {
       final r = Rect.fromLTWH(scale.left, scale.top + scale.height * k / 14, scale.width, scale.height / 14);
       canvas.drawRect(r, fill(universal(k + 0.5)));
-      label(canvas, '$k', r.centerLeft - const Offset(10, 0), size: 10, color: LabInk.muted);
+      label(canvas, '$k', r.topLeft - const Offset(14, 0), size: 13, color: LabInk.muted);
     }
-    label(canvas, '14', scale.bottomLeft - const Offset(12, 0), size: 10, color: LabInk.muted);
+    label(canvas, '14', scale.bottomLeft - const Offset(16, 0), size: 13, color: LabInk.muted);
     canvas.drawRect(scale, stroke(LabInk.ink, 1.5));
     label(canvas, 'pH', scale.topCenter - const Offset(0, 12), size: 12, bold: true);
     if (added && ind == 'universal') {

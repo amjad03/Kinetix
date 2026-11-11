@@ -16,6 +16,12 @@ import 'forensics/fingerprints.dart';
 import 'mechanics/mechanics_benches.dart';
 import 'mechanics/modern_benches.dart';
 import 'optics/optics_benches.dart';
+import 'puc/biology_puc.dart';
+import 'puc/chemistry_puc.dart';
+import 'puc/galvanometer.dart';
+import 'puc/measuring.dart';
+import 'puc/specimens.dart';
+import 'puc/waves_optics.dart';
 import 'buoyancy.dart';
 import 'calorimetry.dart';
 import 'circle.dart';
@@ -151,6 +157,24 @@ final labBenches = <String, LabBench>{
     const HairFibreBench(),
     const FootprintBench(),
     const BallisticsBench(),
+    // Karnataka PUC practicals.
+    const VernierBench(),
+    const ScrewGaugeBench(),
+    const SpherometerBench(),
+    const GalvanometerBench(),
+    const GalvanometerBench('voltmeter'),
+    const GalvanometerBench('ammeter'),
+    const SonometerLawsBench(),
+    const LiquidLensBench(),
+    const FlywheelBench(),
+    const ColloidBench(),
+    const MeltingPointBench(),
+    const DaniellCellBench(),
+    const PlasmolysisBench(),
+    const RespirationBench(),
+    const QuadratBench(),
+    const DnaIsolationBench(),
+    const SpecimenBench(),
   ])
     b.kind: b,
 };

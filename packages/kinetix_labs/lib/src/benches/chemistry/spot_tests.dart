@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/bench.dart';
 import '../../core/i18n.dart';
+import '../puc/kit.dart';
+import '../puc/spot_kits.dart';
 import 'glassware.dart';
 
 /// What a test shows in a tube: the liquid, any precipitate, what is seen,
@@ -267,18 +269,19 @@ final spotKits = <String, SpotKit>{
     run: _tox,
     identify: _toxIdentify,
   ),
+  ...pucSpotKits,
 };
 
 /// Reagent tests in test tubes: choose a sample and a reagent, see and
 /// record what happens; the result names what the tests have found.
-class SpotTestBench extends LabBench {
+class SpotTestBench extends LabBench with LabDemo {
   const SpotTestBench();
 
   @override
   String get kind => 'spot-test';
 
   @override
-  LabParams get defaults => {'kit': 'salt', 'sample': '', 'test': '', 'added': false};
+  LabParams get defaults => {'kit': 'salt', 'sample': '', 'test': '', 'added': false, 'history': const <String>[]};
 
   static SpotKit kitOf(LabParams p) => spotKits[pStr(p, 'kit', 'salt')] ?? spotKits['salt']!;
   static String sampleOf(LabParams p) {
@@ -305,7 +308,31 @@ class SpotTestBench extends LabBench {
   }
 
   @override
-  LabParams act(String action, LabParams p) => action == 'set:sample' || action == 'set:test' ? {...p, 'added': false} : p;
+  LabParams act(String action, LabParams p) {
+    if (action == 'set:sample' || action == 'set:test') return {...p, 'added': false};
+    if (action == 'set:added' && pBool(p, 'added')) {
+      final past = [for (final h in (p['history'] as List? ?? const [])) '$h'];
+      final now = '${sampleOf(p)}|${testOf(p)}';
+      if (past.isEmpty || past.last != now) past.add(now);
+      return {...p, 'history': past.length > 6 ? past.sublist(past.length - 6) : past};
+    }
+    return p;
+  }
+
+  @override
+  List<LabParams> demo(LabParams start) {
+    final k = kitOf(start);
+    final out = <LabParams>[];
+    var p = start;
+    for (final s in k.samples.take(4)) {
+      for (final t in k.tests) {
+        if (k.run(s, t).finds == null) continue;
+        p = act('set:added', {...p, 'sample': s, 'test': t, 'added': true});
+        out.add(p);
+      }
+    }
+    return out;
+  }
 
   @override
   List<LabColumn> get columns => [LabColumn(tr('Sample')), LabColumn(tr('Test')), LabColumn(tr('Observation')), LabColumn(tr('Inference'))];
@@ -351,19 +378,56 @@ class SpotTestBench extends LabBench {
     final k = kitOf(p);
     final added = pBool(p, 'added');
     final r = k.run(sampleOf(p), testOf(p));
-    // A rack of tubes: this sample's is in front.
-    canvas.drawRect(Rect.fromLTWH(w * 0.08, h * 0.62, w * 0.44, 10), fill(const Color(0xFFB08860)));
-    for (var i = 0; i < 4; i++) {
-      Glass.testTube(canvas, Offset(w * (0.14 + i * 0.1), h * 0.6), h * 0.3, const Color(0x2278B7E0));
+    final ground = h * 0.9;
+    Kit.table(canvas, Rect.fromLTWH(0, ground, w, h * 0.1));
+    // Wooden stand with the tubes already tested.
+    final history = [for (final x in (p['history'] as List? ?? const [])) '$x'];
+    final rack = Rect.fromLTWH(w * 0.04, ground - h * 0.3, w * 0.36, h * 0.3);
+    canvas.drawRect(Rect.fromLTWH(rack.left, rack.top + rack.height * 0.25, rack.width, 12), Kit.woodFill(rack));
+    canvas.drawRect(Rect.fromLTWH(rack.left, ground - 14, rack.width, 14), Kit.woodFill(rack));
+    canvas.drawRect(Rect.fromLTWH(rack.left, rack.top + rack.height * 0.25, 10, ground - rack.top - rack.height * 0.25), fill(Kit.woodDark));
+    canvas.drawRect(Rect.fromLTWH(rack.right - 10, rack.top + rack.height * 0.25, 10, ground - rack.top - rack.height * 0.25), fill(Kit.woodDark));
+    for (var i = 0; i < 6; i++) {
+      final x = rack.left + rack.width * (i + 0.6) / 6.4;
+      final tubeH = rack.height * 0.95;
+      if (i < history.length) {
+        final parts = history[i].split('|');
+        final res = parts.length == 2 && k.samples.contains(parts[0]) && k.tests.contains(parts[1]) ? k.run(parts[0], parts[1]) : null;
+        Glass.testTube(canvas, Offset(x, ground - 16), tubeH, res?.liquid ?? const Color(0x2278B7E0), solid: res?.solid, fillFraction: 0.42);
+        if (res != null) label(canvas, '${i + 1}', Offset(x, rack.top - 14), size: 13, bold: true, color: LabInk.muted);
+      } else {
+        Glass.testTube(canvas, Offset(x, ground - 16), tubeH, const Color(0x00000000), fillFraction: 0);
+      }
     }
-    Glass.testTube(canvas, Offset(w * 0.68, h * 0.88), h * 0.62, added ? r.liquid : const Color(0x3378B7E0), solid: added ? r.solid : null, fillFraction: 0.45);
-    // Dropper.
+    label(canvas, tr('Tests done so far'), Offset(rack.center.dx, ground + 22), size: 13, color: LabInk.muted);
+    // The tube being tested, in a holder.
+    final tx = w * 0.56, tubeH = h * 0.56;
+    final base = Offset(tx, ground - h * 0.08);
+    Glass.testTube(canvas, base, tubeH, added ? r.liquid : const Color(0x3378B7E0), solid: added ? r.solid : null, fillFraction: 0.42);
+    if (added && (r.seen.contains('ffervescence') || r.seen.contains('बुदबुद') || r.finds == 'acid' || r.finds == 'co3')) {
+      for (var i = 0; i < 14; i++) {
+        canvas.drawCircle(Offset(tx + (hash01(i, 3) - 0.5) * tubeH * 0.16, base.dy - tubeH * (0.05 + hash01(i, 4) * 0.35)), 3 + hash01(i, 5) * 3, stroke(const Color(0xAA4A86B0), 1.2));
+      }
+    }
+    final holder = Rect.fromLTWH(tx - tubeH * 0.13, base.dy - tubeH * 0.86, tubeH * 0.26, 16);
+    canvas.drawRRect(RRect.fromRectAndRadius(holder, const Radius.circular(3)), Kit.woodFill(holder));
+    canvas.drawRect(Rect.fromLTWH(holder.right, holder.top + 3, w * 0.12, 10), Kit.woodFill(holder));
+    // Reagent bottle and dropper.
+    final bottle = Rect.fromLTWH(w * 0.72, ground - h * 0.22, w * 0.08, h * 0.22);
+    canvas.drawRRect(RRect.fromRectAndRadius(bottle, const Radius.circular(8)), fill(const Color(0x99A1887F)));
+    canvas.drawRRect(RRect.fromRectAndRadius(bottle, const Radius.circular(8)), stroke(const Color(0xFF5D4037), 1.4));
+    canvas.drawRect(Rect.fromLTWH(bottle.left + bottle.width * 0.3, bottle.top - 16, bottle.width * 0.4, 18), fill(const Color(0xFF3E2723)));
+    final tag = Rect.fromLTWH(bottle.left + 4, bottle.top + bottle.height * 0.3, bottle.width - 8, bottle.height * 0.38);
+    canvas.drawRect(tag, fill(const Color(0xFFFFFDF5)));
+    label(canvas, tr('Reagent'), tag.center, size: 14, bold: true, color: const Color(0xFF3E2723));
     if (!added) {
-      canvas.drawRect(Rect.fromCenter(center: Offset(w * 0.68, h * 0.12), width: 10, height: 40), fill(const Color(0x8890CAF9)));
-      canvas.drawOval(Rect.fromCenter(center: Offset(w * 0.68, h * 0.06), width: 18, height: 22), fill(LabInk.red));
+      final dx = tx, dy = base.dy - tubeH - h * 0.1;
+      canvas.drawRect(Rect.fromCenter(center: Offset(dx, dy), width: 10, height: h * 0.1), fill(const Color(0x8890CAF9)));
+      canvas.drawRect(Rect.fromCenter(center: Offset(dx, dy), width: 10, height: h * 0.1), stroke(LabInk.ink, 1));
+      canvas.drawOval(Rect.fromCenter(center: Offset(dx, dy - h * 0.06), width: 20, height: 26), fill(const Color(0xFF3E2723)));
+      canvas.drawCircle(Offset(dx, dy + h * 0.06), 4, fill(const Color(0xAA90CAF9)));
     }
-    label(canvas, k.sampleName(sampleOf(p)), Offset(w * 0.3, h * 0.72), size: 16, bold: true);
-    label(canvas, k.testName(testOf(p)), Offset(w * 0.3, h * 0.8), size: 14, color: LabInk.muted);
-    if (added) label(canvas, r.seen, Offset(w * 0.3, h * 0.2), size: 15, bold: true, halo: LabInk.paper);
+    label(canvas, k.sampleName(sampleOf(p)), Offset(tx, ground + 22), size: 16, bold: true);
+    Kit.card(canvas, Offset(w * 0.66, h * 0.05), w * 0.32, k.testName(testOf(p)), added ? [tr('Seen: {s}', {'s': r.seen}), tr('So: {m}', {'m': r.means})] : [tr('Add the reagent and watch the tube.')], size: 15);
   }
 }

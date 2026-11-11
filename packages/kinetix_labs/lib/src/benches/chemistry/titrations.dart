@@ -23,14 +23,17 @@ class TitrationPair {
   /// Moles of titrant per mole of analyte at equivalence.
   final double ratio;
   final bool redox;
+
+  /// Sodium carbonate in the flask titrated with an acid (methyl orange).
+  final bool carbonate;
   final Acid Function(double molar)? acid;
-  const TitrationPair(this.flask, this.burette, this.known, {required this.unknownInBurette, required this.ratio, this.redox = false, this.acid});
+  const TitrationPair(this.flask, this.burette, this.known, {required this.unknownInBurette, required this.ratio, this.redox = false, this.carbonate = false, this.acid});
 }
 
 /// Titrations: acid–base with an indicator, and KMnO₄ (its own indicator)
 /// against oxalic acid or Mohr's salt (setup 'pair'). The unknown samples
 /// A, B and C have different concentrations.
-class TitrationBench extends LabBench {
+class TitrationBench extends LabBench with LabDemo {
   const TitrationBench();
 
   static const flaskMl = 10.0;
@@ -42,6 +45,9 @@ class TitrationBench extends LabBench {
     'oxalic-naoh': TitrationPair('oxalic', 'naoh', 0.05, unknownInBurette: true, ratio: 2, acid: (m) => Acid('oxalic', m, flaskMl, ka: const [5.9e-2, 6.4e-5])),
     // HCl (unknown) in the flask against 0.1 M NaOH.
     'hcl-naoh': TitrationPair('hcl', 'naoh', 0.1, unknownInBurette: false, ratio: 1, acid: (m) => Acid('HCl', m, flaskMl)),
+    // HCl (unknown) in the burette against 0.05 M sodium carbonate, to the
+    // methyl orange end point: Na₂CO₃ + 2 HCl → 2 NaCl + H₂O + CO₂.
+    'na2co3-hcl': const TitrationPair('na2co3', 'hcl', 0.05, unknownInBurette: true, ratio: 2, carbonate: true),
     // KMnO₄ (unknown) against 0.05 M oxalic acid: 2 MnO₄⁻ react with 5 C₂O₄²⁻.
     'kmno4-oxalic': const TitrationPair('oxalic', 'kmno4', 0.05, unknownInBurette: true, ratio: 2 / 5, redox: true),
     // KMnO₄ (unknown) against 0.1 M Mohr's salt: 1 MnO₄⁻ reacts with 5 Fe²⁺.
@@ -57,12 +63,28 @@ class TitrationBench extends LabBench {
   @override
   LabParams get preview => {...defaults, 'v': 10.25};
 
+  /// Two concordant titrations of each sample, stopped at the end point.
+  @override
+  List<LabParams> demo(LabParams start) => [
+        for (final s in samples.keys)
+          for (final extra in [0.0, 0.05])
+            () {
+              final p = {...start, 'sample': s};
+              final v = ((endPoint(p) + 0.02) / 0.05).ceil() * 0.05;
+              for (final dv in [0.0, 0.05, 0.1, -0.05]) {
+                final q = {...p, 'v': v + extra + dv};
+                if (atEndPoint(q)) return q;
+              }
+              return {...p, 'v': v};
+            }(),
+      ];
+
   static TitrationPair pairOf(LabParams p) => pairs[pStr(p, 'pair', 'oxalic-naoh')]!;
 
   @override
   List<LabControl> controls(LabParams p) => [
         LabChoice('sample', tr('Sample'), [for (final s in samples.keys) (s, s)]),
-        if (!pairOf(p).redox) LabChoice('indicator', tr('Indicator'), [('phenolphthalein', tr('Phenolphthalein')), ('methyl-orange', tr('Methyl orange'))]),
+        if (!pairOf(p).redox && !pairOf(p).carbonate) LabChoice('indicator', tr('Indicator'), [('phenolphthalein', tr('Phenolphthalein')), ('methyl-orange', tr('Methyl orange'))]),
         LabSlider('v', tr('Burette'), 0, 25, divisions: 500, unit: ' mL', decimals: 2),
         LabAction('refill', tr('New titration'), Icons.replay),
       ];
@@ -90,7 +112,34 @@ class TitrationBench extends LabBench {
   static double phOf(LabParams p) {
     final pair = pairOf(p);
     final (cf, cb) = strengths(p);
+    if (pair.carbonate) return carbonatePh(cf, cb, pNum(p, 'v'));
     return Chem.ph(pair.acid!(cf), cb, pNum(p, 'v'));
+  }
+
+  /// pH of 10 mL of sodium carbonate (cf mol/L) after v mL of HCl (ca mol/L):
+  /// the charge balance [Na⁺] + [H⁺] = [Cl⁻] + [OH⁻] + [HCO₃⁻] + 2[CO₃²⁻],
+  /// with pKa 6.35 and 10.33 for carbonic acid, solved by bisection in pH.
+  static double carbonatePh(double cf, double ca, double v) {
+    final vol = flaskMl + v;
+    final c = cf * flaskMl / vol, na = 2 * c, cl = ca * v / vol;
+    const k1 = 4.47e-7, k2 = 4.68e-11, kw = 1e-14;
+    double excess(double ph) {
+      final hh = math.pow(10, -ph).toDouble();
+      final d = hh * hh + k1 * hh + k1 * k2;
+      return na + hh - cl - kw / hh - c * (k1 * hh + 2 * k1 * k2) / d;
+    }
+
+    var lo = 0.0, hi = 14.0;
+    for (var i = 0; i < 60; i++) {
+      final mid = (lo + hi) / 2;
+      // excess falls as pH rises.
+      if (excess(mid) > 0) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    return (lo + hi) / 2;
   }
 
   /// The flask's colour and the name of it.
@@ -102,7 +151,7 @@ class TitrationBench extends LabBench {
       final t = (excess / 0.3).clamp(0.0, 1.0);
       return (Color.lerp(const Color(0xFFF8D7EE), const Color(0xFF9C1E7A), t)!, t < 0.4 ? 'light pink' : 'pink');
     }
-    return Chem.indicator(pStr(p, 'indicator', 'phenolphthalein'), phOf(p));
+    return Chem.indicator(pair.carbonate ? 'methyl-orange' : pStr(p, 'indicator', 'phenolphthalein'), phOf(p));
   }
 
   static String colourName(String c) => switch (c) {
@@ -117,7 +166,7 @@ class TitrationBench extends LabBench {
   /// Within one drop (0.05 mL) past the end point: the first permanent change.
   static bool atEndPoint(LabParams p) {
     final over = pNum(p, 'v') - endPoint(p);
-    if (pairOf(p).redox || pStr(p, 'indicator', 'phenolphthalein') == 'phenolphthalein') return over >= -0.02 && over <= 0.1;
+    if (pairOf(p).redox || (!pairOf(p).carbonate && pStr(p, 'indicator', 'phenolphthalein') == 'phenolphthalein')) return over >= -0.02 && over <= 0.1;
     // Methyl orange changes before the true end point of a weak acid.
     return colour(p).$2 == 'orange';
   }
@@ -191,6 +240,7 @@ class TitrationBench extends LabBench {
         'oxalic' => tr('Oxalic acid'),
         'naoh' => tr('Sodium hydroxide'),
         'hcl' => tr('Hydrochloric acid'),
+        'na2co3' => tr('Sodium carbonate'),
         'mohr' => tr("Mohr's salt"),
         _ => tr('Potassium permanganate'),
       };

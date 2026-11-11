@@ -1,0 +1,1059 @@
+{
+ "about": "Karnataka 1st and 2nd PUC prescribed practicals (Physics, Chemistry, Biology) mapped to KINETIX virtual labs (packages/kinetix_labs) and to lesson chapters (apps/board/assets/lessons/puc). The practical list is compiled from the NCERT-aligned PU syllabus and must be checked against the current DPUE list: every entry needs_verification. coverage: existing = a lab that was already in kinetix_labs, new = a lab added for this list, missing = no lab yet.",
+ "counts": {
+  "total": 85,
+  "existing": 50,
+  "new": 35,
+  "missing": 0
+ },
+ "practicals": [
+  {
+   "id": "puc1-phys-01",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Vernier callipers: volume of a sphere and a cylinder",
+   "lab": "vernier-callipers",
+   "coverage": "new",
+   "chapters": [
+    "puc1-physics-01-units-and-measurement",
+    "puc1-physics-17-errors-in-measurement"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-02",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Vernier callipers: internal volume of a beaker",
+   "lab": "vernier-callipers",
+   "coverage": "new",
+   "chapters": [
+    "puc1-physics-01-units-and-measurement",
+    "puc1-physics-17-errors-in-measurement"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-03",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Screw gauge: diameter of a wire",
+   "lab": "screw-gauge",
+   "coverage": "new",
+   "chapters": [
+    "puc1-physics-01-units-and-measurement",
+    "puc1-physics-17-errors-in-measurement"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-04",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Screw gauge: thickness of a sheet and volume of a lamina",
+   "lab": "screw-gauge",
+   "coverage": "new",
+   "chapters": [
+    "puc1-physics-01-units-and-measurement",
+    "puc1-physics-17-errors-in-measurement"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-05",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Spherometer: radius of curvature of a spherical surface",
+   "lab": "spherometer",
+   "coverage": "new",
+   "chapters": [
+    "puc1-physics-01-units-and-measurement",
+    "puc1-physics-17-errors-in-measurement"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-06",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Mass of a body with a metre scale (principle of moments)",
+   "lab": "lever",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-06-system-of-particles-and-rotational-motion"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-07",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Simple pendulum: L–T² graph and g",
+   "lab": "pendulum",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-13-oscillations"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-08",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Force constant of a helical spring",
+   "lab": "hookes-law",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-08-mechanical-properties-of-solids"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-09",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Time period of a loaded spring (spring constant)",
+   "lab": "spring-mass-oscillation",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-13-oscillations"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-10",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Downward force along an inclined plane and sin θ",
+   "lab": "inclined-plane",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-04-laws-of-motion"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-11",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Coefficient of limiting friction",
+   "lab": "limiting-friction",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-04-laws-of-motion"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-12",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Moment of inertia of a flywheel",
+   "lab": "flywheel-inertia",
+   "coverage": "new",
+   "chapters": [
+    "puc1-physics-06-system-of-particles-and-rotational-motion"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-13",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Young's modulus of a wire (Searle's method)",
+   "lab": "youngs-modulus",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-08-mechanical-properties-of-solids"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-14",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Surface tension of water by capillary rise",
+   "lab": "surface-tension-capillary",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-09-mechanical-properties-of-fluids"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-15",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Coefficient of viscosity by terminal velocity",
+   "lab": "stokes-viscosity",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-09-mechanical-properties-of-fluids"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-16",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Specific heat of a solid or liquid by the method of mixtures",
+   "lab": "calorimetry",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-10-thermal-properties-of-matter"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-17",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Newton's law of cooling",
+   "lab": "newtons-law-cooling",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-10-thermal-properties-of-matter"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-18",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Sonometer: frequency and resonating length",
+   "lab": "sonometer-law-of-length",
+   "coverage": "new",
+   "chapters": [
+    "puc1-physics-14-waves"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-19",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Sonometer: resonating length and tension",
+   "lab": "sonometer-law-of-tension",
+   "coverage": "new",
+   "chapters": [
+    "puc1-physics-14-waves"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-phys-20",
+   "year": "puc1",
+   "subject": "Physics",
+   "title": "Speed of sound with a resonance tube",
+   "lab": "resonance-tube",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-physics-14-waves"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-01",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Resistivity of a wire from its V–I graph (Ohm's law)",
+   "lab": "ohms-law",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-03-current-electricity"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-02",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Resistivity of a wire with a metre bridge",
+   "lab": "meter-bridge",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-03-current-electricity",
+    "puc2-physics-15-metre-bridge-and-potentiometer"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-03",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Laws of combination of resistances (series and parallel)",
+   "lab": "resistors",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-03-current-electricity",
+    "puc2-physics-15-metre-bridge-and-potentiometer"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-04",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Comparing the EMFs of two cells (potentiometer)",
+   "lab": "potentiometer-emf",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-03-current-electricity",
+    "puc2-physics-15-metre-bridge-and-potentiometer"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-05",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Internal resistance of a cell (potentiometer)",
+   "lab": "potentiometer-internal-resistance",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-03-current-electricity",
+    "puc2-physics-15-metre-bridge-and-potentiometer"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-06",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Resistance and figure of merit of a galvanometer (half deflection)",
+   "lab": "galvanometer-half-deflection",
+   "coverage": "new",
+   "chapters": [
+    "puc2-physics-04-moving-charges-and-magnetism"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-07",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Converting a galvanometer into a voltmeter",
+   "lab": "galvanometer-voltmeter",
+   "coverage": "new",
+   "chapters": [
+    "puc2-physics-04-moving-charges-and-magnetism"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-08",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Converting a galvanometer into an ammeter",
+   "lab": "galvanometer-ammeter",
+   "coverage": "new",
+   "chapters": [
+    "puc2-physics-04-moving-charges-and-magnetism"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-09",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Resonant frequency of a series LCR circuit",
+   "lab": "lcr-resonance",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-07-alternating-current"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-10",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Focal length of a convex lens (u–v method)",
+   "lab": "convex-lens-uv",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-09-ray-optics-and-optical-instruments"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-11",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Focal length of a concave mirror (u–v method)",
+   "lab": "concave-mirror-uv",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-09-ray-optics-and-optical-instruments"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-12",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Focal length of a convex mirror using a convex lens",
+   "lab": "convex-mirror-focal",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-09-ray-optics-and-optical-instruments"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-13",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Focal length of a concave lens using a convex lens",
+   "lab": "concave-lens-focal",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-09-ray-optics-and-optical-instruments"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-14",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Angle of minimum deviation of a prism (i–d curve)",
+   "lab": "prism",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-09-ray-optics-and-optical-instruments"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-15",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Refractive index of a glass slab (travelling microscope)",
+   "lab": "refractive-index-microscope",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-09-ray-optics-and-optical-instruments"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-16",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Refractive index of a liquid (convex lens and plane mirror)",
+   "lab": "liquid-refractive-index",
+   "coverage": "new",
+   "chapters": [
+    "puc2-physics-09-ray-optics-and-optical-instruments"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-17",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "I–V characteristics of a p-n junction diode",
+   "lab": "pn-junction-diode",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-18",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Reverse breakdown voltage of a Zener diode",
+   "lab": "zener-diode",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+    "puc2-physics-17-special-purpose-diodes"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-19",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Characteristics of an NPN transistor (CE)",
+   "lab": "transistor-ce",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-phys-20",
+   "year": "puc2",
+   "subject": "Physics",
+   "title": "Truth tables of logic gates",
+   "lab": "logic-gates",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+    "puc2-physics-18-logic-gates"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-chem-01",
+   "year": "puc1",
+   "subject": "Chemistry",
+   "title": "Standard oxalic acid and the strength of NaOH",
+   "lab": "titration-oxalic-naoh",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-chemistry-01-some-basic-concepts-of-chemistry"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-chem-02",
+   "year": "puc1",
+   "subject": "Chemistry",
+   "title": "Standard sodium carbonate and the strength of HCl",
+   "lab": "titration-na2co3-hcl",
+   "coverage": "new",
+   "chapters": [
+    "puc1-chemistry-01-some-basic-concepts-of-chemistry"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-chem-03",
+   "year": "puc1",
+   "subject": "Chemistry",
+   "title": "Systematic analysis of a simple salt (1st PUC)",
+   "lab": "salt-analysis",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties",
+    "puc1-chemistry-07-redox-reactions"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-chem-04",
+   "year": "puc1",
+   "subject": "Chemistry",
+   "title": "Melting point of an organic compound",
+   "lab": "melting-point",
+   "coverage": "new",
+   "chapters": [
+    "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-chem-05",
+   "year": "puc1",
+   "subject": "Chemistry",
+   "title": "Boiling point of an organic liquid",
+   "lab": "boiling-point",
+   "coverage": "new",
+   "chapters": [
+    "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-chem-06",
+   "year": "puc1",
+   "subject": "Chemistry",
+   "title": "Detection of nitrogen, sulphur and halogens (Lassaigne's test)",
+   "lab": "lassaigne-test",
+   "coverage": "new",
+   "chapters": [
+    "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-chem-07",
+   "year": "puc1",
+   "subject": "Chemistry",
+   "title": "pH of solutions and the effect of dilution",
+   "lab": "ph-of-solutions",
+   "coverage": "new",
+   "chapters": [
+    "puc1-chemistry-06-equilibrium"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-chem-08",
+   "year": "puc1",
+   "subject": "Chemistry",
+   "title": "Enthalpy of neutralisation of a strong acid by a strong base",
+   "lab": "enthalpy-neutralisation",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-chemistry-05-thermodynamics"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-chem-01",
+   "year": "puc2",
+   "subject": "Chemistry",
+   "title": "KMnO₄ against standard oxalic acid",
+   "lab": "kmno4-oxalic",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-chemistry-04-the-d-and-f-block-elements",
+    "puc1-chemistry-07-redox-reactions"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-chem-02",
+   "year": "puc2",
+   "subject": "Chemistry",
+   "title": "KMnO₄ against standard Mohr's salt",
+   "lab": "kmno4-mohr",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-chemistry-04-the-d-and-f-block-elements",
+    "puc1-chemistry-07-redox-reactions"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-chem-03",
+   "year": "puc2",
+   "subject": "Chemistry",
+   "title": "Systematic analysis of a simple salt (2nd PUC)",
+   "lab": "salt-analysis",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-chemistry-04-the-d-and-f-block-elements",
+    "puc2-chemistry-05-coordination-compounds"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-chem-04",
+   "year": "puc2",
+   "subject": "Chemistry",
+   "title": "Tests for functional groups in organic compounds",
+   "lab": "functional-group-tests",
+   "coverage": "new",
+   "chapters": [
+    "puc2-chemistry-06-haloalkanes-and-haloarenes",
+    "puc2-chemistry-07-alcohols-phenols-and-ethers",
+    "puc2-chemistry-08-aldehydes-ketones-and-carboxylic-acids",
+    "puc2-chemistry-09-amines"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-chem-05",
+   "year": "puc2",
+   "subject": "Chemistry",
+   "title": "Tests for carbohydrates, fats and proteins",
+   "lab": "food-tests",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-chemistry-10-biomolecules"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-chem-06",
+   "year": "puc2",
+   "subject": "Chemistry",
+   "title": "Preparation of lyophilic and lyophobic sols",
+   "lab": "preparation-of-sols",
+   "coverage": "new",
+   "chapters": [
+    "puc2-chemistry-01-solutions"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-chem-07",
+   "year": "puc2",
+   "subject": "Chemistry",
+   "title": "Effect of concentration and temperature on the rate of reaction",
+   "lab": "reaction-rate-thiosulphate",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-chemistry-03-chemical-kinetics"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-chem-08",
+   "year": "puc2",
+   "subject": "Chemistry",
+   "title": "Variation of cell potential with concentration (Zn/Cu cell)",
+   "lab": "daniell-cell-emf",
+   "coverage": "new",
+   "chapters": [
+    "puc2-chemistry-02-electrochemistry"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-chem-09",
+   "year": "puc2",
+   "subject": "Chemistry",
+   "title": "Separation of pigments by paper chromatography (Rf values)",
+   "lab": "leaf-pigment-chromatography",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-01",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Parts of a compound microscope; plant and animal cells",
+   "lab": "microscope",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-biology-08-cell-the-unit-of-life"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-02",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Specimens: bacteria, fungi, algae, bryophytes, pteridophytes, gymnosperms",
+   "lab": "diversity-plants",
+   "coverage": "new",
+   "chapters": [
+    "puc1-biology-02-biological-classification",
+    "puc1-biology-03-plant-kingdom"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-03",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Specimens: protists, non-chordates and chordates",
+   "lab": "diversity-animals",
+   "coverage": "new",
+   "chapters": [
+    "puc1-biology-02-biological-classification",
+    "puc1-biology-04-animal-kingdom"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-04",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "T.S. of dicot and monocot roots and stems; a dicot leaf",
+   "lab": "plant-anatomy",
+   "coverage": "new",
+   "chapters": [
+    "puc1-biology-06-anatomy-of-flowering-plants"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-05",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Animal tissues: epithelia, muscle, nerve and blood",
+   "lab": "animal-tissues",
+   "coverage": "new",
+   "chapters": [
+    "puc1-biology-07-structural-organisation-in-animals"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-06",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Mitosis in onion root tip cells",
+   "lab": "mitosis-onion-root",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-biology-10-cell-cycle-and-cell-division"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-07",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Distribution of stomata on the two surfaces of a leaf",
+   "lab": "stomatal-index",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-biology-06-anatomy-of-flowering-plants",
+    "puc1-biology-20-transport-in-plants"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-08",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Osmosis by a potato osmometer",
+   "lab": "osmosis",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-biology-20-transport-in-plants"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-09",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Plasmolysis in epidermal peels",
+   "lab": "plasmolysis",
+   "coverage": "new",
+   "chapters": [
+    "puc1-biology-20-transport-in-plants"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-10",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Rate of transpiration of the two surfaces of a leaf",
+   "lab": "transpiration",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-biology-20-transport-in-plants"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-11",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Tests for sugar, starch, protein and fat in plant and animal material",
+   "lab": "food-tests",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-biology-09-biomolecules",
+    "puc1-biology-22-digestion-and-absorption"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-12",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Separation of leaf pigments by paper chromatography",
+   "lab": "leaf-pigment-chromatography",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-biology-11-photosynthesis-in-higher-plants"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-13",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Rate of respiration and RQ of germinating seeds",
+   "lab": "respiration-rq",
+   "coverage": "new",
+   "chapters": [
+    "puc1-biology-12-respiration-in-plants"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-14",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Tests for urea, sugar, albumin and bile salts in urine",
+   "lab": "urine-analysis",
+   "coverage": "new",
+   "chapters": [
+    "puc1-biology-16-excretory-products-and-their-elimination"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-15",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Action of salivary amylase on starch",
+   "lab": "enzyme-amylase",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-biology-09-biomolecules",
+    "puc1-biology-22-digestion-and-absorption"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc1-biol-16",
+   "year": "puc1",
+   "subject": "Biology",
+   "title": "Rate of photosynthesis at different light intensities",
+   "lab": "photosynthesis-light",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-biology-11-photosynthesis-in-higher-plants"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-01",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "Pollen germination on a slide",
+   "lab": "pollen-germination",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-biology-01-sexual-reproduction-in-flowering-plants"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-02",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "Flowers adapted to pollination by wind, insects and birds",
+   "lab": "pollination-adaptations",
+   "coverage": "new",
+   "chapters": [
+    "puc2-biology-01-sexual-reproduction-in-flowering-plants"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-03",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "Slides: T.S. of testis and ovary, blastula and pollen grain",
+   "lab": "reproduction-slides",
+   "coverage": "new",
+   "chapters": [
+    "puc2-biology-01-sexual-reproduction-in-flowering-plants",
+    "puc2-biology-02-human-reproduction"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-04",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "Meiosis in onion bud cells or grasshopper testis",
+   "lab": "meiosis-stages",
+   "coverage": "new",
+   "chapters": [
+    "puc1-biology-10-cell-cycle-and-cell-division"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-05",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "Mendelian inheritance: monohybrid ratio with seeds",
+   "lab": "monohybrid-cross",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-biology-04-principles-of-inheritance-and-variation"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-06",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "Mendelian inheritance: dihybrid ratio with seeds",
+   "lab": "dihybrid-cross",
+   "coverage": "existing",
+   "chapters": [
+    "puc2-biology-04-principles-of-inheritance-and-variation"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-07",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "Common disease-causing organisms",
+   "lab": "disease-organisms",
+   "coverage": "new",
+   "chapters": [
+    "puc2-biology-07-human-health-and-disease"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-08",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "Homologous and analogous organs; xerophytic and aquatic adaptations",
+   "lab": "homology-adaptations",
+   "coverage": "new",
+   "chapters": [
+    "puc2-biology-06-evolution",
+    "puc2-biology-11-organisms-and-populations"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-09",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "pH and clarity of water and soil from two sites",
+   "lab": "water-soil-analysis",
+   "coverage": "new",
+   "chapters": [
+    "puc2-biology-11-organisms-and-populations",
+    "puc2-biology-12-ecosystem"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-10",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "Population density and frequency by the quadrat method",
+   "lab": "quadrat-study",
+   "coverage": "new",
+   "chapters": [
+    "puc2-biology-11-organisms-and-populations",
+    "puc2-biology-13-biodiversity-and-conservation"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-11",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "Effect of temperature and pH on salivary amylase",
+   "lab": "enzyme-amylase",
+   "coverage": "existing",
+   "chapters": [
+    "puc1-biology-09-biomolecules"
+   ],
+   "needs_verification": true
+  },
+  {
+   "id": "puc2-biol-12",
+   "year": "puc2",
+   "subject": "Biology",
+   "title": "Isolation of DNA from plant material",
+   "lab": "dna-isolation",
+   "coverage": "new",
+   "chapters": [
+    "puc2-biology-05-molecular-basis-of-inheritance",
+    "puc2-biology-09-biotechnology-principles-and-processes"
+   ],
+   "needs_verification": true
+  }
+ ]
+}

@@ -243,6 +243,13 @@ abstract class LabBench {
   LabParams act(String action, LabParams p) => p;
 }
 
+/// A bench that knows the readings a student takes in its practical: the
+/// settings to record, in order, starting from [start] (the lab's setup). The
+/// tests and the teacher's "show me" use them.
+mixin LabDemo on LabBench {
+  List<LabParams> demo(LabParams start);
+}
+
 /// A small least-recently-used cache for benches that simulate (a
 /// simulation is pure in its params, so its result can be kept).
 class LabCache<K, V> {
