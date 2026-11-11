@@ -16,12 +16,14 @@ import 'magnetism.dart';
 import 'matter.dart';
 import 'measurement.dart';
 import 'oscillations.dart';
+import 'photon.dart';
 import 'plane.dart';
 import 'refraction.dart';
 import 'rotation.dart';
 import 'thermal.dart';
 import 'thermo.dart';
 import 'vectors.dart';
+import 'waveoptics.dart';
 
 final _specs = <InstrumentSpec>[
   kinematicsSpec,
@@ -49,6 +51,8 @@ final _specs = <InstrumentSpec>[
   acSpec,
   emwaveSpec,
   refractionSpec,
+  waveOpticsSpec,
+  photonSpec,
 ];
 
 /// Physics instruments. Each entry: id → builder taking the lesson preset.

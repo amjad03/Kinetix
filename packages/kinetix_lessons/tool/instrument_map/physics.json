@@ -2930,5 +2930,244 @@
    "al": 1,
    "near": 0
   }
+ },
+ {
+  "chapter": "puc2-physics-10-wave-optics",
+  "step": "puc2-physics-10-wave-optics.t1.lesson#sim1",
+  "title": "Huygens' construction",
+  "instrument": "waveoptics",
+  "preset": {
+   "mode": "huygens",
+   "v": 3,
+   "k": 7,
+   "R": 10
+  }
+ },
+ {
+  "chapter": "puc2-physics-10-wave-optics",
+  "step": "puc2-physics-10-wave-optics.t1.lesson#int1",
+  "title": "Try it: a wavefront flattens with distance",
+  "instrument": "waveoptics",
+  "preset": {
+   "mode": "huygens",
+   "v": 3,
+   "k": 7,
+   "R": 10
+  }
+ },
+ {
+  "chapter": "puc2-physics-10-wave-optics",
+  "step": "puc2-physics-10-wave-optics.t2.lesson#sim1",
+  "title": "Refraction explained by wavelets",
+  "instrument": "waveoptics",
+  "preset": {
+   "mode": "wavelets",
+   "i": 40,
+   "n1": 1,
+   "n2": 1.5
+  }
+ },
+ {
+  "chapter": "puc2-physics-10-wave-optics",
+  "step": "puc2-physics-10-wave-optics.t2.lesson#int1",
+  "title": "Try it: refraction of a wave",
+  "instrument": "waveoptics",
+  "preset": {
+   "mode": "wavelets",
+   "i": 45,
+   "n1": 1,
+   "n2": 1.5,
+   "lam": 600
+  }
+ },
+ {
+  "chapter": "puc2-physics-10-wave-optics",
+  "step": "puc2-physics-10-wave-optics.t3.lesson#sim1",
+  "title": "Young's double-slit fringes",
+  "instrument": "waveoptics",
+  "preset": {
+   "mode": "young",
+   "lam": 600,
+   "d": 0.5,
+   "D": 1,
+   "one": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-10-wave-optics",
+  "step": "puc2-physics-10-wave-optics.t3.lesson#int1",
+  "title": "Try it: fringe pattern",
+  "instrument": "waveoptics",
+  "preset": {
+   "mode": "young",
+   "lam": 600,
+   "d": 0.5,
+   "D": 1,
+   "one": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-10-wave-optics",
+  "step": "puc2-physics-10-wave-optics.t4.lesson#sim1",
+  "title": "Diffraction at a single slit",
+  "instrument": "waveoptics",
+  "preset": {
+   "mode": "single",
+   "a": 0.2,
+   "lam": 600,
+   "D": 1,
+   "mins": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-10-wave-optics",
+  "step": "puc2-physics-10-wave-optics.t4.lesson#int1",
+  "title": "Try it: single-slit pattern",
+  "instrument": "waveoptics",
+  "preset": {
+   "mode": "single",
+   "a": 0.2,
+   "lam": 600,
+   "D": 1,
+   "mins": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-10-wave-optics",
+  "step": "puc2-physics-10-wave-optics.t5.lesson#sim1",
+  "title": "Polaroids and Malus's law",
+  "instrument": "waveoptics",
+  "preset": {
+   "mode": "polar",
+   "th": 30,
+   "ph": 45,
+   "mid": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-10-wave-optics",
+  "step": "puc2-physics-10-wave-optics.t5.lesson#int1",
+  "title": "Try it: Malus's law and Brewster's angle",
+  "instrument": "waveoptics",
+  "preset": {
+   "mode": "polar",
+   "th": 60,
+   "mid": 0,
+   "n": 1.5
+  }
+ },
+ {
+  "chapter": "puc2-physics-11-dual-nature-of-radiation-and-matter",
+  "step": "puc2-physics-11-dual-nature-of-radiation-and-matter.t1.lesson#sim1",
+  "title": "Light knocks out electrons",
+  "instrument": "photon",
+  "preset": {
+   "mode": "photoelectric",
+   "nu": 8,
+   "Int": 5,
+   "phi": 2.75
+  }
+ },
+ {
+  "chapter": "puc2-physics-11-dual-nature-of-radiation-and-matter",
+  "step": "puc2-physics-11-dual-nature-of-radiation-and-matter.t1.lesson#int1",
+  "title": "Try it: work function and threshold",
+  "instrument": "photon",
+  "preset": {
+   "mode": "photoelectric",
+   "nu": 8,
+   "Int": 5,
+   "phi": 2.75
+  }
+ },
+ {
+  "chapter": "puc2-physics-11-dual-nature-of-radiation-and-matter",
+  "step": "puc2-physics-11-dual-nature-of-radiation-and-matter.t2.lesson#sim1",
+  "title": "Photocurrent and stopping potential",
+  "instrument": "photon",
+  "preset": {
+   "mode": "photocurrent",
+   "Is": 5,
+   "nu": 10,
+   "V": 2
+  }
+ },
+ {
+  "chapter": "puc2-physics-11-dual-nature-of-radiation-and-matter",
+  "step": "puc2-physics-11-dual-nature-of-radiation-and-matter.t2.lesson#int1",
+  "title": "Try it: photocurrent against potential",
+  "instrument": "photon",
+  "preset": {
+   "mode": "photocurrent",
+   "Is": 6,
+   "nu": 10,
+   "V": -1
+  }
+ },
+ {
+  "chapter": "puc2-physics-11-dual-nature-of-radiation-and-matter",
+  "step": "puc2-physics-11-dual-nature-of-radiation-and-matter.t3.lesson#sim1",
+  "title": "Einstein's equation on a graph",
+  "instrument": "photon",
+  "preset": {
+   "mode": "einstein",
+   "nu": 10,
+   "phi": 2.14,
+   "allm": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-11-dual-nature-of-radiation-and-matter",
+  "step": "puc2-physics-11-dual-nature-of-radiation-and-matter.t3.lesson#int1",
+  "title": "Try it: V₀ against ν",
+  "instrument": "photon",
+  "preset": {
+   "mode": "einstein",
+   "nu": 7.5,
+   "phi": 2,
+   "allm": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-11-dual-nature-of-radiation-and-matter",
+  "step": "puc2-physics-11-dual-nature-of-radiation-and-matter.t4.lesson#sim1",
+  "title": "A beam is a stream of photons",
+  "instrument": "photon",
+  "preset": {
+   "mode": "photons",
+   "lam": 500,
+   "Pw": 2
+  }
+ },
+ {
+  "chapter": "puc2-physics-11-dual-nature-of-radiation-and-matter",
+  "step": "puc2-physics-11-dual-nature-of-radiation-and-matter.t4.lesson#int1",
+  "title": "Try it: counting photons",
+  "instrument": "photon",
+  "preset": {
+   "mode": "photons",
+   "lam": 633,
+   "Pw": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-11-dual-nature-of-radiation-and-matter",
+  "step": "puc2-physics-11-dual-nature-of-radiation-and-matter.t5.lesson#sim1",
+  "title": "Matter waves: de Broglie wavelength",
+  "instrument": "photon",
+  "preset": {
+   "mode": "debroglie",
+   "V": 100
+  }
+ },
+ {
+  "chapter": "puc2-physics-11-dual-nature-of-radiation-and-matter",
+  "step": "puc2-physics-11-dual-nature-of-radiation-and-matter.t5.lesson#int1",
+  "title": "Try it: de Broglie wavelength",
+  "instrument": "photon",
+  "preset": {
+   "mode": "debroglie",
+   "V": 100
+  }
  }
 ]
