@@ -2552,5 +2552,383 @@
    "A": 200,
    "f": 50
   }
+ },
+ {
+  "chapter": "puc2-physics-07-alternating-current",
+  "step": "puc2-physics-07-alternating-current.t1.lesson#sim1",
+  "title": "AC through a resistor: phasors and rms",
+  "instrument": "ac",
+  "preset": {
+   "mode": "resistor",
+   "Vm": 310,
+   "R": 50,
+   "f": 50,
+   "pw": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-07-alternating-current",
+  "step": "puc2-physics-07-alternating-current.t1.lesson#int1",
+  "title": "AC through a resistor",
+  "instrument": "ac",
+  "preset": {
+   "mode": "resistor",
+   "Vm": 311,
+   "R": 480,
+   "f": 50,
+   "pw": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-07-alternating-current",
+  "step": "puc2-physics-07-alternating-current.t2.lesson#sim1",
+  "title": "Current and voltage in an inductor and a capacitor",
+  "instrument": "ac",
+  "preset": {
+   "mode": "reactive",
+   "el": 0,
+   "f": 50,
+   "Lm": 100,
+   "Cu": 100,
+   "Vr": 220
+  }
+ },
+ {
+  "chapter": "puc2-physics-07-alternating-current",
+  "step": "puc2-physics-07-alternating-current.t2.lesson#int1",
+  "title": "Reactance against frequency",
+  "instrument": "ac",
+  "preset": {
+   "mode": "reactive",
+   "el": 1,
+   "f": 50,
+   "Lm": 44,
+   "Cu": 60,
+   "Vr": 220
+  }
+ },
+ {
+  "chapter": "puc2-physics-07-alternating-current",
+  "step": "puc2-physics-07-alternating-current.t3.lesson#sim1",
+  "title": "Tune an LCR circuit to resonance",
+  "instrument": "ac",
+  "preset": {
+   "mode": "lcr",
+   "Lm": 200,
+   "Cu": 20,
+   "R": 20,
+   "f": 60
+  }
+ },
+ {
+  "chapter": "puc2-physics-07-alternating-current",
+  "step": "puc2-physics-07-alternating-current.t3.lesson#int1",
+  "title": "Resonance curve of a series LCR circuit",
+  "instrument": "ac",
+  "preset": {
+   "mode": "lcr",
+   "Lm": 100,
+   "Cu": 10,
+   "R": 10,
+   "f": 50,
+   "Vr": 10
+  }
+ },
+ {
+  "chapter": "puc2-physics-07-alternating-current",
+  "step": "puc2-physics-07-alternating-current.t4.lesson#sim1",
+  "title": "Power factor: where the power goes",
+  "instrument": "ac",
+  "preset": {
+   "mode": "power",
+   "phi": 60,
+   "Vr": 220,
+   "Ir": 5
+  }
+ },
+ {
+  "chapter": "puc2-physics-07-alternating-current",
+  "step": "puc2-physics-07-alternating-current.t4.lesson#int1",
+  "title": "Power factor",
+  "instrument": "ac",
+  "preset": {
+   "mode": "power",
+   "phi": 60,
+   "Vr": 220,
+   "Ir": 5
+  }
+ },
+ {
+  "chapter": "puc2-physics-07-alternating-current",
+  "step": "puc2-physics-07-alternating-current.t5.lesson#sim1",
+  "title": "An ideal transformer",
+  "instrument": "ac",
+  "preset": {
+   "mode": "transformer",
+   "Np": 500,
+   "Ns": 1000,
+   "Vp": 220,
+   "RL": 100
+  }
+ },
+ {
+  "chapter": "puc2-physics-07-alternating-current",
+  "step": "puc2-physics-07-alternating-current.t5.lesson#int1",
+  "title": "Step-up and step-down",
+  "instrument": "ac",
+  "preset": {
+   "mode": "transformer",
+   "Np": 3000,
+   "Ns": 150,
+   "Vp": 230,
+   "RL": 5.75
+  }
+ },
+ {
+  "chapter": "puc2-physics-08-electromagnetic-waves",
+  "step": "puc2-physics-08-electromagnetic-waves.t1.lesson#sim1",
+  "title": "Displacement current in a capacitor",
+  "instrument": "emwave",
+  "preset": {
+   "mode": "displacement",
+   "E": 6,
+   "R": 5,
+   "C": 500,
+   "sw": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-08-electromagnetic-waves",
+  "step": "puc2-physics-08-electromagnetic-waves.t1.lesson#int1",
+  "title": "Try it: charging current",
+  "instrument": "emwave",
+  "preset": {
+   "mode": "displacement",
+   "E": 10,
+   "R": 5,
+   "C": 20,
+   "sw": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-08-electromagnetic-waves",
+  "step": "puc2-physics-08-electromagnetic-waves.t2.lesson#sim1",
+  "title": "An electromagnetic wave",
+  "instrument": "emwave",
+  "preset": {
+   "mode": "wave",
+   "lam": 500,
+   "E0": 50
+  }
+ },
+ {
+  "chapter": "puc2-physics-08-electromagnetic-waves",
+  "step": "puc2-physics-08-electromagnetic-waves.t2.lesson#int1",
+  "title": "Try it: E and B together",
+  "instrument": "emwave",
+  "preset": {
+   "mode": "wave",
+   "lam": 600,
+   "E0": 30
+  }
+ },
+ {
+  "chapter": "puc2-physics-08-electromagnetic-waves",
+  "step": "puc2-physics-08-electromagnetic-waves.t3.lesson#sim1",
+  "title": "Light pushes: radiation pressure",
+  "instrument": "emwave",
+  "preset": {
+   "mode": "pressure",
+   "I": 1000,
+   "A": 1,
+   "r": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-08-electromagnetic-waves",
+  "step": "puc2-physics-08-electromagnetic-waves.t3.lesson#int1",
+  "title": "Try it: intensity and radiation pressure",
+  "instrument": "emwave",
+  "preset": {
+   "mode": "pressure",
+   "I": 478,
+   "A": 1,
+   "r": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-08-electromagnetic-waves",
+  "step": "puc2-physics-08-electromagnetic-waves.t4.lesson#sim1",
+  "title": "Explore the long-wave end of the spectrum",
+  "instrument": "emwave",
+  "preset": {
+   "mode": "spectrum",
+   "s": -2
+  }
+ },
+ {
+  "chapter": "puc2-physics-08-electromagnetic-waves",
+  "step": "puc2-physics-08-electromagnetic-waves.t4.lesson#int1",
+  "title": "Try it: slide along the spectrum",
+  "instrument": "emwave",
+  "preset": {
+   "mode": "spectrum",
+   "s": 0.5
+  }
+ },
+ {
+  "chapter": "puc2-physics-08-electromagnetic-waves",
+  "step": "puc2-physics-08-electromagnetic-waves.t5.lesson#int1",
+  "title": "Try it: wavelength and photon energy",
+  "instrument": "emwave",
+  "preset": {
+   "mode": "spectrum",
+   "s": -6.3
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t1.lesson#sim1",
+  "title": "Images in a spherical mirror",
+  "instrument": "optics",
+  "preset": {
+   "element": "concaveMirror",
+   "f": 10,
+   "u": 25,
+   "h": 5
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t1.lesson#int1",
+  "title": "Try it: where is the image?",
+  "instrument": "optics",
+  "preset": {
+   "element": "concaveMirror",
+   "f": 15,
+   "u": 40,
+   "h": 5
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t2.lesson#sim1",
+  "title": "Refraction through a glass slab",
+  "instrument": "refraction",
+  "preset": {
+   "mode": "slab",
+   "i": 40,
+   "ts": 6
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t2.lesson#int1",
+  "title": "Try it: Snell's law",
+  "instrument": "refraction",
+  "preset": {
+   "mode": "snell",
+   "i": 60,
+   "n1": 1,
+   "n2": 1.5
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t3.lesson#sim1",
+  "title": "Total internal reflection",
+  "instrument": "refraction",
+  "preset": {
+   "mode": "tir",
+   "i": 30,
+   "n1": 1.5,
+   "n2": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t3.lesson#int1",
+  "title": "Try it: critical angle",
+  "instrument": "refraction",
+  "preset": {
+   "mode": "tir",
+   "i": 45,
+   "n1": 1.5,
+   "n2": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t4.lesson#scene-lens",
+  "title": "Rays through a convex lens",
+  "instrument": "optics",
+  "preset": {
+   "element": "convexLens",
+   "f": 10,
+   "u": 25,
+   "h": 5
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t4.lesson#int1",
+  "title": "Try it: thin lens formula",
+  "instrument": "optics",
+  "preset": {
+   "element": "convexLens",
+   "f": 12,
+   "u": 30,
+   "h": 5
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t5.lesson#sim1",
+  "title": "Deviation by a prism",
+  "instrument": "refraction",
+  "preset": {
+   "mode": "prism",
+   "A": 60,
+   "n": 1.5,
+   "i": 40
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t5.lesson#int1",
+  "title": "Try it: deviation curve",
+  "instrument": "refraction",
+  "preset": {
+   "mode": "prism",
+   "A": 60,
+   "n": 1.5,
+   "i": 50
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t6.lesson#sim1",
+  "title": "An astronomical telescope",
+  "instrument": "refraction",
+  "preset": {
+   "mode": "telescope",
+   "fo": 100,
+   "fe": 5,
+   "al": 1,
+   "near": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-09-ray-optics-and-optical-instruments",
+  "step": "puc2-physics-09-ray-optics-and-optical-instruments.t6.lesson#int1",
+  "title": "Try it: telescope design",
+  "instrument": "refraction",
+  "preset": {
+   "mode": "telescope",
+   "fo": 100,
+   "fe": 5,
+   "al": 1,
+   "near": 0
+  }
  }
 ]

@@ -1,8 +1,10 @@
 import 'package:flutter/widgets.dart';
 
 import 'kit.dart';
+import 'ac.dart';
 import 'circuit.dart';
 import 'electro.dart';
+import 'emwave.dart';
 import 'energy.dart';
 import 'forces.dart';
 import 'gas.dart';
@@ -15,6 +17,7 @@ import 'matter.dart';
 import 'measurement.dart';
 import 'oscillations.dart';
 import 'plane.dart';
+import 'refraction.dart';
 import 'rotation.dart';
 import 'thermal.dart';
 import 'thermo.dart';
@@ -43,6 +46,9 @@ final _specs = <InstrumentSpec>[
   magneticSpec,
   magnetSpec,
   inductionSpec,
+  acSpec,
+  emwaveSpec,
+  refractionSpec,
 ];
 
 /// Physics instruments. Each entry: id → builder taking the lesson preset.
