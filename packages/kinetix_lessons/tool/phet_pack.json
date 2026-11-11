@@ -1,0 +1,503 @@
+{
+ "about": "PhET HTML5 sims for PUC topics that the Classroom APK does not ship (apps/board/lib/classroom_edition/classroom_assets.dart classroomPhetSims). Built into a content pack by tool/build_phet_pack.py. PhET Interactive Simulations, University of Colorado Boulder, CC BY 4.0. Each entry: sim id, title, and the chapters with words that pick the topics.",
+ "sims": [
+  [
+   "vector-addition-equations",
+   "Vector Addition: Equations",
+   [
+    [
+     "puc1-physics-03-motion-in-a-plane",
+     "vector addition resolution"
+    ]
+   ]
+  ],
+  [
+   "friction",
+   "Friction",
+   [
+    [
+     "puc1-physics-04-laws-of-motion",
+     "friction"
+    ]
+   ]
+  ],
+  [
+   "energy-skate-park",
+   "Energy Skate Park",
+   [
+    [
+     "puc1-physics-05-work-energy-and-power",
+     "conservation mechanical energy potential kinetic"
+    ]
+   ]
+  ],
+  [
+   "collision-lab",
+   "Collision Lab",
+   [
+    [
+     "puc1-physics-05-work-energy-and-power",
+     "collisions elastic inelastic"
+    ]
+   ]
+  ],
+  [
+   "balancing-act",
+   "Balancing Act",
+   [
+    [
+     "puc1-physics-06-system-of-particles-and-rotational-motion",
+     "torque equilibrium moment"
+    ]
+   ]
+  ],
+  [
+   "gravity-force-lab",
+   "Gravity Force Lab",
+   [
+    [
+     "puc1-physics-07-gravitation",
+     "universal law gravitation"
+    ]
+   ]
+  ],
+  [
+   "gravity-and-orbits",
+   "Gravity and Orbits",
+   [
+    [
+     "puc1-physics-07-gravitation",
+     "satellites orbital earth"
+    ]
+   ]
+  ],
+  [
+   "keplers-laws",
+   "Kepler's Laws",
+   [
+    [
+     "puc1-physics-07-gravitation",
+     "kepler laws planetary"
+    ]
+   ]
+  ],
+  [
+   "hookes-law",
+   "Hooke's Law",
+   [
+    [
+     "puc1-physics-08-mechanical-properties-of-solids",
+     "hooke stress strain elastic"
+    ]
+   ]
+  ],
+  [
+   "under-pressure",
+   "Under Pressure",
+   [
+    [
+     "puc1-physics-09-mechanical-properties-of-fluids",
+     "pressure pascal"
+    ]
+   ]
+  ],
+  [
+   "buoyancy",
+   "Buoyancy",
+   [
+    [
+     "puc1-physics-09-mechanical-properties-of-fluids",
+     "buoyancy archimedes pressure"
+    ]
+   ]
+  ],
+  [
+   "states-of-matter",
+   "States of Matter",
+   [
+    [
+     "puc1-physics-10-thermal-properties-of-matter",
+     "change state latent heat"
+    ]
+   ]
+  ],
+  [
+   "gas-properties",
+   "Gas Properties",
+   [
+    [
+     "puc1-physics-12-kinetic-theory",
+     "ideal pressure kinetic theory"
+    ]
+   ]
+  ],
+  [
+   "masses-and-springs",
+   "Masses and Springs",
+   [
+    [
+     "puc1-physics-13-oscillations",
+     "spring simple harmonic"
+    ]
+   ]
+  ],
+  [
+   "pendulum-lab",
+   "Pendulum Lab",
+   [
+    [
+     "puc1-physics-13-oscillations",
+     "pendulum"
+    ]
+   ]
+  ],
+  [
+   "sound-waves",
+   "Sound Waves",
+   [
+    [
+     "puc1-physics-14-waves",
+     "speed sound"
+    ],
+    [
+     "puc1-physics-16-doppler-effect",
+     "doppler"
+    ]
+   ]
+  ],
+  [
+   "coulombs-law",
+   "Coulomb's Law",
+   [
+    [
+     "puc2-physics-01-electric-charges-and-fields",
+     "coulomb law force"
+    ]
+   ]
+  ],
+  [
+   "capacitor-lab-basics",
+   "Capacitor Lab: Basics",
+   [
+    [
+     "puc2-physics-02-electrostatic-potential-and-capacitance",
+     "capacitor capacitance parallel plate"
+    ]
+   ]
+  ],
+  [
+   "circuit-construction-kit-dc",
+   "Circuit Construction Kit: DC",
+   [
+    [
+     "puc2-physics-03-current-electricity",
+     "kirchhoff rules cells series"
+    ]
+   ]
+  ],
+  [
+   "ohms-law",
+   "Ohm's Law",
+   [
+    [
+     "puc2-physics-03-current-electricity",
+     "ohm law"
+    ]
+   ]
+  ],
+  [
+   "resistance-in-a-wire",
+   "Resistance in a Wire",
+   [
+    [
+     "puc2-physics-03-current-electricity",
+     "resistivity resistance"
+    ]
+   ]
+  ],
+  [
+   "magnets-and-electromagnets",
+   "Magnets and Electromagnets",
+   [
+    [
+     "puc2-physics-04-moving-charges-and-magnetism",
+     "solenoid field current loop"
+    ],
+    [
+     "puc2-physics-05-magnetism-and-matter",
+     "bar magnet"
+    ]
+   ]
+  ],
+  [
+   "faradays-electromagnetic-lab",
+   "Faraday's Electromagnetic Lab",
+   [
+    [
+     "puc2-physics-06-electromagnetic-induction",
+     "faraday lenz induction"
+    ]
+   ]
+  ],
+  [
+   "circuit-construction-kit-ac",
+   "Circuit Construction Kit: AC",
+   [
+    [
+     "puc2-physics-07-alternating-current",
+     "inductor capacitor series resonance"
+    ]
+   ]
+  ],
+  [
+   "bending-light",
+   "Bending Light",
+   [
+    [
+     "puc2-physics-09-ray-optics-and-optical-instruments",
+     "refraction total internal reflection prism"
+    ]
+   ]
+  ],
+  [
+   "wave-interference",
+   "Wave Interference",
+   [
+    [
+     "puc2-physics-10-wave-optics",
+     "interference young diffraction"
+    ]
+   ]
+  ],
+  [
+   "blackbody-spectrum",
+   "Blackbody Spectrum",
+   [
+    [
+     "puc2-physics-11-dual-nature-of-radiation-and-matter",
+     "photon particle nature light"
+    ]
+   ]
+  ],
+  [
+   "rutherford-scattering",
+   "Rutherford Scattering",
+   [
+    [
+     "puc2-physics-12-atoms",
+     "rutherford alpha scattering nuclear model"
+    ]
+   ]
+  ],
+  [
+   "models-of-the-hydrogen-atom",
+   "Models of the Hydrogen Atom",
+   [
+    [
+     "puc2-physics-12-atoms",
+     "bohr hydrogen spectrum"
+    ],
+    [
+     "puc1-chemistry-02-structure-of-atom",
+     "bohr model hydrogen"
+    ]
+   ]
+  ],
+  [
+   "build-a-nucleus",
+   "Build a Nucleus",
+   [
+    [
+     "puc2-physics-13-nuclei",
+     "nucleus composition binding"
+    ]
+   ]
+  ],
+  [
+   "alpha-decay",
+   "Alpha Decay",
+   [
+    [
+     "puc2-physics-16-radioactivity",
+     "alpha decay"
+    ]
+   ]
+  ],
+  [
+   "balancing-chemical-equations",
+   "Balancing Chemical Equations",
+   [
+    [
+     "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+     "stoichiometry chemical equations"
+    ]
+   ]
+  ],
+  [
+   "reactants-products-and-leftovers",
+   "Reactants, Products and Leftovers",
+   [
+    [
+     "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+     "limiting reagent stoichiometry"
+    ]
+   ]
+  ],
+  [
+   "build-an-atom",
+   "Build an Atom",
+   [
+    [
+     "puc1-chemistry-02-structure-of-atom",
+     "subatomic particles atomic number mass"
+    ]
+   ]
+  ],
+  [
+   "isotopes-and-atomic-mass",
+   "Isotopes and Atomic Mass",
+   [
+    [
+     "puc1-chemistry-02-structure-of-atom",
+     "isotopes isobars"
+    ],
+    [
+     "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+     "atomic molecular masses"
+    ]
+   ]
+  ],
+  [
+   "molecule-polarity",
+   "Molecule Polarity",
+   [
+    [
+     "puc1-chemistry-04-chemical-bonding-and-molecular-structure",
+     "polarity dipole moment"
+    ]
+   ]
+  ],
+  [
+   "acid-base-solutions",
+   "Acid-Base Solutions",
+   [
+    [
+     "puc1-chemistry-06-equilibrium",
+     "acids bases ionisation weak"
+    ]
+   ]
+  ],
+  [
+   "concentration",
+   "Concentration",
+   [
+    [
+     "puc2-chemistry-01-solutions",
+     "concentration expressing"
+    ]
+   ]
+  ],
+  [
+   "natural-selection",
+   "Natural Selection",
+   [
+    [
+     "puc2-biology-06-evolution",
+     "natural selection darwin"
+    ]
+   ]
+  ],
+  [
+   "gene-expression-essentials",
+   "Gene Expression Essentials",
+   [
+    [
+     "puc2-biology-05-molecular-basis-of-inheritance",
+     "transcription translation regulation gene expression"
+    ]
+   ]
+  ],
+  [
+   "membrane-transport",
+   "Membrane Transport",
+   [
+    [
+     "puc1-biology-08-cell-the-unit-of-life",
+     "membrane plasma"
+    ],
+    [
+     "puc1-biology-20-transport-in-plants",
+     "diffusion facilitated active"
+    ]
+   ]
+  ],
+  [
+   "color-vision",
+   "Color Vision",
+   [
+    [
+     "puc1-biology-18-neural-control-and-coordination",
+     "sensory eye"
+    ]
+   ]
+  ],
+  [
+   "trig-tour",
+   "Trig Tour",
+   [
+    [
+     "puc1-maths-03-trigonometric-functions",
+     "trigonometric functions angle"
+    ]
+   ]
+  ],
+  [
+   "graphing-slope-intercept",
+   "Graphing Slope-Intercept",
+   [
+    [
+     "puc1-maths-09-straight-lines",
+     "slope intercept forms"
+    ]
+   ]
+  ],
+  [
+   "calculus-grapher",
+   "Calculus Grapher",
+   [
+    [
+     "puc1-maths-12-limits-and-derivatives",
+     "derivatives"
+    ],
+    [
+     "puc2-maths-06-application-of-derivatives",
+     "increasing decreasing maxima"
+    ],
+    [
+     "puc2-maths-07-integrals",
+     "integration definite"
+    ]
+   ]
+  ],
+  [
+   "center-and-variability",
+   "Center and Variability",
+   [
+    [
+     "puc1-maths-13-statistics",
+     "mean deviation variance"
+    ]
+   ]
+  ],
+  [
+   "curve-fitting",
+   "Curve Fitting",
+   [
+    [
+     "puc2-maths-15-linear-regression",
+     "regression lines fitting"
+    ]
+   ]
+  ]
+ ]
+}

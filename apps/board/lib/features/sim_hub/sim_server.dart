@@ -14,6 +14,10 @@ class SimAssetServer {
   /// Reads an asset; tests replace it.
   static Future<List<int>> Function(String key) loader = (key) async => (await rootBundle.load(key)).buffer.asUint8List();
 
+  /// A file on the board for a path the assets do not have (PhET sims from the content pack,
+  /// under `pack/`); null: none.
+  static File? Function(String path)? localFile;
+
   static Future<String> start() => _base ??= _start();
 
   static Future<String> _start() async {
@@ -59,7 +63,8 @@ class SimAssetServer {
     final path = decoded.startsWith('/') ? decoded.substring(1) : decoded;
     try {
       if (!allowed(path)) throw const FormatException('bad path');
-      final bytes = await loader('assets/simhub/$path');
+      final local = path.startsWith('pack/') ? localFile?.call(path.substring(5)) : null;
+      final bytes = local != null ? await local.readAsBytes() : await loader('assets/simhub/$path');
       res.headers
         ..set('content-type', contentType(path))
         ..set('cache-control', 'no-store');

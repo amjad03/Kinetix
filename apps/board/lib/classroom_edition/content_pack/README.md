@@ -67,6 +67,22 @@ refused; an item with a bad field is skipped and reported, the rest install.
 Storage: `<app support>/content_pack/` — `installed.json` (merged manifest), `settings.json`,
 `items/<id>/<file name>`. Removing one item or everything needs the school PIN.
 
+## PhET sims (`zynetix-content-phet-1.zip`)
+
+The Classroom APK ships only the 16 PhET sims its lessons use (`classroom_assets.dart`); the
+PUC PhET pack carries 47 more, one `phet` item each: id `phet-<sim id>`, file
+`phet/<sim id>.html` (PhET's English HTML5 page, unchanged), topics from
+`packages/kinetix_lessons/tool/phet_pack.json`. `build_phet_pack.py` builds it; it is published
+with Git LFS on the `apk-builds` branch of amjad03/zynetix-smart-classroom, and
+`defaultContentUrl` points at it until the school sets its own address. A content address that
+ends in `.zip` is a whole pack: Update over Wi-Fi downloads it (resuming when the server allows
+`Range`), installs it item by item from the file (`installZipFile`, never all in memory) and
+deletes the download.
+
+PhET Interactive Simulations, University of Colorado Boulder, CC BY 4.0: the credit is shown
+under every PhET sim in a lesson and beside each PhET item in Settings, and the zip carries
+`PHET-LICENSE.txt`.
+
 ## In the lessons
 
 * `ContentLibrary.videoFor(topicId, step:)` finds a topic's video; `search()` matches titles,
@@ -74,6 +90,9 @@ Storage: `<app support>/content_pack/` — `installed.json` (merged manifest), `
 * A lesson's concept-video step (`ConceptVideoCard`) plays the pack video, or says "Not in this
   board's content pack". YouTube/online playback is off in Classroom.
 * The Lessons panel's topic rows show a play button (`TopicVideoButton`) when the pack has one.
+* A topic whose lesson has no step for a pack PhET sim gets one before its closing quiz and
+  recap (`withPackPhet`); a lesson's own PhET step runs from the pack when the APK lacks the sim
+  (`SimAssetServer` serves `pack/phet/<id>.html` from the installed file).
 
 ## Player (`pack_video_player.dart`)
 

@@ -11,10 +11,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinetix_lessons/kinetix_lessons.dart' show Block, BlockType;
 import 'package:kinetix_board/classroom_edition/content_pack/content_library.dart';
 import 'package:kinetix_board/classroom_edition/content_pack/content_pack.dart';
 import 'package:kinetix_board/classroom_edition/content_pack/content_settings.dart';
 import 'package:kinetix_board/classroom_edition/content_pack/pack_video_player.dart';
+import 'package:kinetix_board/classroom_edition/lessons/lesson_embeds.dart';
 import 'package:kinetix_board/classroom_edition/local/classroom_store.dart';
 import 'package:kinetix_board/core/device_store.dart';
 import 'package:kinetix_board/core/secret_store.dart';
@@ -180,6 +182,30 @@ void main() {
       expect(again.items.map((i) => i.id), ['ohm']);
       await again.removeAll();
       expect(again.isEmpty, isTrue);
+    });
+
+    test('updates from a pack zip address (the default PhET pack) and puts its sims in the lessons', () async {
+      final lib = ContentLibrary(tmp);
+      expect(lib.baseUrl, defaultContentUrl);
+      final page = Uint8List.fromList(utf8.encode('<!DOCTYPE html><html><body>sim</body></html>'));
+      final sim = ContentItem(id: 'phet-wave-interference', kind: ContentKind.phet, title: 'Wave Interference', file: 'phet/wave-interference.html', sha256: sha256.convert(page).toString(), size: page.length, version: 1, chapterId: 'puc2-physics-10-wave-optics', topics: const ['puc2-physics-10-wave-optics.t3']);
+      final zip = writeContentPack(manifest([sim]), {'phet/wave-interference.html': page});
+      await lib.setBaseUrl('https://content.example/ce/pack.zip');
+      final f = FakeFetcher({'pack.zip': zip})..cutAfter = 40;
+      contentOnWifi = () async => true;
+      final cut = await lib.updateFromUrl(fetcher: f);
+      expect(cut.problems.single, contains('stopped'));
+      final r = await lib.updateFromUrl(fetcher: f);
+      expect(r.added, ['phet-wave-interference']);
+      expect(f.requests.last, 'pack.zip@40', reason: 'carried on from the cut-off download');
+      expect(lib.phetFile('wave-interference')!.readAsBytesSync(), page);
+
+      final blocks = [Block(BlockType.concept, {'id': 'c', 'type': 'concept'}), Block(BlockType.recap, {'id': 'r', 'type': 'recap'})];
+      final shown = withPackPhet(blocks, 'puc2-physics-10-wave-optics.t3', library: lib);
+      expect(shown.map((b) => b.id), ['c', 'pack-phet-wave-interference', 'r']);
+      expect(shown[1].s('simId'), 'wave-interference');
+      expect(withPackPhet(blocks, 'puc2-physics-10-wave-optics.t1', library: lib), same(blocks));
+      expect(boardLessonEmbeds(library: lib).supports(shown[1]), isTrue);
     });
 
     test('installs a folder (Documents/Zynetix/Content)', () async {

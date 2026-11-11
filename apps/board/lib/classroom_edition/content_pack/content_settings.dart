@@ -11,6 +11,7 @@ import '../l10n/ce_strings.dart';
 import '../local/classroom_store.dart';
 import '../settings/pin_pad.dart' show askSchoolPin;
 import '../ui/ce_style.dart';
+import '../../features/phet/phet_strings.dart';
 import 'content_library.dart';
 import 'content_pack.dart';
 import 'pack_video_player.dart';
@@ -159,7 +160,7 @@ class _ContentSettingsSectionState extends State<ContentSettingsSection> {
                     child: ListTile(
                       leading: Icon(_icon(i.kind), color: CeC.navy, size: 32),
                       title: Text(i.title, style: ceHeading(17)),
-                      subtitle: Text('${i.kind.wire} · ${i.chapterId} · v${i.version} · ${contentSize(i.size)}', style: ceText(14)),
+                      subtitle: Text('${i.kind.wire} · ${i.chapterId} · v${i.version} · ${contentSize(i.size)}${i.kind == ContentKind.phet ? '\n${PhetStrings.attribution}' : ''}', style: ceText(14)),
                       trailing: IconButton(key: Key('ce-content-remove-${i.id}'), tooltip: ceTr('Remove'), onPressed: busy ? null : () => unawaited(_remove(l, i)), icon: const Icon(Icons.delete_outline)),
                     ),
                   ),

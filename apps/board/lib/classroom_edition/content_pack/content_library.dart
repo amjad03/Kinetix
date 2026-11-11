@@ -62,6 +62,10 @@ Future<bool> Function() contentOnWifi = () async {
   }
 };
 
+/// The pack the board updates from until the school sets its own address: the PUC PhET sims
+/// (PhET Interactive Simulations, University of Colorado Boulder, CC BY 4.0).
+const defaultContentUrl = 'https://media.githubusercontent.com/media/amjad03/zynetix-smart-classroom/apk-builds/zynetix-content-phet-1.zip';
+
 /// SHA-256 of a file, read in chunks (videos are hundreds of MB).
 Future<String> sha256OfFile(File f) async => (await sha256.bind(f.openRead()).first).toString();
 
@@ -75,8 +79,9 @@ class ContentLibrary extends ChangeNotifier {
   final Map<String, ContentItem> _items = {};
   String packTitle = '', revision = '';
 
-  /// Where updates come from ("https://content.example.org/ce/"), empty when not set.
-  String baseUrl = '';
+  /// Where updates come from: a pack folder's address ("https://content.example.org/ce/") or a
+  /// pack zip's (`.zip`). [defaultContentUrl] until the school sets its own.
+  String baseUrl = defaultContentUrl;
 
   List<ContentItem> get items => _items.values.toList()..sort((a, b) => a.id.compareTo(b.id));
   int get totalBytes => _items.values.fold(0, (a, i) => a + i.size);
@@ -127,7 +132,8 @@ class ContentLibrary extends ChangeNotifier {
     final s = _file('settings.json');
     if (await s.exists()) {
       try {
-        baseUrl = '${(jsonDecode(await s.readAsString()) as Map)['baseUrl'] ?? ''}';
+        final saved = (jsonDecode(await s.readAsString()) as Map)['baseUrl'];
+        if (saved is String) baseUrl = saved;
       } catch (_) {}
     }
     notifyListeners();
@@ -154,6 +160,19 @@ class ContentLibrary extends ChangeNotifier {
     for (final i in items)
       if (i.coversTopic(topicId) && (kind == null || i.kind == kind)) i,
   ]..sort((a, b) => a.kind.index.compareTo(b.kind.index));
+
+  /// The PhET sims the pack has: sim id ("wave-interference") to its item. A PhET item's id is
+  /// `phet-<sim id>` and its file `phet/<sim id>.html`.
+  Map<String, ContentItem> get phetSims => {
+    for (final i in _items.values)
+      if (i.kind == ContentKind.phet && i.id.startsWith('phet-')) i.id.substring(5): i,
+  };
+
+  /// The installed page of a PhET sim from the pack, or null.
+  File? phetFile(String simId) {
+    final i = phetSims[simId];
+    return i == null ? null : fileOf(i);
+  }
 
   /// The video for a topic (or a lesson step key), when the pack has one.
   ContentItem? videoFor(String topicId, {String? step}) {
@@ -205,6 +224,30 @@ class ContentLibrary extends ChangeNotifier {
       final f = a.findFile(i.file);
       return f == null || !f.isFile ? null : Stream.value(f.content);
     });
+  }
+
+  /// Installs a pack zip from a file, reading one item at a time (a big pack never sits in
+  /// memory whole).
+  Future<ContentReport> installZipFile(File zip) async {
+    final InputFileStream input;
+    final Archive a;
+    try {
+      input = InputFileStream(zip.path);
+      a = ZipDecoder().decodeStream(input);
+    } catch (_) {
+      throw const FormatException('This file is not a content pack (it is not a zip file).');
+    }
+    try {
+      final raw = a.findFile('manifest.json');
+      if (raw == null) throw const FormatException('This zip is not a content pack: it has no manifest.json.');
+      final m = ContentManifest.parse(raw.content);
+      return await _installFrom(m, (i) async {
+        final f = a.findFile(i.file);
+        return f == null || !f.isFile ? null : Stream.value(f.content);
+      });
+    } finally {
+      await input.close();
+    }
   }
 
   /// Installs a pack folder (copied to Documents/Zynetix/Content, or a USB stick's folder).
@@ -276,6 +319,7 @@ class ContentLibrary extends ChangeNotifier {
     if (baseUrl.isEmpty) throw const FormatException('Set the content address first.');
     if (!await contentOnWifi()) throw const FormatException('Connect the board to Wi-Fi to download content.');
     final f = fetcher ?? HttpContentFetcher();
+    if (Uri.parse(baseUrl).path.toLowerCase().endsWith('.zip')) return _updateFromZip(Uri.parse(baseUrl), f);
     final base = Uri.parse(baseUrl.endsWith('/') ? baseUrl : '$baseUrl/');
     final m = ContentManifest.parse(await f.get(base.resolve('manifest.json')));
     final added = <String>[], updated = <String>[], problems = [...m.problems];
@@ -324,6 +368,44 @@ class ContentLibrary extends ChangeNotifier {
     await _accept(m);
     return ContentReport(added: added, updated: updated, unchanged: unchanged, problems: problems, bytes: bytes);
   }
+
+  /// A pack published as one zip: it is downloaded (carrying on from a cut-off `.part`), then
+  /// installed like a USB zip, so only the items that changed replace what is installed.
+  Future<ContentReport> _updateFromZip(Uri url, ContentFetcher f) async {
+    final name = url.pathSegments.last.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
+    final part = _file('download/$name.part');
+    await part.parent.create(recursive: true);
+    var have = await part.exists() ? await part.length() : 0;
+    try {
+      final r = await f.getFrom(url, have);
+      if (!r.partial) have = 0;
+      final sink = part.openWrite(mode: have > 0 ? FileMode.append : FileMode.write);
+      var done = have;
+      try {
+        await sink.addStream(
+          r.body.map((c) {
+            done += c.length;
+            onZipProgress?.call(name, done);
+            return c;
+          }),
+        );
+      } finally {
+        await sink.close();
+      }
+    } catch (e) {
+      return ContentReport(problems: ['$name: the download stopped ($e)']);
+    }
+    final bytes = await part.length() - have;
+    try {
+      final r = await installZipFile(part);
+      return ContentReport(added: r.added, updated: r.updated, unchanged: r.unchanged, problems: r.problems, bytes: bytes);
+    } finally {
+      if (await part.exists()) await part.delete();
+    }
+  }
+
+  /// Progress of a pack zip's download (name, bytes so far).
+  void Function(String name, int done)? onZipProgress;
 
   /// Removes one item (Settings asks for the PIN first).
   Future<void> remove(String id) async {

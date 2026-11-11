@@ -178,7 +178,7 @@ class LessonsPanelState extends State<LessonsPanel> {
       if (l == null || !mounted) return;
       lesson?.removeListener(_changed);
       lesson?.stopSpeech();
-      final c = LessonController(pack: p, lesson: l, narrator: narrator, recorder: SessionRecorder(chapterId: ch.id, topicId: t.id, lessonId: l.id), lang: Lang.en);
+      final c = LessonController(pack: p, lesson: l, narrator: narrator, recorder: SessionRecorder(chapterId: ch.id, topicId: t.id, lessonId: l.id), lang: Lang.en, blocks: withPackPhet(l.blocks, t.id));
       final saved = progress.of(classKey, t.id);
       final start = at ?? (saved == null || saved.taught ? 0 : saved.step);
       if (start > 0) c.goTo(start.clamp(0, c.blocks.length - 1));
