@@ -102,12 +102,17 @@ class LessonLibrary {
     }
     final order = [for (final i in (o['order'] as List? ?? const [])) i as String];
     if (order.isEmpty) return blocks;
-    return [
-      for (final id in order) ?(ours[id] ?? theirs[id]),
-      // Anything of ours the overlay does not know (a newer bundle) goes at the end.
-      for (final e in ours.entries)
-        if (!order.contains(e.key)) e.value,
-    ];
+    final out = <Map<String, dynamic>>[for (final id in order) ?(ours[id] ?? theirs[id])];
+    // Anything of ours the overlay does not know (a newer bundle, a step added after bundling)
+    // goes right after the step it follows in our lesson.
+    final known = order.toSet();
+    String? prev;
+    for (final b in blocks) {
+      final id = (b as Map)['id'] as String;
+      if (!known.contains(id)) out.insert(prev == null ? 0 : out.indexWhere((x) => x['id'] == prev) + 1, ours[id]!);
+      prev = id;
+    }
+    return out;
   }
 }
 

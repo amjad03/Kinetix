@@ -123,21 +123,26 @@ class _InstrumentFrameState extends State<InstrumentFrame> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
+                  flex: 3,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.subtitle.toUpperCase(), style: IX.text(17, w: FontWeight.w600, c: IX.accent).copyWith(letterSpacing: 1.6)),
+                      Text(widget.subtitle.toUpperCase(), maxLines: 1, overflow: TextOverflow.ellipsis, style: IX.text(17, w: FontWeight.w600, c: IX.accent).copyWith(letterSpacing: 1.6)),
                       const SizedBox(height: 4),
-                      Text(widget.title, style: IX.text(40, w: FontWeight.w600)),
+                      Text(widget.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: IX.text(40, w: FontWeight.w600)),
                     ],
                   ),
                 ),
                 if (widget.formula != null)
-                  Container(
-                    margin: const EdgeInsets.only(right: 20),
-                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-                    decoration: BoxDecoration(color: IX.paper, borderRadius: BorderRadius.circular(14), border: Border.all(color: IX.rule)),
-                    child: Text(widget.formula!, style: IX.text(24, w: FontWeight.w500, c: IX.inkSoft)),
+                  // A long formula shares the bar with the title instead of pushing it out.
+                  Flexible(
+                    flex: 2,
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                      decoration: BoxDecoration(color: IX.paper, borderRadius: BorderRadius.circular(14), border: Border.all(color: IX.rule)),
+                      child: Text(widget.formula!, maxLines: 2, overflow: TextOverflow.ellipsis, style: IX.text(24, w: FontWeight.w500, c: IX.inkSoft)),
+                    ),
                   ),
                 _BoardButton(placed: _placed, onTap: _put),
               ],

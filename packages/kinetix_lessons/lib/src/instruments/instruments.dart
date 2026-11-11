@@ -40,11 +40,21 @@ Widget? buildInstrument(String id, Map<String, dynamic> preset, {Key? key}) => s
 class InstrumentBlockView extends StatelessWidget {
   const InstrumentBlockView({super.key, required this.raw});
   final Map<String, dynamic> raw;
+  static const design = Size(1920, 1080);
   @override
   Widget build(BuildContext context) {
     final id = raw['instrument'] as String? ?? '';
     final preset = (raw['preset'] as Map?)?.cast<String, dynamic>() ?? const <String, dynamic>{};
-    return buildInstrument(id, preset, key: ValueKey('instrument:$id')) ??
-        ColoredBox(color: IX.page, child: Center(child: Text('Instrument "$id" is not in this version.', style: IX.text(28, c: IX.inkSoft))));
+    final w = buildInstrument(id, preset, key: ValueKey('instrument:$id'));
+    if (w == null) return ColoredBox(color: IX.page, child: Center(child: Text('Instrument "$id" is not in this version.', style: IX.text(28, c: IX.inkSoft))));
+    // Instruments are laid out for a 1920 x 1080 board: a smaller stage shows them scaled down.
+    return LayoutBuilder(
+      builder: (context, c) => !c.hasBoundedWidth || !c.hasBoundedHeight || (c.maxWidth >= design.width - 1 && c.maxHeight >= design.height - 1)
+          ? w
+          : ColoredBox(
+              color: IX.page,
+              child: FittedBox(child: SizedBox.fromSize(size: design, child: w)),
+            ),
+    );
   }
 }

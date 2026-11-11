@@ -892,7 +892,7 @@ class IxButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             if (icon != null) ...[Icon(icon, color: IX.accent, size: 22), const SizedBox(width: 8)],
-            Text(label, style: IX.text(18, w: FontWeight.w600, c: IX.accent)),
+            Flexible(child: Text(label, textAlign: TextAlign.center, style: IX.text(18, w: FontWeight.w600, c: IX.accent))),
           ]),
         ),
       ),

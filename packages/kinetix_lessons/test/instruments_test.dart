@@ -86,4 +86,14 @@ void main() {
     await t.pumpWidget(MaterialApp(home: InstrumentBlockView(raw: step('nope'))));
     expect(find.textContaining('not in this version'), findsOneWidget);
   });
+
+  test('an unknown instrument falls back to the step it replaced', () {
+    final legacy = {'type': 'interactive', 'kind': 'scene', 'title': {'en': 'Old'}};
+    final known = Block.fromJson({'id': 's', 'type': 'interactive', 'kind': 'instrument', 'instrument': 'graph', 'legacy': legacy})!;
+    expect(known.s('kind'), 'instrument');
+    final old = Block.fromJson({'id': 's', 'type': 'interactive', 'kind': 'instrument', 'instrument': 'nope', 'legacy': legacy})!;
+    expect((old.s('kind'), old.id), ('scene', 's'));
+    final none = Block.fromJson({'id': 's', 'type': 'interactive', 'kind': 'instrument', 'instrument': 'nope'})!;
+    expect(none.s('kind'), 'instrument');
+  });
 }

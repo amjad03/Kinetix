@@ -1,6 +1,8 @@
 // Dart mirror of packages/lesson-schema (the source of truth). Packs are validated when they are
 // built, so the board reads them leniently: a missing optional field never stops a lesson.
 
+import '../instruments/instruments.dart' show instrumentIds;
+
 /// Board language: English or Kannada. Text falls back to English.
 enum Lang { en, kn }
 
@@ -63,6 +65,7 @@ QuizMode _mode(Object? v) => switch (v) {
 /// One lesson block. Common fields are typed; type-specific fields are read through getters.
 class Block {
   Block(this.type, this.raw);
+  static final Set<String> _instruments = instrumentIds.toSet();
   final BlockType type;
   final Map<String, dynamic> raw;
 
@@ -129,7 +132,14 @@ class Block {
   ];
 
   /// Blocks the board does not know (from a newer schema) are skipped, never fatal.
+  ///
+  /// An instrument step whose instrument this board does not have falls back to the step it
+  /// replaced (kept under `legacy` by tool/apply_instrument_maps.py).
   static Block? fromJson(Map<String, dynamic> j) {
+    final legacy = j['legacy'];
+    if (j['kind'] == 'instrument' && legacy is Map && !_instruments.contains(j['instrument'])) {
+      return fromJson({...legacy.cast<String, dynamic>(), 'id': j['id']});
+    }
     final t = BlockType.parse(j['type'] as String? ?? '');
     return t == null ? null : Block(t, j);
   }
