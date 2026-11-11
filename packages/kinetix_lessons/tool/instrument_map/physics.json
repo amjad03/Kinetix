@@ -3169,5 +3169,409 @@
    "mode": "debroglie",
    "V": 100
   }
+ },
+ {
+  "chapter": "puc2-physics-12-atoms",
+  "step": "puc2-physics-12-atoms.t1.lesson#sim1",
+  "title": "Alpha particles meet a nucleus",
+  "instrument": "atom",
+  "preset": {
+   "mode": "rutherford",
+   "b": 30,
+   "K": 5,
+   "Z": 79
+  }
+ },
+ {
+  "chapter": "puc2-physics-12-atoms",
+  "step": "puc2-physics-12-atoms.t1.lesson#int1",
+  "title": "Try it: distance of closest approach",
+  "instrument": "atom",
+  "preset": {
+   "mode": "rutherford",
+   "b": 0,
+   "K": 7.7,
+   "Z": 79
+  }
+ },
+ {
+  "chapter": "puc2-physics-12-atoms",
+  "step": "puc2-physics-12-atoms.t2.lesson#sim1",
+  "title": "Emission and absorption spectra",
+  "instrument": "atom",
+  "preset": {
+   "mode": "spectra",
+   "el": 0,
+   "emis": 1,
+   "lam": 500
+  }
+ },
+ {
+  "chapter": "puc2-physics-12-atoms",
+  "step": "puc2-physics-12-atoms.t2.lesson#int1",
+  "title": "Try it: Rydberg formula",
+  "instrument": "atom",
+  "preset": {
+   "mode": "series",
+   "ni": 3,
+   "nf": 2
+  }
+ },
+ {
+  "chapter": "puc2-physics-12-atoms",
+  "step": "puc2-physics-12-atoms.t3.lesson#sim1",
+  "title": "Bohr orbits of hydrogen",
+  "instrument": "atom",
+  "preset": {
+   "mode": "bohr",
+   "n": 2,
+   "Z": 1,
+   "orb": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-12-atoms",
+  "step": "puc2-physics-12-atoms.t3.lesson#int1",
+  "title": "Try it: Bohr orbits",
+  "instrument": "atom",
+  "preset": {
+   "mode": "bohr",
+   "n": 2,
+   "Z": 1,
+   "orb": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-12-atoms",
+  "step": "puc2-physics-12-atoms.t4.lesson#sim1",
+  "title": "Hydrogen's spectral series",
+  "instrument": "atom",
+  "preset": {
+   "mode": "series",
+   "ni": 3,
+   "nf": 2
+  }
+ },
+ {
+  "chapter": "puc2-physics-12-atoms",
+  "step": "puc2-physics-12-atoms.t4.lesson#int1",
+  "title": "Try it: photon energies of a series",
+  "instrument": "atom",
+  "preset": {
+   "mode": "series",
+   "ni": 3,
+   "nf": 2
+  }
+ },
+ {
+  "chapter": "puc2-physics-12-atoms",
+  "step": "puc2-physics-12-atoms.t5.lesson#sim1",
+  "title": "Electron waves that fit an orbit",
+  "instrument": "atom",
+  "preset": {
+   "mode": "standing",
+   "q": 3,
+   "vib": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-12-atoms",
+  "step": "puc2-physics-12-atoms.t5.lesson#int1",
+  "title": "Try it: does the wave join up?",
+  "instrument": "atom",
+  "preset": {
+   "mode": "standing",
+   "q": 4,
+   "vib": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-13-nuclei",
+  "step": "puc2-physics-13-nuclei.t1.lesson#sim1",
+  "title": "Build a nucleus",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "build",
+   "Z": 6,
+   "N": 6
+  }
+ },
+ {
+  "chapter": "puc2-physics-13-nuclei",
+  "step": "puc2-physics-13-nuclei.t1.lesson#int1",
+  "title": "Try it: build a nucleus",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "build",
+   "Z": 79,
+   "N": 118
+  }
+ },
+ {
+  "chapter": "puc2-physics-13-nuclei",
+  "step": "puc2-physics-13-nuclei.t2.lesson#sim1",
+  "title": "How big is a nucleus?",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "size",
+   "A": 64,
+   "cmp": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-13-nuclei",
+  "step": "puc2-physics-13-nuclei.t2.lesson#int1",
+  "title": "Try it: nuclear radius and density",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "size",
+   "A": 27,
+   "cmp": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-13-nuclei",
+  "step": "puc2-physics-13-nuclei.t3.lesson#sim1",
+  "title": "The binding energy curve",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "binding",
+   "A": 56,
+   "meas": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-13-nuclei",
+  "step": "puc2-physics-13-nuclei.t3.lesson#int1",
+  "title": "Try it: binding energy per nucleon",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "binding",
+   "A": 56,
+   "meas": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-13-nuclei",
+  "step": "puc2-physics-13-nuclei.t4.lesson#sim1",
+  "title": "The nuclear force between two nucleons",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "force",
+   "r": 1.5
+  }
+ },
+ {
+  "chapter": "puc2-physics-13-nuclei",
+  "step": "puc2-physics-13-nuclei.t4.lesson#int1",
+  "title": "Try it: nuclear vs Coulomb energy",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "force",
+   "r": 1.1
+  }
+ },
+ {
+  "chapter": "puc2-physics-13-nuclei",
+  "step": "puc2-physics-13-nuclei.t5.lesson#sim1",
+  "title": "A fission chain reaction",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "fission",
+   "k": 2,
+   "rods": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-13-nuclei",
+  "step": "puc2-physics-13-nuclei.t5.lesson#int1",
+  "title": "Try it: chain reaction",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "fission",
+   "k": 1.1,
+   "rods": 0,
+   "m": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+  "step": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits.t1.lesson#sim1",
+  "title": "Energy bands: metal, semiconductor, insulator",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "bands",
+   "T": 300,
+   "Eg": 1.1
+  }
+ },
+ {
+  "chapter": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+  "step": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits.t1.lesson#int1",
+  "title": "Try it: band gap and temperature",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "bands",
+   "T": 300,
+   "Eg": 1.1
+  }
+ },
+ {
+  "chapter": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+  "step": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits.t2.lesson#sim1",
+  "title": "Electrons and holes in pure silicon",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "intrinsic",
+   "T": 300,
+   "fld": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+  "step": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits.t2.lesson#int1",
+  "title": "Try it: carriers rise with temperature",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "intrinsic",
+   "T": 300,
+   "fld": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+  "step": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits.t3.lesson#sim1",
+  "title": "Doping: n-type and p-type",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "doping",
+   "s": 21,
+   "type": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+  "step": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits.t3.lesson#int1",
+  "title": "Try it: mass-action law",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "doping",
+   "s": 22.7,
+   "type": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+  "step": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits.t4.lesson#sim1",
+  "title": "The p-n junction diode",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "diode",
+   "V": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+  "step": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits.t4.lesson#int1",
+  "title": "Try it: diode equation",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "diode",
+   "V": 0.65,
+   "eta": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+  "step": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits.t5.lesson#sim1",
+  "title": "Half-wave and full-wave rectifiers",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "rectifier",
+   "Vm": 10,
+   "Cf": 100,
+   "flt": 0,
+   "full": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits",
+  "step": "puc2-physics-14-semiconductor-electronics-materials-devices-and-simple-circuits.t5.lesson#int1",
+  "title": "Try it: half-wave and full-wave",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "rectifier",
+   "Vm": 10,
+   "f": 50,
+   "full": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-16-radioactivity",
+  "step": "puc2-physics-16-radioactivity.t1.lesson#scene-decay-chain",
+  "title": "Walk down a decay chain",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "decay",
+   "na": 0,
+   "nb": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-16-radioactivity",
+  "step": "puc2-physics-16-radioactivity.t2.lesson#scene-half-life",
+  "title": "Watch a sample decay",
+  "instrument": "nucleus",
+  "preset": {
+   "mode": "halflife",
+   "Th": 4
+  }
+ },
+ {
+  "chapter": "puc2-physics-17-special-purpose-diodes",
+  "step": "puc2-physics-17-special-purpose-diodes.t1.lesson#scene-zener",
+  "title": "A Zener regulator",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "zener",
+   "Vin": 12,
+   "R": 200,
+   "RL": 1000
+  }
+ },
+ {
+  "chapter": "puc2-physics-17-special-purpose-diodes",
+  "step": "puc2-physics-17-special-purpose-diodes.t2.lesson#scene-solar-cell",
+  "title": "The I–V curve of a solar cell",
+  "instrument": "semiconductor",
+  "preset": {
+   "mode": "solar",
+   "G": 1000,
+   "V": 0.3
+  }
+ },
+ {
+  "chapter": "puc2-physics-18-logic-gates",
+  "step": "puc2-physics-18-logic-gates.t1.lesson#scene-gate",
+  "title": "Try every gate",
+  "instrument": "logic",
+  "preset": {
+   "mode": "gate",
+   "g": 0,
+   "A": 1,
+   "B": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-18-logic-gates",
+  "step": "puc2-physics-18-logic-gates.t2.lesson#scene-nand-build",
+  "title": "Build gates from NAND",
+  "instrument": "logic",
+  "preset": {
+   "mode": "nand",
+   "tgt": 0,
+   "A": 1,
+   "B": 0
+  }
  }
 ]
