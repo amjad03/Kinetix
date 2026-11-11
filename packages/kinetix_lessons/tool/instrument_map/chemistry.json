@@ -1,0 +1,1660 @@
+[
+ {
+  "chapter": "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+  "step": "puc1-chemistry-01-some-basic-concepts-of-chemistry.t1.lesson#int1",
+  "title": "Celsius, kelvin and Fahrenheit",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "temperature",
+   "c": 37
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+  "step": "puc1-chemistry-01-some-basic-concepts-of-chemistry.t2.lesson#sim1",
+  "title": "Accuracy and precision",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "precision",
+   "bias": 0.1,
+   "spread": 0.02
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+  "step": "puc1-chemistry-01-some-basic-concepts-of-chemistry.t2.lesson#int1",
+  "title": "Accurate or precise?",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "precision",
+   "bias": 0.4,
+   "spread": 0.01
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+  "step": "puc1-chemistry-01-some-basic-concepts-of-chemistry.t3.lesson#sim1",
+  "title": "Conservation of mass and fixed proportions",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "combination",
+   "h": 1,
+   "o": 8
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+  "step": "puc1-chemistry-01-some-basic-concepts-of-chemistry.t3.lesson#int1",
+  "title": "Same hydrogen, different oxygen",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "combination",
+   "h": 2,
+   "o": 16
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+  "step": "puc1-chemistry-01-some-basic-concepts-of-chemistry.t4.lesson#sim1",
+  "title": "Mass, moles and particles",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "mole",
+   "sub": 0,
+   "m": 18
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+  "step": "puc1-chemistry-01-some-basic-concepts-of-chemistry.t4.lesson#int1",
+  "title": "Mole calculator",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "mole",
+   "sub": 1,
+   "m": 44
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+  "step": "puc1-chemistry-01-some-basic-concepts-of-chemistry.t5.lesson#sim1",
+  "title": "Limiting reagent",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "limiting",
+   "n2": 2,
+   "h2": 3
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-01-some-basic-concepts-of-chemistry",
+  "step": "puc1-chemistry-01-some-basic-concepts-of-chemistry.t5.lesson#int1",
+  "title": "Which reactant runs out?",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "limiting",
+   "n2": 1,
+   "h2": 9
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t1.lesson#sim1",
+  "title": "Rutherford's gold foil experiment",
+  "instrument": "chem.quantum",
+  "preset": {
+   "mode": "rutherford",
+   "E": 5
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t1.lesson#int1",
+  "title": "Build an atom or ion",
+  "instrument": "chem.atom",
+  "preset": {
+   "mode": "build",
+   "Z": 6,
+   "A": 12
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t2.lesson#sim1",
+  "title": "Photons and the photoelectric effect",
+  "instrument": "chem.quantum",
+  "preset": {
+   "mode": "photo",
+   "W": 2.3,
+   "nu": 7.5
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t2.lesson#int1",
+  "title": "Photoelectric effect",
+  "instrument": "chem.quantum",
+  "preset": {
+   "mode": "photo",
+   "W": 2.3,
+   "nu": 8
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t3.lesson#sim1",
+  "title": "Bohr's hydrogen atom and its spectrum",
+  "instrument": "chem.quantum",
+  "preset": {
+   "mode": "bohr",
+   "n1": 2,
+   "n2": 3
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t3.lesson#int1",
+  "title": "Hydrogen lines from Bohr's model",
+  "instrument": "chem.quantum",
+  "preset": {
+   "mode": "bohr",
+   "n1": 1,
+   "n2": 2
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t4.lesson#sim1",
+  "title": "Matter waves and uncertainty",
+  "instrument": "chem.quantum",
+  "preset": {
+   "mode": "debroglie",
+   "m": 0,
+   "v": 2,
+   "dx": 100
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t4.lesson#int1",
+  "title": "De Broglie wavelength",
+  "instrument": "chem.quantum",
+  "preset": {
+   "mode": "debroglie",
+   "m": 1,
+   "v": 2
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t5.lesson#sim1",
+  "title": "Quantum numbers",
+  "instrument": "chem.atom",
+  "preset": {
+   "mode": "quantum",
+   "n": 2,
+   "l": 1
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t5.lesson#int1",
+  "title": "Quantum number explorer",
+  "instrument": "chem.atom",
+  "preset": {
+   "mode": "quantum",
+   "n": 3,
+   "l": 2
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t6.lesson#sim1",
+  "title": "Filling orbitals: Aufbau, Pauli and Hund",
+  "instrument": "chem.atom",
+  "preset": {
+   "mode": "config",
+   "Z": 8
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-02-structure-of-atom",
+  "step": "puc1-chemistry-02-structure-of-atom.t6.lesson#int1",
+  "title": "Fill the orbitals",
+  "instrument": "chem.atom",
+  "preset": {
+   "mode": "config",
+   "Z": 26
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties",
+  "step": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties.t1.lesson#scene-triads",
+  "title": "Döbereiner's triads",
+  "instrument": "chem.periodic",
+  "preset": {
+   "mode": "triads",
+   "t": 0
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties",
+  "step": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties.t2.lesson#scene-iupac-z",
+  "title": "Name an element from its atomic number",
+  "instrument": "chem.periodic",
+  "preset": {
+   "mode": "iupac",
+   "Z": 114
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties",
+  "step": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties.t3.lesson#int1",
+  "title": "Find the group from the configuration",
+  "instrument": "chem.atom",
+  "preset": {
+   "mode": "group",
+   "n": 3,
+   "s": 2,
+   "p": 4,
+   "d": 0
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties",
+  "step": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties.t4.lesson#sim1",
+  "title": "Atomic size and ionisation enthalpy",
+  "instrument": "chem.periodic",
+  "preset": {
+   "mode": "trend",
+   "Z": 11,
+   "prop": 1
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties",
+  "step": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties.t4.lesson#int1",
+  "title": "Effective nuclear charge and size",
+  "instrument": "chem.periodic",
+  "preset": {
+   "mode": "zeff",
+   "n": 2,
+   "Z": 2.6
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties",
+  "step": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties.t5.lesson#sim1",
+  "title": "Electronegativity and bond polarity",
+  "instrument": "chem.bond",
+  "preset": {
+   "mode": "polarity",
+   "a": 2.2,
+   "b": 3.16
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties",
+  "step": "puc1-chemistry-03-classification-of-elements-and-periodicity-in-properties.t5.lesson#int1",
+  "title": "Electronegativity difference and ionic character",
+  "instrument": "chem.bond",
+  "preset": {
+   "mode": "polarity",
+   "a": 0.93,
+   "b": 3.16
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-04-chemical-bonding-and-molecular-structure",
+  "step": "puc1-chemistry-04-chemical-bonding-and-molecular-structure.t1.lesson#int1",
+  "title": "Formal charge calculator",
+  "instrument": "chem.molecule",
+  "preset": {
+   "mode": "formal",
+   "V": 6,
+   "L": 2,
+   "S": 6,
+   "nb": 2
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-04-chemical-bonding-and-molecular-structure",
+  "step": "puc1-chemistry-04-chemical-bonding-and-molecular-structure.t2.lesson#sim1",
+  "title": "Bond length and bond enthalpy",
+  "instrument": "chem.bond",
+  "preset": {
+   "mode": "well",
+   "mol": 0,
+   "r": 74
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-04-chemical-bonding-and-molecular-structure",
+  "step": "puc1-chemistry-04-chemical-bonding-and-molecular-structure.t2.lesson#int1",
+  "title": "Dipole moment and ionic character",
+  "instrument": "chem.bond",
+  "preset": {
+   "mode": "dipole",
+   "q": 0.18,
+   "d": 127
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-04-chemical-bonding-and-molecular-structure",
+  "step": "puc1-chemistry-04-chemical-bonding-and-molecular-structure.t3.lesson#int1",
+  "title": "Count the electron pairs",
+  "instrument": "chem.molecule",
+  "preset": {
+   "mode": "pairs",
+   "V": 6,
+   "M": 2,
+   "q": 0
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-04-chemical-bonding-and-molecular-structure",
+  "step": "puc1-chemistry-04-chemical-bonding-and-molecular-structure.t4.lesson#int1",
+  "title": "Hybrid orbitals: angle and s-character",
+  "instrument": "chem.molecule",
+  "preset": {
+   "mode": "hybrid",
+   "n": 3
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-04-chemical-bonding-and-molecular-structure",
+  "step": "puc1-chemistry-04-chemical-bonding-and-molecular-structure.t5.lesson#sim1",
+  "title": "Molecular orbital diagram",
+  "instrument": "chem.bond",
+  "preset": {
+   "mode": "mo",
+   "n": 16
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-04-chemical-bonding-and-molecular-structure",
+  "step": "puc1-chemistry-04-chemical-bonding-and-molecular-structure.t5.lesson#int1",
+  "title": "Bond order from the electron count",
+  "instrument": "chem.bond",
+  "preset": {
+   "mode": "mo",
+   "n": 14
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-05-thermodynamics",
+  "step": "puc1-chemistry-05-thermodynamics.t1.lesson#sim1",
+  "title": "The first law: ΔU = q + w",
+  "instrument": "chem.thermo",
+  "preset": {
+   "mode": "firstlaw",
+   "q": 300,
+   "w": -100
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-05-thermodynamics",
+  "step": "puc1-chemistry-05-thermodynamics.t1.lesson#int1",
+  "title": "First law bookkeeping",
+  "instrument": "chem.thermo",
+  "preset": {
+   "mode": "firstlaw",
+   "q": 200,
+   "w": -200
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-05-thermodynamics",
+  "step": "puc1-chemistry-05-thermodynamics.t2.lesson#sim1",
+  "title": "Work of expansion: reversible or not",
+  "instrument": "chem.thermo",
+  "preset": {
+   "mode": "expansion",
+   "T": 300,
+   "V1": 2,
+   "V2": 10
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-05-thermodynamics",
+  "step": "puc1-chemistry-05-thermodynamics.t2.lesson#int1",
+  "title": "Reversible versus one-step expansion",
+  "instrument": "chem.thermo",
+  "preset": {
+   "mode": "expansion",
+   "T": 300,
+   "V1": 5,
+   "V2": 6
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-05-thermodynamics",
+  "step": "puc1-chemistry-05-thermodynamics.t3.lesson#sim1",
+  "title": "Hess's law: closing the cycle",
+  "instrument": "chem.thermo",
+  "preset": {
+   "mode": "hess",
+   "find": 0
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-05-thermodynamics",
+  "step": "puc1-chemistry-05-thermodynamics.t3.lesson#int1",
+  "title": "Two steps, one total",
+  "instrument": "chem.thermo",
+  "preset": {
+   "mode": "hess",
+   "find": 3
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-05-thermodynamics",
+  "step": "puc1-chemistry-05-thermodynamics.t4.lesson#sim1",
+  "title": "Born–Haber cycle for NaCl",
+  "instrument": "chem.thermo",
+  "preset": {
+   "mode": "bornhaber",
+   "n": 0
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-05-thermodynamics",
+  "step": "puc1-chemistry-05-thermodynamics.t4.lesson#int1",
+  "title": "Reaction enthalpy from bond enthalpies",
+  "instrument": "chem.thermo",
+  "preset": {
+   "mode": "bonds",
+   "hh": 436,
+   "xx": 242,
+   "hx": 431
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-05-thermodynamics",
+  "step": "puc1-chemistry-05-thermodynamics.t5.lesson#sim1",
+  "title": "ΔG = ΔH − TΔS",
+  "instrument": "chem.thermo",
+  "preset": {
+   "mode": "gibbs",
+   "dh": 178,
+   "ds": 160,
+   "T": 298
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-05-thermodynamics",
+  "step": "puc1-chemistry-05-thermodynamics.t5.lesson#int1",
+  "title": "When is a reaction spontaneous?",
+  "instrument": "chem.thermo",
+  "preset": {
+   "mode": "gibbs",
+   "dh": 178,
+   "ds": 160,
+   "T": 1200
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t1.lesson#sim1",
+  "title": "Evaporation in a closed jar",
+  "instrument": "chem.equilibrium",
+  "preset": {
+   "mode": "evaporation",
+   "t": 0.5
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t1.lesson#int1",
+  "title": "Approach to equilibrium",
+  "instrument": "chem.equilibrium",
+  "preset": {
+   "mode": "approach",
+   "t": 30
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t2.lesson#sim1",
+  "title": "Equilibrium from either side",
+  "instrument": "chem.equilibrium",
+  "preset": {
+   "mode": "approach",
+   "from": 1,
+   "t": 30
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t2.lesson#int1",
+  "title": "From Kc to Kp",
+  "instrument": "chem.equilibrium",
+  "preset": {
+   "mode": "kp",
+   "lk": -2.33,
+   "dn": 1,
+   "T": 500
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t3.lesson#sim1",
+  "title": "Le Chatelier's principle",
+  "instrument": "chem.equilibrium",
+  "preset": {
+   "mode": "lechatelier",
+   "K": 2
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t3.lesson#int1",
+  "title": "How far does H₂ + I₂ ⇌ 2HI go?",
+  "instrument": "chem.equilibrium",
+  "preset": {
+   "mode": "hi",
+   "K": 54.8
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t4.lesson#sim1",
+  "title": "pH of acids, bases and water",
+  "instrument": "chem.ph",
+  "preset": {
+   "mode": "scale",
+   "kind": 0,
+   "C": 1,
+   "n": 2
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t4.lesson#int1",
+  "title": "From concentration to pH",
+  "instrument": "chem.ph",
+  "preset": {
+   "mode": "scale",
+   "kind": 0,
+   "C": 1,
+   "n": 8
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t5.lesson#sim1",
+  "title": "How a buffer resists pH change",
+  "instrument": "chem.ph",
+  "preset": {
+   "mode": "buffer",
+   "add": 0
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t5.lesson#int1",
+  "title": "Buffer pH and weak-acid pH",
+  "instrument": "chem.ph",
+  "preset": {
+   "mode": "henderson",
+   "pka": 4.76,
+   "lr": 0
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t6.lesson#sim1",
+  "title": "Ksp and the common ion effect",
+  "instrument": "chem.equilibrium",
+  "preset": {
+   "mode": "ksp",
+   "salt": 0,
+   "c": 0
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-06-equilibrium",
+  "step": "puc1-chemistry-06-equilibrium.t6.lesson#int1",
+  "title": "Common ion effect",
+  "instrument": "chem.equilibrium",
+  "preset": {
+   "mode": "ksp",
+   "salt": 0,
+   "c": 2
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-07-redox-reactions",
+  "step": "puc1-chemistry-07-redox-reactions.t1.lesson#sim1",
+  "title": "Zinc in copper sulphate",
+  "instrument": "chem.cell",
+  "preset": {
+   "mode": "displacement",
+   "x": 0.05
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-07-redox-reactions",
+  "step": "puc1-chemistry-07-redox-reactions.t2.lesson#int1",
+  "title": "Oxidation number calculator",
+  "instrument": "chem.cell",
+  "preset": {
+   "mode": "oxnum",
+   "nA": 2,
+   "nO": 7,
+   "nH": 2,
+   "q": 0
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-07-redox-reactions",
+  "step": "puc1-chemistry-07-redox-reactions.t4.lesson#int1",
+  "title": "Permanganate–oxalic acid titration",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "titre",
+   "Mox": 0.05,
+   "Vox": 10,
+   "V": 20
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-07-redox-reactions",
+  "step": "puc1-chemistry-07-redox-reactions.t5.lesson#sim1",
+  "title": "Electrode processes in a cell",
+  "instrument": "chem.cell",
+  "preset": {
+   "mode": "series",
+   "c": 7,
+   "a": 2
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-07-redox-reactions",
+  "step": "puc1-chemistry-07-redox-reactions.t5.lesson#int1",
+  "title": "Cell potential and Gibbs energy",
+  "instrument": "chem.cell",
+  "preset": {
+   "mode": "galvanic",
+   "L": 2,
+   "R": 7
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques",
+  "step": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques.t1.lesson#int1",
+  "title": "Degree of unsaturation",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "unsaturation",
+   "C": 6,
+   "H": 6
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques",
+  "step": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques.t2.lesson#scene-iupac-chain",
+  "title": "Build an IUPAC name",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "iupac",
+   "n": 3,
+   "fg": "alkane"
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques",
+  "step": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques.t3.lesson#scene-chain-isomers",
+  "title": "Chain isomers and boiling point",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "isomers",
+   "iso": "n"
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques",
+  "step": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques.t5.lesson#sim1",
+  "title": "Inductive effect and acid strength",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "inductive",
+   "n": 1,
+   "hal": "Cl"
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques",
+  "step": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques.t5.lesson#int1",
+  "title": "Inductive effect and acid strength",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "inductive",
+   "n": 3,
+   "hal": "Cl"
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques",
+  "step": "puc1-chemistry-08-organic-chemistry-some-basic-principles-and-techniques.t6.lesson#int1",
+  "title": "Liebig's combustion analysis",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "combustion",
+   "m": 0.246,
+   "co2": 0.198,
+   "h2o": 0.1014
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-09-hydrocarbons",
+  "step": "puc1-chemistry-09-hydrocarbons.t1.lesson#sim1",
+  "title": "Boiling points of alkanes",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "alkane",
+   "n": 4
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-09-hydrocarbons",
+  "step": "puc1-chemistry-09-hydrocarbons.t1.lesson#int1",
+  "title": "Burning an alkane",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "alkane",
+   "n": 3
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-09-hydrocarbons",
+  "step": "puc1-chemistry-09-hydrocarbons.t2.lesson#sim1",
+  "title": "Conformations of ethane",
+  "instrument": "chem.molecule",
+  "preset": {
+   "mode": "ethane",
+   "phi": 60
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-09-hydrocarbons",
+  "step": "puc1-chemistry-09-hydrocarbons.t2.lesson#int1",
+  "title": "Turning the C–C bond",
+  "instrument": "chem.molecule",
+  "preset": {
+   "mode": "ethane",
+   "phi": 0
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-09-hydrocarbons",
+  "step": "puc1-chemistry-09-hydrocarbons.t3.lesson#int1",
+  "title": "How much bromine does an alkene take up?",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "reaction",
+   "rx": 2,
+   "m": 4.2,
+   "n": 3
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-09-hydrocarbons",
+  "step": "puc1-chemistry-09-hydrocarbons.t4.lesson#int1",
+  "title": "Ethyne from calcium carbide",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "reaction",
+   "rx": 0,
+   "m": 64
+  }
+ },
+ {
+  "chapter": "puc1-chemistry-09-hydrocarbons",
+  "step": "puc1-chemistry-09-hydrocarbons.t5.lesson#int1",
+  "title": "Hückel's rule check",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "huckel",
+   "ring": "benzene"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-01-solutions",
+  "step": "puc2-chemistry-01-solutions.t1.lesson#sim1",
+  "title": "Ways to state concentration",
+  "instrument": "chem.solution",
+  "preset": {
+   "mode": "concentration",
+   "ms": 18,
+   "mw": 500
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-01-solutions",
+  "step": "puc2-chemistry-01-solutions.t1.lesson#int1",
+  "title": "Molarity of a solution as the volume is changed. Moles stay ",
+  "instrument": "chem.solution",
+  "preset": {
+   "mode": "concentration",
+   "ms": 5.85,
+   "Mm": 58.5,
+   "V": 500
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-01-solutions",
+  "step": "puc2-chemistry-01-solutions.t2.lesson#sim1",
+  "title": "Henry's law",
+  "instrument": "chem.solution",
+  "preset": {
+   "mode": "henry",
+   "gas": "N2",
+   "p": 1
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-01-solutions",
+  "step": "puc2-chemistry-01-solutions.t2.lesson#int1",
+  "title": "Henry's law: mole fraction of a dissolved gas rises in propo",
+  "instrument": "chem.solution",
+  "preset": {
+   "mode": "henry",
+   "gas": "CO2",
+   "p": 1
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-01-solutions",
+  "step": "puc2-chemistry-01-solutions.t3.lesson#sim1",
+  "title": "Raoult's law and deviations",
+  "instrument": "chem.solution",
+  "preset": {
+   "mode": "raoult",
+   "dev": "positive",
+   "pa": 80,
+   "pb": 30
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-01-solutions",
+  "step": "puc2-chemistry-01-solutions.t3.lesson#int1",
+  "title": "Raoult's law for an ideal binary solution: partial pressures",
+  "instrument": "chem.solution",
+  "preset": {
+   "mode": "raoult",
+   "dev": "ideal",
+   "pa": 40,
+   "pb": 80,
+   "xb": 0.5
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-01-solutions",
+  "step": "puc2-chemistry-01-solutions.t4.lesson#sim1",
+  "title": "Boiling point up, freezing point down",
+  "instrument": "chem.solution",
+  "preset": {
+   "mode": "colligative",
+   "w2": 45,
+   "M2": 180,
+   "w1": 500
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-01-solutions",
+  "step": "puc2-chemistry-01-solutions.t4.lesson#int1",
+  "title": "Elevation of boiling point and depression of freezing point ",
+  "instrument": "chem.solution",
+  "preset": {
+   "mode": "colligative",
+   "w2": 18,
+   "M2": 180,
+   "w1": 500
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-01-solutions",
+  "step": "puc2-chemistry-01-solutions.t5.lesson#sim1",
+  "title": "Abnormal molar mass: van 't Hoff factor",
+  "instrument": "chem.solution",
+  "preset": {
+   "mode": "vanthoff",
+   "n": 2,
+   "a": 1
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-01-solutions",
+  "step": "puc2-chemistry-01-solutions.t5.lesson#int1",
+  "title": "van't Hoff factor of a salt that splits into n ions, against",
+  "instrument": "chem.solution",
+  "preset": {
+   "mode": "vanthoff",
+   "n": 2,
+   "a": 0.9
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-02-electrochemistry",
+  "step": "puc2-chemistry-02-electrochemistry.t1.lesson#int1",
+  "title": "Standard reduction potentials on a line. The electrode with ",
+  "instrument": "chem.cell",
+  "preset": {
+   "mode": "series",
+   "c": 7,
+   "a": 2
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-02-electrochemistry",
+  "step": "puc2-chemistry-02-electrochemistry.t2.lesson#sim1",
+  "title": "Nernst equation for the Daniell cell",
+  "instrument": "chem.cell",
+  "preset": {
+   "mode": "galvanic",
+   "L": 2,
+   "R": 7,
+   "cL": 1,
+   "cR": 1
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-02-electrochemistry",
+  "step": "puc2-chemistry-02-electrochemistry.t2.lesson#int1",
+  "title": "Nernst equation at 298 K: cell e.m.f. against log Q. A bigge",
+  "instrument": "chem.cell",
+  "preset": {
+   "mode": "galvanic",
+   "L": 2,
+   "R": 7,
+   "cL": 1,
+   "cR": 0.01
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-02-electrochemistry",
+  "step": "puc2-chemistry-02-electrochemistry.t3.lesson#sim1",
+  "title": "Molar conductivity and dilution",
+  "instrument": "chem.electrolysis",
+  "preset": {
+   "mode": "conductance",
+   "el": "KCl"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-02-electrochemistry",
+  "step": "puc2-chemistry-02-electrochemistry.t3.lesson#int1",
+  "title": "Molar conductivity of a strong electrolyte falls linearly wi",
+  "instrument": "chem.electrolysis",
+  "preset": {
+   "mode": "conductance",
+   "el": "CH3COOH",
+   "c": 0.001
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-02-electrochemistry",
+  "step": "puc2-chemistry-02-electrochemistry.t4.lesson#sim1",
+  "title": "Faraday's first law",
+  "instrument": "chem.electrolysis",
+  "preset": {
+   "mode": "faraday",
+   "m": "Cu",
+   "I": 2,
+   "t": 30
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-02-electrochemistry",
+  "step": "puc2-chemistry-02-electrochemistry.t4.lesson#int1",
+  "title": "Faraday's first law: mass deposited against time for a stead",
+  "instrument": "chem.electrolysis",
+  "preset": {
+   "mode": "faraday",
+   "m": "Ag",
+   "I": 1,
+   "t": 60
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-02-electrochemistry",
+  "step": "puc2-chemistry-02-electrochemistry.t5.lesson#int1",
+  "title": "A hydrogen–oxygen fuel cell: the cell voltage decides how mu",
+  "instrument": "chem.cell",
+  "preset": {
+   "mode": "fuel",
+   "E": 0.9
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t1.lesson#sim1",
+  "title": "Average and instantaneous rate",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "rate",
+   "R0": 1.5,
+   "k": 0.1,
+   "t": 3,
+   "dt": 4
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t1.lesson#int1",
+  "title": "Concentration of a reactant against time, with the tangent a",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "rate",
+   "R0": 1,
+   "k": 0.3,
+   "t": 3,
+   "dt": 0.4
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t2.lesson#sim1",
+  "title": "Rate law: rate = k[A]^m [B]^n",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "order",
+   "m": 1,
+   "nB": 1,
+   "A": 0.2,
+   "B": 0.2
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t2.lesson#int1",
+  "title": "How the rate depends on [A] for different orders. Raise [A] ",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "order",
+   "m": 1,
+   "nB": 0,
+   "f": 2
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t3.lesson#sim1",
+  "title": "Zero and first order: straight-line plots",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "integrated",
+   "view": "log",
+   "R0": 1,
+   "k": 0.05
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t3.lesson#int1",
+  "title": "Zero-order and first-order decay from the same start. The ze",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "integrated",
+   "view": "conc",
+   "R0": 1,
+   "k": 0.1
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t4.lesson#sim1",
+  "title": "Half-life of a first-order reaction",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "halflife",
+   "h": 10,
+   "t": 30
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t4.lesson#int1",
+  "title": "First-order decay drawn as the fraction left. Every half-lif",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "halflife",
+   "h": 30,
+   "t": 120
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t5.lesson#sim1",
+  "title": "Temperature, activation energy and rate",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "arrhenius",
+   "T": 300,
+   "Ea": 15
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t5.lesson#int1",
+  "title": "How many times faster a reaction runs at temperature T than ",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "arrhenius",
+   "T": 310,
+   "Ea": 53.6
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t6.lesson#sim1",
+  "title": "Energy profile and a catalyst",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "profile",
+   "Ea": 100,
+   "dH": -50,
+   "drop": 30
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-03-chemical-kinetics",
+  "step": "puc2-chemistry-03-chemical-kinetics.t6.lesson#int1",
+  "title": "A catalyst lowers the activation energy. This shows the loga",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "profile",
+   "T": 300,
+   "drop": 20
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-04-the-d-and-f-block-elements",
+  "step": "puc2-chemistry-04-the-d-and-f-block-elements.t1.lesson#sim1",
+  "title": "Electronic configuration of the 3d series",
+  "instrument": "chem.atom",
+  "preset": {
+   "mode": "config",
+   "Z": 24
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-04-the-d-and-f-block-elements",
+  "step": "puc2-chemistry-04-the-d-and-f-block-elements.t2.lesson#sim1",
+  "title": "Trends across the 3d series",
+  "instrument": "chem.periodic",
+  "preset": {
+   "mode": "dblock",
+   "prop": 0,
+   "Z": 26
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-04-the-d-and-f-block-elements",
+  "step": "puc2-chemistry-04-the-d-and-f-block-elements.t2.lesson#int1",
+  "title": "Melting points (K) of the 3d metals. Look for the peak, the ",
+  "instrument": "chem.periodic",
+  "preset": {
+   "mode": "dblock",
+   "prop": 2,
+   "Z": 25
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-04-the-d-and-f-block-elements",
+  "step": "puc2-chemistry-04-the-d-and-f-block-elements.t3.lesson#sim1",
+  "title": "Electrode potentials of the 3d metals",
+  "instrument": "chem.periodic",
+  "preset": {
+   "mode": "dblock",
+   "prop": 3,
+   "Z": 29
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-04-the-d-and-f-block-elements",
+  "step": "puc2-chemistry-04-the-d-and-f-block-elements.t4.lesson#sim1",
+  "title": "Magnetic moment and colour of 3d ions",
+  "instrument": "chem.complex",
+  "preset": {
+   "mode": "magnetic",
+   "ion": "Cu2+"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-04-the-d-and-f-block-elements",
+  "step": "puc2-chemistry-04-the-d-and-f-block-elements.t4.lesson#int1",
+  "title": "Spin-only magnetic moment against the number of unpaired ele",
+  "instrument": "chem.complex",
+  "preset": {
+   "mode": "magnetic",
+   "ion": "Mn2+"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-04-the-d-and-f-block-elements",
+  "step": "puc2-chemistry-04-the-d-and-f-block-elements.t5.lesson#sim1",
+  "title": "Chromate and dichromate",
+  "instrument": "chem.equilibrium",
+  "preset": {
+   "mode": "chromate",
+   "pH": 4
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-04-the-d-and-f-block-elements",
+  "step": "puc2-chemistry-04-the-d-and-f-block-elements.t5.lesson#int1",
+  "title": "KMnO₄ against oxalic acid: 2MnO₄⁻ + 5C₂O₄²⁻ + 16H⁺ → 2Mn²⁺ +",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "titre",
+   "Mox": 0.05,
+   "Vox": 20,
+   "V": 16
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-04-the-d-and-f-block-elements",
+  "step": "puc2-chemistry-04-the-d-and-f-block-elements.t6.lesson#sim1",
+  "title": "The lanthanoid contraction",
+  "instrument": "chem.periodic",
+  "preset": {
+   "mode": "lanthanoid",
+   "i": 0
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-05-coordination-compounds",
+  "step": "puc2-chemistry-05-coordination-compounds.t1.lesson#sim1",
+  "title": "Werner's cobalt ammines",
+  "instrument": "chem.complex",
+  "preset": {
+   "mode": "werner",
+   "n": 6,
+   "mol": 0.5
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-05-coordination-compounds",
+  "step": "puc2-chemistry-05-coordination-compounds.t1.lesson#int1",
+  "title": "Werner's cobalt ammines CoCl₃·nNH₃. With coordination number",
+  "instrument": "chem.complex",
+  "preset": {
+   "mode": "werner",
+   "n": 4
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-05-coordination-compounds",
+  "step": "puc2-chemistry-05-coordination-compounds.t2.lesson#int1",
+  "title": "Oxidation state of the central metal: charge of the complex ",
+  "instrument": "chem.complex",
+  "preset": {
+   "mode": "oxstate",
+   "q": -3,
+   "a": 6,
+   "b": 0
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-05-coordination-compounds",
+  "step": "puc2-chemistry-05-coordination-compounds.t3.lesson#scene-geometric-isomers",
+  "title": "Geometric isomers of complexes",
+  "instrument": "chem.complex",
+  "preset": {
+   "mode": "isomers",
+   "cpx": "ma2b2"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-05-coordination-compounds",
+  "step": "puc2-chemistry-05-coordination-compounds.t4.lesson#sim1",
+  "title": "Valence bond theory: high and low spin",
+  "instrument": "chem.complex",
+  "preset": {
+   "mode": "vbt",
+   "n": 5,
+   "L": "strong"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-05-coordination-compounds",
+  "step": "puc2-chemistry-05-coordination-compounds.t4.lesson#int1",
+  "title": "Spin-only magnetic moment against the number of unpaired ele",
+  "instrument": "chem.complex",
+  "preset": {
+   "mode": "magnetic",
+   "ion": "Fe2+"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-05-coordination-compounds",
+  "step": "puc2-chemistry-05-coordination-compounds.t5.lesson#sim1",
+  "title": "Crystal field splitting and colour",
+  "instrument": "chem.complex",
+  "preset": {
+   "mode": "cfs",
+   "D": 20000,
+   "P": 20000,
+   "n": 1
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-05-coordination-compounds",
+  "step": "puc2-chemistry-05-coordination-compounds.t5.lesson#int1",
+  "title": "Crystal field splitting Δo decides the colour absorbed and, ",
+  "instrument": "chem.complex",
+  "preset": {
+   "mode": "cfs",
+   "D": 20100,
+   "P": 20000,
+   "n": 4
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-05-coordination-compounds",
+  "step": "puc2-chemistry-05-coordination-compounds.t6.lesson#int1",
+  "title": "Effective atomic number: electrons on the metal after the li",
+  "instrument": "chem.complex",
+  "preset": {
+   "mode": "ean",
+   "Z": 26,
+   "ox": 0,
+   "L": 5
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-06-haloalkanes-and-haloarenes",
+  "step": "puc2-chemistry-06-haloalkanes-and-haloarenes.t1.lesson#int1",
+  "title": "Dipole moment of the C–X bond",
+  "instrument": "chem.bond",
+  "preset": {
+   "mode": "dipole",
+   "q": 0.24,
+   "d": 178
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-06-haloalkanes-and-haloarenes",
+  "step": "puc2-chemistry-06-haloalkanes-and-haloarenes.t2.lesson#int1",
+  "title": "Boiling points of CH₃X",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "boiling",
+   "set": "halomethanes"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-06-haloalkanes-and-haloarenes",
+  "step": "puc2-chemistry-06-haloalkanes-and-haloarenes.t3.lesson#sim1",
+  "title": "SN1 and SN2",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "sn",
+   "mech": "sn2",
+   "s": 0
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-06-haloalkanes-and-haloarenes",
+  "step": "puc2-chemistry-06-haloalkanes-and-haloarenes.t3.lesson#int1",
+  "title": "SN1 and SN2 rate laws",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "sn",
+   "mech": "sn1",
+   "s": 0.5
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-06-haloalkanes-and-haloarenes",
+  "step": "puc2-chemistry-06-haloalkanes-and-haloarenes.t4.lesson#int1",
+  "title": "Rotation of a mixture of enantiomers",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "optical",
+   "a": 23.1,
+   "f": 0.75
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-06-haloalkanes-and-haloarenes",
+  "step": "puc2-chemistry-06-haloalkanes-and-haloarenes.t5.lesson#int1",
+  "title": "Nitro groups make substitution easier",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "boiling",
+   "set": "nitro"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-07-alcohols-phenols-and-ethers",
+  "step": "puc2-chemistry-07-alcohols-phenols-and-ethers.t2.lesson#int1",
+  "title": "How much alcohol from an alkene?",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "reaction",
+   "rx": 1,
+   "m": 21
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-07-alcohols-phenols-and-ethers",
+  "step": "puc2-chemistry-07-alcohols-phenols-and-ethers.t3.lesson#sim1",
+  "title": "How acidic are alcohols and phenols?",
+  "instrument": "chem.ph",
+  "preset": {
+   "mode": "species",
+   "cpd": "phenol",
+   "pH": 12
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-07-alcohols-phenols-and-ethers",
+  "step": "puc2-chemistry-07-alcohols-phenols-and-ethers.t3.lesson#int1",
+  "title": "How acidic is a phenol solution?",
+  "instrument": "chem.ph",
+  "preset": {
+   "mode": "weak",
+   "base": 0,
+   "pk": 10,
+   "c": 0.1
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-07-alcohols-phenols-and-ethers",
+  "step": "puc2-chemistry-07-alcohols-phenols-and-ethers.t4.lesson#int1",
+  "title": "Dehydration gets easier from 1° to 3°",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "boiling",
+   "set": "dehydration"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-07-alcohols-phenols-and-ethers",
+  "step": "puc2-chemistry-07-alcohols-phenols-and-ethers.t5.lesson#int1",
+  "title": "Ethers boil like alkanes",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "boiling",
+   "set": "ethers"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-08-aldehydes-ketones-and-carboxylic-acids",
+  "step": "puc2-chemistry-08-aldehydes-ketones-and-carboxylic-acids.t2.lesson#int1",
+  "title": "Where carbonyl compounds boil",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "boiling",
+   "set": "carbonyl"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-08-aldehydes-ketones-and-carboxylic-acids",
+  "step": "puc2-chemistry-08-aldehydes-ketones-and-carboxylic-acids.t3.lesson#int1",
+  "title": "How much silver?",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "reaction",
+   "rx": 3,
+   "m": 2.2
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-08-aldehydes-ketones-and-carboxylic-acids",
+  "step": "puc2-chemistry-08-aldehydes-ketones-and-carboxylic-acids.t4.lesson#int1",
+  "title": "Acids boil highest",
+  "instrument": "chem.organic",
+  "preset": {
+   "mode": "boiling",
+   "set": "acids"
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-08-aldehydes-ketones-and-carboxylic-acids",
+  "step": "puc2-chemistry-08-aldehydes-ketones-and-carboxylic-acids.t5.lesson#sim1",
+  "title": "Acid strength and pH",
+  "instrument": "chem.ph",
+  "preset": {
+   "mode": "species",
+   "cpd": "chloroacetic-acid",
+   "pH": 3
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-08-aldehydes-ketones-and-carboxylic-acids",
+  "step": "puc2-chemistry-08-aldehydes-ketones-and-carboxylic-acids.t5.lesson#int1",
+  "title": "Ionisation of a carboxylic acid",
+  "instrument": "chem.ph",
+  "preset": {
+   "mode": "species",
+   "cpd": "acetic-acid",
+   "pH": 3
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-09-amines",
+  "step": "puc2-chemistry-09-amines.t2.lesson#int1",
+  "title": "Hoffmann degradation in numbers",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "reaction",
+   "rx": 4,
+   "m": 5.9
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-09-amines",
+  "step": "puc2-chemistry-09-amines.t3.lesson#sim1",
+  "title": "How basic are amines?",
+  "instrument": "chem.ph",
+  "preset": {
+   "mode": "species",
+   "cpd": "methylamine",
+   "pH": 7
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-09-amines",
+  "step": "puc2-chemistry-09-amines.t3.lesson#int1",
+  "title": "pH of an amine solution",
+  "instrument": "chem.ph",
+  "preset": {
+   "mode": "weak",
+   "base": 1,
+   "pk": 3.38,
+   "c": 0.1
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-09-amines",
+  "step": "puc2-chemistry-09-amines.t4.lesson#int1",
+  "title": "Bromination of aniline in numbers",
+  "instrument": "chem.stoich",
+  "preset": {
+   "mode": "reaction",
+   "rx": 5,
+   "m": 9.3
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-09-amines",
+  "step": "puc2-chemistry-09-amines.t5.lesson#int1",
+  "title": "Why diazonium salts are kept cold",
+  "instrument": "chem.kinetics",
+  "preset": {
+   "mode": "halflife",
+   "h": 13.9,
+   "t": 10
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-10-biomolecules",
+  "step": "puc2-chemistry-10-biomolecules.t1.lesson#int1",
+  "title": "Mutarotation of glucose",
+  "instrument": "chem.bio",
+  "preset": {
+   "mode": "rotation",
+   "sys": "mutarotation",
+   "x": 0.64
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-10-biomolecules",
+  "step": "puc2-chemistry-10-biomolecules.t2.lesson#int1",
+  "title": "Inversion of cane sugar",
+  "instrument": "chem.bio",
+  "preset": {
+   "mode": "rotation",
+   "sys": "inversion",
+   "x": 0.3
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-10-biomolecules",
+  "step": "puc2-chemistry-10-biomolecules.t3.lesson#sim1",
+  "title": "Amino acids: charge and pH",
+  "instrument": "chem.bio",
+  "preset": {
+   "mode": "aminoacid",
+   "pH": 6
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-10-biomolecules",
+  "step": "puc2-chemistry-10-biomolecules.t3.lesson#int1",
+  "title": "Charge on an amino acid",
+  "instrument": "chem.bio",
+  "preset": {
+   "mode": "aminoacid",
+   "pH": 7,
+   "a": 2.34,
+   "b": 9.6
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-10-biomolecules",
+  "step": "puc2-chemistry-10-biomolecules.t4.lesson#int1",
+  "title": "Enzymes get saturated",
+  "instrument": "chem.bio",
+  "preset": {
+   "mode": "enzyme",
+   "v": 8,
+   "k": 5,
+   "s": 5
+  }
+ },
+ {
+  "chapter": "puc2-chemistry-10-biomolecules",
+  "step": "puc2-chemistry-10-biomolecules.t5.lesson#int1",
+  "title": "Chargaff’s rule",
+  "instrument": "chem.bio",
+  "preset": {
+   "mode": "chargaff",
+   "a": 30
+  }
+ }
+]
