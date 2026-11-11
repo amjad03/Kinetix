@@ -402,7 +402,7 @@ class _EnzymeState extends BioState<EnzymeInstrument> {
         final R = math.min(size.width * 0.22, size.height * 0.36);
         var a = -math.pi / 2;
         final tot = parts.fold<double>(0, (s, p) => s + p.$2);
-        for (final (name, x, col) in parts) {
+        for (final (_, x, col) in parts) {
           final sw = 2 * math.pi * x / tot;
           if (sw <= 0) continue;
           final path = Path()..moveTo(ctr.dx, ctr.dy)..arcTo(Rect.fromCircle(center: ctr, radius: R), a, sw, false)..close();

@@ -1,0 +1,2057 @@
+[
+ {
+  "chapter": "puc1-biology-01-the-living-world",
+  "step": "puc1-biology-01-the-living-world.t1.lesson#scene-local-names",
+  "title": "Why we need standard names",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "taxonomy",
+   "org": "mango",
+   "rank": 1
+  }
+ },
+ {
+  "chapter": "puc1-biology-01-the-living-world",
+  "step": "puc1-biology-01-the-living-world.t2.lesson#scene-binomial",
+  "title": "Write a scientific name correctly",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "taxonomy",
+   "org": "mango",
+   "rank": 1
+  }
+ },
+ {
+  "chapter": "puc1-biology-01-the-living-world",
+  "step": "puc1-biology-01-the-living-world.t3.lesson#scene-key",
+  "title": "Identify it with a key",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "kingdoms",
+   "who": "frog",
+   "system": "five"
+  }
+ },
+ {
+  "chapter": "puc1-biology-01-the-living-world",
+  "step": "puc1-biology-01-the-living-world.t4.lesson#scene-cat-family",
+  "title": "Species, genus, family",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "taxonomy",
+   "org": "man",
+   "rank": 3
+  }
+ },
+ {
+  "chapter": "puc1-biology-01-the-living-world",
+  "step": "puc1-biology-01-the-living-world.t5.lesson#scene-hierarchy",
+  "title": "Climb the taxonomic hierarchy",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "taxonomy",
+   "org": "man",
+   "rank": 1
+  }
+ },
+ {
+  "chapter": "puc1-biology-02-biological-classification",
+  "step": "puc1-biology-02-biological-classification.t1.lesson#scene-kingdoms",
+  "title": "Two kingdoms or five?",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "kingdoms",
+   "who": "bacterium",
+   "system": "two"
+  }
+ },
+ {
+  "chapter": "puc1-biology-02-biological-classification",
+  "step": "puc1-biology-02-biological-classification.t2.lesson#sim1",
+  "title": "Bacteria dividing by fission",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "doubling",
+   "what": "bacteria",
+   "N0": 1,
+   "g": 20,
+   "t": 120
+  }
+ },
+ {
+  "chapter": "puc1-biology-02-biological-classification",
+  "step": "puc1-biology-02-biological-classification.t2.lesson#int1",
+  "title": "How fast bacteria multiply",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "doubling",
+   "what": "bacteria",
+   "N0": 1,
+   "g": 20,
+   "t": 120
+  }
+ },
+ {
+  "chapter": "puc1-biology-02-biological-classification",
+  "step": "puc1-biology-02-biological-classification.t3.lesson#scene-euglena",
+  "title": "Euglena: plant by day, animal in the dark",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "kingdoms",
+   "who": "euglena",
+   "system": "five"
+  }
+ },
+ {
+  "chapter": "puc1-biology-03-plant-kingdom",
+  "step": "puc1-biology-03-plant-kingdom.t1.lesson#scene-algal-gametes",
+  "title": "Isogamy, anisogamy, oogamy",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "lifecycle",
+   "gamy": "iso"
+  }
+ },
+ {
+  "chapter": "puc1-biology-03-plant-kingdom",
+  "step": "puc1-biology-03-plant-kingdom.t2.lesson#scene-algae-depth",
+  "title": "Which algae can live deep?",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "algae",
+   "depth": 0
+  }
+ },
+ {
+  "chapter": "puc1-biology-03-plant-kingdom",
+  "step": "puc1-biology-03-plant-kingdom.t4.lesson#scene-heterospory",
+  "title": "Homospory and heterospory",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "lifecycle",
+   "gamy": "oo",
+   "spores": "hetero"
+  }
+ },
+ {
+  "chapter": "puc1-biology-03-plant-kingdom",
+  "step": "puc1-biology-03-plant-kingdom.t5.lesson#scene-pine-pollen",
+  "title": "Pine pollen on the wind",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "pollen",
+   "wind": 2,
+   "height": 20
+  }
+ },
+ {
+  "chapter": "puc1-biology-04-animal-kingdom",
+  "step": "puc1-biology-04-animal-kingdom.t1.lesson#scene-body-plan",
+  "title": "Build a body plan",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "bodyplan"
+  }
+ },
+ {
+  "chapter": "puc1-biology-04-animal-kingdom",
+  "step": "puc1-biology-04-animal-kingdom.t2.lesson#scene-sponge-canal",
+  "title": "Water through a sponge",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "bodyplan",
+   "sym": "radial",
+   "germ": "diplo"
+  }
+ },
+ {
+  "chapter": "puc1-biology-04-animal-kingdom",
+  "step": "puc1-biology-04-animal-kingdom.t3.lesson#scene-worm-movement",
+  "title": "How worms move",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "bodyplan",
+   "sym": "bilateral",
+   "germ": "triplo",
+   "coelom": "true"
+  }
+ },
+ {
+  "chapter": "puc1-biology-04-animal-kingdom",
+  "step": "puc1-biology-04-animal-kingdom.t4.lesson#scene-moult-growth",
+  "title": "Growing inside armour: moulting",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "moult",
+   "days": 15,
+   "gain": 30
+  }
+ },
+ {
+  "chapter": "puc1-biology-04-animal-kingdom",
+  "step": "puc1-biology-04-animal-kingdom.t6.lesson#int1",
+  "title": "Cold-blooded or warm-blooded?",
+  "instrument": "bio-endocrine",
+  "preset": {
+   "mode": "thermo",
+   "ambient": 25
+  }
+ },
+ {
+  "chapter": "puc1-biology-05-morphology-of-flowering-plants",
+  "step": "puc1-biology-05-morphology-of-flowering-plants.t1.lesson#scene-root-zones",
+  "title": "Where does a root grow?",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "growth",
+   "a": 3,
+   "r": 0.3,
+   "W0": 2,
+   "t": 10
+  }
+ },
+ {
+  "chapter": "puc1-biology-05-morphology-of-flowering-plants",
+  "step": "puc1-biology-05-morphology-of-flowering-plants.t2.lesson#scene-stem-nodes",
+  "title": "Nodes, internodes and buds",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "morphology",
+   "part": "stem",
+   "nodes": 5,
+   "il": 5
+  }
+ },
+ {
+  "chapter": "puc1-biology-05-morphology-of-flowering-plants",
+  "step": "puc1-biology-05-morphology-of-flowering-plants.t6.lesson#scene-fruit-dev",
+  "title": "From flower to fruit",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "morphology",
+   "part": "fruit"
+  }
+ },
+ {
+  "chapter": "puc1-biology-06-anatomy-of-flowering-plants",
+  "step": "puc1-biology-06-anatomy-of-flowering-plants.t3.lesson#sim1",
+  "title": "Xylem up, phloem to the sink",
+  "instrument": "bio-planttransport",
+  "preset": {
+   "mode": "phloem"
+  }
+ },
+ {
+  "chapter": "puc1-biology-06-anatomy-of-flowering-plants",
+  "step": "puc1-biology-06-anatomy-of-flowering-plants.t4.lesson#int1",
+  "title": "Stomatal index",
+  "instrument": "bio-planttransport",
+  "preset": {
+   "mode": "stomatalindex",
+   "S": 20,
+   "E": 80
+  }
+ },
+ {
+  "chapter": "puc1-biology-06-anatomy-of-flowering-plants",
+  "step": "puc1-biology-06-anatomy-of-flowering-plants.t5.lesson#scene-root-stele",
+  "title": "Inside a root: dicot or monocot?",
+  "instrument": "bio-planttransport",
+  "preset": {
+   "mode": "root",
+   "root": "dicot"
+  }
+ },
+ {
+  "chapter": "puc1-biology-07-structural-organisation-in-animals",
+  "step": "puc1-biology-07-structural-organisation-in-animals.t4.lesson#int1",
+  "title": "Cold-blooded or warm-blooded?",
+  "instrument": "bio-endocrine",
+  "preset": {
+   "mode": "thermo",
+   "ambient": 25
+  }
+ },
+ {
+  "chapter": "puc1-biology-07-structural-organisation-in-animals",
+  "step": "puc1-biology-07-structural-organisation-in-animals.t5.lesson#scene-frog-breathing",
+  "title": "How a frog breathes",
+  "instrument": "bio-lungs",
+  "preset": {
+   "mode": "frog",
+   "temp": 25
+  }
+ },
+ {
+  "chapter": "puc1-biology-08-cell-the-unit-of-life",
+  "step": "puc1-biology-08-cell-the-unit-of-life.t1.lesson#int1",
+  "title": "Measure a cell under the microscope",
+  "instrument": "bio-cell",
+  "preset": {
+   "mode": "microscope",
+   "objective": 40,
+   "eyepiece": 10,
+   "image": 20
+  }
+ },
+ {
+  "chapter": "puc1-biology-08-cell-the-unit-of-life",
+  "step": "puc1-biology-08-cell-the-unit-of-life.t2.lesson#scene-sa-volume",
+  "title": "Why bacteria are small",
+  "instrument": "bio-cell",
+  "preset": {
+   "mode": "sav",
+   "d": 10
+  }
+ },
+ {
+  "chapter": "puc1-biology-08-cell-the-unit-of-life",
+  "step": "puc1-biology-08-cell-the-unit-of-life.t3.lesson#sim1",
+  "title": "Crossing the plasma membrane",
+  "instrument": "bio-cell",
+  "preset": {
+   "mode": "membrane"
+  }
+ },
+ {
+  "chapter": "puc1-biology-08-cell-the-unit-of-life",
+  "step": "puc1-biology-08-cell-the-unit-of-life.t3.lesson#int1",
+  "title": "Diffusion versus carrier transport",
+  "instrument": "bio-cell",
+  "preset": {
+   "mode": "membrane",
+   "dc": 4,
+   "vmax": 6,
+   "km": 2
+  }
+ },
+ {
+  "chapter": "puc1-biology-09-biomolecules",
+  "step": "puc1-biology-09-biomolecules.t1.lesson#sim1",
+  "title": "An amino acid changes with pH",
+  "instrument": "bio-enzyme",
+  "preset": {
+   "mode": "aminoacid",
+   "pH": 7
+  }
+ },
+ {
+  "chapter": "puc1-biology-09-biomolecules",
+  "step": "puc1-biology-09-biomolecules.t1.lesson#int1",
+  "title": "What a cell is made of",
+  "instrument": "bio-enzyme",
+  "preset": {
+   "mode": "composition"
+  }
+ },
+ {
+  "chapter": "puc1-biology-09-biomolecules",
+  "step": "puc1-biology-09-biomolecules.t2.lesson#int1",
+  "title": "Build a polypeptide",
+  "instrument": "bio-enzyme",
+  "preset": {
+   "mode": "polypeptide",
+   "n": 51
+  }
+ },
+ {
+  "chapter": "puc1-biology-09-biomolecules",
+  "step": "puc1-biology-09-biomolecules.t3.lesson#sim1",
+  "title": "Chargaff's rule and the double helix",
+  "instrument": "bio-dna",
+  "preset": {
+   "mode": "helix",
+   "A": 30
+  }
+ },
+ {
+  "chapter": "puc1-biology-09-biomolecules",
+  "step": "puc1-biology-09-biomolecules.t3.lesson#int1",
+  "title": "Chargaff's rule and DNA length",
+  "instrument": "bio-dna",
+  "preset": {
+   "mode": "helix",
+   "A": 20
+  }
+ },
+ {
+  "chapter": "puc1-biology-09-biomolecules",
+  "step": "puc1-biology-09-biomolecules.t4.lesson#sim1",
+  "title": "Enzymes lower the activation energy",
+  "instrument": "bio-enzyme",
+  "preset": {
+   "mode": "energy"
+  }
+ },
+ {
+  "chapter": "puc1-biology-09-biomolecules",
+  "step": "puc1-biology-09-biomolecules.t4.lesson#int1",
+  "title": "Lower the energy hill",
+  "instrument": "bio-enzyme",
+  "preset": {
+   "mode": "energy",
+   "lower": 40
+  }
+ },
+ {
+  "chapter": "puc1-biology-09-biomolecules",
+  "step": "puc1-biology-09-biomolecules.t5.lesson#scene-enzyme",
+  "title": "Enzyme activity and temperature",
+  "instrument": "bio-enzyme",
+  "preset": {
+   "mode": "temperature",
+   "T": 37
+  }
+ },
+ {
+  "chapter": "puc1-biology-09-biomolecules",
+  "step": "puc1-biology-09-biomolecules.t5.lesson#int1",
+  "title": "Substrate, Vmax and a competitive inhibitor",
+  "instrument": "bio-enzyme",
+  "preset": {
+   "mode": "kinetics",
+   "I": 2
+  }
+ },
+ {
+  "chapter": "puc1-biology-10-cell-cycle-and-cell-division",
+  "step": "puc1-biology-10-cell-cycle-and-cell-division.t1.lesson#sim1",
+  "title": "The cell cycle clock",
+  "instrument": "bio-division",
+  "preset": {
+   "mode": "cycle"
+  }
+ },
+ {
+  "chapter": "puc1-biology-10-cell-cycle-and-cell-division",
+  "step": "puc1-biology-10-cell-cycle-and-cell-division.t1.lesson#int1",
+  "title": "Time spent in each phase",
+  "instrument": "bio-division",
+  "preset": {
+   "mode": "cycle",
+   "g1": 11,
+   "s": 8,
+   "g2": 4,
+   "m": 1
+  }
+ },
+ {
+  "chapter": "puc1-biology-10-cell-cycle-and-cell-division",
+  "step": "puc1-biology-10-cell-cycle-and-cell-division.t2.lesson#int1",
+  "title": "Mitotic index of a root tip",
+  "instrument": "bio-division",
+  "preset": {
+   "mode": "index",
+   "dividing": 30,
+   "total": 400,
+   "cycle": 24
+  }
+ },
+ {
+  "chapter": "puc1-biology-10-cell-cycle-and-cell-division",
+  "step": "puc1-biology-10-cell-cycle-and-cell-division.t3.lesson#sim1",
+  "title": "Cytokinesis and growth by mitosis",
+  "instrument": "bio-division",
+  "preset": {
+   "mode": "mitosis",
+   "step": 4
+  }
+ },
+ {
+  "chapter": "puc1-biology-10-cell-cycle-and-cell-division",
+  "step": "puc1-biology-10-cell-cycle-and-cell-division.t3.lesson#int1",
+  "title": "Doubling by mitosis",
+  "instrument": "bio-division",
+  "preset": {
+   "mode": "doubling",
+   "rounds": 3
+  }
+ },
+ {
+  "chapter": "puc1-biology-10-cell-cycle-and-cell-division",
+  "step": "puc1-biology-10-cell-cycle-and-cell-division.t4.lesson#int1",
+  "title": "Independent assortment of homologues",
+  "instrument": "bio-division",
+  "preset": {
+   "mode": "assortment",
+   "pairs": 2
+  }
+ },
+ {
+  "chapter": "puc1-biology-10-cell-cycle-and-cell-division",
+  "step": "puc1-biology-10-cell-cycle-and-cell-division.t5.lesson#sim1",
+  "title": "Why every gamete is different",
+  "instrument": "bio-division",
+  "preset": {
+   "mode": "assortment",
+   "pairs": 3
+  }
+ },
+ {
+  "chapter": "puc1-biology-10-cell-cycle-and-cell-division",
+  "step": "puc1-biology-10-cell-cycle-and-cell-division.t5.lesson#int1",
+  "title": "Chromosomes and chromatids through meiosis",
+  "instrument": "bio-division",
+  "preset": {
+   "mode": "meiosis",
+   "step": 0
+  }
+ },
+ {
+  "chapter": "puc1-biology-11-photosynthesis-in-higher-plants",
+  "step": "puc1-biology-11-photosynthesis-in-higher-plants.t1.lesson#int1",
+  "title": "Balance the photosynthesis equation",
+  "instrument": "bio-photosynthesis",
+  "preset": {
+   "mode": "equation",
+   "glucose": 1
+  }
+ },
+ {
+  "chapter": "puc1-biology-11-photosynthesis-in-higher-plants",
+  "step": "puc1-biology-11-photosynthesis-in-higher-plants.t2.lesson#sim1",
+  "title": "Absorption and action spectra",
+  "instrument": "bio-photosynthesis",
+  "preset": {
+   "mode": "spectra",
+   "wl": 450
+  }
+ },
+ {
+  "chapter": "puc1-biology-11-photosynthesis-in-higher-plants",
+  "step": "puc1-biology-11-photosynthesis-in-higher-plants.t2.lesson#int1",
+  "title": "Absorption spectra of leaf pigments",
+  "instrument": "bio-photosynthesis",
+  "preset": {
+   "mode": "spectra",
+   "wl": 660
+  }
+ },
+ {
+  "chapter": "puc1-biology-11-photosynthesis-in-higher-plants",
+  "step": "puc1-biology-11-photosynthesis-in-higher-plants.t3.lesson#sim1",
+  "title": "Chemiosmosis in the thylakoid",
+  "instrument": "bio-photosynthesis",
+  "preset": {
+   "mode": "thylakoid"
+  }
+ },
+ {
+  "chapter": "puc1-biology-11-photosynthesis-in-higher-plants",
+  "step": "puc1-biology-11-photosynthesis-in-higher-plants.t3.lesson#int1",
+  "title": "Water splitting and the proton gradient",
+  "instrument": "bio-photosynthesis",
+  "preset": {
+   "mode": "thylakoid",
+   "water": 2
+  }
+ },
+ {
+  "chapter": "puc1-biology-11-photosynthesis-in-higher-plants",
+  "step": "puc1-biology-11-photosynthesis-in-higher-plants.t4.lesson#sim1",
+  "title": "Turning the Calvin cycle",
+  "instrument": "bio-photosynthesis",
+  "preset": {
+   "mode": "calvin"
+  }
+ },
+ {
+  "chapter": "puc1-biology-11-photosynthesis-in-higher-plants",
+  "step": "puc1-biology-11-photosynthesis-in-higher-plants.t4.lesson#int1",
+  "title": "The cost of making sugar",
+  "instrument": "bio-photosynthesis",
+  "preset": {
+   "mode": "calvin",
+   "glucose": 1
+  }
+ },
+ {
+  "chapter": "puc1-biology-11-photosynthesis-in-higher-plants",
+  "step": "puc1-biology-11-photosynthesis-in-higher-plants.t5.lesson#sim1",
+  "title": "RuBisCO, oxygen and the C4 trick",
+  "instrument": "bio-photosynthesis",
+  "preset": {
+   "mode": "c4",
+   "plant": "c3"
+  }
+ },
+ {
+  "chapter": "puc1-biology-11-photosynthesis-in-higher-plants",
+  "step": "puc1-biology-11-photosynthesis-in-higher-plants.t5.lesson#int1",
+  "title": "Energy cost of C₃ and C₄ sugar",
+  "instrument": "bio-photosynthesis",
+  "preset": {
+   "mode": "c4",
+   "plant": "c4"
+  }
+ },
+ {
+  "chapter": "puc1-biology-11-photosynthesis-in-higher-plants",
+  "step": "puc1-biology-11-photosynthesis-in-higher-plants.t6.lesson#sim1",
+  "title": "Limiting factors",
+  "instrument": "bio-photosynthesis",
+  "preset": {
+   "mode": "limiting"
+  }
+ },
+ {
+  "chapter": "puc1-biology-11-photosynthesis-in-higher-plants",
+  "step": "puc1-biology-11-photosynthesis-in-higher-plants.t6.lesson#int1",
+  "title": "Light, CO₂ and the limiting factor",
+  "instrument": "bio-photosynthesis",
+  "preset": {
+   "mode": "limiting",
+   "light": 30
+  }
+ },
+ {
+  "chapter": "puc1-biology-12-respiration-in-plants",
+  "step": "puc1-biology-12-respiration-in-plants.t1.lesson#sim1",
+  "title": "Step through glycolysis",
+  "instrument": "bio-respiration",
+  "preset": {
+   "mode": "glycolysis",
+   "step": 0
+  }
+ },
+ {
+  "chapter": "puc1-biology-12-respiration-in-plants",
+  "step": "puc1-biology-12-respiration-in-plants.t1.lesson#int1",
+  "title": "Glycolysis account",
+  "instrument": "bio-respiration",
+  "preset": {
+   "mode": "glycolysis",
+   "step": 5
+  }
+ },
+ {
+  "chapter": "puc1-biology-12-respiration-in-plants",
+  "step": "puc1-biology-12-respiration-in-plants.t2.lesson#sim1",
+  "title": "Fermentation in a flask",
+  "instrument": "bio-respiration",
+  "preset": {
+   "mode": "fermentation"
+  }
+ },
+ {
+  "chapter": "puc1-biology-12-respiration-in-plants",
+  "step": "puc1-biology-12-respiration-in-plants.t2.lesson#int1",
+  "title": "Brewing with yeast",
+  "instrument": "bio-respiration",
+  "preset": {
+   "mode": "fermentation",
+   "grams": 180,
+   "kind": "alcoholic"
+  }
+ },
+ {
+  "chapter": "puc1-biology-12-respiration-in-plants",
+  "step": "puc1-biology-12-respiration-in-plants.t3.lesson#int1",
+  "title": "Counting the products of aerobic oxidation",
+  "instrument": "bio-respiration",
+  "preset": {
+   "mode": "krebs"
+  }
+ },
+ {
+  "chapter": "puc1-biology-12-respiration-in-plants",
+  "step": "puc1-biology-12-respiration-in-plants.t4.lesson#sim1",
+  "title": "The electron transport system",
+  "instrument": "bio-respiration",
+  "preset": {
+   "mode": "ets"
+  }
+ },
+ {
+  "chapter": "puc1-biology-12-respiration-in-plants",
+  "step": "puc1-biology-12-respiration-in-plants.t4.lesson#int1",
+  "title": "Oxidative phosphorylation calculator",
+  "instrument": "bio-respiration",
+  "preset": {
+   "mode": "ets",
+   "nadh": 10,
+   "fadh": 2
+  }
+ },
+ {
+  "chapter": "puc1-biology-12-respiration-in-plants",
+  "step": "puc1-biology-12-respiration-in-plants.t5.lesson#sim1",
+  "title": "Respiratory quotient",
+  "instrument": "bio-respiration",
+  "preset": {
+   "mode": "rq"
+  }
+ },
+ {
+  "chapter": "puc1-biology-12-respiration-in-plants",
+  "step": "puc1-biology-12-respiration-in-plants.t5.lesson#int1",
+  "title": "Find the respiratory quotient",
+  "instrument": "bio-respiration",
+  "preset": {
+   "mode": "rq",
+   "co2": 14,
+   "o2": 20
+  }
+ },
+ {
+  "chapter": "puc1-biology-13-plant-growth-and-development",
+  "step": "puc1-biology-13-plant-growth-and-development.t1.lesson#sim1",
+  "title": "Arithmetic, geometric and sigmoid growth",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "growth",
+   "r": 0.3,
+   "W0": 2
+  }
+ },
+ {
+  "chapter": "puc1-biology-13-plant-growth-and-development",
+  "step": "puc1-biology-13-plant-growth-and-development.t1.lesson#int1",
+  "title": "Arithmetic versus geometric growth",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "growth",
+   "W0": 5,
+   "a": 2,
+   "r": 0.12,
+   "t": 10
+  }
+ },
+ {
+  "chapter": "puc1-biology-13-plant-growth-and-development",
+  "step": "puc1-biology-13-plant-growth-and-development.t2.lesson#scene-heterophylly",
+  "title": "Plasticity: one plant, two kinds of leaves",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "regulators",
+   "expt": "plasticity"
+  }
+ },
+ {
+  "chapter": "puc1-biology-13-plant-growth-and-development",
+  "step": "puc1-biology-13-plant-growth-and-development.t3.lesson#scene-coleoptile",
+  "title": "Darwin and Went: what makes a shoot bend?",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "regulators",
+   "expt": "tropism",
+   "auxin": 5
+  }
+ },
+ {
+  "chapter": "puc1-biology-13-plant-growth-and-development",
+  "step": "puc1-biology-13-plant-growth-and-development.t4.lesson#sim1",
+  "title": "Apical dominance and gibberellins",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "regulators",
+   "expt": "apical",
+   "ga": 0
+  }
+ },
+ {
+  "chapter": "puc1-biology-13-plant-growth-and-development",
+  "step": "puc1-biology-13-plant-growth-and-development.t5.lesson#scene-ripening",
+  "title": "Ethylene ripens fruit",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "regulators",
+   "expt": "ethylene",
+   "T": 25
+  }
+ },
+ {
+  "chapter": "puc1-biology-14-breathing-and-exchange-of-gases",
+  "step": "puc1-biology-14-breathing-and-exchange-of-gases.t2.lesson#sim1",
+  "title": "A spirometer trace",
+  "instrument": "bio-lungs",
+  "preset": {
+   "mode": "spirometer"
+  }
+ },
+ {
+  "chapter": "puc1-biology-14-breathing-and-exchange-of-gases",
+  "step": "puc1-biology-14-breathing-and-exchange-of-gases.t2.lesson#int1",
+  "title": "Lung volumes and capacities",
+  "instrument": "bio-lungs",
+  "preset": {
+   "mode": "spirometer",
+   "tv": 500,
+   "irv": 2750,
+   "erv": 1050,
+   "rv": 1150
+  }
+ },
+ {
+  "chapter": "puc1-biology-14-breathing-and-exchange-of-gases",
+  "step": "puc1-biology-14-breathing-and-exchange-of-gases.t3.lesson#sim1",
+  "title": "Gas exchange in an alveolus",
+  "instrument": "bio-lungs",
+  "preset": {
+   "mode": "alveolus"
+  }
+ },
+ {
+  "chapter": "puc1-biology-14-breathing-and-exchange-of-gases",
+  "step": "puc1-biology-14-breathing-and-exchange-of-gases.t3.lesson#int1",
+  "title": "Partial pressure gradients",
+  "instrument": "bio-lungs",
+  "preset": {
+   "mode": "alveolus",
+   "pAlv": 104,
+   "pO2in": 40
+  }
+ },
+ {
+  "chapter": "puc1-biology-14-breathing-and-exchange-of-gases",
+  "step": "puc1-biology-14-breathing-and-exchange-of-gases.t4.lesson#sim1",
+  "title": "The oxygen dissociation curve",
+  "instrument": "bio-lungs",
+  "preset": {
+   "mode": "odc"
+  }
+ },
+ {
+  "chapter": "puc1-biology-14-breathing-and-exchange-of-gases",
+  "step": "puc1-biology-14-breathing-and-exchange-of-gases.t4.lesson#int1",
+  "title": "The oxygen dissociation curve",
+  "instrument": "bio-lungs",
+  "preset": {
+   "mode": "odc",
+   "p50": 26
+  }
+ },
+ {
+  "chapter": "puc1-biology-15-body-fluids-and-circulation",
+  "step": "puc1-biology-15-body-fluids-and-circulation.t1.lesson#int1",
+  "title": "Counting white blood cells",
+  "instrument": "bio-heart",
+  "preset": {
+   "mode": "wbc"
+  }
+ },
+ {
+  "chapter": "puc1-biology-15-body-fluids-and-circulation",
+  "step": "puc1-biology-15-body-fluids-and-circulation.t2.lesson#sim1",
+  "title": "Safe and unsafe transfusions",
+  "instrument": "bio-heart",
+  "preset": {
+   "mode": "blood",
+   "donor": "A",
+   "recipient": "B"
+  }
+ },
+ {
+  "chapter": "puc1-biology-15-body-fluids-and-circulation",
+  "step": "puc1-biology-15-body-fluids-and-circulation.t4.lesson#sim1",
+  "title": "The cardiac cycle and the ECG",
+  "instrument": "bio-heart",
+  "preset": {
+   "mode": "cycle"
+  }
+ },
+ {
+  "chapter": "puc1-biology-15-body-fluids-and-circulation",
+  "step": "puc1-biology-15-body-fluids-and-circulation.t4.lesson#int1",
+  "title": "Cardiac output",
+  "instrument": "bio-heart",
+  "preset": {
+   "mode": "output",
+   "hr": 72,
+   "sv": 70
+  }
+ },
+ {
+  "chapter": "puc1-biology-15-body-fluids-and-circulation",
+  "step": "puc1-biology-15-body-fluids-and-circulation.t5.lesson#sim1",
+  "title": "Nerves and hormones set the heart rate",
+  "instrument": "bio-heart",
+  "preset": {
+   "mode": "regulation"
+  }
+ },
+ {
+  "chapter": "puc1-biology-15-body-fluids-and-circulation",
+  "step": "puc1-biology-15-body-fluids-and-circulation.t5.lesson#int1",
+  "title": "Blood pressure on a number line",
+  "instrument": "bio-heart",
+  "preset": {
+   "mode": "bp",
+   "sys": 120,
+   "dia": 80
+  }
+ },
+ {
+  "chapter": "puc1-biology-16-excretory-products-and-their-elimination",
+  "step": "puc1-biology-16-excretory-products-and-their-elimination.t2.lesson#sim1",
+  "title": "Filtration and reabsorption",
+  "instrument": "bio-nephron",
+  "preset": {
+   "mode": "filtration"
+  }
+ },
+ {
+  "chapter": "puc1-biology-16-excretory-products-and-their-elimination",
+  "step": "puc1-biology-16-excretory-products-and-their-elimination.t2.lesson#int1",
+  "title": "Filtration and reabsorption",
+  "instrument": "bio-nephron",
+  "preset": {
+   "mode": "filtration",
+   "gfr": 125,
+   "urine": 1.5
+  }
+ },
+ {
+  "chapter": "puc1-biology-16-excretory-products-and-their-elimination",
+  "step": "puc1-biology-16-excretory-products-and-their-elimination.t4.lesson#sim1",
+  "title": "ADH and concentrated urine",
+  "instrument": "bio-nephron",
+  "preset": {
+   "mode": "adh"
+  }
+ },
+ {
+  "chapter": "puc1-biology-16-excretory-products-and-their-elimination",
+  "step": "puc1-biology-16-excretory-products-and-their-elimination.t4.lesson#int1",
+  "title": "The medullary gradient",
+  "instrument": "bio-nephron",
+  "preset": {
+   "mode": "gradient",
+   "inner": 1200
+  }
+ },
+ {
+  "chapter": "puc1-biology-17-locomotion-and-movement",
+  "step": "puc1-biology-17-locomotion-and-movement.t1.lesson#scene-cilia",
+  "title": "Ciliary movement clears the windpipe",
+  "instrument": "bio-muscle",
+  "preset": {
+   "mode": "cilia"
+  }
+ },
+ {
+  "chapter": "puc1-biology-17-locomotion-and-movement",
+  "step": "puc1-biology-17-locomotion-and-movement.t2.lesson#scene-sarcomere",
+  "title": "Sliding filaments in a sarcomere",
+  "instrument": "bio-muscle",
+  "preset": {
+   "mode": "sarcomere"
+  }
+ },
+ {
+  "chapter": "puc1-biology-17-locomotion-and-movement",
+  "step": "puc1-biology-17-locomotion-and-movement.t3.lesson#sim1",
+  "title": "The sliding filaments",
+  "instrument": "bio-muscle",
+  "preset": {
+   "mode": "crossbridge"
+  }
+ },
+ {
+  "chapter": "puc1-biology-17-locomotion-and-movement",
+  "step": "puc1-biology-17-locomotion-and-movement.t3.lesson#int1",
+  "title": "Sliding filaments",
+  "instrument": "bio-muscle",
+  "preset": {
+   "mode": "sarcomere",
+   "L": 2.0
+  }
+ },
+ {
+  "chapter": "puc1-biology-17-locomotion-and-movement",
+  "step": "puc1-biology-17-locomotion-and-movement.t4.lesson#int1",
+  "title": "Counting the bones",
+  "instrument": "bio-muscle",
+  "preset": {
+   "mode": "skeleton"
+  }
+ },
+ {
+  "chapter": "puc1-biology-18-neural-control-and-coordination",
+  "step": "puc1-biology-18-neural-control-and-coordination.t3.lesson#sim1",
+  "title": "An action potential",
+  "instrument": "bio-neuron",
+  "preset": {
+   "mode": "ap"
+  }
+ },
+ {
+  "chapter": "puc1-biology-18-neural-control-and-coordination",
+  "step": "puc1-biology-18-neural-control-and-coordination.t3.lesson#int1",
+  "title": "Ion gradients and voltage",
+  "instrument": "bio-neuron",
+  "preset": {
+   "mode": "nernst"
+  }
+ },
+ {
+  "chapter": "puc1-biology-19-chemical-coordination-and-integration",
+  "step": "puc1-biology-19-chemical-coordination-and-integration.t3.lesson#sim1",
+  "title": "Iodine, TSH and goitre",
+  "instrument": "bio-endocrine",
+  "preset": {
+   "mode": "thyroid",
+   "iodine": 20
+  }
+ },
+ {
+  "chapter": "puc1-biology-19-chemical-coordination-and-integration",
+  "step": "puc1-biology-19-chemical-coordination-and-integration.t4.lesson#sim1",
+  "title": "Insulin and blood glucose",
+  "instrument": "bio-endocrine",
+  "preset": {
+   "mode": "glucose"
+  }
+ },
+ {
+  "chapter": "puc1-biology-19-chemical-coordination-and-integration",
+  "step": "puc1-biology-19-chemical-coordination-and-integration.t4.lesson#int1",
+  "title": "Insulin and blood glucose",
+  "instrument": "bio-endocrine",
+  "preset": {
+   "mode": "glucose",
+   "insulin": 100
+  }
+ },
+ {
+  "chapter": "puc1-biology-20-transport-in-plants",
+  "step": "puc1-biology-20-transport-in-plants.t1.lesson#scene-transport-rate",
+  "title": "Rate against concentration difference",
+  "instrument": "bio-cell",
+  "preset": {
+   "mode": "membrane"
+  }
+ },
+ {
+  "chapter": "puc1-biology-20-transport-in-plants",
+  "step": "puc1-biology-20-transport-in-plants.t2.lesson#scene-plasmolysis",
+  "title": "A cell in a solution",
+  "instrument": "bio-planttransport",
+  "preset": {
+   "mode": "osmosis",
+   "psiOut": -1.6
+  }
+ },
+ {
+  "chapter": "puc1-biology-20-transport-in-plants",
+  "step": "puc1-biology-20-transport-in-plants.t3.lesson#scene-ascent",
+  "title": "Pulling a water column up a tree",
+  "instrument": "bio-planttransport",
+  "preset": {
+   "mode": "ascent"
+  }
+ },
+ {
+  "chapter": "puc1-biology-20-transport-in-plants",
+  "step": "puc1-biology-20-transport-in-plants.t4.lesson#scene-stomata",
+  "title": "Open and close a stoma",
+  "instrument": "bio-planttransport",
+  "preset": {
+   "mode": "stomata"
+  }
+ },
+ {
+  "chapter": "puc1-biology-20-transport-in-plants",
+  "step": "puc1-biology-20-transport-in-plants.t5.lesson#scene-pressure-flow",
+  "title": "Pressure flow in the phloem",
+  "instrument": "bio-planttransport",
+  "preset": {
+   "mode": "phloem"
+  }
+ },
+ {
+  "chapter": "puc1-biology-21-mineral-nutrition",
+  "step": "puc1-biology-21-mineral-nutrition.t1.lesson#scene-limiting-nutrient",
+  "title": "The scarcest nutrient sets the growth",
+  "instrument": "bio-planttransport",
+  "preset": {
+   "mode": "mineral"
+  }
+ },
+ {
+  "chapter": "puc1-biology-21-mineral-nutrition",
+  "step": "puc1-biology-21-mineral-nutrition.t2.lesson#scene-nodule",
+  "title": "Inside a root nodule",
+  "instrument": "bio-planttransport",
+  "preset": {
+   "mode": "nodule"
+  }
+ },
+ {
+  "chapter": "puc1-biology-22-digestion-and-absorption",
+  "step": "puc1-biology-22-digestion-and-absorption.t1.lesson#scene-food-journey",
+  "title": "A meal's journey",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "gut",
+   "stage": 0,
+   "folds": 0
+  }
+ },
+ {
+  "chapter": "puc1-biology-22-digestion-and-absorption",
+  "step": "puc1-biology-22-digestion-and-absorption.t2.lesson#scene-enzyme-ph",
+  "title": "Each enzyme has its own pH",
+  "instrument": "bio-enzyme",
+  "preset": {
+   "mode": "ph",
+   "enzyme": "all"
+  }
+ },
+ {
+  "chapter": "puc1-biology-22-digestion-and-absorption",
+  "step": "puc1-biology-22-digestion-and-absorption.t3.lesson#scene-villi",
+  "title": "Why the small intestine is folded",
+  "instrument": "bio-diversity",
+  "preset": {
+   "mode": "gut",
+   "stage": 4,
+   "folds": 3
+  }
+ },
+ {
+  "chapter": "puc2-biology-01-sexual-reproduction-in-flowering-plants",
+  "step": "puc2-biology-01-sexual-reproduction-in-flowering-plants.t1.lesson#int1",
+  "title": "Count the pollen",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "pollen",
+   "pmc": 50,
+   "stamens": 5,
+   "chr": 14
+  }
+ },
+ {
+  "chapter": "puc2-biology-01-sexual-reproduction-in-flowering-plants",
+  "step": "puc2-biology-01-sexual-reproduction-in-flowering-plants.t2.lesson#int1",
+  "title": "From megaspore mother cells to embryo sacs",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "embryosac",
+   "mmc": 4,
+   "chr": 14
+  }
+ },
+ {
+  "chapter": "puc2-biology-01-sexual-reproduction-in-flowering-plants",
+  "step": "puc2-biology-01-sexual-reproduction-in-flowering-plants.t4.lesson#int1",
+  "title": "Ploidy after double fertilisation",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "double",
+   "n": 7
+  }
+ },
+ {
+  "chapter": "puc2-biology-01-sexual-reproduction-in-flowering-plants",
+  "step": "puc2-biology-01-sexual-reproduction-in-flowering-plants.t5.lesson#scene-apomixis",
+  "title": "Why farmers want apomictic hybrids",
+  "instrument": "bio-evolution",
+  "preset": {
+   "mode": "inbreeding"
+  }
+ },
+ {
+  "chapter": "puc2-biology-02-human-reproduction",
+  "step": "puc2-biology-02-human-reproduction.t1.lesson#scene-scrotum-temp",
+  "title": "Why the testes hang outside",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "testis",
+   "Tb": 37
+  }
+ },
+ {
+  "chapter": "puc2-biology-02-human-reproduction",
+  "step": "puc2-biology-02-human-reproduction.t2.lesson#scene-follicle",
+  "title": "A follicle through one cycle",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "cycle",
+   "L": 28,
+   "day": 10
+  }
+ },
+ {
+  "chapter": "puc2-biology-02-human-reproduction",
+  "step": "puc2-biology-02-human-reproduction.t3.lesson#int1",
+  "title": "Count the gametes",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "gametes",
+   "sp": 25,
+   "oo": 25
+  }
+ },
+ {
+  "chapter": "puc2-biology-02-human-reproduction",
+  "step": "puc2-biology-02-human-reproduction.t4.lesson#sim1",
+  "title": "Through the menstrual cycle",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "cycle",
+   "L": 28,
+   "day": 14
+  }
+ },
+ {
+  "chapter": "puc2-biology-02-human-reproduction",
+  "step": "puc2-biology-02-human-reproduction.t4.lesson#int1",
+  "title": "Shift the cycle length",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "cycle",
+   "L": 32,
+   "day": 18
+  }
+ },
+ {
+  "chapter": "puc2-biology-02-human-reproduction",
+  "step": "puc2-biology-02-human-reproduction.t5.lesson#int1",
+  "title": "Cleavage and the weeks of pregnancy",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "pregnancy",
+   "cleave": 3,
+   "week": 12
+  }
+ },
+ {
+  "chapter": "puc2-biology-03-reproductive-health",
+  "step": "puc2-biology-03-reproductive-health.t1.lesson#scene-population-growth",
+  "title": "Birth rate, death rate and growth",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "exponential",
+   "source": "bd",
+   "births": 40,
+   "deaths": 25,
+   "N0": 36,
+   "unit": "year",
+   "tmax": 60,
+   "t": 30
+  }
+ },
+ {
+  "chapter": "puc2-biology-03-reproductive-health",
+  "step": "puc2-biology-03-reproductive-health.t2.lesson#int1",
+  "title": "How fast does a population grow?",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "exponential",
+   "r": 0.02,
+   "N0": 36,
+   "unit": "year",
+   "tmax": 100,
+   "t": 50,
+   "what": "crore"
+  }
+ },
+ {
+  "chapter": "puc2-biology-03-reproductive-health",
+  "step": "puc2-biology-03-reproductive-health.t3.lesson#int1",
+  "title": "Small yearly risks add up",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "risk",
+   "f": 1,
+   "years": 5
+  }
+ },
+ {
+  "chapter": "puc2-biology-03-reproductive-health",
+  "step": "puc2-biology-03-reproductive-health.t4.lesson#scene-sti-spread",
+  "title": "How an STI spreads, and how to stop it",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "sti",
+   "be": 0.5,
+   "cu": 0
+  }
+ },
+ {
+  "chapter": "puc2-biology-03-reproductive-health",
+  "step": "puc2-biology-03-reproductive-health.t5.lesson#int1",
+  "title": "ZIFT or IUT, and repeated cycles",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "risk",
+   "art": true,
+   "f": 30,
+   "years": 3
+  }
+ },
+ {
+  "chapter": "puc2-biology-04-principles-of-inheritance-and-variation",
+  "step": "puc2-biology-04-principles-of-inheritance-and-variation.t1.lesson#sim1",
+  "title": "Punnett square: tall and dwarf",
+  "instrument": "bio-genetics",
+  "preset": {
+   "mode": "mono"
+  }
+ },
+ {
+  "chapter": "puc2-biology-04-principles-of-inheritance-and-variation",
+  "step": "puc2-biology-04-principles-of-inheritance-and-variation.t1.lesson#int1",
+  "title": "Expected F2 numbers",
+  "instrument": "bio-genetics",
+  "preset": {
+   "mode": "mono",
+   "batch": 100
+  }
+ },
+ {
+  "chapter": "puc2-biology-04-principles-of-inheritance-and-variation",
+  "step": "puc2-biology-04-principles-of-inheritance-and-variation.t2.lesson#sim1",
+  "title": "ABO blood groups: who can the child be?",
+  "instrument": "bio-genetics",
+  "preset": {
+   "mode": "abo"
+  }
+ },
+ {
+  "chapter": "puc2-biology-04-principles-of-inheritance-and-variation",
+  "step": "puc2-biology-04-principles-of-inheritance-and-variation.t2.lesson#int1",
+  "title": "How many genotypes from multiple alleles?",
+  "instrument": "bio-genetics",
+  "preset": {
+   "mode": "abo",
+   "alleles": 3
+  }
+ },
+ {
+  "chapter": "puc2-biology-04-principles-of-inheritance-and-variation",
+  "step": "puc2-biology-04-principles-of-inheritance-and-variation.t3.lesson#sim1",
+  "title": "Dihybrid cross on a 4 × 4 square",
+  "instrument": "bio-genetics",
+  "preset": {
+   "mode": "dihybrid"
+  }
+ },
+ {
+  "chapter": "puc2-biology-04-principles-of-inheritance-and-variation",
+  "step": "puc2-biology-04-principles-of-inheritance-and-variation.t3.lesson#int1",
+  "title": "Dihybrid F2 and recombination",
+  "instrument": "bio-genetics",
+  "preset": {
+   "mode": "dihybrid",
+   "rf": 0
+  }
+ },
+ {
+  "chapter": "puc2-biology-04-principles-of-inheritance-and-variation",
+  "step": "puc2-biology-04-principles-of-inheritance-and-variation.t4.lesson#sim1",
+  "title": "Polygenic inheritance: skin colour",
+  "instrument": "bio-genetics",
+  "preset": {
+   "mode": "polygenic",
+   "genes": 3
+  }
+ },
+ {
+  "chapter": "puc2-biology-04-principles-of-inheritance-and-variation",
+  "step": "puc2-biology-04-principles-of-inheritance-and-variation.t4.lesson#int1",
+  "title": "More genes, more shades",
+  "instrument": "bio-genetics",
+  "preset": {
+   "mode": "polygenic",
+   "genes": 2
+  }
+ },
+ {
+  "chapter": "puc2-biology-04-principles-of-inheritance-and-variation",
+  "step": "puc2-biology-04-principles-of-inheritance-and-variation.t5.lesson#sim1",
+  "title": "Sex-linked inheritance",
+  "instrument": "bio-genetics",
+  "preset": {
+   "mode": "sexlinked"
+  }
+ },
+ {
+  "chapter": "puc2-biology-04-principles-of-inheritance-and-variation",
+  "step": "puc2-biology-04-principles-of-inheritance-and-variation.t5.lesson#int1",
+  "title": "Risk in a family",
+  "instrument": "bio-genetics",
+  "preset": {
+   "mode": "sexlinked",
+   "risk": 25,
+   "children": 3
+  }
+ },
+ {
+  "chapter": "puc2-biology-05-molecular-basis-of-inheritance",
+  "step": "puc2-biology-05-molecular-basis-of-inheritance.t1.lesson#int1",
+  "title": "How long is the DNA?",
+  "instrument": "bio-dna",
+  "preset": {
+   "mode": "helix",
+   "bpExp": 9.82
+  }
+ },
+ {
+  "chapter": "puc2-biology-05-molecular-basis-of-inheritance",
+  "step": "puc2-biology-05-molecular-basis-of-inheritance.t2.lesson#scene-griffith",
+  "title": "Griffith, then Avery: what transforms bacteria?",
+  "instrument": "bio-dna",
+  "preset": {
+   "mode": "griffith"
+  }
+ },
+ {
+  "chapter": "puc2-biology-05-molecular-basis-of-inheritance",
+  "step": "puc2-biology-05-molecular-basis-of-inheritance.t3.lesson#sim1",
+  "title": "The Meselson–Stahl experiment",
+  "instrument": "bio-dna",
+  "preset": {
+   "mode": "meselson",
+   "gen": 1
+  }
+ },
+ {
+  "chapter": "puc2-biology-05-molecular-basis-of-inheritance",
+  "step": "puc2-biology-05-molecular-basis-of-inheritance.t3.lesson#int1",
+  "title": "Meselson–Stahl generations",
+  "instrument": "bio-dna",
+  "preset": {
+   "mode": "meselson",
+   "gen": 2
+  }
+ },
+ {
+  "chapter": "puc2-biology-05-molecular-basis-of-inheritance",
+  "step": "puc2-biology-05-molecular-basis-of-inheritance.t5.lesson#sim1",
+  "title": "Frameshift: RAM HAS RED CAP",
+  "instrument": "bio-dna",
+  "preset": {
+   "mode": "code",
+   "shift": 1
+  }
+ },
+ {
+  "chapter": "puc2-biology-05-molecular-basis-of-inheritance",
+  "step": "puc2-biology-05-molecular-basis-of-inheritance.t5.lesson#int1",
+  "title": "Codons and proteins",
+  "instrument": "bio-dna",
+  "preset": {
+   "mode": "code",
+   "k": 3
+  }
+ },
+ {
+  "chapter": "puc2-biology-05-molecular-basis-of-inheritance",
+  "step": "puc2-biology-05-molecular-basis-of-inheritance.t6.lesson#sim1",
+  "title": "Switching the lac operon",
+  "instrument": "bio-dna",
+  "preset": {
+   "mode": "lac",
+   "lactose": 0
+  }
+ },
+ {
+  "chapter": "puc2-biology-06-evolution",
+  "step": "puc2-biology-06-evolution.t2.lesson#int1",
+  "title": "Dating a fossil",
+  "instrument": "bio-evolution",
+  "preset": {
+   "mode": "dating",
+   "half": 5730,
+   "left": 25
+  }
+ },
+ {
+  "chapter": "puc2-biology-06-evolution",
+  "step": "puc2-biology-06-evolution.t3.lesson#int1",
+  "title": "Natural selection in numbers",
+  "instrument": "bio-evolution",
+  "preset": {
+   "mode": "selection"
+  }
+ },
+ {
+  "chapter": "puc2-biology-06-evolution",
+  "step": "puc2-biology-06-evolution.t4.lesson#sim1",
+  "title": "Hardy–Weinberg, then selection",
+  "instrument": "bio-evolution",
+  "preset": {
+   "mode": "hw",
+   "select": true,
+   "gen": 5
+  }
+ },
+ {
+  "chapter": "puc2-biology-06-evolution",
+  "step": "puc2-biology-06-evolution.t4.lesson#int1",
+  "title": "Hardy–Weinberg genotype frequencies",
+  "instrument": "bio-evolution",
+  "preset": {
+   "mode": "hw",
+   "q": 0.4
+  }
+ },
+ {
+  "chapter": "puc2-biology-07-human-health-and-disease",
+  "step": "puc2-biology-07-human-health-and-disease.t2.lesson#int1",
+  "title": "Primary and secondary responses",
+  "instrument": "bio-immunity",
+  "preset": {
+   "mode": "response",
+   "d": 30,
+   "k": 8
+  }
+ },
+ {
+  "chapter": "puc2-biology-07-human-health-and-disease",
+  "step": "puc2-biology-07-human-health-and-disease.t3.lesson#int1",
+  "title": "Active versus passive immunity",
+  "instrument": "bio-immunity",
+  "preset": {
+   "mode": "activepassive",
+   "t": 14,
+   "h": 10
+  }
+ },
+ {
+  "chapter": "puc2-biology-07-human-health-and-disease",
+  "step": "puc2-biology-07-human-health-and-disease.t4.lesson#int1",
+  "title": "How fast does a tumour grow?",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "doubling",
+   "what": "tumour",
+   "N0": 30,
+   "g": 100
+  }
+ },
+ {
+  "chapter": "puc2-biology-08-microbes-in-human-welfare",
+  "step": "puc2-biology-08-microbes-in-human-welfare.t1.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "doubling",
+   "what": "lab",
+   "N0": 6,
+   "g": 1,
+   "t": 8
+  }
+ },
+ {
+  "chapter": "puc2-biology-08-microbes-in-human-welfare",
+  "step": "puc2-biology-08-microbes-in-human-welfare.t2.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-respiration",
+  "preset": {
+   "mode": "fermentation",
+   "grams": 180,
+   "share": 100,
+   "kind": "alcoholic"
+  }
+ },
+ {
+  "chapter": "puc2-biology-08-microbes-in-human-welfare",
+  "step": "puc2-biology-08-microbes-in-human-welfare.t3.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-biotech",
+  "preset": {
+   "mode": "bod",
+   "B0": 300,
+   "k": 0.4,
+   "hrs": 6
+  }
+ },
+ {
+  "chapter": "puc2-biology-08-microbes-in-human-welfare",
+  "step": "puc2-biology-08-microbes-in-human-welfare.t4.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-biotech",
+  "preset": {
+   "mode": "biogas",
+   "ch4": 60,
+   "h2": 2
+  }
+ },
+ {
+  "chapter": "puc2-biology-09-biotechnology-principles-and-processes",
+  "step": "puc2-biology-09-biotechnology-principles-and-processes.t2.lesson#sim1",
+  "title": "Run an agarose gel",
+  "instrument": "bio-biotech",
+  "preset": {
+   "mode": "gel",
+   "V": 100
+  }
+ },
+ {
+  "chapter": "puc2-biology-09-biotechnology-principles-and-processes",
+  "step": "puc2-biology-09-biotechnology-principles-and-processes.t2.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-biotech",
+  "preset": {
+   "mode": "restriction",
+   "site": 6,
+   "Lk": 50
+  }
+ },
+ {
+  "chapter": "puc2-biology-09-biotechnology-principles-and-processes",
+  "step": "puc2-biology-09-biotechnology-principles-and-processes.t3.lesson#scene-blue-white",
+  "title": "Blue–white screening",
+  "instrument": "bio-biotech",
+  "preset": {
+   "mode": "bluewhite",
+   "p": 30
+  }
+ },
+ {
+  "chapter": "puc2-biology-09-biotechnology-principles-and-processes",
+  "step": "puc2-biology-09-biotechnology-principles-and-processes.t4.lesson#sim1",
+  "title": "PCR in a thermal cycler",
+  "instrument": "bio-biotech",
+  "preset": {
+   "mode": "pcr",
+   "N0": 1,
+   "cycles": 30
+  }
+ },
+ {
+  "chapter": "puc2-biology-09-biotechnology-principles-and-processes",
+  "step": "puc2-biology-09-biotechnology-principles-and-processes.t4.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-biotech",
+  "preset": {
+   "mode": "pcr",
+   "N0": 1,
+   "E": 90,
+   "cycles": 30
+  }
+ },
+ {
+  "chapter": "puc2-biology-09-biotechnology-principles-and-processes",
+  "step": "puc2-biology-09-biotechnology-principles-and-processes.t5.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-biotech",
+  "preset": {
+   "mode": "bioreactor",
+   "r": 0.6,
+   "K": 8
+  }
+ },
+ {
+  "chapter": "puc2-biology-10-biotechnology-and-its-applications",
+  "step": "puc2-biology-10-biotechnology-and-its-applications.t1.lesson#scene-bt-toxin",
+  "title": "How Bt cotton kills bollworms",
+  "instrument": "bio-biotech",
+  "preset": {
+   "mode": "bt",
+   "ph": 10
+  }
+ },
+ {
+  "chapter": "puc2-biology-10-biotechnology-and-its-applications",
+  "step": "puc2-biology-10-biotechnology-and-its-applications.t3.lesson#scene-insulin",
+  "title": "Insulin and blood glucose after a meal",
+  "instrument": "bio-endocrine",
+  "preset": {
+   "mode": "glucose",
+   "insulin": 15
+  }
+ },
+ {
+  "chapter": "puc2-biology-10-biotechnology-and-its-applications",
+  "step": "puc2-biology-10-biotechnology-and-its-applications.t4.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-biotech",
+  "preset": {
+   "mode": "pcr",
+   "detect": true,
+   "N0": 100,
+   "cycles": 30
+  }
+ },
+ {
+  "chapter": "puc2-biology-10-biotechnology-and-its-applications",
+  "step": "puc2-biology-10-biotechnology-and-its-applications.t5.lesson#scene-transgenic-cross",
+  "title": "Breeding a transgenic line",
+  "instrument": "bio-biotech",
+  "preset": {
+   "mode": "transgenic",
+   "litter": 20
+  }
+ },
+ {
+  "chapter": "puc2-biology-11-organisms-and-populations",
+  "step": "puc2-biology-11-organisms-and-populations.t1.lesson#sim1",
+  "title": "A pond of lotus plants, year by year",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "pond",
+   "N0": 20,
+   "b": 0.4,
+   "d": 0.1,
+   "year": 3
+  }
+ },
+ {
+  "chapter": "puc2-biology-11-organisms-and-populations",
+  "step": "puc2-biology-11-organisms-and-populations.t1.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "pond",
+   "N0": 250,
+   "b": 0.3,
+   "d": 0.1,
+   "year": 1
+  }
+ },
+ {
+  "chapter": "puc2-biology-11-organisms-and-populations",
+  "step": "puc2-biology-11-organisms-and-populations.t2.lesson#sim1",
+  "title": "Unlimited resources: exponential growth",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "exponential",
+   "r": 0.1,
+   "N0": 10
+  }
+ },
+ {
+  "chapter": "puc2-biology-11-organisms-and-populations",
+  "step": "puc2-biology-11-organisms-and-populations.t2.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "exponential",
+   "r": 0.2,
+   "N0": 100,
+   "unit": "year",
+   "tmax": 20,
+   "t": 10
+  }
+ },
+ {
+  "chapter": "puc2-biology-11-organisms-and-populations",
+  "step": "puc2-biology-11-organisms-and-populations.t3.lesson#sim1",
+  "title": "Phases of logistic growth",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "logistic",
+   "r": 0.3,
+   "K": 300,
+   "N0": 4
+  }
+ },
+ {
+  "chapter": "puc2-biology-11-organisms-and-populations",
+  "step": "puc2-biology-11-organisms-and-populations.t3.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "logistic",
+   "r": 0.5,
+   "K": 1000,
+   "N0": 10,
+   "unit": "year",
+   "tmax": 30,
+   "t": 10
+  }
+ },
+ {
+  "chapter": "puc2-biology-11-organisms-and-populations",
+  "step": "puc2-biology-11-organisms-and-populations.t4.lesson#sim1",
+  "title": "Predator and prey",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "predator"
+  }
+ },
+ {
+  "chapter": "puc2-biology-11-organisms-and-populations",
+  "step": "puc2-biology-11-organisms-and-populations.t5.lesson#scene-interactions",
+  "title": "How two species affect each other",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "interactions",
+   "kind": "mutualism",
+   "s": 0.4
+  }
+ },
+ {
+  "chapter": "puc2-biology-12-ecosystem",
+  "step": "puc2-biology-12-ecosystem.t1.lesson#scene-stratification",
+  "title": "Layers of a forest and the light they get",
+  "instrument": "bio-ecosystem",
+  "preset": {
+   "mode": "strata",
+   "k": 0.6,
+   "I0": 100
+  }
+ },
+ {
+  "chapter": "puc2-biology-12-ecosystem",
+  "step": "puc2-biology-12-ecosystem.t2.lesson#sim1",
+  "title": "From sunlight to food",
+  "instrument": "bio-ecosystem",
+  "preset": {
+   "mode": "productivity",
+   "eff": 5,
+   "resp": 50,
+   "ce": 10
+  }
+ },
+ {
+  "chapter": "puc2-biology-12-ecosystem",
+  "step": "puc2-biology-12-ecosystem.t2.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-ecosystem",
+  "preset": {
+   "mode": "productivity",
+   "gpp": 2400,
+   "R": 900
+  }
+ },
+ {
+  "chapter": "puc2-biology-12-ecosystem",
+  "step": "puc2-biology-12-ecosystem.t3.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-ecosystem",
+  "preset": {
+   "mode": "decomposition",
+   "kd": 0.3,
+   "month": 6
+  }
+ },
+ {
+  "chapter": "puc2-biology-12-ecosystem",
+  "step": "puc2-biology-12-ecosystem.t4.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-ecosystem",
+  "preset": {
+   "mode": "flow",
+   "E": 20000,
+   "f": 10
+  }
+ },
+ {
+  "chapter": "puc2-biology-12-ecosystem",
+  "step": "puc2-biology-12-ecosystem.t5.lesson#sim1",
+  "title": "Build an ecological pyramid",
+  "instrument": "bio-ecosystem",
+  "preset": {
+   "mode": "pyramid",
+   "kind": "energy"
+  }
+ },
+ {
+  "chapter": "puc2-biology-13-biodiversity-and-conservation",
+  "step": "puc2-biology-13-biodiversity-and-conservation.t1.lesson#scene-species-area",
+  "title": "Species–area relationship",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "speciesarea",
+   "lA": 2,
+   "z": 0.15,
+   "C": 20
+  }
+ },
+ {
+  "chapter": "puc2-biology-13-biodiversity-and-conservation",
+  "step": "puc2-biology-13-biodiversity-and-conservation.t2.lesson#sim1",
+  "title": "Species–area relationship",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "speciesarea",
+   "lA": 3,
+   "z": 0.2,
+   "C": 10
+  }
+ },
+ {
+  "chapter": "puc2-biology-13-biodiversity-and-conservation",
+  "step": "puc2-biology-13-biodiversity-and-conservation.t2.lesson#int1",
+  "title": "Try it: move the sliders",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "speciesarea",
+   "lA": 4,
+   "z": 0.25,
+   "C": 5
+  }
+ },
+ {
+  "chapter": "puc2-biology-13-biodiversity-and-conservation",
+  "step": "puc2-biology-13-biodiversity-and-conservation.t3.lesson#scene-habitat-loss",
+  "title": "Habitat loss and species loss",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "habitat",
+   "f": 50,
+   "z": 0.25
+  }
+ },
+ {
+  "chapter": "puc2-biology-13-biodiversity-and-conservation",
+  "step": "puc2-biology-13-biodiversity-and-conservation.t4.lesson#scene-rivet-popper",
+  "title": "The rivet popper hypothesis",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "rivet",
+   "rivets": 0
+  }
+ },
+ {
+  "chapter": "puc2-biology-13-biodiversity-and-conservation",
+  "step": "puc2-biology-13-biodiversity-and-conservation.t5.lesson#scene-tiger-reserve",
+  "title": "Saving tigers in situ and ex situ",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "reserve",
+   "area": 800,
+   "h": 18
+  }
+ },
+ {
+  "chapter": "puc2-biology-14-strategies-for-enhancement-in-food-production",
+  "step": "puc2-biology-14-strategies-for-enhancement-in-food-production.t1.lesson#scene-inbreeding",
+  "title": "Inbreeding and heterozygosity",
+  "instrument": "bio-evolution",
+  "preset": {
+   "mode": "inbreeding"
+  }
+ },
+ {
+  "chapter": "puc2-biology-14-strategies-for-enhancement-in-food-production",
+  "step": "puc2-biology-14-strategies-for-enhancement-in-food-production.t2.lesson#scene-selection",
+  "title": "Selection over generations",
+  "instrument": "bio-evolution",
+  "preset": {
+   "mode": "breeding",
+   "h2": 0.4,
+   "S": 10
+  }
+ },
+ {
+  "chapter": "puc2-biology-14-strategies-for-enhancement-in-food-production",
+  "step": "puc2-biology-14-strategies-for-enhancement-in-food-production.t3.lesson#scene-scp",
+  "title": "Microbes versus a calf",
+  "instrument": "bio-population",
+  "preset": {
+   "mode": "doubling",
+   "what": "scp",
+   "N0": 250,
+   "g": 2,
+   "t": 48
+  }
+ },
+ {
+  "chapter": "puc2-biology-07-human-health-and-disease",
+  "step": null,
+  "newStep": true,
+  "title": "Structure of an antibody",
+  "instrument": "bio-immunity",
+  "preset": {
+   "mode": "antibody"
+  }
+ },
+ {
+  "chapter": "puc2-biology-07-human-health-and-disease",
+  "step": null,
+  "newStep": true,
+  "title": "HIV and AIDS",
+  "instrument": "bio-immunity",
+  "preset": {
+   "mode": "hiv"
+  }
+ },
+ {
+  "chapter": "puc2-biology-05-molecular-basis-of-inheritance",
+  "step": null,
+  "newStep": true,
+  "title": "The replication fork",
+  "instrument": "bio-dna",
+  "preset": {
+   "mode": "replication"
+  }
+ },
+ {
+  "chapter": "puc2-biology-05-molecular-basis-of-inheritance",
+  "step": null,
+  "newStep": true,
+  "title": "Transcription",
+  "instrument": "bio-dna",
+  "preset": {
+   "mode": "transcription"
+  }
+ },
+ {
+  "chapter": "puc2-biology-06-evolution",
+  "step": null,
+  "newStep": true,
+  "title": "Miller's experiment",
+  "instrument": "bio-evolution",
+  "preset": {
+   "mode": "miller"
+  }
+ },
+ {
+  "chapter": "puc2-biology-04-principles-of-inheritance-and-variation",
+  "step": null,
+  "newStep": true,
+  "title": "Pedigree analysis",
+  "instrument": "bio-genetics",
+  "preset": {
+   "mode": "pedigree"
+  }
+ },
+ {
+  "chapter": "puc2-biology-12-ecosystem",
+  "step": null,
+  "newStep": true,
+  "title": "Inverted pyramid of number",
+  "instrument": "bio-ecosystem",
+  "preset": {
+   "mode": "pyramid",
+   "kind": "number",
+   "case": "tree"
+  }
+ },
+ {
+  "chapter": "puc2-biology-02-human-reproduction",
+  "step": null,
+  "newStep": true,
+  "title": "Spermatogenesis and oogenesis",
+  "instrument": "bio-reproduction",
+  "preset": {
+   "mode": "gametes"
+  }
+ },
+ {
+  "chapter": "puc1-biology-08-cell-the-unit-of-life",
+  "step": null,
+  "newStep": true,
+  "title": "The animal cell",
+  "instrument": "bio-cell",
+  "preset": {
+   "mode": "animal"
+  }
+ },
+ {
+  "chapter": "puc1-biology-18-neural-control-and-coordination",
+  "step": null,
+  "newStep": true,
+  "title": "The chemical synapse",
+  "instrument": "bio-neuron",
+  "preset": {
+   "mode": "synapse"
+  }
+ },
+ {
+  "chapter": "puc1-biology-19-chemical-coordination-and-integration",
+  "step": null,
+  "newStep": true,
+  "title": "Human endocrine glands",
+  "instrument": "bio-endocrine",
+  "preset": {
+   "mode": "glands"
+  }
+ }
+]
