@@ -1,0 +1,2556 @@
+[
+ {
+  "chapter": "puc1-physics-01-units-and-measurement",
+  "step": "puc1-physics-01-units-and-measurement.t1.lesson#bench",
+  "title": "Measuring bench · one pencil",
+  "instrument": "measurement",
+  "preset": {
+   "mode": "units",
+   "L": 15,
+   "u": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-01-units-and-measurement",
+  "step": "puc1-physics-01-units-and-measurement.t1.lesson#n-vs-u",
+  "title": "Number n for each unit · same pencil",
+  "instrument": "measurement",
+  "preset": {
+   "mode": "units",
+   "L": 15,
+   "u": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-01-units-and-measurement",
+  "step": "puc1-physics-01-units-and-measurement.t1.lesson#push",
+  "title": "Same push, different direction",
+  "instrument": "forces",
+  "preset": {
+   "mode": "push",
+   "F": 10,
+   "dir": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-01-units-and-measurement",
+  "step": "puc1-physics-01-units-and-measurement.t2.lesson#scene-sigfig",
+  "title": "How many significant figures can you claim?",
+  "instrument": "measurement",
+  "preset": {
+   "mode": "sigfig",
+   "len": 2.4637,
+   "lc": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-01-units-and-measurement",
+  "step": "puc1-physics-01-units-and-measurement.t3.lesson#scene-dimensions",
+  "title": "Find the pendulum formula by dimensions",
+  "instrument": "measurement",
+  "preset": {
+   "mode": "dimensions",
+   "a": 1,
+   "b": 1,
+   "c": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-01-units-and-measurement",
+  "step": "puc1-physics-01-units-and-measurement.t4.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "oscillator",
+  "preset": {
+   "mode": "pendulum",
+   "L": 1,
+   "g": 9.8,
+   "th0": 10,
+   "tt": 0.15
+  }
+ },
+ {
+  "chapter": "puc1-physics-02-motion-in-a-straight-line",
+  "step": "puc1-physics-02-motion-in-a-straight-line.t1.lesson#sim1",
+  "title": "Displacement or distance?",
+  "instrument": "kinematics",
+  "preset": {
+   "mode": "route",
+   "ta": 2,
+   "tb": 10
+  }
+ },
+ {
+  "chapter": "puc1-physics-02-motion-in-a-straight-line",
+  "step": "puc1-physics-02-motion-in-a-straight-line.t1.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "kinematics",
+  "preset": {
+   "mode": "route",
+   "ta": 0,
+   "tb": 12
+  }
+ },
+ {
+  "chapter": "puc1-physics-02-motion-in-a-straight-line",
+  "step": "puc1-physics-02-motion-in-a-straight-line.t2.lesson#sim1",
+  "title": "From average to instantaneous velocity",
+  "instrument": "kinematics",
+  "preset": {
+   "mode": "tangent",
+   "t0": 2,
+   "dt": 1.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-02-motion-in-a-straight-line",
+  "step": "puc1-physics-02-motion-in-a-straight-line.t2.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "kinematics",
+  "preset": {
+   "mode": "tangent",
+   "curve": 1,
+   "p": 0.5,
+   "t0": 2,
+   "dt": 0.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-02-motion-in-a-straight-line",
+  "step": "puc1-physics-02-motion-in-a-straight-line.t3.lesson#sim1",
+  "title": "Speeding up or slowing down?",
+  "instrument": "kinematics",
+  "preset": {
+   "mode": "uniform",
+   "u": 2,
+   "a": 2,
+   "t1": 4
+  }
+ },
+ {
+  "chapter": "puc1-physics-02-motion-in-a-straight-line",
+  "step": "puc1-physics-02-motion-in-a-straight-line.t3.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "kinematics",
+  "preset": {
+   "mode": "uniform",
+   "u": 10,
+   "a": -2,
+   "t1": 5
+  }
+ },
+ {
+  "chapter": "puc1-physics-02-motion-in-a-straight-line",
+  "step": "puc1-physics-02-motion-in-a-straight-line.t4.lesson#sim1",
+  "title": "Stopping distance of a car",
+  "instrument": "kinematics",
+  "preset": {
+   "mode": "stopping",
+   "u": 60,
+   "tr": 1,
+   "a": 6
+  }
+ },
+ {
+  "chapter": "puc1-physics-02-motion-in-a-straight-line",
+  "step": "puc1-physics-02-motion-in-a-straight-line.t4.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "kinematics",
+  "preset": {
+   "mode": "uniform",
+   "u": 5,
+   "a": 2,
+   "t1": 4
+  }
+ },
+ {
+  "chapter": "puc1-physics-02-motion-in-a-straight-line",
+  "step": "puc1-physics-02-motion-in-a-straight-line.t5.lesson#sim1",
+  "title": "Throw a ball up: its x–t and v–t graphs",
+  "instrument": "kinematics",
+  "preset": {
+   "mode": "vertical",
+   "h0": 20,
+   "u": 10,
+   "g": 9.8
+  }
+ },
+ {
+  "chapter": "puc1-physics-02-motion-in-a-straight-line",
+  "step": "puc1-physics-02-motion-in-a-straight-line.t5.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "kinematics",
+  "preset": {
+   "mode": "vertical",
+   "h0": 0,
+   "u": 20,
+   "g": 9.8
+  }
+ },
+ {
+  "chapter": "puc1-physics-03-motion-in-a-plane",
+  "step": "puc1-physics-03-motion-in-a-plane.t1.lesson#sim1",
+  "title": "Add two vectors by dragging",
+  "instrument": "vectors",
+  "preset": {
+   "mode": "add",
+   "k": 1,
+   "para": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-03-motion-in-a-plane",
+  "step": "puc1-physics-03-motion-in-a-plane.t1.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "vectors",
+  "preset": {
+   "mode": "add",
+   "ax": 6,
+   "ay": 2,
+   "bx": 2,
+   "by": 5,
+   "k": 1,
+   "para": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-03-motion-in-a-plane",
+  "step": "puc1-physics-03-motion-in-a-plane.t2.lesson#sim1",
+  "title": "Components do the adding",
+  "instrument": "vectors",
+  "preset": {
+   "mode": "components",
+   "Am": 6,
+   "ta": 30,
+   "Bm": 4,
+   "tb": 120
+  }
+ },
+ {
+  "chapter": "puc1-physics-03-motion-in-a-plane",
+  "step": "puc1-physics-03-motion-in-a-plane.t2.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "vectors",
+  "preset": {
+   "mode": "angle",
+   "A": 3,
+   "B": 4,
+   "th": 60
+  }
+ },
+ {
+  "chapter": "puc1-physics-03-motion-in-a-plane",
+  "step": "puc1-physics-03-motion-in-a-plane.t3.lesson#sim1",
+  "title": "Velocity and acceleration in a plane",
+  "instrument": "projectile",
+  "preset": {
+   "mode": "plane",
+   "vx0": 4,
+   "vy0": 5,
+   "ax": 0,
+   "ay": -2,
+   "tt": 3
+  }
+ },
+ {
+  "chapter": "puc1-physics-03-motion-in-a-plane",
+  "step": "puc1-physics-03-motion-in-a-plane.t3.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "projectile",
+  "preset": {
+   "mode": "plane",
+   "vx0": 5,
+   "vy0": 0,
+   "ax": 3,
+   "ay": 2,
+   "tt": 6
+  }
+ },
+ {
+  "chapter": "puc1-physics-03-motion-in-a-plane",
+  "step": "puc1-physics-03-motion-in-a-plane.t4.lesson#scene-projectile",
+  "title": "Launch a projectile",
+  "instrument": "projectile",
+  "preset": {
+   "mode": "launch",
+   "u": 15,
+   "th": 45,
+   "comp": 0,
+   "tt": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-03-motion-in-a-plane",
+  "step": "puc1-physics-03-motion-in-a-plane.t4.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "projectile",
+  "preset": {
+   "mode": "launch",
+   "u": 20,
+   "th": 30,
+   "comp": 1,
+   "tt": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-03-motion-in-a-plane",
+  "step": "puc1-physics-03-motion-in-a-plane.t5.lesson#sim1",
+  "title": "Whirl a stone, then cut the string",
+  "instrument": "circular",
+  "preset": {
+   "mode": "whirl",
+   "r": 3,
+   "w": 1.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-03-motion-in-a-plane",
+  "step": "puc1-physics-03-motion-in-a-plane.t5.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "circular",
+  "preset": {
+   "mode": "whirl",
+   "r": 4,
+   "w": 2.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-04-laws-of-motion",
+  "step": "puc1-physics-04-laws-of-motion.t1.lesson#sim1",
+  "title": "Galileo's two ramps",
+  "instrument": "forces",
+  "preset": {
+   "mode": "galileo",
+   "h0": 1.5,
+   "th2": 30
+  }
+ },
+ {
+  "chapter": "puc1-physics-04-laws-of-motion",
+  "step": "puc1-physics-04-laws-of-motion.t2.lesson#sim1",
+  "title": "Push a cart: force, time and momentum",
+  "instrument": "forces",
+  "preset": {
+   "mode": "impulse",
+   "scene": 0,
+   "F": 4,
+   "m": 2,
+   "tau": 2
+  }
+ },
+ {
+  "chapter": "puc1-physics-04-laws-of-motion",
+  "step": "puc1-physics-04-laws-of-motion.t2.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "forces",
+  "preset": {
+   "mode": "impulse",
+   "scene": 1,
+   "mb": 0.15,
+   "vb": 20,
+   "dt": 0.1
+  }
+ },
+ {
+  "chapter": "puc1-physics-04-laws-of-motion",
+  "step": "puc1-physics-04-laws-of-motion.t3.lesson#sim1",
+  "title": "Two carts push apart",
+  "instrument": "forces",
+  "preset": {
+   "mode": "recoil",
+   "m1": 4,
+   "m2": 2,
+   "E": 30
+  }
+ },
+ {
+  "chapter": "puc1-physics-04-laws-of-motion",
+  "step": "puc1-physics-04-laws-of-motion.t3.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "forces",
+  "preset": {
+   "mode": "collide",
+   "m1": 2,
+   "u1": 6,
+   "m2": 1,
+   "u2": 0,
+   "e": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-04-laws-of-motion",
+  "step": "puc1-physics-04-laws-of-motion.t4.lesson#sim1",
+  "title": "Pull a block against friction",
+  "instrument": "forces",
+  "preset": {
+   "mode": "friction",
+   "F": 15,
+   "m": 4,
+   "mus": 0.5,
+   "muk": 0.4
+  }
+ },
+ {
+  "chapter": "puc1-physics-04-laws-of-motion",
+  "step": "puc1-physics-04-laws-of-motion.t4.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "forces",
+  "preset": {
+   "mode": "incline",
+   "th": 20,
+   "mu": 0.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-04-laws-of-motion",
+  "step": "puc1-physics-04-laws-of-motion.t5.lesson#sim1",
+  "title": "Taking a banked curve",
+  "instrument": "circular",
+  "preset": {
+   "mode": "banked",
+   "v": 60,
+   "r": 100,
+   "th": 15,
+   "mu": 0.2
+  }
+ },
+ {
+  "chapter": "puc1-physics-04-laws-of-motion",
+  "step": "puc1-physics-04-laws-of-motion.t5.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "circular",
+  "preset": {
+   "mode": "banked",
+   "v": 80,
+   "r": 100,
+   "th": 15,
+   "mu": 0.3
+  }
+ },
+ {
+  "chapter": "puc1-physics-05-work-energy-and-power",
+  "step": "puc1-physics-05-work-energy-and-power.t1.lesson#sim1",
+  "title": "Work done by a pull at an angle",
+  "instrument": "energy",
+  "preset": {
+   "mode": "work",
+   "F": 20,
+   "th": 30,
+   "d": 6
+  }
+ },
+ {
+  "chapter": "puc1-physics-05-work-energy-and-power",
+  "step": "puc1-physics-05-work-energy-and-power.t1.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "energy",
+  "preset": {
+   "mode": "work",
+   "F": 10,
+   "th": 60,
+   "d": 5
+  }
+ },
+ {
+  "chapter": "puc1-physics-05-work-energy-and-power",
+  "step": "puc1-physics-05-work-energy-and-power.t2.lesson#sim1",
+  "title": "Work changes kinetic energy",
+  "instrument": "energy",
+  "preset": {
+   "mode": "theorem",
+   "m": 2,
+   "u": 3,
+   "F": 6,
+   "s": 5
+  }
+ },
+ {
+  "chapter": "puc1-physics-05-work-energy-and-power",
+  "step": "puc1-physics-05-work-energy-and-power.t2.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "energy",
+  "preset": {
+   "mode": "theorem",
+   "m": 2,
+   "u": 5,
+   "F": 20,
+   "s": 10
+  }
+ },
+ {
+  "chapter": "puc1-physics-05-work-energy-and-power",
+  "step": "puc1-physics-05-work-energy-and-power.t3.lesson#sim1",
+  "title": "Skating in a bowl",
+  "instrument": "energy",
+  "preset": {
+   "mode": "bowl",
+   "h0": 3,
+   "m": 2,
+   "pos": 0.3
+  }
+ },
+ {
+  "chapter": "puc1-physics-05-work-energy-and-power",
+  "step": "puc1-physics-05-work-energy-and-power.t3.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "energy",
+  "preset": {
+   "mode": "spring",
+   "k": 200,
+   "xm": 0.3,
+   "m": 1,
+   "x": 0.15
+  }
+ },
+ {
+  "chapter": "puc1-physics-05-work-energy-and-power",
+  "step": "puc1-physics-05-work-energy-and-power.t4.lesson#sim1",
+  "title": "How powerful a lift motor?",
+  "instrument": "energy",
+  "preset": {
+   "mode": "power",
+   "m": 500,
+   "h": 10,
+   "Pk": 5,
+   "f": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-05-work-energy-and-power",
+  "step": "puc1-physics-05-work-energy-and-power.t4.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "energy",
+  "preset": {
+   "mode": "power",
+   "m": 1800,
+   "h": 20,
+   "Pk": 60,
+   "f": 4000
+  }
+ },
+ {
+  "chapter": "puc1-physics-05-work-energy-and-power",
+  "step": "puc1-physics-05-work-energy-and-power.t5.lesson#sim1",
+  "title": "Collisions on a track",
+  "instrument": "forces",
+  "preset": {
+   "mode": "collide",
+   "m1": 2,
+   "m2": 3,
+   "u1": 4,
+   "u2": -2,
+   "e": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-05-work-energy-and-power",
+  "step": "puc1-physics-05-work-energy-and-power.t5.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "forces",
+  "preset": {
+   "mode": "collide",
+   "m1": 2,
+   "m2": 1,
+   "u1": 6,
+   "u2": 0,
+   "e": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-06-system-of-particles-and-rotational-motion",
+  "step": "puc1-physics-06-system-of-particles-and-rotational-motion.t1.lesson#sim1",
+  "title": "Find the centre of mass",
+  "instrument": "rotation",
+  "preset": {
+   "mode": "com",
+   "m1": 2,
+   "m2": 4,
+   "m3": 6
+  }
+ },
+ {
+  "chapter": "puc1-physics-06-system-of-particles-and-rotational-motion",
+  "step": "puc1-physics-06-system-of-particles-and-rotational-motion.t1.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "rotation",
+  "preset": {
+   "mode": "line",
+   "m1": 2,
+   "m2": 6,
+   "x2": 4
+  }
+ },
+ {
+  "chapter": "puc1-physics-06-system-of-particles-and-rotational-motion",
+  "step": "puc1-physics-06-system-of-particles-and-rotational-motion.t2.lesson#sim1",
+  "title": "Velocity on a spinning plate: v = ω × r",
+  "instrument": "circular",
+  "preset": {
+   "mode": "plate",
+   "w": 1,
+   "px": 2,
+   "py": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-06-system-of-particles-and-rotational-motion",
+  "step": "puc1-physics-06-system-of-particles-and-rotational-motion.t2.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "vectors",
+  "preset": {
+   "mode": "products",
+   "A": 5,
+   "B": 4,
+   "th": 30
+  }
+ },
+ {
+  "chapter": "puc1-physics-06-system-of-particles-and-rotational-motion",
+  "step": "puc1-physics-06-system-of-particles-and-rotational-motion.t3.lesson#sim1",
+  "title": "Balance the see-saw",
+  "instrument": "rotation",
+  "preset": {
+   "mode": "seesaw",
+   "m1": 30,
+   "m2": 40,
+   "d1": 2,
+   "d2": 1.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-06-system-of-particles-and-rotational-motion",
+  "step": "puc1-physics-06-system-of-particles-and-rotational-motion.t3.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "rotation",
+  "preset": {
+   "mode": "spanner",
+   "F": 50,
+   "r": 0.25,
+   "th": 90
+  }
+ },
+ {
+  "chapter": "puc1-physics-06-system-of-particles-and-rotational-motion",
+  "step": "puc1-physics-06-system-of-particles-and-rotational-motion.t4.lesson#sim1",
+  "title": "Rolling race down a slope",
+  "instrument": "rotation",
+  "preset": {
+   "mode": "rolling",
+   "th": 20,
+   "L": 4,
+   "A": 0,
+   "B": 3,
+   "tt": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-06-system-of-particles-and-rotational-motion",
+  "step": "puc1-physics-06-system-of-particles-and-rotational-motion.t4.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "rotation",
+  "preset": {
+   "mode": "inertia",
+   "M": 2,
+   "R": 0.5,
+   "w": 10
+  }
+ },
+ {
+  "chapter": "puc1-physics-06-system-of-particles-and-rotational-motion",
+  "step": "puc1-physics-06-system-of-particles-and-rotational-motion.t5.lesson#sim1",
+  "title": "Spin faster by pulling in your arms",
+  "instrument": "rotation",
+  "preset": {
+   "mode": "skater",
+   "w0": 2,
+   "m": 3,
+   "arm": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-06-system-of-particles-and-rotational-motion",
+  "step": "puc1-physics-06-system-of-particles-and-rotational-motion.t5.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "rotation",
+  "preset": {
+   "mode": "skater",
+   "w0": 2,
+   "m": 3,
+   "arm": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-07-gravitation",
+  "step": "puc1-physics-07-gravitation.t1.lesson#sim1",
+  "title": "Planet on an elliptical orbit",
+  "instrument": "gravitation",
+  "preset": {
+   "mode": "kepler",
+   "a": 1,
+   "ecc": 0.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-07-gravitation",
+  "step": "puc1-physics-07-gravitation.t1.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "gravitation",
+  "preset": {
+   "mode": "kepler",
+   "a": 1.5,
+   "ecc": 0.2,
+   "areas": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-07-gravitation",
+  "step": "puc1-physics-07-gravitation.t2.lesson#sim1",
+  "title": "Gravity between two bodies",
+  "instrument": "gravitation",
+  "preset": {
+   "mode": "force",
+   "sc": 0,
+   "m1": 6,
+   "m2": 7.5,
+   "r": 3.84
+  }
+ },
+ {
+  "chapter": "puc1-physics-07-gravitation",
+  "step": "puc1-physics-07-gravitation.t2.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "gravitation",
+  "preset": {
+   "mode": "force",
+   "sc": 1,
+   "b1": 100,
+   "b2": 100,
+   "rb": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-07-gravitation",
+  "step": "puc1-physics-07-gravitation.t3.lesson#sim1",
+  "title": "How g changes above and below the surface",
+  "instrument": "gravitation",
+  "preset": {
+   "mode": "gvar",
+   "p": 0,
+   "rr": 1.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-07-gravitation",
+  "step": "puc1-physics-07-gravitation.t3.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "gravitation",
+  "preset": {
+   "mode": "gvar",
+   "p": 0,
+   "rr": 1.05,
+   "approx": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-07-gravitation",
+  "step": "puc1-physics-07-gravitation.t4.lesson#sim1",
+  "title": "Launch fast enough to escape",
+  "instrument": "gravitation",
+  "preset": {
+   "mode": "escape",
+   "p": 0,
+   "v": 8
+  }
+ },
+ {
+  "chapter": "puc1-physics-07-gravitation",
+  "step": "puc1-physics-07-gravitation.t4.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "gravitation",
+  "preset": {
+   "mode": "escape",
+   "p": 3,
+   "Mp": 1,
+   "Rp": 1,
+   "v": 11.2
+  }
+ },
+ {
+  "chapter": "puc1-physics-07-gravitation",
+  "step": "puc1-physics-07-gravitation.t5.lesson#sim1",
+  "title": "Put a satellite in orbit",
+  "instrument": "gravitation",
+  "preset": {
+   "mode": "satellite",
+   "h": 0,
+   "k": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-07-gravitation",
+  "step": "puc1-physics-07-gravitation.t5.lesson#int1",
+  "title": "Try it yourself",
+  "instrument": "gravitation",
+  "preset": {
+   "mode": "satellite",
+   "h": 1,
+   "k": 1.15
+  }
+ },
+ {
+  "chapter": "puc1-physics-08-mechanical-properties-of-solids",
+  "step": "puc1-physics-08-mechanical-properties-of-solids.t1.lesson#sim1",
+  "title": "Three ways to stress a block",
+  "instrument": "elasticity",
+  "preset": {
+   "mode": "stress",
+   "kind": 0,
+   "F": 50,
+   "A": 20
+  }
+ },
+ {
+  "chapter": "puc1-physics-08-mechanical-properties-of-solids",
+  "step": "puc1-physics-08-mechanical-properties-of-solids.t1.lesson#int1",
+  "title": "Stress and strain calculator",
+  "instrument": "elasticity",
+  "preset": {
+   "mode": "wire",
+   "mat": 0,
+   "L": 2,
+   "d": 1.6,
+   "M": 10
+  }
+ },
+ {
+  "chapter": "puc1-physics-08-mechanical-properties-of-solids",
+  "step": "puc1-physics-08-mechanical-properties-of-solids.t2.lesson#sim1",
+  "title": "Walk along the stress–strain curve",
+  "instrument": "elasticity",
+  "preset": {
+   "mode": "curve",
+   "eps": 3,
+   "unload": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-08-mechanical-properties-of-solids",
+  "step": "puc1-physics-08-mechanical-properties-of-solids.t2.lesson#int1",
+  "title": "Hooke's law for a spring",
+  "instrument": "elasticity",
+  "preset": {
+   "mode": "hooke",
+   "k": 200,
+   "x": 0.05
+  }
+ },
+ {
+  "chapter": "puc1-physics-08-mechanical-properties-of-solids",
+  "step": "puc1-physics-08-mechanical-properties-of-solids.t3.lesson#sim1",
+  "title": "Load a wire, measure Y",
+  "instrument": "elasticity",
+  "preset": {
+   "mode": "wire",
+   "mat": 0,
+   "L": 2,
+   "d": 1,
+   "M": 4
+  }
+ },
+ {
+  "chapter": "puc1-physics-08-mechanical-properties-of-solids",
+  "step": "puc1-physics-08-mechanical-properties-of-solids.t3.lesson#int1",
+  "title": "Searle's method: extension against load",
+  "instrument": "elasticity",
+  "preset": {
+   "mode": "wire",
+   "mat": 0,
+   "L": 2,
+   "d": 1,
+   "M": 10
+  }
+ },
+ {
+  "chapter": "puc1-physics-08-mechanical-properties-of-solids",
+  "step": "puc1-physics-08-mechanical-properties-of-solids.t4.lesson#sim1",
+  "title": "Shearing a cube, squeezing it in the deep sea",
+  "instrument": "elasticity",
+  "preset": {
+   "mode": "shear",
+   "F": 200,
+   "h": 4,
+   "mat": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-08-mechanical-properties-of-solids",
+  "step": "puc1-physics-08-mechanical-properties-of-solids.t4.lesson#int1",
+  "title": "How much does a liquid compress?",
+  "instrument": "elasticity",
+  "preset": {
+   "mode": "bulk",
+   "B": 2.2,
+   "p": 100
+  }
+ },
+ {
+  "chapter": "puc1-physics-08-mechanical-properties-of-solids",
+  "step": "puc1-physics-08-mechanical-properties-of-solids.t5.lesson#sim1",
+  "title": "Why beams are deep, not wide",
+  "instrument": "elasticity",
+  "preset": {
+   "mode": "beam",
+   "W": 1000,
+   "l": 2,
+   "b": 5,
+   "d": 10,
+   "mat": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-08-mechanical-properties-of-solids",
+  "step": "puc1-physics-08-mechanical-properties-of-solids.t5.lesson#int1",
+  "title": "Sag of a loaded beam",
+  "instrument": "elasticity",
+  "preset": {
+   "mode": "beam",
+   "W": 1000,
+   "l": 2,
+   "b": 10,
+   "d": 10,
+   "mat": 2
+  }
+ },
+ {
+  "chapter": "puc1-physics-09-mechanical-properties-of-fluids",
+  "step": "puc1-physics-09-mechanical-properties-of-fluids.t1.lesson#sim1",
+  "title": "Hydraulic lift",
+  "instrument": "fluids",
+  "preset": {
+   "mode": "hydraulic",
+   "F1": 100,
+   "A1": 10,
+   "A2": 500
+  }
+ },
+ {
+  "chapter": "puc1-physics-09-mechanical-properties-of-fluids",
+  "step": "puc1-physics-09-mechanical-properties-of-fluids.t1.lesson#int1",
+  "title": "Pressure under a liquid",
+  "instrument": "fluids",
+  "preset": {
+   "mode": "pressure",
+   "liq": 0,
+   "h": 10
+  }
+ },
+ {
+  "chapter": "puc1-physics-09-mechanical-properties-of-fluids",
+  "step": "puc1-physics-09-mechanical-properties-of-fluids.t2.lesson#sim1",
+  "title": "Flow through a narrowing pipe",
+  "instrument": "fluids",
+  "preset": {
+   "mode": "continuity",
+   "A1": 30,
+   "A2": 10,
+   "v1": 0.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-09-mechanical-properties-of-fluids",
+  "step": "puc1-physics-09-mechanical-properties-of-fluids.t2.lesson#int1",
+  "title": "Speed in a narrowing pipe",
+  "instrument": "fluids",
+  "preset": {
+   "mode": "continuity",
+   "A1": 20,
+   "A2": 2,
+   "v1": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-09-mechanical-properties-of-fluids",
+  "step": "puc1-physics-09-mechanical-properties-of-fluids.t3.lesson#sim1",
+  "title": "Water jet from a tank",
+  "instrument": "fluids",
+  "preset": {
+   "mode": "torricelli",
+   "H": 2,
+   "h": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-09-mechanical-properties-of-fluids",
+  "step": "puc1-physics-09-mechanical-properties-of-fluids.t3.lesson#int1",
+  "title": "Where should the hole be?",
+  "instrument": "fluids",
+  "preset": {
+   "mode": "torricelli",
+   "H": 8,
+   "h": 2
+  }
+ },
+ {
+  "chapter": "puc1-physics-09-mechanical-properties-of-fluids",
+  "step": "puc1-physics-09-mechanical-properties-of-fluids.t4.lesson#sim1",
+  "title": "A ball sinking in glycerine",
+  "instrument": "fluids",
+  "preset": {
+   "mode": "stokes",
+   "ball": 0,
+   "r": 1.5,
+   "eta": 0.85
+  }
+ },
+ {
+  "chapter": "puc1-physics-09-mechanical-properties-of-fluids",
+  "step": "puc1-physics-09-mechanical-properties-of-fluids.t4.lesson#int1",
+  "title": "Terminal velocity of a falling ball",
+  "instrument": "fluids",
+  "preset": {
+   "mode": "stokes",
+   "ball": 0,
+   "r": 1,
+   "eta": 1.4,
+   "tt": 0.6
+  }
+ },
+ {
+  "chapter": "puc1-physics-09-mechanical-properties-of-fluids",
+  "step": "puc1-physics-09-mechanical-properties-of-fluids.t5.lesson#sim1",
+  "title": "Capillary rise",
+  "instrument": "fluids",
+  "preset": {
+   "mode": "capillary",
+   "liq": 0,
+   "r": 0.25
+  }
+ },
+ {
+  "chapter": "puc1-physics-09-mechanical-properties-of-fluids",
+  "step": "puc1-physics-09-mechanical-properties-of-fluids.t5.lesson#int1",
+  "title": "Capillary rise",
+  "instrument": "fluids",
+  "preset": {
+   "mode": "capillary",
+   "liq": 0,
+   "r": 0.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t1.lesson#sim1",
+  "title": "Gas thermometer and absolute zero",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "gasthermo",
+   "Tc": 30,
+   "gas": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t1.lesson#int1",
+  "title": "Converting temperatures",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "scales",
+   "tc": 37
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t2.lesson#sim1",
+  "title": "Why rails have gaps",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "expansion",
+   "met": 0,
+   "dT": 20,
+   "L": 12,
+   "g0": 6
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t2.lesson#int1",
+  "title": "Expansion and thermal stress",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "expansion",
+   "met": 0,
+   "dT": 40,
+   "L": 10,
+   "g0": 4
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t3.lesson#sim1",
+  "title": "Hot metal in cold water",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "calorimetry",
+   "met": 0,
+   "m1": 200,
+   "T1": 100,
+   "m2": 300,
+   "Tw": 25
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t3.lesson#int1",
+  "title": "Mixing a hot metal with water",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "calorimetry",
+   "met": 1,
+   "m1": 100,
+   "T1": 100,
+   "m2": 200,
+   "Tw": 20
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t4.lesson#sim1",
+  "title": "Heating ice to steam",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "phase",
+   "m": 0.5,
+   "Ti": -20,
+   "Ts": 120,
+   "Pw": 1,
+   "tmin": 10
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t4.lesson#int1",
+  "title": "Heat budget: ice to steam",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "phase",
+   "m": 1,
+   "Ti": -20,
+   "Ts": 120,
+   "Pw": 2,
+   "tmin": 60
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t5.lesson#sim1",
+  "title": "Heat flowing through a wall",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "conduction",
+   "mat": 1,
+   "Th": 100,
+   "L": 5,
+   "A": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t5.lesson#int1",
+  "title": "Radiated power and colour",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "radiation",
+   "T": 1500
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t6.lesson#sim1",
+  "title": "Cooling cup of tea",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "cooling",
+   "T0": 90,
+   "Ts": 25,
+   "k": 0.05,
+   "tt": 10
+  }
+ },
+ {
+  "chapter": "puc1-physics-10-thermal-properties-of-matter",
+  "step": "puc1-physics-10-thermal-properties-of-matter.t6.lesson#int1",
+  "title": "Cooling curve",
+  "instrument": "thermal",
+  "preset": {
+   "mode": "cooling",
+   "T0": 90,
+   "Ts": 30,
+   "k": 0.1,
+   "tt": 10
+  }
+ },
+ {
+  "chapter": "puc1-physics-11-thermodynamics",
+  "step": "puc1-physics-11-thermodynamics.t1.lesson#sim1",
+  "title": "Three bodies and the zeroth law",
+  "instrument": "thermo",
+  "preset": {
+   "mode": "zeroth",
+   "TA0": 80,
+   "TB0": 20,
+   "TC0": 50,
+   "tt": 30
+  }
+ },
+ {
+  "chapter": "puc1-physics-11-thermodynamics",
+  "step": "puc1-physics-11-thermodynamics.t1.lesson#int1",
+  "title": "Work at constant pressure",
+  "instrument": "thermo",
+  "preset": {
+   "mode": "isobaric",
+   "P": 100,
+   "V1": 2,
+   "V2": 4
+  }
+ },
+ {
+  "chapter": "puc1-physics-11-thermodynamics",
+  "step": "puc1-physics-11-thermodynamics.t2.lesson#sim1",
+  "title": "Where does the heat go?",
+  "instrument": "thermo",
+  "preset": {
+   "mode": "firstlaw",
+   "Q": 1000,
+   "n": 0.5,
+   "proc": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-11-thermodynamics",
+  "step": "puc1-physics-11-thermodynamics.t2.lesson#int1",
+  "title": "Where does the heat go?",
+  "instrument": "thermo",
+  "preset": {
+   "mode": "firstlaw",
+   "Q": 1000,
+   "n": 1,
+   "proc": 1,
+   "f": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-11-thermodynamics",
+  "step": "puc1-physics-11-thermodynamics.t3.lesson#sim1",
+  "title": "Isothermal, adiabatic, isobaric",
+  "instrument": "thermo",
+  "preset": {
+   "mode": "processes",
+   "proc": 0,
+   "V2": 20
+  }
+ },
+ {
+  "chapter": "puc1-physics-11-thermodynamics",
+  "step": "puc1-physics-11-thermodynamics.t3.lesson#int1",
+  "title": "Isotherm and adiabat",
+  "instrument": "thermo",
+  "preset": {
+   "mode": "processes",
+   "proc": 1,
+   "V2": 20,
+   "g": 1.4
+  }
+ },
+ {
+  "chapter": "puc1-physics-11-thermodynamics",
+  "step": "puc1-physics-11-thermodynamics.t4.lesson#int1",
+  "title": "Energy flow in an engine",
+  "instrument": "thermo",
+  "preset": {
+   "mode": "engine",
+   "Q1": 1000,
+   "Q2": 600
+  }
+ },
+ {
+  "chapter": "puc1-physics-11-thermodynamics",
+  "step": "puc1-physics-11-thermodynamics.t5.lesson#sim1",
+  "title": "Run a Carnot engine",
+  "instrument": "thermo",
+  "preset": {
+   "mode": "carnot",
+   "T1": 500,
+   "T2": 300
+  }
+ },
+ {
+  "chapter": "puc1-physics-11-thermodynamics",
+  "step": "puc1-physics-11-thermodynamics.t5.lesson#int1",
+  "title": "Carnot efficiency",
+  "instrument": "thermo",
+  "preset": {
+   "mode": "carnot",
+   "T1": 500,
+   "T2": 300,
+   "shade": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-12-kinetic-theory",
+  "step": "puc1-physics-12-kinetic-theory.t1.lesson#sim1",
+  "title": "Squeeze, heat and fill a gas",
+  "instrument": "gas",
+  "preset": {
+   "mode": "box",
+   "V": 2,
+   "T": 300,
+   "n": 0.08
+  }
+ },
+ {
+  "chapter": "puc1-physics-12-kinetic-theory",
+  "step": "puc1-physics-12-kinetic-theory.t1.lesson#int1",
+  "title": "Isotherms of an ideal gas",
+  "instrument": "gas",
+  "preset": {
+   "mode": "isotherms",
+   "mu": 1,
+   "T": 300,
+   "V": 22.4
+  }
+ },
+ {
+  "chapter": "puc1-physics-12-kinetic-theory",
+  "step": "puc1-physics-12-kinetic-theory.t2.lesson#sim1",
+  "title": "Pressure from molecular speed",
+  "instrument": "gas",
+  "preset": {
+   "mode": "density",
+   "rho": 1.2,
+   "vr": 500
+  }
+ },
+ {
+  "chapter": "puc1-physics-12-kinetic-theory",
+  "step": "puc1-physics-12-kinetic-theory.t2.lesson#int1",
+  "title": "Pressure and molecular speed",
+  "instrument": "gas",
+  "preset": {
+   "mode": "density",
+   "rho": 1.29,
+   "vr": 485
+  }
+ },
+ {
+  "chapter": "puc1-physics-12-kinetic-theory",
+  "step": "puc1-physics-12-kinetic-theory.t3.lesson#scene-gas",
+  "title": "Molecules and temperature",
+  "instrument": "gas",
+  "preset": {
+   "mode": "speeds",
+   "T": 300,
+   "gas": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-12-kinetic-theory",
+  "step": "puc1-physics-12-kinetic-theory.t3.lesson#int1",
+  "title": "rms speed and temperature",
+  "instrument": "gas",
+  "preset": {
+   "mode": "speeds",
+   "T": 300,
+   "gas": 2
+  }
+ },
+ {
+  "chapter": "puc1-physics-12-kinetic-theory",
+  "step": "puc1-physics-12-kinetic-theory.t4.lesson#sim1",
+  "title": "Sharing energy among degrees of freedom",
+  "instrument": "gas",
+  "preset": {
+   "mode": "dof",
+   "f": 1,
+   "T": 300
+  }
+ },
+ {
+  "chapter": "puc1-physics-12-kinetic-theory",
+  "step": "puc1-physics-12-kinetic-theory.t4.lesson#int1",
+  "title": "Degrees of freedom and specific heats",
+  "instrument": "gas",
+  "preset": {
+   "mode": "dof",
+   "f": 2,
+   "T": 300
+  }
+ },
+ {
+  "chapter": "puc1-physics-12-kinetic-theory",
+  "step": "puc1-physics-12-kinetic-theory.t5.lesson#sim1",
+  "title": "How far between collisions?",
+  "instrument": "gas",
+  "preset": {
+   "mode": "mfp",
+   "P": 101,
+   "d": 0.3,
+   "T": 300
+  }
+ },
+ {
+  "chapter": "puc1-physics-12-kinetic-theory",
+  "step": "puc1-physics-12-kinetic-theory.t5.lesson#int1",
+  "title": "Mean free path against pressure",
+  "instrument": "gas",
+  "preset": {
+   "mode": "mfp",
+   "P": 101,
+   "d": 0.2,
+   "T": 273
+  }
+ },
+ {
+  "chapter": "puc1-physics-13-oscillations",
+  "step": "puc1-physics-13-oscillations.t1.lesson#sim1",
+  "title": "Which motions repeat?",
+  "instrument": "oscillator",
+  "preset": {
+   "mode": "periodic",
+   "mo": 1,
+   "T": 2,
+   "b": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-13-oscillations",
+  "step": "puc1-physics-13-oscillations.t1.lesson#int1",
+  "title": "Period and frequency",
+  "instrument": "oscillator",
+  "preset": {
+   "mode": "periodic",
+   "mo": 1,
+   "T": 2,
+   "b": 0.3
+  }
+ },
+ {
+  "chapter": "puc1-physics-13-oscillations",
+  "step": "puc1-physics-13-oscillations.t2.lesson#sim1",
+  "title": "SHM is a shadow of circular motion",
+  "instrument": "oscillator",
+  "preset": {
+   "mode": "reference",
+   "A": 3,
+   "T": 4,
+   "phi": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-13-oscillations",
+  "step": "puc1-physics-13-oscillations.t2.lesson#int1",
+  "title": "Building an SHM",
+  "instrument": "oscillator",
+  "preset": {
+   "mode": "reference",
+   "A": 2,
+   "T": 3.14,
+   "phi": 60,
+   "circ": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-13-oscillations",
+  "step": "puc1-physics-13-oscillations.t3.lesson#sim1",
+  "title": "Restoring force of a spring",
+  "instrument": "oscillator",
+  "preset": {
+   "mode": "spring",
+   "k": 40,
+   "m": 1,
+   "A": 0.2
+  }
+ },
+ {
+  "chapter": "puc1-physics-13-oscillations",
+  "step": "puc1-physics-13-oscillations.t3.lesson#int1",
+  "title": "x, v and a in SHM",
+  "instrument": "oscillator",
+  "preset": {
+   "mode": "spring",
+   "k": 100,
+   "m": 1,
+   "A": 0.1
+  }
+ },
+ {
+  "chapter": "puc1-physics-13-oscillations",
+  "step": "puc1-physics-13-oscillations.t4.lesson#sim1",
+  "title": "Energy sloshing in a spring",
+  "instrument": "oscillator",
+  "preset": {
+   "mode": "energy",
+   "k": 40,
+   "m": 1,
+   "A": 0.2
+  }
+ },
+ {
+  "chapter": "puc1-physics-13-oscillations",
+  "step": "puc1-physics-13-oscillations.t4.lesson#int1",
+  "title": "Kinetic and potential energy",
+  "instrument": "oscillator",
+  "preset": {
+   "mode": "energy",
+   "k": 100,
+   "m": 1,
+   "A": 0.1
+  }
+ },
+ {
+  "chapter": "puc1-physics-13-oscillations",
+  "step": "puc1-physics-13-oscillations.t5.lesson#scene-pendulum",
+  "title": "A real pendulum, step by step",
+  "instrument": "oscillator",
+  "preset": {
+   "mode": "pendulum",
+   "L": 1.5,
+   "th0": 30,
+   "tt": 0.6
+  }
+ },
+ {
+  "chapter": "puc1-physics-13-oscillations",
+  "step": "puc1-physics-13-oscillations.t5.lesson#int1",
+  "title": "Pendulum on different planets",
+  "instrument": "oscillator",
+  "preset": {
+   "mode": "pendulum",
+   "L": 1,
+   "th0": 10,
+   "g": 1.6,
+   "tt": 0.6
+  }
+ },
+ {
+  "chapter": "puc1-physics-14-waves",
+  "step": "puc1-physics-14-waves.t1.lesson#sim1",
+  "title": "Transverse and longitudinal waves",
+  "instrument": "waves",
+  "preset": {
+   "mode": "types",
+   "typ": 0,
+   "A": 0.2,
+   "lam": 4,
+   "f": 0.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-14-waves",
+  "step": "puc1-physics-14-waves.t1.lesson#int1",
+  "title": "A travelling wave and one particle",
+  "instrument": "waves",
+  "preset": {
+   "mode": "travelling",
+   "A": 2,
+   "lam": 4,
+   "T": 2,
+   "tt": 0,
+   "xp": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-14-waves",
+  "step": "puc1-physics-14-waves.t2.lesson#sim1",
+  "title": "y(x, t) = A sin(kx − ωt + φ)",
+  "instrument": "waves",
+  "preset": {
+   "mode": "travelling",
+   "A": 1.5,
+   "lam": 6,
+   "T": 2,
+   "phi": 0,
+   "xp": 3
+  }
+ },
+ {
+  "chapter": "puc1-physics-14-waves",
+  "step": "puc1-physics-14-waves.t2.lesson#int1",
+  "title": "Wave equation explorer",
+  "instrument": "waves",
+  "preset": {
+   "mode": "travelling",
+   "A": 1.5,
+   "lam": 3.14,
+   "T": 1.57,
+   "tt": 0.5
+  }
+ },
+ {
+  "chapter": "puc1-physics-14-waves",
+  "step": "puc1-physics-14-waves.t3.lesson#scene-wave",
+  "title": "A travelling wave on a string",
+  "instrument": "waves",
+  "preset": {
+   "mode": "string",
+   "Ten": 20,
+   "mu": 5,
+   "L": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-14-waves",
+  "step": "puc1-physics-14-waves.t3.lesson#int1",
+  "title": "Speed of a wave on a string",
+  "instrument": "waves",
+  "preset": {
+   "mode": "string",
+   "Ten": 60,
+   "mu": 5,
+   "L": 0.7
+  }
+ },
+ {
+  "chapter": "puc1-physics-14-waves",
+  "step": "puc1-physics-14-waves.t4.lesson#sim1",
+  "title": "Standing waves on a string",
+  "instrument": "waves",
+  "preset": {
+   "mode": "standing",
+   "n": 2,
+   "L": 1,
+   "Ten": 100,
+   "mu": 5
+  }
+ },
+ {
+  "chapter": "puc1-physics-14-waves",
+  "step": "puc1-physics-14-waves.t4.lesson#int1",
+  "title": "Normal modes of a string",
+  "instrument": "waves",
+  "preset": {
+   "mode": "standing",
+   "n": 3,
+   "L": 1,
+   "Ten": 100,
+   "mu": 2.5,
+   "trav": 1
+  }
+ },
+ {
+  "chapter": "puc1-physics-14-waves",
+  "step": "puc1-physics-14-waves.t5.lesson#sim1",
+  "title": "Beats",
+  "instrument": "waves",
+  "preset": {
+   "mode": "beats",
+   "f1": 12,
+   "f2": 13
+  }
+ },
+ {
+  "chapter": "puc1-physics-14-waves",
+  "step": "puc1-physics-14-waves.t5.lesson#int1",
+  "title": "Hearing beats",
+  "instrument": "waves",
+  "preset": {
+   "mode": "beats",
+   "f1": 10,
+   "f2": 12,
+   "sep": 0
+  }
+ },
+ {
+  "chapter": "puc1-physics-15-relative-velocity",
+  "step": "puc1-physics-15-relative-velocity.t1.lesson#scene-cars",
+  "title": "Two cars on a road",
+  "instrument": "kinematics",
+  "preset": {
+   "mode": "relative",
+   "vA": 20,
+   "vB": 10,
+   "d": 60,
+   "time": 3
+  }
+ },
+ {
+  "chapter": "puc1-physics-15-relative-velocity",
+  "step": "puc1-physics-15-relative-velocity.t2.lesson#scene-river",
+  "title": "Steer a boat across a river",
+  "instrument": "vectors",
+  "preset": {
+   "mode": "river",
+   "vb": 4,
+   "vr": 3,
+   "th": 0,
+   "w": 120
+  }
+ },
+ {
+  "chapter": "puc1-physics-16-doppler-effect",
+  "step": "puc1-physics-16-doppler-effect.t1.lesson#scene-doppler-source",
+  "title": "Wavefronts of a moving source",
+  "instrument": "waves",
+  "preset": {
+   "mode": "doppler",
+   "vs": 136,
+   "vo": 0,
+   "f0": 500
+  }
+ },
+ {
+  "chapter": "puc1-physics-16-doppler-effect",
+  "step": "puc1-physics-16-doppler-effect.t2.lesson#scene-doppler-both",
+  "title": "Source and listener in motion",
+  "instrument": "waves",
+  "preset": {
+   "mode": "doppler",
+   "vs": 34,
+   "vo": 34,
+   "f0": 500
+  }
+ },
+ {
+  "chapter": "puc1-physics-17-errors-in-measurement",
+  "step": "puc1-physics-17-errors-in-measurement.t1.lesson#scene-target",
+  "title": "Accuracy and precision on a target",
+  "instrument": "measurement",
+  "preset": {
+   "mode": "target",
+   "bias": 0,
+   "sd": 0.4
+  }
+ },
+ {
+  "chapter": "puc1-physics-17-errors-in-measurement",
+  "step": "puc1-physics-17-errors-in-measurement.t2.lesson#scene-g-error",
+  "title": "Error budget for g from a pendulum",
+  "instrument": "measurement",
+  "preset": {
+   "mode": "gerror",
+   "L": 1,
+   "dL": 1,
+   "n": 10,
+   "lc": 0.2
+  }
+ },
+ {
+  "chapter": "puc2-physics-01-electric-charges-and-fields",
+  "step": "puc2-physics-01-electric-charges-and-fields.t1.lesson#sim1",
+  "title": "Rub a glass rod with silk",
+  "instrument": "charges",
+  "preset": {
+   "mode": "rub",
+   "n": 15
+  }
+ },
+ {
+  "chapter": "puc2-physics-01-electric-charges-and-fields",
+  "step": "puc2-physics-01-electric-charges-and-fields.t1.lesson#int1",
+  "title": "Quantisation and conservation",
+  "instrument": "charges",
+  "preset": {
+   "mode": "rub",
+   "n": 25
+  }
+ },
+ {
+  "chapter": "puc2-physics-01-electric-charges-and-fields",
+  "step": "puc2-physics-01-electric-charges-and-fields.t2.lesson#sim1",
+  "title": "Forces on a charge add as vectors",
+  "instrument": "efield",
+  "preset": {
+   "mode": "forces",
+   "charges": [
+    {
+     "q": 2,
+     "x": -5,
+     "y": 0
+    },
+    {
+     "q": 2,
+     "x": 5,
+     "y": 0
+    }
+   ],
+   "test": {
+    "x": 0,
+    "y": 5,
+    "q": 1
+   },
+   "equipotentials": false
+  }
+ },
+ {
+  "chapter": "puc2-physics-01-electric-charges-and-fields",
+  "step": "puc2-physics-01-electric-charges-and-fields.t2.lesson#int1",
+  "title": "Coulomb's law: force versus distance",
+  "instrument": "charges",
+  "preset": {
+   "mode": "coulomb",
+   "q1": 1,
+   "q2": 1,
+   "r": 10
+  }
+ },
+ {
+  "chapter": "puc2-physics-01-electric-charges-and-fields",
+  "step": "puc2-physics-01-electric-charges-and-fields.t3.lesson#sim1",
+  "title": "Trace an electric field line",
+  "instrument": "efield",
+  "preset": {
+   "mode": "lines",
+   "charges": [
+    {
+     "q": 2,
+     "x": -5,
+     "y": 0
+    },
+    {
+     "q": -2,
+     "x": 5,
+     "y": 0
+    }
+   ],
+   "test": {
+    "x": 0,
+    "y": 4,
+    "q": 1
+   },
+   "equipotentials": false,
+   "lines": 20
+  }
+ },
+ {
+  "chapter": "puc2-physics-01-electric-charges-and-fields",
+  "step": "puc2-physics-01-electric-charges-and-fields.t3.lesson#int1",
+  "title": "Field of a point charge",
+  "instrument": "charges",
+  "preset": {
+   "mode": "field",
+   "Q": 5,
+   "r": 30
+  }
+ },
+ {
+  "chapter": "puc2-physics-01-electric-charges-and-fields",
+  "step": "puc2-physics-01-electric-charges-and-fields.t4.lesson#sim1",
+  "title": "An electric dipole in a uniform field",
+  "instrument": "charges",
+  "preset": {
+   "mode": "dipole",
+   "q": 4,
+   "d": 4,
+   "E": 5,
+   "th": 60
+  }
+ },
+ {
+  "chapter": "puc2-physics-01-electric-charges-and-fields",
+  "step": "puc2-physics-01-electric-charges-and-fields.t4.lesson#int1",
+  "title": "Dipole in a uniform field",
+  "instrument": "charges",
+  "preset": {
+   "mode": "dipole",
+   "q": 4,
+   "d": 1,
+   "E": 5,
+   "th": 30
+  }
+ },
+ {
+  "chapter": "puc2-physics-01-electric-charges-and-fields",
+  "step": "puc2-physics-01-electric-charges-and-fields.t5.lesson#sim1",
+  "title": "Gauss's law: only the charge inside counts",
+  "instrument": "efield",
+  "preset": {
+   "mode": "gauss",
+   "charges": [
+    {
+     "q": 3,
+     "x": -3,
+     "y": 1
+    },
+    {
+     "q": -2,
+     "x": 1,
+     "y": -1
+    },
+    {
+     "q": 1,
+     "x": 8,
+     "y": 2
+    }
+   ],
+   "test": {
+    "x": -9,
+    "y": -4,
+    "q": 1
+   },
+   "gauss": {
+    "x": -1,
+    "y": 0,
+    "r": 4.5
+   },
+   "equipotentials": false
+  }
+ },
+ {
+  "chapter": "puc2-physics-01-electric-charges-and-fields",
+  "step": "puc2-physics-01-electric-charges-and-fields.t5.lesson#int1",
+  "title": "Gauss's law: a charged shell",
+  "instrument": "charges",
+  "preset": {
+   "mode": "shell",
+   "q": 10,
+   "R": 10,
+   "r": 15
+  }
+ },
+ {
+  "chapter": "puc2-physics-02-electrostatic-potential-and-capacitance",
+  "step": "puc2-physics-02-electrostatic-potential-and-capacitance.t1.lesson#sim1",
+  "title": "Potential around a point charge",
+  "instrument": "charges",
+  "preset": {
+   "mode": "potential",
+   "q": 2,
+   "r": 10,
+   "q0": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-02-electrostatic-potential-and-capacitance",
+  "step": "puc2-physics-02-electrostatic-potential-and-capacitance.t1.lesson#int1",
+  "title": "Potential and field of a point charge",
+  "instrument": "charges",
+  "preset": {
+   "mode": "potential",
+   "q": 5,
+   "r": 10,
+   "q0": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-02-electrostatic-potential-and-capacitance",
+  "step": "puc2-physics-02-electrostatic-potential-and-capacitance.t2.lesson#sim1",
+  "title": "Potential energy of two charges",
+  "instrument": "charges",
+  "preset": {
+   "mode": "energy",
+   "q1": 3,
+   "q2": -2,
+   "r": 18
+  }
+ },
+ {
+  "chapter": "puc2-physics-02-electrostatic-potential-and-capacitance",
+  "step": "puc2-physics-02-electrostatic-potential-and-capacitance.t2.lesson#int1",
+  "title": "Potential energy of two charges",
+  "instrument": "charges",
+  "preset": {
+   "mode": "energy",
+   "q1": 7,
+   "q2": -2,
+   "r": 18
+  }
+ },
+ {
+  "chapter": "puc2-physics-02-electrostatic-potential-and-capacitance",
+  "step": "puc2-physics-02-electrostatic-potential-and-capacitance.t3.lesson#sim1",
+  "title": "A dielectric in a capacitor",
+  "instrument": "capacitor",
+  "preset": {
+   "mode": "dielectric",
+   "K": 4,
+   "V0": 6,
+   "slab": 1,
+   "bat": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-02-electrostatic-potential-and-capacitance",
+  "step": "puc2-physics-02-electrostatic-potential-and-capacitance.t3.lesson#int1",
+  "title": "Field inside a dielectric",
+  "instrument": "capacitor",
+  "preset": {
+   "mode": "dielectric",
+   "K": 5,
+   "V0": 6,
+   "slab": 1,
+   "bat": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-02-electrostatic-potential-and-capacitance",
+  "step": "puc2-physics-02-electrostatic-potential-and-capacitance.t4.lesson#scene-rc",
+  "title": "Charging and discharging a capacitor",
+  "instrument": "capacitor",
+  "preset": {
+   "mode": "rc",
+   "R": 5,
+   "C": 400,
+   "E": 6,
+   "charge": 1,
+   "tt": 2
+  }
+ },
+ {
+  "chapter": "puc2-physics-02-electrostatic-potential-and-capacitance",
+  "step": "puc2-physics-02-electrostatic-potential-and-capacitance.t4.lesson#int1",
+  "title": "Capacitor with a dielectric slab",
+  "instrument": "capacitor",
+  "preset": {
+   "mode": "slab",
+   "A": 60,
+   "K": 4,
+   "t": 1.5
+  }
+ },
+ {
+  "chapter": "puc2-physics-02-electrostatic-potential-and-capacitance",
+  "step": "puc2-physics-02-electrostatic-potential-and-capacitance.t5.lesson#sim1",
+  "title": "Capacitors in series and parallel",
+  "instrument": "capacitor",
+  "preset": {
+   "mode": "network",
+   "C1": 6,
+   "C2": 3,
+   "V": 12,
+   "par": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-02-electrostatic-potential-and-capacitance",
+  "step": "puc2-physics-02-electrostatic-potential-and-capacitance.t5.lesson#int1",
+  "title": "Series or parallel?",
+  "instrument": "capacitor",
+  "preset": {
+   "mode": "network",
+   "C1": 2,
+   "C2": 3,
+   "V": 10,
+   "par": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-03-current-electricity",
+  "step": "puc2-physics-03-current-electricity.t1.lesson#sim1",
+  "title": "Electrons drifting in a wire",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "drift",
+   "I": 1.5,
+   "A": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-03-current-electricity",
+  "step": "puc2-physics-03-current-electricity.t1.lesson#int1",
+  "title": "Drift speed in a copper wire",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "drift",
+   "I": 1.5,
+   "A": 0.1
+  }
+ },
+ {
+  "chapter": "puc2-physics-03-current-electricity",
+  "step": "puc2-physics-03-current-electricity.t2.lesson#sim1",
+  "title": "Resistivity changes with temperature",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "resistivity",
+   "mat": 1,
+   "T": 20,
+   "L": 1,
+   "A": 0.5
+  }
+ },
+ {
+  "chapter": "puc2-physics-03-current-electricity",
+  "step": "puc2-physics-03-current-electricity.t2.lesson#int1",
+  "title": "Resistance of a metal wire versus temperature",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "resistivity",
+   "mat": 1,
+   "T": 100,
+   "L": 1,
+   "A": 0.5
+  }
+ },
+ {
+  "chapter": "puc2-physics-03-current-electricity",
+  "step": "puc2-physics-03-current-electricity.t3.lesson#sim1",
+  "title": "Bulbs in series and in parallel",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "bulbs",
+   "V": 220,
+   "P1": 100,
+   "P2": 40,
+   "par": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-03-current-electricity",
+  "step": "puc2-physics-03-current-electricity.t3.lesson#int1",
+  "title": "Loss in a transmission line",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "transmission",
+   "P": 1,
+   "V": 11,
+   "Rc": 10
+  }
+ },
+ {
+  "chapter": "puc2-physics-03-current-electricity",
+  "step": "puc2-physics-03-current-electricity.t4.lesson#sim1",
+  "title": "Emf and terminal voltage",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "cell",
+   "E": 6,
+   "r": 1,
+   "R": 5,
+   "sw": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-03-current-electricity",
+  "step": "puc2-physics-03-current-electricity.t4.lesson#int1",
+  "title": "Terminal voltage and power of a cell",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "cell",
+   "E": 12,
+   "r": 0.4,
+   "R": 5.6,
+   "sw": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-03-current-electricity",
+  "step": "puc2-physics-03-current-electricity.t5.lesson#sim1",
+  "title": "Balance a Wheatstone bridge",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "wheatstone",
+   "P": 10,
+   "Q": 10,
+   "R": 5,
+   "S": 8
+  }
+ },
+ {
+  "chapter": "puc2-physics-03-current-electricity",
+  "step": "puc2-physics-03-current-electricity.t5.lesson#int1",
+  "title": "Balancing a Wheatstone bridge",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "wheatstone",
+   "P": 10,
+   "Q": 20,
+   "R": 15,
+   "S": 20
+  }
+ },
+ {
+  "chapter": "puc2-physics-15-metre-bridge-and-potentiometer",
+  "step": "puc2-physics-15-metre-bridge-and-potentiometer.t1.lesson#scene-metre-bridge",
+  "title": "Find the null point",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "metrebridge",
+   "R": 4,
+   "X": 0,
+   "l": 50
+  }
+ },
+ {
+  "chapter": "puc2-physics-15-metre-bridge-and-potentiometer",
+  "step": "puc2-physics-15-metre-bridge-and-potentiometer.t2.lesson#scene-potentiometer",
+  "title": "Balance a cell on a potentiometer",
+  "instrument": "circuit",
+  "preset": {
+   "mode": "potentiometer",
+   "cell": 0,
+   "Rh": 4,
+   "Rs": 5,
+   "sh": 0,
+   "J": 5
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t1.lesson#sim1",
+  "title": "A velocity selector: E and B together",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "selector",
+   "v": 10,
+   "E": 50,
+   "B": 50
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t1.lesson#int1",
+  "title": "Force on a moving proton",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "lorentz",
+   "v": 2,
+   "B": 0.5,
+   "th": 90
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t2.lesson#sim1",
+  "title": "A charge circling in a magnetic field",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "orbit",
+   "pt": 0,
+   "v": 5,
+   "B": 500
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t2.lesson#int1",
+  "title": "Radius and period of an electron orbit",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "orbit",
+   "pt": 3,
+   "v": 100,
+   "B": 2
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t3.lesson#sim1",
+  "title": "Magnetic field on the axis of a current loop",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "loop",
+   "I": 5,
+   "R": 10,
+   "N": 10,
+   "x": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t3.lesson#int1",
+  "title": "Field on the axis of a circular coil",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "loop",
+   "N": 100,
+   "I": 1,
+   "R": 10,
+   "x": 10
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t4.lesson#sim1",
+  "title": "Inside a solenoid",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "solenoid",
+   "n": 10,
+   "I": 2,
+   "x": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t4.lesson#int1",
+  "title": "Field inside and outside a thick wire",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "wire",
+   "I": 10,
+   "a": 2,
+   "r": 4
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t5.lesson#sim1",
+  "title": "Two parallel currents",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "parallel",
+   "I1": 5,
+   "I2": 5,
+   "d": 5
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t5.lesson#int1",
+  "title": "Force between two parallel wires",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "parallel",
+   "I1": 10,
+   "I2": 5,
+   "d": 4
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t6.lesson#sim1",
+  "title": "A moving coil galvanometer",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "galvo",
+   "I": 30,
+   "N": 200,
+   "B": 0.5,
+   "k": 3,
+   "radial": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-04-moving-charges-and-magnetism",
+  "step": "puc2-physics-04-moving-charges-and-magnetism.t6.lesson#int1",
+  "title": "Torque on a current loop",
+  "instrument": "magnetic",
+  "preset": {
+   "mode": "torque",
+   "N": 100,
+   "I": 1,
+   "A": 50,
+   "B": 0.5,
+   "th": 60
+  }
+ },
+ {
+  "chapter": "puc2-physics-05-magnetism-and-matter",
+  "step": "puc2-physics-05-magnetism-and-matter.t1.lesson#sim1",
+  "title": "A compass around a bar magnet",
+  "instrument": "magnet",
+  "preset": {
+   "mode": "barmagnet",
+   "m": 2,
+   "earth": 0
+  }
+ },
+ {
+  "chapter": "puc2-physics-05-magnetism-and-matter",
+  "step": "puc2-physics-05-magnetism-and-matter.t1.lesson#int1",
+  "title": "Field of a bar magnet: axis and equator",
+  "instrument": "magnet",
+  "preset": {
+   "mode": "barmagnet",
+   "m": 0.4,
+   "r": 20
+  }
+ },
+ {
+  "chapter": "puc2-physics-05-magnetism-and-matter",
+  "step": "puc2-physics-05-magnetism-and-matter.t2.lesson#sim1",
+  "title": "A magnetic needle swinging in a field",
+  "instrument": "magnet",
+  "preset": {
+   "mode": "needle",
+   "B": 50,
+   "m": 0.5,
+   "I": 5,
+   "th0": 30
+  }
+ },
+ {
+  "chapter": "puc2-physics-05-magnetism-and-matter",
+  "step": "puc2-physics-05-magnetism-and-matter.t2.lesson#int1",
+  "title": "Energy and torque of a magnetic dipole",
+  "instrument": "magnet",
+  "preset": {
+   "mode": "dipole",
+   "m": 0.5,
+   "B": 0.4,
+   "th": 60
+  }
+ },
+ {
+  "chapter": "puc2-physics-05-magnetism-and-matter",
+  "step": "puc2-physics-05-magnetism-and-matter.t3.lesson#int1",
+  "title": "Flux through a closed surface",
+  "instrument": "magnet",
+  "preset": {
+   "mode": "gauss",
+   "B": 0.5,
+   "A": 50,
+   "th": 30
+  }
+ },
+ {
+  "chapter": "puc2-physics-05-magnetism-and-matter",
+  "step": "puc2-physics-05-magnetism-and-matter.t4.lesson#sim1",
+  "title": "Magnetising a core: H, M and B",
+  "instrument": "magnet",
+  "preset": {
+   "mode": "core",
+   "n": 5,
+   "I": 0.5,
+   "mat": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-05-magnetism-and-matter",
+  "step": "puc2-physics-05-magnetism-and-matter.t4.lesson#int1",
+  "title": "A solenoid with a magnetic core",
+  "instrument": "magnet",
+  "preset": {
+   "mode": "core",
+   "n": 10,
+   "I": 2,
+   "mat": 3
+  }
+ },
+ {
+  "chapter": "puc2-physics-05-magnetism-and-matter",
+  "step": "puc2-physics-05-magnetism-and-matter.t5.lesson#int1",
+  "title": "Curie's law for a paramagnet",
+  "instrument": "magnet",
+  "preset": {
+   "mode": "curie",
+   "C": 7,
+   "T": 300
+  }
+ },
+ {
+  "chapter": "puc2-physics-06-electromagnetic-induction",
+  "step": "puc2-physics-06-electromagnetic-induction.t1.lesson#sim1",
+  "title": "Move a magnet near a coil",
+  "instrument": "induction",
+  "preset": {
+   "mode": "faraday",
+   "w": 2,
+   "N": 100
+  }
+ },
+ {
+  "chapter": "puc2-physics-06-electromagnetic-induction",
+  "step": "puc2-physics-06-electromagnetic-induction.t1.lesson#int1",
+  "title": "Emf from a collapsing field",
+  "instrument": "induction",
+  "preset": {
+   "mode": "collapse",
+   "N": 100,
+   "A": 100,
+   "B": 0.5,
+   "dt": 0.1
+  }
+ },
+ {
+  "chapter": "puc2-physics-06-electromagnetic-induction",
+  "step": "puc2-physics-06-electromagnetic-induction.t2.lesson#sim1",
+  "title": "Lenz's law: the coil fights back",
+  "instrument": "induction",
+  "preset": {
+   "mode": "lenz",
+   "sp": 4,
+   "N": 200,
+   "inw": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-06-electromagnetic-induction",
+  "step": "puc2-physics-06-electromagnetic-induction.t2.lesson#int1",
+  "title": "A magnet falling through a coil",
+  "instrument": "induction",
+  "preset": {
+   "mode": "fall",
+   "v": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-06-electromagnetic-induction",
+  "step": "puc2-physics-06-electromagnetic-induction.t3.lesson#sim1",
+  "title": "A rod sliding on rails in a magnetic field",
+  "instrument": "induction",
+  "preset": {
+   "mode": "rod",
+   "B": 0.5,
+   "l": 0.5,
+   "v0": 4,
+   "R": 2,
+   "push": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-06-electromagnetic-induction",
+  "step": "puc2-physics-06-electromagnetic-induction.t3.lesson#int1",
+  "title": "A rod sliding on rails",
+  "instrument": "induction",
+  "preset": {
+   "mode": "rod",
+   "B": 0.5,
+   "l": 0.2,
+   "v0": 10,
+   "R": 2,
+   "push": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-06-electromagnetic-induction",
+  "step": "puc2-physics-06-electromagnetic-induction.t4.lesson#sim1",
+  "title": "Self-inductance slows the current",
+  "instrument": "induction",
+  "preset": {
+   "mode": "rl",
+   "E": 6,
+   "R": 10,
+   "L": 1,
+   "sw": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-06-electromagnetic-induction",
+  "step": "puc2-physics-06-electromagnetic-induction.t4.lesson#int1",
+  "title": "Inductance of a solenoid",
+  "instrument": "induction",
+  "preset": {
+   "mode": "inductance",
+   "N": 500,
+   "r": 1.8,
+   "l": 50,
+   "I": 2
+  }
+ },
+ {
+  "chapter": "puc2-physics-06-electromagnetic-induction",
+  "step": "puc2-physics-06-electromagnetic-induction.t5.lesson#sim1",
+  "title": "Inside an AC generator",
+  "instrument": "induction",
+  "preset": {
+   "mode": "generator",
+   "N": 100,
+   "B": 0.5,
+   "A": 100,
+   "f": 1
+  }
+ },
+ {
+  "chapter": "puc2-physics-06-electromagnetic-induction",
+  "step": "puc2-physics-06-electromagnetic-induction.t5.lesson#int1",
+  "title": "Output of an AC generator",
+  "instrument": "induction",
+  "preset": {
+   "mode": "generator",
+   "N": 100,
+   "B": 0.2,
+   "A": 200,
+   "f": 50
+  }
+ }
+]
