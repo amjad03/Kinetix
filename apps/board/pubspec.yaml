@@ -6,7 +6,7 @@ version: 0.1.0+1
 # gives it to the Classroom APK (android/app/build.gradle.kts; --dart-define=
 # KINETIX_CLASSROOM_VERSION=… or -Pkinetix.classroomVersion=… override it). With
 # --split-per-abi Flutter adds 1000 x the ABI to the build: armeabi-v7a 1xxx, arm64-v8a 2xxx.
-classroom_version: 1.1.0+2
+classroom_version: 1.2.0+3
 
 environment:
   sdk: ^3.13.5

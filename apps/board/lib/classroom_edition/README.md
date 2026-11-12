@@ -11,8 +11,9 @@ flutter build apk --dart-define=KINETIX_EDITION=classroom      # Android: in.zyn
 flutter run --dart-define=KINETIX_EDITION=classroom
 ```
 
-Sizes (arm64-v8a / armeabi-v7a): 1.0.0 was 179.4 / 169.5 MB; 1.1.0 is 90.8 / 90.8 MB (with
-Pyodide's core for the code lab, which 1.0.0 lacked).
+Sizes (arm64-v8a / armeabi-v7a): 1.0.0 was 179.4 / 169.5 MB; 1.1.0 was 90.8 / 90.8 MB (with
+Pyodide's core for the code lab, which 1.0.0 lacked); 1.2.0 is 98.9 / 99.2 MB (instruments and
+labs in the lessons; the 47 extra PhET sims come in the content pack, not the APK).
 
 A release APK (signed with the Zynetix release key through the `KINETIX_ANDROID_*` variables,
 docs/operations/mobile-release.md; build the private assets first, below):
