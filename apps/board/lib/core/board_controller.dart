@@ -1045,7 +1045,8 @@ class BoardController extends ChangeNotifier {
     roster = [];
     attendance.clear();
     _sessionTimer?.cancel();
-    _sessionTimer = Timer(ctx.expiresAt.difference(DateTime.now()), _signOut);
+    // A local class's expiry comes from the classroom clock (local_class.dart); time it on the same one.
+    _sessionTimer = Timer(ctx.expiresAt.difference(localClass ? classroom.now() : DateTime.now()), _signOut);
     notifyListeners();
     unawaited(_loadRoster());
     unawaited(recordings.kick()); // recordings this teacher made earlier on this board

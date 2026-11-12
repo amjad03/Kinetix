@@ -91,10 +91,16 @@ class ContentLibrary extends ChangeNotifier {
   static Future<ContentLibrary>? _opening;
 
   /// The board's library (opened once).
+  /// A failed open is not kept: the next caller tries again.
   static Future<ContentLibrary> shared() => _opening ??= () async {
-    final l = ContentLibrary(Directory('${(await getApplicationSupportDirectory()).path}/content_pack'));
-    await l.load();
-    return _shared = l;
+    try {
+      final l = ContentLibrary(Directory('${(await getApplicationSupportDirectory()).path}/content_pack'));
+      await l.load();
+      return _shared = l;
+    } catch (_) {
+      _opening = null;
+      rethrow;
+    }
   }();
 
   /// The library if it is open already (lesson cards ask without waiting).
